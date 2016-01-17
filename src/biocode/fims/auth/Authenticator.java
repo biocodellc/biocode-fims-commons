@@ -1,7 +1,6 @@
 package biocode.fims.auth;
 
 import biocode.fims.bcid.Database;
-import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
@@ -14,10 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * Used for all authentication duties such as login, changing passwords, creating users, resetting passwords, etc.
@@ -26,7 +23,6 @@ public class Authenticator {
     private Database db;
     protected Connection conn;
     SettingsManager sm;
-    private static LDAPAuthentication ldapAuthentication;
     private static Logger logger = LoggerFactory.getLogger(Authenticator.class);
 
     /**
@@ -42,74 +38,6 @@ public class Authenticator {
         sm = SettingsManager.getInstance();
     }
 
-    public static LDAPAuthentication getLdapAuthentication() {
-        return ldapAuthentication;
-    }
-
-    /**
-     * Process 2-factor login as LDAP first and then entrust QA
-     *
-     * @param username
-     * @param password
-     * @param recognizeDemo
-     *
-     * @return
-     */
-    public String[] loginLDAP(String username, String password, Boolean recognizeDemo) {
-        ldapAuthentication = new LDAPAuthentication(username, password, recognizeDemo);
-
-        // If ldap authentication is successful, then retrieve the challange questions from the entrust server
-        if (ldapAuthentication.getStatus() == ldapAuthentication.SUCCESS) {
-            EntrustIGAuthentication igAuthentication = new EntrustIGAuthentication();
-            // get the challenge questions from entrust IG server
-            String [] challengeQuestions = igAuthentication.getGenericChallenge(username);
-
-            // challengeQuestions should never return null from here since the ldap authentication was successful.
-            // However entrust IG server didn't provide any challenge questions, so throw an exception.
-            if (challengeQuestions == null || challengeQuestions.length == 0) {
-                throw new ServerErrorException("Server Error.", "No challenge questions provided");
-            }
-
-            return challengeQuestions;
-        } else {
-            // return null if the ldap authentication failed
-            return null;
-        }
-    }
-
-    /**
-     * respond to a challenge from the Entrust Identity Guard Server
-     * @param username
-     * @param challengeResponse
-     * @return
-     */
-    public boolean entrustChallenge(String username, String[] challengeResponse) {
-        EntrustIGAuthentication igAuthentication = new EntrustIGAuthentication();
-        // verify the user's responses to the challenge questions
-        boolean isAuthenticated = igAuthentication.authenticateGenericChallange(username, challengeResponse);
-
-        if (isAuthenticated) {
-            if (!validUser(username)) {
-                // If authentication is good and user doesn't exist in Bcid db, then insert account into Database
-                createLdapUser(username);
-
-                // enable this user for all projects
-                ProjectMinter p = new ProjectMinter();
-                // get the userId for this username
-                int userId = getUserId(username);
-                // Loop projects and assign user to them
-                ArrayList<Integer> projects = p.getAllProjects();
-                Iterator projectsIt = projects.iterator();
-                while (projectsIt.hasNext()) {
-                    p.addUserToProject(userId, (Integer) projectsIt.next());
-                }
-                p.close();
-            }
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * Public method to verify a users password
@@ -158,36 +86,6 @@ public class Authenticator {
             db.close(stmt, rs);
         }
         return null;
-    }
-
-    /**
-     * retrieve the user's hashed password from the db
-     *
-     * @return
-     */
-    private boolean validUser(String username) {
-        int count = 0;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            String selectString = "SELECT userId id FROM users WHERE username = ?";
-            stmt = conn.prepareStatement(selectString);
-
-            stmt.setString(1, username);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                rs.getInt("id");
-                count++;
-            }
-
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        }
-        if (count == 1) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -276,72 +174,6 @@ public class Authenticator {
         } catch (InvalidKeySpecException e) {
             throw new ServerErrorException(e);
         }
-    }
-
-    /**
-     * create a user given a username and password
-     *
-     * @param username
-     *
-     * @return
-     */
-    public Boolean createLdapUser(String username) {
-        PreparedStatement stmt = null;
-
-        try {
-
-            String insertString = "INSERT INTO users (username,hasSetPassword,institution,email,firstName,lastName,passwordResetToken,password,admin)" +
-                    " VALUES(?,?,?,?,?,?,?,?,?,?)";
-            stmt = conn.prepareStatement(insertString);
-
-            stmt.setString(1, username);
-            stmt.setInt(2, 1);
-            stmt.setString(3, "Smithsonian Institution");
-            stmt.setString(4, "");
-            stmt.setString(5, "");
-            stmt.setString(6, "");
-            stmt.setString(7, "");
-            stmt.setString(8, "");
-            stmt.setInt(9, 0);
-
-            stmt.execute();
-            return true;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            db.close(stmt, null);
-        }
-    }
-
-
-    /**
-     * return the userId given a username
-     *
-     * @param username
-     *
-     * @return
-     */
-    private Integer getUserId(String username) {
-        Integer userId = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            String selectString = "SELECT userId FROM users WHERE username=?";
-            stmt = conn.prepareStatement(selectString);
-
-            stmt.setString(1, LDAPAuthentication.showShortUserName(username));
-
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                userId = rs.getInt("userId");
-            }
-
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            db.close(stmt, rs);
-        }
-        return userId;
     }
 
     /**
@@ -478,7 +310,6 @@ public class Authenticator {
         Options options = new Options();
         options.addOption("U", "username", true, "Username you would like to set a password for");
         options.addOption("P", "password", true, "The temporary password you would like to set");
-        options.addOption("ldap", false, "Use LDAP to set username");
 
 
 
@@ -502,16 +333,6 @@ public class Authenticator {
         String password = cl.getOptionValue("P");
 
         Authenticator authenticator = new Authenticator();
-
-        // LDAP option
-        if (cl.hasOption("ldap")) {
-            System.out.println("authenticating using LDAP");
-            String[] challengeQuestions = authenticator.loginLDAP(username, password, true);
-            if (challengeQuestions == null) {
-                System.out.println("Error logging in using LDAP");
-            }
-            return;
-        }
 
         Boolean success = authenticator.setHashedPass(username, password);
 
