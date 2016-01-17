@@ -289,84 +289,6 @@ public class BcidMinter extends BcidEncoder {
     }
 
     /**
-     * Return an HTML table of bcids owned by a particular user
-     * TODO: find a more appropriate spot for this
-     *
-     * @param username
-     *
-     * @return
-     */
-    public String bcidTable(String username) {
-        ResourceTypes rts = new ResourceTypes();
-
-        StringBuilder sb = new StringBuilder();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            String sql = "SELECT \n\t" +
-                    "b.bcidId as bcidId," +
-                    "identifier," +
-                    "ifnull(title,'') as title," +
-                    "ifnull(doi,'') as doi," +
-                    "ifnull(webAddress,'') as webAddress," +
-                    "ifnull(resourceType,'') as resourceType," +
-                    "suffixPassthrough as suffixPassthrough " +
-                    "\nFROM\n\t" +
-                    "bcids b, users u " +
-                    "\nWHERE\n\t" +
-                    "u.username = ? && " +
-                    "b.userId=u.userId";
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-
-            rs = stmt.executeQuery();
-            sb.append("<table>\n");
-            sb.append("\t");
-            sb.append("<tr>");
-            sb.append("<th>BCID</th>");
-            sb.append("<th>Title</th>");
-            //sb.append("<th>DOI</th>");
-            //sb.append("<th>webAddress</th>");
-            sb.append("<th>resourceType</th>");
-            sb.append("<th>Follow Suffixes</th>");
-
-            sb.append("</tr>\n");
-            while (rs.next()) {
-                sb.append("\t<tr>");
-                //sb.append("<td>" + getEZIDLink(rs.getString("identifier"), username) + " " + getEZIDMetadataLink(rs.getString("identifier"), username) + "</td>");
-                sb.append("<td>" +
-                        rs.getString("identifier") +
-                        " " +
-                        // Normally we would use resolverMetadataPrefix here but i'm stripping the host so this
-                        // can be more easily tested on localhost
-                        "(<a href='javascript:void();' class='edit' data-ark='" + rs.getString("identifier") + "'>edit</a>)" +
-                        "</td>");
-
-                sb.append("<td>" + rs.getString("title") + "</td>");
-                //sb.append("<td>" + getDOILink(rs.getString("doi")) + " " + getDOIMetadataLink(rs.getString("doi")) + "</td>");
-                //sb.append("<td>" + rs.getString("webAddress") + "</td>");
-
-                ResourceType resourceType = rts.get(rs.getString("resourceType"));
-                if (resourceType != null) {
-                    sb.append("<td><a href='" + rs.getString("resourceType") + "'>" + resourceType.string + "</a></td>");
-                } else {
-                    sb.append("<td><a href='" + rs.getString("resourceType") + "'>" + rs.getString("resourceType") + "</a></td>");
-                }
-                sb.append("<td>" + rs.getBoolean("suffixPassthrough") + "</td>");
-
-                sb.append("</tr>\n");
-            }
-            sb.append("\n</table>");
-
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            db.close(stmt, rs);
-        }
-        return sb.toString();
-    }
-
-    /**
      * return a BCID formatted with LINK
      *
      * @param pPrefix
@@ -430,7 +352,7 @@ public class BcidMinter extends BcidEncoder {
     public static void main(String args[]) {
         BcidMinter b = new BcidMinter();
         try {
-            System.out.println(b.bcidTable("biocode"));
+//            System.out.println(b.bcidTable("biocode"));
         } catch (Exception e) {
             b.close();
             e.printStackTrace();
@@ -562,80 +484,6 @@ public class BcidMinter extends BcidEncoder {
         } finally {
             db.close(stmt, null);
         }
-    }
-
-    /**
-     * return an HTML table to edit a Bcid's config
-     *
-     * @param username
-     * @param identifier
-     *
-     * @return
-     */
-    public String bcidEditorAsTable(String username, String identifier) {
-        StringBuilder sb = new StringBuilder();
-        Hashtable<String, String> config = getBcidMetadata(identifier, username);
-
-        sb.append("<form method=\"POST\" id=\"bcidEditForm\">\n");
-        sb.append("\t<input type=hidden name=resourceTypes id=resourceTypes value=\"Dataset\">\n");
-        sb.append("\t<table>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\">Title*</td>\n");
-        sb.append("\t\t\t<td><input name=\"title\" type=\"textbox\" size=\"40\" value=\"");
-        sb.append(config.get("title"));
-        sb.append("\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\"><a href='/bcid/concepts.jsp'>Concept*</a></td>\n");
-        sb.append("\t\t\t<td><select name=\"resourceTypesMinusDataset\" id=\"resourceTypesMinusDataset\" data-resource_type=\"");
-        sb.append(config.get("resourceType"));
-        sb.append("\"></select></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\">Target URL</td>\n");
-        sb.append("\t\t\t<td><input name=\"webAddress\" type=\"textbox\" size=\"40\" value=\"");
-        sb.append(config.get("webAddress"));
-        sb.append("\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\">DOI</td>\n");
-        sb.append("\t\t\t<td><input name=\"doi\" type=\"textbox\" size=\"40\" value=\"");
-        sb.append(config.get("doi"));
-        sb.append("\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\">Rights</td>\n");
-        sb.append("\t\t\t<td><a href=\"http://creativecommons.org/licenses/by/3.0/\">Creative Commons Attribution 3.0</a></td>");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td align=\"right\">Follow Suffixes</td>\n");
-        sb.append("\t\t\t<td><input name=\"suffixPassThrough\" type=\"checkbox\"");
-        if (config.get("suffix").equalsIgnoreCase("true")) {
-            sb.append(" checked=\"checked\"");
-        }
-        sb.append("\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td></td>\n");
-        sb.append("\t\t\t<td class=\"error\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td><input type=\"hidden\" name=\"identifier\" value=\"" + identifier + "\"></td>\n");
-        sb.append("\t\t\t<td><input type=\"button\" value=\"Submit\" onclick=\"bcidEditorSubmit();\" /><input type=\"button\" id=\"cancelButton\" value=\"Cancel\" /></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t</table>\n");
-        sb.append("</form>\n");
-
-        return sb.toString();
     }
 
     /**

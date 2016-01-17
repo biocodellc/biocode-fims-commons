@@ -18,13 +18,13 @@ import javax.ws.rs.core.Response;
 import java.util.Hashtable;
 
 /**
- * REST interface calls for working with data groups.    This includes creating a group, looking up
- * groups by user associated with them, and JSON representation of group metadata.
+ * REST interface calls for working with bcids.    This includes creating a bcid, looking up
+ * bcids by user associated with them, and JSON representation of group metadata.
  */
-@Path("groupService")
-public class GroupService extends FimsService {
+@Path("bcids")
+public class BcidService extends FimsService {
 
-    final static Logger logger = LoggerFactory.getLogger(GroupService.class);
+    final static Logger logger = LoggerFactory.getLogger(BcidService.class);
 
     /**
      * Load settings manager, set ontModelSpec.
@@ -94,15 +94,15 @@ public class GroupService extends FimsService {
     /**
      * Return a JSON representation of bcids metadata
      *
-     * @param bcid_id
+     * @param bcidId
      *
      * @return
      */
     @GET
-    @Path("/metadata/{bcid_id}")
+    @Path("/metadata/{bcidId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String run(@PathParam("bcid_id") Integer bcid_id) {
-        Bcid bcid = new Bcid(bcid_id);
+    public String run(@PathParam("bcidId") Integer bcidId) {
+        Bcid bcid = new Bcid(bcidId);
         Renderer renderer = new JSONRenderer();
 
         return "[" + renderer.render(bcid) + "]";
@@ -126,62 +126,6 @@ public class GroupService extends FimsService {
     }
 
     /**
-     * Return HTML response showing a table of groups belonging to this user
-     *
-     * @return String with HTML response
-     */
-    @GET
-    @Authenticated
-    @Path("/listUserBCIDsAsTable")
-    @Produces(MediaType.TEXT_HTML)
-    public Response listUserBCIDsAsTable() {
-        BcidMinter d = new BcidMinter();
-        String response = d.bcidTable(username);
-        d.close();
-
-        return Response.ok(response).build();
-    }
-
-    /**
-     * Return HTML response showing a table of groups belonging to this user
-     *
-     * @return String with HTML response
-     */
-    @GET
-    @Authenticated
-    @Path("/listUserExpeditionsAsTable")
-    @Produces(MediaType.TEXT_HTML)
-    public Response listUserExpeditionsAsTable() {
-        ExpeditionMinter e = new ExpeditionMinter();
-        String tablename = e.expeditionTable(username);
-        e.close();
-        return Response.ok(tablename).build();
-    }
-
-    /**
-     * returns an HTML table used to edit a Bcid's configuration.
-     *
-     * @param identifier
-     *
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Path("/dataGroupEditorAsTable")
-    @Produces(MediaType.TEXT_HTML)
-    public Response bcidEditorAsTable(@QueryParam("ark") String identifier) {
-
-        if (identifier == null) {
-            throw new BadRequestException("You must provide an \"ark\" query parameter.");
-        }
-
-        BcidMinter d = new BcidMinter();
-        String response = d.bcidEditorAsTable(username, identifier);
-        d.close();
-        return Response.ok(response).build();
-    }
-
-    /**
      * Service to update a Bcid's configuration.
      *
      * @param doi
@@ -196,7 +140,7 @@ public class GroupService extends FimsService {
      */
     @POST
     @Authenticated
-    @Path("/dataGroup/update")
+    @Path("/update")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response bcidUpdate(@FormParam("doi") String doi,

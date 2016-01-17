@@ -59,41 +59,41 @@ public class ProjectService extends FimsService {
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
 
-    /**
-     * Given an project Bcid, get the users latest datasets by expedition
-     *
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Path("/myGraphs/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMyLatestGraphs() {
-        ProjectMinter project= new ProjectMinter();
+//    /**
+//     * Given an project Bcid, get the users latest datasets by expedition
+//     *
+//     * @return
+//     */
+//    @GET
+//    @Authenticated
+//    @Path("/myGraphs/")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getMyLatestGraphs() {
+//        ProjectMinter project= new ProjectMinter();
+//
+//        String response = project.getMyLatestGraphs(username);
+//        project.close();
+//
+//        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
+//    }
 
-        String response = project.getMyLatestGraphs(username);
-        project.close();
-
-        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
-    }
-
-     /**
-     * Get the users datasets
-     *
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Path("/myDatasets/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getDatasets() {
-        ProjectMinter project= new ProjectMinter();
-
-        String response = project.getMyTemplatesAndDatasets(username);
-        project.close();
-
-        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
-    }
+//     /**
+//     * Get the users datasets
+//     *
+//     * @return
+//     */
+//    @GET
+//    @Authenticated
+//    @Path("/myDatasets/")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response getDatasets() {
+//        ProjectMinter project= new ProjectMinter();
+//
+//        String response = project.getMyTemplatesAndDatasets(username);
+//        project.close();
+//
+//        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
+//    }
 
     /**
      * Return a json representation to be used for select options of the projects that a user is an admin to
