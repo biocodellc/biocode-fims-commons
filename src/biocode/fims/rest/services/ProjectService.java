@@ -35,10 +35,10 @@ public class ProjectService extends FimsService {
     public Response fetchList() {
 
         ProjectMinter project = new ProjectMinter();
-        String response = project.listProjects(userId);
+        JSONArray response = project.listProjects(userId);
         project.close();
 
-        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
+        return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
 
     /**
@@ -59,41 +59,41 @@ public class ProjectService extends FimsService {
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
 
-//    /**
-//     * Given an project Bcid, get the users latest datasets by expedition
-//     *
-//     * @return
-//     */
-//    @GET
-//    @Authenticated
-//    @Path("/myGraphs/")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getMyLatestGraphs() {
-//        ProjectMinter project= new ProjectMinter();
-//
-//        String response = project.getMyLatestGraphs(username);
-//        project.close();
-//
-//        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
-//    }
+    /**
+     * Given an project Bcid, get the users latest datasets by expedition
+     *
+     * @return
+     */
+    @GET
+    @Authenticated
+    @Path("/myGraphs/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMyLatestGraphs() {
+        ProjectMinter project= new ProjectMinter();
 
-//     /**
-//     * Get the users datasets
-//     *
-//     * @return
-//     */
-//    @GET
-//    @Authenticated
-//    @Path("/myDatasets/")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response getDatasets() {
-//        ProjectMinter project= new ProjectMinter();
-//
-//        String response = project.getMyTemplatesAndDatasets(username);
-//        project.close();
-//
-//        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
-//    }
+        String response = project.getMyLatestGraphs(username);
+        project.close();
+
+        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+     /**
+     * Get the users datasets
+     *
+     * @return
+     */
+    @GET
+    @Authenticated
+    @Path("/myDatasets/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDatasets() {
+        ProjectMinter project= new ProjectMinter();
+
+        String response = project.getMyTemplatesAndDatasets(username);
+        project.close();
+
+        return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
+    }
 
     /**
      * Return a json representation to be used for select options of the projects that a user is an admin to
@@ -305,10 +305,10 @@ public class ProjectService extends FimsService {
     public Response getConfig(@PathParam("configName") String configName,
                               @PathParam("projectId") Integer projectId) {
         ProjectMinter p = new ProjectMinter();
-        String response = p.getTemplateConfig(configName, projectId);
+        JSONObject response = p.getTemplateConfig(configName, projectId);
         p.close();
 
-        return Response.ok(response).build();
+        return Response.ok(response.toJSONString()).build();
     }
     /**
      * Service used to delete a specific fims template generator configuration

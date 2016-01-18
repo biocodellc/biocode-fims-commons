@@ -7,8 +7,6 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,8 +22,6 @@ public class UserMinter {
     protected Connection conn;
     private Database db;
 
-    private static Logger logger = LoggerFactory.getLogger(UserMinter.class);
-
     public UserMinter() {
         db = new Database();
         conn = db.getConn();
@@ -33,13 +29,14 @@ public class UserMinter {
      public void close() {
          db.close();
      }
+
     /**
      * create a new user given their profile information and add them to a project
      * @param userInfo
      * @param projectId
      * @return
      */
-    public String createUser(Hashtable<String, String> userInfo, Integer projectId) {
+    public void createUser(Hashtable<String, String> userInfo, Integer projectId) {
         Authenticator auth = new Authenticator();
         auth.createUser(userInfo);
         auth.close();
@@ -49,7 +46,7 @@ public class UserMinter {
 
         p.addUserToProject(userId, projectId);
         p.close();
-        return "{\"success\": \"successfully created new user\"}";
+        return;
     }
 
     /**

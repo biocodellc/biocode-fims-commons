@@ -9,6 +9,7 @@ import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,13 +24,6 @@ import java.util.Hashtable;
  */
 @Path("bcids")
 public class BcidService extends FimsService {
-
-    final static Logger logger = LoggerFactory.getLogger(BcidService.class);
-
-    /**
-     * Load settings manager, set ontModelSpec.
-     */
-
     /**
      * Create a data group
      *
@@ -78,8 +72,7 @@ public class BcidService extends FimsService {
             throw new BadRequestException("You must provide a Target URL if following suffixes.");
         }
 
-        // Create a Bcid
-        // Mint the data group
+        // Mint the Bcid
         BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
         if (title == null || title.isEmpty()) {
             title = resourceTypeString;
@@ -118,11 +111,11 @@ public class BcidService extends FimsService {
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response bcidList() {
-        BcidMinter d = new BcidMinter();
-        String response = d.bcidList(username);
-        d.close();
+        BcidMinter bcidMinter = new BcidMinter();
+        JSONArray response = bcidMinter.bcidList(username);
+        bcidMinter.close();
 
-        return Response.ok(response).build();
+        return Response.ok(response.toJSONString()).build();
     }
 
     /**
@@ -155,8 +148,8 @@ public class BcidService extends FimsService {
 
         // get this BCID's config
 
-        BcidMinter b = new BcidMinter();
-        config = b.getBcidMetadata(identifier, username.toString());
+        BcidMinter bcidMinter = new BcidMinter();
+        config = bcidMinter.getBcidMetadata(identifier, username);
 
         if (resourceTypesMinusDataset != null && resourceTypesMinusDataset > 0) {
             resourceTypeString = new ResourceTypes().get(resourceTypesMinusDataset).string;
@@ -185,14 +178,14 @@ public class BcidService extends FimsService {
         }
 
         if (update.isEmpty()) {
-            b.close();
+            bcidMinter.close();
             return Response.ok("{\"success\": \"Nothing needed to be updated.\"}").build();
         // try to update the config by calling d.updateBcidMetadata
-        } else if (b.updateBcidMetadata(update, identifier, username.toString())) {
-            b.close();
+        } else if (bcidMinter.updateBcidMetadata(update, identifier, username.toString())) {
+            bcidMinter.close();
             return Response.ok("{\"success\": \"BCID successfully updated.\"}").build();
         } else {
-            b.close();
+            bcidMinter.close();
             // if we are here, the Bcid wasn't found
             throw new BadRequestException("Bcid wasn't found");
         }

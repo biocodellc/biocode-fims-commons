@@ -80,7 +80,8 @@ public class UserService extends FimsService {
             if (!p.isProjectAdmin(username, projectId)) {
                 throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
             }
-            return Response.ok(u.createUser(userInfo, projectId)).build();
+            u.createUser(userInfo, projectId);
+            return Response.ok("{\"success\": \"successfully created new user\"}").build();
         } finally {
             u.close();
             p.close();

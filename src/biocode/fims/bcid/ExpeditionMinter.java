@@ -7,8 +7,6 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
@@ -25,11 +23,7 @@ import java.util.UUID;
 public class ExpeditionMinter {
     protected Connection conn;
     private SettingsManager sm;
-    private String resolverTargetPrefix;
-    private String resolverMetadataPrefix;
     Database db;
-
-    private static Logger logger = LoggerFactory.getLogger(ExpeditionMinter.class);
 
     /**
      * The constructor defines the class-level variables used when minting Expeditions.
@@ -42,9 +36,6 @@ public class ExpeditionMinter {
 
         // Initialize settings manager
         sm = SettingsManager.getInstance();
-
-        resolverTargetPrefix = sm.retrieveValue("resolverTargetPrefix");
-        resolverMetadataPrefix = sm.retrieveValue("resolverMetadataPrefix");
     }
 
     public void close() {
@@ -69,9 +60,12 @@ public class ExpeditionMinter {
 
         Integer expeditionId = null;
 
-        if (!userExistsInProject(userId, projectId)) {
+        ProjectMinter projectMinter = new ProjectMinter();
+        if (!projectMinter.userExistsInProject(userId, projectId)) {
+            projectMinter.close();
             throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
         }
+        projectMinter.close();
 
         /**
          *  Insert the values into the expeditions table
@@ -88,7 +82,6 @@ public class ExpeditionMinter {
         String insertString = "INSERT INTO expeditions " +
                 "(internalId, expeditionCode, expeditionTitle, userId, projectId,public) " +
                 "values (?,?,?,?,?,?)";
-//            System.out.println("INSERT string " + insertString);
         PreparedStatement insertStatement = null;
         try{
             insertStatement = conn.prepareStatement(insertString);
@@ -102,7 +95,7 @@ public class ExpeditionMinter {
             insertStatement.execute();
 
             // Get the expeditionId that was assigned
-            expeditionId = getExpeditionIdentifier(internalId);
+            expeditionId = getExpeditionId(internalId);
 
             // upon successful expedition creation, create the expedition Bcid
             BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
@@ -130,7 +123,7 @@ public class ExpeditionMinter {
      *
      */
     public void attachReferenceToExpedition(String expeditionCode, String bcid, Integer projectId) {
-        Integer expeditionId = getExpeditionIdentifier(expeditionCode, projectId);
+        Integer expeditionId = getExpeditionId(expeditionCode, projectId);
         Resolver r = new Resolver(bcid);
         Integer bcidsId = r.getBcidId();
         r.close();
@@ -161,10 +154,10 @@ public class ExpeditionMinter {
      * Attach an individual URI reference to a expedition
      *
      * @param expeditionId
-     * @param bcid
+     * @param identifier
      */
-    public void attachReferenceToExpedition(Integer expeditionId, String bcid) {
-        Resolver r = new Resolver(bcid);
+    public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
+        Resolver r = new Resolver(identifier);
         Integer bcidsId = r.getBcidId();
         r.close();
 
@@ -172,7 +165,7 @@ public class ExpeditionMinter {
     }
 
     /**
-     * Return the expedition Bcid given the internalId
+     * Return the expedition id given the internalId
      *
      * @param expeditionUUID
      *
@@ -180,7 +173,7 @@ public class ExpeditionMinter {
      *
      * @throws SQLException
      */
-    private Integer getExpeditionIdentifier(UUID expeditionUUID) throws SQLException {
+    private Integer getExpeditionId(UUID expeditionUUID) throws SQLException {
         String sql = "select expeditionId from expeditions where internalId = ?";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setString(1, expeditionUUID.toString());
@@ -195,7 +188,7 @@ public class ExpeditionMinter {
         }
     }
 
-    private Integer getExpeditionIdentifier(String expeditionCode, Integer projectId) {
+    private Integer getExpeditionId(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -248,71 +241,6 @@ public class ExpeditionMinter {
         return false;
     }
 
-    public String printMetadata(int id) throws SQLException {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            StringBuilder sb = new StringBuilder();
-            String sql = "select expeditionId,expeditionCode,expeditionTitle,username from expeditions,users where users.userId = expeditions.userId && expeditionId = ?";
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setInt(1, id);
-
-            rs = stmt.executeQuery();
-            sb.append("***expedition***");
-
-            // Get result set meta data
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int numColumns = rsmd.getColumnCount();
-
-            while (rs.next()) {
-                // Loop mapped values, now we know the type
-                for (int i = 1; i <= numColumns; i++) {
-                    String val = rsmd.getColumnLabel(i);
-                    sb.append("\n" + val + " = " + rs.getString(val));
-                }
-            }
-            return sb.toString();
-        } finally {
-            db.close(stmt, rs);
-        }
-    }
-
-    public String printMetadataHTML(int id) {
-        StringBuilder sb = new StringBuilder();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            String sql = "SELECT expeditionId,expeditionCode,expeditionTitle,username " +
-                    "FROM expeditions,users " +
-                    "WHERE users.userId = expeditions.userId " +
-                    "&& expeditionId = ?";
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setInt(1, id);
-
-            rs = stmt.executeQuery();
-            sb.append("<table>");
-
-            // Get result set meta data
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int numColumns = rsmd.getColumnCount();
-
-            while (rs.next()) {
-                // Loop mapped values, now we know the type
-                for (int i = 1; i <= numColumns; i++) {
-                    String val = rsmd.getColumnLabel(i);
-                    sb.append("<tr><td>" + val + "</td><td>" + rs.getString(val) + "</td></tr>");
-                }
-            }
-            sb.append("</table>");
-            return sb.toString();
-        } catch (SQLException e) {
-            throw new ServerErrorException("Db error retrieving expedition metadata", e);
-        } finally {
-            db.close(stmt, rs);
-        }
-    }
 
     /**
      * Verify that a user owns this expedition
@@ -361,7 +289,6 @@ public class ExpeditionMinter {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
-            //String sql = "select expeditionId,expeditionCode,expeditionTitle,username from expeditions,users where users.userId = expeditions.userId && users.username =\"" + remoteUser + "\"";
 
             String sql = "SELECT " +
                     "   count(*) as count " +
@@ -371,7 +298,6 @@ public class ExpeditionMinter {
                     "   expeditionCode= ? && " +
                     "   userId = ? && " +
                     "   projectId = ?";
-//            System.out.println(sql);
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, expeditionCode);
@@ -392,62 +318,24 @@ public class ExpeditionMinter {
     }
 
     /**
-     * Discover if a user belongs to an project
-     *
-     * @param userId
-     * @param projectId
-     *
-     * @return
-     */
-    public boolean userExistsInProject(Integer userId, Integer projectId) {
-        String selectString = "SELECT count(*) as count FROM userProjects WHERE userId = ? && projectId = ?";
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            stmt = conn.prepareStatement(selectString);
-
-            stmt.setInt(1, userId);
-            stmt.setInt(2, projectId);
-
-            rs = stmt.executeQuery();
-            rs.next();
-            return rs.getInt("count") >= 1;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            db.close(stmt, rs);
-        }
-    }
-
-
-
-    /**
      * Get Metadata on a named graph
      *
      * @param graphName
      *
      * @return
      */
-    public String getGraphMetadata(String graphName) {
-        // Get todays's date
-        DateFormat dateFormat;
-        dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date();
-        String expeditionTitle = null;
+    public JSONObject getGraphMetadata(String graphName) {
+        JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
-        StringBuilder sb = new StringBuilder();
-
         try {
-            // Construct the query
             String sql =
                     "SELECT " +
                             " b.graph as graph, " +
                             " a.projectId as projectId, " +
-                            " u.username as username_generator, " +
-                            " u2.username as username_upload," +
+                            " u.username as expeditionOwner, " +
+                            " u2.username as uploader," +
                             " b.ts as timestamp," +
                             " b.identifier, " +
                             " b.resourceType as resourceType," +
@@ -466,42 +354,27 @@ public class ExpeditionMinter {
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, graphName);
-            //System.out.println(sql);
-            // Write the concept/identifier elements section
-            sb.append("{\n\t\"data\": [\n");
             rs = stmt.executeQuery();
-            while (rs.next()) {
-                // Grap the expeditionTitle in the query
-                if (expeditionTitle == null & !rs.getString("expeditionTitle").equals(""))
-                    expeditionTitle = rs.getString("expeditionTitle");
-
+            if (rs.next()) {
                 // Grab the prefixes and concepts associated with this
-                sb.append("\t\t{\n");
-                sb.append("\t\t\t\"graph\":\"" + rs.getString("graph") + "\",\n");
-                sb.append("\t\t\t\"projectId\":\"" + rs.getInt("projectId") + "\",\n");
-                sb.append("\t\t\t\"username_generator\":\"" + rs.getString("username_generator") + "\",\n");
-                sb.append("\t\t\t\"username_upload\":\"" + rs.getString("username_upload") + "\",\n");
-                sb.append("\t\t\t\"timestamp\":\"" + rs.getString("timestamp") + "\",\n");
-                sb.append("\t\t\t\"bcid\":\"" + rs.getString("b.identifier") + "\",\n");
-                sb.append("\t\t\t\"resourceType\":\"" + rs.getString("resourceType") + "\",\n");
-                sb.append("\t\t\t\"finalCopy\":\"" + rs.getBoolean("finalCopy") + "\",\n");
-                sb.append("\t\t\t\"public\":\"" + rs.getBoolean("public") + "\",\n");
-                sb.append("\t\t\t\"expeditionCode\":\"" + rs.getString("expeditionCode") + "\",\n");
-                sb.append("\t\t\t\"expeditionTitle\":\"" + rs.getString("expeditionTitle") + "\"\n");
-
-                sb.append("\t\t}");
-                if (!rs.isLast())
-                    sb.append(",");
-
-                sb.append("\n");
+                metadata.put("graph", rs.getString("graphs"));
+                metadata.put("projectId", rs.getInt("projectId"));
+                metadata.put("expeditionOwner", rs.getString("expeditionOwner"));
+                metadata.put("uploader", rs.getString("uploader"));
+                metadata.put("timestamp", rs.getString("timestamp"));
+                metadata.put("identifier", rs.getString("b.identifier"));
+                metadata.put("resourceType", rs.getString("resourceType"));
+                metadata.put("finalCopy", rs.getBoolean("finalCopy"));
+                metadata.put("isPublic", rs.getBoolean("public"));
+                metadata.put("expeditionCode", rs.getString("expeditionCode"));
+                metadata.put("expeditionTitle", rs.getString("expeditionTitle"));
             }
-            sb.append("\t]\n}");
-            return sb.toString();
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
             db.close(stmt, rs);
         }
+        return metadata;
     }
 
     public static void main(String args[]) {

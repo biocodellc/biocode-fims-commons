@@ -5,6 +5,8 @@ import biocode.fims.ezid.EzidService;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,7 @@ public class BcidMinter extends BcidEncoder {
         setBow(NAAN);
         try {
             URI identifier = new URI(bow + this.shoulder);
-            getBcidsId(identifier.toString());
+            checkBcidExists(identifier.toString());
         } catch (URISyntaxException e) {
             throw new ServerErrorException("Server Error", bow + this.shoulder + " is not a valid URI", e);
         }
@@ -164,7 +166,7 @@ public class BcidMinter extends BcidEncoder {
             insertStatement.execute();
 
             // Get the bcidsId that was assigned
-            Integer bcidsId = getBcidsId(internalId);
+            Integer bcidsId = checkBcidExists(internalId);
 
             // Create the shoulder Bcid (String Bcid Bcid)
             shoulder = encode(new BigInteger(bcidsId.toString()));
@@ -204,7 +206,7 @@ public class BcidMinter extends BcidEncoder {
      *
      * @throws SQLException
      */
-    private Integer getBcidsId(UUID bcidUUID) throws SQLException {
+    private Integer checkBcidExists(UUID bcidUUID) throws SQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -223,11 +225,8 @@ public class BcidMinter extends BcidEncoder {
      * Check to see if a Bcid exists or not
      *
      * @param identifier
-     *
-     * @return An Integer representing a Bcid
      */
-    public Integer getBcidsId(String identifier) {
-        Integer bcidsId = null;
+    public void checkBcidExists(String identifier) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -236,14 +235,13 @@ public class BcidMinter extends BcidEncoder {
             stmt.setString(1, identifier);
             rs = stmt.executeQuery();
             rs.next();
-            bcidsId = rs.getInt("bcidId");
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error",
                     "Exception retrieving bcidsId for bcid with identifier: " + identifier, e);
         } finally {
             db.close(stmt, rs);
         }
-        return bcidsId;
+        return;
     }
 
     /**
@@ -255,16 +253,13 @@ public class BcidMinter extends BcidEncoder {
 
     /**
      * Return a JSON representation of a bcidList
-     * TODO: find a more appropriate spot for this
      *
      * @param username
      *
      * @return
      */
-    public String bcidList(String username) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"0\":\"Create new group\"");
+    public JSONArray bcidList(String username) {
+        JSONArray bcids = new JSONArray();
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -276,16 +271,18 @@ public class BcidMinter extends BcidEncoder {
             stmt.setString(1, username);
             rs = stmt.executeQuery();
             while (rs.next()) {
-                sb.append(",\"" + rs.getInt("bcidId") + "\":\"" + rs.getString("identifier") + "\"");
+                JSONObject bcid = new JSONObject();
+                bcid.put("bcidId", rs.getInt("bcidId"));
+                bcid.put("identifier", rs.getString("identifier"));
+                bcids.add(bcid);
             }
-            sb.append("}");
 
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Exception retrieving bcids for user " + username, e);
         } finally {
             db.close(stmt, rs);
         }
-        return sb.toString();
+        return bcids;
     }
 
     /**
@@ -492,7 +489,7 @@ public class BcidMinter extends BcidEncoder {
     public String createEntityBcid(Bcid bcid) {
 
         String identifier = mint(
-                new Integer(sm.retrieveValue("bcidNAAN")),
+                new Integer(sm.retrieveValue("naan")),
                 bcid
         );
 

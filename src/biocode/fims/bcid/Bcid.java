@@ -259,11 +259,7 @@ public class Bcid {
     }
 
     public URI getMetadataTarget() throws URISyntaxException {
-        // if (suffix != null)
-        //     return new URI(resolverMetadataPrefix + Bcid + suffix);
-        // else
         return new URI(resolverMetadataPrefix + getIdentifier());
-
     }
 
     private void put(String key, String val) {

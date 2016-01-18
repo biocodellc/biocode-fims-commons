@@ -104,14 +104,14 @@ public class JSONRenderer extends Renderer {
     private void appendDataset() {
         if (displayDatasets()) {
             JSONObject download = new JSONObject();
-            String fimsServiceRoot = sm.retrieveValue("fims_service_root");
+            String appRoot = sm.retrieveValue("appRoot");
             String projectId = resolver.getProjectID(resolver.getBcidId());
 
             // Excel option
-            download.put("excel", fimsServiceRoot + "query/excel?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
+            download.put("excel", appRoot + "query/excel?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
 
             // TAB delimited option
-            download.put("tab", fimsServiceRoot + "query/tab?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
+            download.put("tab", appRoot + "query/tab?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
 
             // n3 option
             download.put("n3", bcid.getWebAddress().toASCIIString());
@@ -121,22 +121,28 @@ public class JSONRenderer extends Renderer {
     }
 
     private Boolean displayDatasets() {
-        Boolean ignore_user = Boolean.getBoolean(sm.retrieveValue("ignore_user"));
+        Boolean ignoreUser = Boolean.getBoolean(sm.retrieveValue("ignoreUser"));
         Integer projectId = Integer.parseInt(resolver.getProjectID(resolver.getBcidId()));
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
+        ProjectMinter projectMinter = new ProjectMinter();
 
-        //if public expedition, return true
-        if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
-            return true;
-        } else if (userId != null) {
-            // if ignore_user and user in project, return true
-            if (ignore_user && expeditionMinter.userExistsInProject(userId, projectId)) {
+        try {
+            //if public expedition, return true
+            if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
                 return true;
+            } else if (userId != null) {
+                // if ignore_user and user in project, return true
+                if (ignoreUser && projectMinter.userExistsInProject(userId, projectId)) {
+                    return true;
+                }
+                // if !ignore_user and userOwnsExpedition, return true
+                else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
+                    return true;
+                }
             }
-            // if !ignore_user and userOwnsExpedition, return true
-            else if (!ignore_user && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
-                return true;
-            }
+        } finally {
+            expeditionMinter.close();
+            projectMinter.close();
         }
 
         return false;

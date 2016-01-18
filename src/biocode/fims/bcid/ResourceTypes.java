@@ -267,7 +267,5 @@ public class ResourceTypes {
     public static void main(String args[]) {
         ResourceTypes rts = new ResourceTypes();
         System.out.println(rts.get("http://purl.obolibrary.org/obo/IAO_0000030").string);
-        //System.out.println(rts.getAllAsJSON());
-
     }
 }

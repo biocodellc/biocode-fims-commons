@@ -6,8 +6,6 @@ import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,11 +19,6 @@ import java.util.*;
 public class ProjectMinter {
     protected Connection conn;
     Database db;
-    public ArrayList<Integer> expeditionResources;
-    private SettingsManager sm;
-
-    private static Logger logger = LoggerFactory.getLogger(ProjectMinter.class);
-
 
     /**
      * The constructor defines the class-level variables used when minting Expeditions.
@@ -35,14 +28,12 @@ public class ProjectMinter {
     public ProjectMinter() {
         db = new Database();
         conn = db.getConn();
-
-        // Initialize settings manager
-        sm = SettingsManager.getInstance();
     }
 
     public void close() {
         db.close();
     }
+
     /**
      * Find the BCID that denotes the validation file location for a particular expedition
      *
@@ -76,10 +67,10 @@ public class ProjectMinter {
     /**
      * List all the defined projects
      *
-     * @return returns the BCID for this expedition and conceptURI combination
+     * @return returns all projects a user can access
      */
-    public String listProjects(Integer userId) {
-        StringBuilder sb = new StringBuilder();
+    public JSONArray listProjects(Integer userId) {
+        JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
@@ -116,23 +107,16 @@ public class ProjectMinter {
             }
             rs = stmt.executeQuery();
 
-            sb.append("{\n");
-            sb.append("\t\"projects\": [\n");
             while (rs.next()) {
-                sb.append("\t\t{\n");
-                sb.append("\t\t\t\"projectId\":\"" + rs.getString("projectId") + "\",\n");
-                sb.append("\t\t\t\"projectCode\":\"" + rs.getString("projectCode") + "\",\n");
-                sb.append("\t\t\t\"projectTitle\":\"" + rs.getString("projectTitle") + "\",\n");
-                sb.append("\t\t\t\"validationXml\":\"" + rs.getString("validationXml") + "\"\n");
-                sb.append("\t\t}");
-                if (!rs.isLast())
-                    sb.append(",\n");
-                else
-                    sb.append("\n");
+                JSONObject project = new JSONObject();
+                project.put("projectId", rs.getString("projectId"));
+                project.put("projectCode", rs.getString("projectCode"));
+                project.put("projectTitle", rs.getString("projectTitle"));
+                project.put("validationXml", rs.getString("validationXml"));
+                projects.add(project);
             }
-            sb.append("\t]\n}");
 
-            return sb.toString();
+            return projects;
 
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting list of all projects.", e);
@@ -140,31 +124,6 @@ public class ProjectMinter {
             db.close(stmt, rs);
         }
     }
-
-    /**
-        * List all the defined projects
-        *
-        * @return returns the BCID for this expedition and conceptURI combination
-        */
-       public ArrayList<Integer> getAllProjects() {
-           ArrayList<Integer> projects = new ArrayList<Integer>();
-           PreparedStatement stmt = null;
-           ResultSet rs = null;
-
-           try {
-               String sql = "SELECT projectId FROM projects";
-               stmt = conn.prepareStatement(sql);
-               rs = stmt.executeQuery();
-               while (rs.next()) {
-                   projects.add(rs.getInt("projectId"));
-               }
-               return projects;
-           } catch (SQLException e) {
-               throw new ServerErrorException("Trouble getting project List", e);
-           } finally {
-               db.close(stmt, rs);
-           }
-       }
 
     /**
      * A utility function to get the very latest graph loads for each expedition
@@ -852,7 +811,7 @@ public class ProjectMinter {
      * @param projectId
      * @return
      */
-    public String getTemplateConfig(String configName, Integer projectId) {
+    public JSONObject getTemplateConfig(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
@@ -876,7 +835,7 @@ public class ProjectMinter {
             db.close(stmt, rs);
         }
 
-        return obj.toJSONString();
+        return obj;
     }
 
     public void updateTemplateConfig(String configName, Integer projectId, Integer userId, List<String> checkedOptions) {
@@ -915,6 +874,35 @@ public class ProjectMinter {
             throw new ServerErrorException("Server error while removing template config.");
         } finally {
             db.close(stmt, null);
+        }
+    }
+
+    /**
+     * Discover if a user belongs to an project
+     *
+     * @param userId
+     * @param projectId
+     *
+     * @return
+     */
+    public boolean userExistsInProject(Integer userId, Integer projectId) {
+        String selectString = "SELECT count(*) as count FROM userProjects WHERE userId = ? && projectId = ?";
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = conn.prepareStatement(selectString);
+
+            stmt.setInt(1, userId);
+            stmt.setInt(2, projectId);
+
+            rs = stmt.executeQuery();
+            rs.next();
+            return rs.getInt("count") >= 1;
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            db.close(stmt, rs);
         }
     }
 }

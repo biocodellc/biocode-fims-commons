@@ -46,7 +46,7 @@ public class ResolverService extends FimsService{
         // When the Accept Header = "application/rdf+xml" return Metadata as RDF
         Resolver r = new Resolver(element);
         try {
-            URI seeOtherUri = null;
+            URI seeOtherUri;
             try {
                     seeOtherUri = r.resolveIdentifier();
 

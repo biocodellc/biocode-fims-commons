@@ -195,7 +195,6 @@ public class AuthenticationService extends FimsService {
         if (state != null) {
             redirectURL += "&state=" + state;
         }
-//        System.out.println("BCID redirecting to " + redirectURL);
         try {
             return Response.status(302)
                     .location(new URI(redirectURL))

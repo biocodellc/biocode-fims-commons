@@ -10,6 +10,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +51,11 @@ public class ExpeditionService extends FimsService {
         if (isPublic == null) {
             isPublic = true;
         }
-
-        Integer expeditionId = null;
-        ExpeditionMinter expedition = null;
+        ExpeditionMinter expedition = new ExpeditionMinter();
 
         try {
             // Mint a expedition
-            expedition = new ExpeditionMinter();
-            expeditionId = expedition.mint(
+            Integer expeditionId = expedition.mint(
                     expeditionCode,
                     expeditionTitle,
                     userId,
@@ -65,8 +63,7 @@ public class ExpeditionService extends FimsService {
                     isPublic
             );
 
-            return Response.ok("{\"success\": \"Succesfully created expedition:<br>" +
-                    expedition.printMetadataHTML(expeditionId) + "\"}").build();
+            return Response.ok(expedition.getMetadata(expeditionId).toJSONString()).build();
         } catch (FimsException e) {
             throw new BadRequestException(e.getMessage());
         } finally {
@@ -86,9 +83,9 @@ public class ExpeditionService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGraphMetadata(@PathParam("graph") String graph) {
         ExpeditionMinter e = new ExpeditionMinter();
-        String response = e.getGraphMetadata(graph);
+        JSONObject response = e.getGraphMetadata(graph);
         e.close();
-        return Response.ok(response).build();
+        return Response.ok(response.toJSONString()).build();
     }
 
     /**
@@ -117,7 +114,6 @@ public class ExpeditionService extends FimsService {
         if (response == null) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();
         } else {
-            //System.out.println("fetchAlias = " + response);
             return Response.ok("{\"identifier\": \"" + response + "\"}").build();
         }
     }

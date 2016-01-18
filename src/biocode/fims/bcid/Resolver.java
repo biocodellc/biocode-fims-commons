@@ -23,14 +23,12 @@ import java.sql.SQLException;
  */
 public class Resolver extends Database {
     String identifier = null;
-    String scheme = "ark:";
     String naan = null;
     String shoulder = null;     // The data group
     String suffix = null;        // The local Bcid
-    BigInteger element_id = null;
+    BigInteger elementId = null;
     Integer bcidsId = null;
     public boolean forwardingResolution = false;
-    public String graph = null;
     static SettingsManager sm;
 
     /**
@@ -130,7 +128,7 @@ public class Resolver extends Database {
      * @return
      */
     public BigInteger getElementID() {
-        return element_id;
+        return elementId;
     }
 
     /**
@@ -353,7 +351,7 @@ public class Resolver extends Database {
             //r = new Resolver("ark:/21547/S2MBIO56");
             r = new Resolver("ark:/21547/fR2");
             System.out.println("  " + r.resolveIdentifier());
-            System.out.println(r.resolveIdentifierAs("tab"));
+//            System.out.println(r.resolveIdentifierAs("tab"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -441,21 +439,6 @@ public class Resolver extends Database {
         }
         */
 
-    }
-
-    /**
-     * Return a graph in a particular format
-     *
-     * @param format
-     *
-     * @return
-     */
-    public URI resolveIdentifierAs(String format) throws URISyntaxException {
-        // Example
-        //http://biscicol.org:8179/biocode-fims/rest/query/tab?graphs=urn:uuid:ec90c3b6-cc75-4090-b03d-cf3d76a27783&projectId=1
-
-        String contentResolutionRoot = sm.retrieveValue("contentResolutionRoot");
-        return new URI(contentResolutionRoot + format + "?graphs=" + graph + "&projectId=" + project);
     }
 
     public String getExpeditionCode() {

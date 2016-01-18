@@ -78,9 +78,6 @@ public class BcidMetadataSchema {
                     // Create mapping here for DOI if it only shows the identifier
                     String doi = pairs.getValue().toString().replace("doi:", "http://dx.doi.org/");
                     dcIsPartOf.setValue(doi);
-               // } else if (bcidKey.equalsIgnoreCase("projectCode")) {
-                    // Create mapping here for DOI if it only shows the identifier
-                 //   dcPublisher = new metadataElement("dc:publisher", pairs.getValue().toString(), "The BCID project to which this resource belongs.");
                 } else if (bcidKey.equalsIgnoreCase("webAddress")) {
                     dcHasVersion.setValue(pairs.getValue().toString());
                 } else if (bcidKey.equalsIgnoreCase("bcidsSuffixPassThrough")) {

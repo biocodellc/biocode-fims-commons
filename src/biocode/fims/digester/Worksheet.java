@@ -261,7 +261,7 @@ public class Worksheet {
                     // Set the TabularDataReader worksheet instance for this Rule
                     r.setWorksheet(validation.getTabularDataReader());
                     // FIMS Service root
-                    r.setServiceRoot(sm.retrieveValue("fims_service_root"));
+                    r.setServiceRoot(sm.retrieveValue("appRoot"));
                     // Run this rule
                     Method method = r.getClass().getMethod(r.getType());
                     if (method != null) {
