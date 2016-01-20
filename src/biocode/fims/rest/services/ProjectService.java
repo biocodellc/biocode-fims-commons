@@ -7,8 +7,10 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.run.TemplateProcessor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -57,6 +59,19 @@ public class ProjectService extends FimsService {
         project.close();
 
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    @GET
+    @Path("/{projectId}/abstract")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAbstract(@PathParam("projectId") int projectId) {
+        JSONObject obj = new JSONObject();
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+
+        // Write the all of the checkbox definitions to a String Variable
+        obj.put("abstract", JSONValue.escape(t.printAbstract()));
+
+        return Response.ok(obj.toJSONString()).build();
     }
 
     /**

@@ -167,6 +167,7 @@ public class Process {
      * Create an expedition
      */
     public void runExpeditionCreate() {
+        runExpeditionCheck();
         if (processController.isExpeditionCreateRequired()) {
             System.out.println("Creating expedition " + processController.getExpeditionCode() + "...");
             createExpedition(processController, mapping);

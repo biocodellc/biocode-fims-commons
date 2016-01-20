@@ -20,9 +20,9 @@ import java.util.Hashtable;
  * Used for all authentication duties such as login, changing passwords, creating users, resetting passwords, etc.
  */
 public class Authenticator {
-    private Database db;
+    protected Database db;
     protected Connection conn;
-    SettingsManager sm;
+    protected SettingsManager sm;
     private static Logger logger = LoggerFactory.getLogger(Authenticator.class);
 
     /**
