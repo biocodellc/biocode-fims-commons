@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 /**
  * Class that handles getting configuration files.  Configuration files are stored as BCID/ARKs and thus this class
@@ -47,8 +48,8 @@ public class ConfigurationFileFetcher {
             return false;
 
         // check for files older than 24 hours
-//        if (new Date().getTime() - file.lastModified() > hoursToHoldCache * 60 * 60 * 1000)
-//            return false;
+        if (new Date().getTime() - file.lastModified() > hoursToHoldCache * 60 * 60 * 1000)
+            return false;
 
         // File exists and is younger than 24 hours old, set the outputFile class variable
         outputFile = new File(defaultOutputDirectory, configFileName);
