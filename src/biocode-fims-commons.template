@@ -1,7 +1,7 @@
 ###########  biocode-fims-commons settings  ##########
 
 # the login page to redirect to when a user needs to login
-loginUri = http://localhost:8080/biscicol/login.jsp
+loginPageUrl = http://localhost:8080/biscicol/login.jsp
 
 # the webapp directory to use for caching config file, and storing templates for download
 uploadDir = tripleOutput
