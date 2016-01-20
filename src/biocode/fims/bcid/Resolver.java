@@ -53,8 +53,6 @@ public class Resolver extends Database {
         this.identifier = identifier;
         // Pull off potential last piece of string which would represent the local Identifier
         // The piece to decode is ark:/NAAN/bcidIdentifer (anything else after a last trailing "/" not decoded)
-        StringBuilder stringBuilder = new StringBuilder();
-
         String bits[] = identifier.split("/", 3);
         // just want the first chunk between the "/"'s
         naan = bits[1];

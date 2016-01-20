@@ -156,7 +156,7 @@ public class Process {
     public void runExpeditionCheck() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         Boolean checkExpedition = expeditionMinter.expeditionExistsInProject(processController.getExpeditionCode(), projectId);
-        processController.setExpeditionCreateRequired(checkExpedition);
+        processController.setExpeditionCreateRequired(!checkExpedition);
         if (!checkExpedition) {
             processController.setExpeditionAssignedToUserAndExists(true);
         }

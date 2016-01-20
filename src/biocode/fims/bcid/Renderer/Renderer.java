@@ -9,6 +9,7 @@ import biocode.fims.bcid.BcidMetadataSchema;
  */
 public abstract class Renderer extends BcidMetadataSchema implements RendererInterface {
     protected StringBuilder outputSB;
+    protected Bcid bcid;
 
     /**
      * render an Identifier
@@ -16,6 +17,7 @@ public abstract class Renderer extends BcidMetadataSchema implements RendererInt
      * @return
      */
     public String render(Bcid bcid) {
+        this.bcid = bcid;
         BCIDMetadataInit(bcid);
         outputSB = new StringBuilder();
 

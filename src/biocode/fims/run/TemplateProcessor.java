@@ -33,7 +33,7 @@ public class TemplateProcessor {
     private Process p;
     private Mapping mapping;
     private Validation validation;
-    private Integer accessionNumber;
+    private String accessionNumber;
     private String datasetCode;
     private Integer naan;
 
@@ -174,7 +174,7 @@ public class TemplateProcessor {
      * @param datasetCode
      */
     public TemplateProcessor(Integer projectId, String outputFolder, Boolean useCache,
-                             Integer accessionNumber, String datasetCode, String identifier, String username) {
+                             String accessionNumber, String datasetCode, String identifier, String username) {
         // we can't have a null value for accessionNumber or datasetCode if using this constructor
         if (accessionNumber == null || datasetCode == null) {
             throw new FimsRuntimeException("dataset code and accession number are required", 500);
@@ -193,7 +193,7 @@ public class TemplateProcessor {
      * @param accessionNumber
      * @param datasetCode
      */
-    public TemplateProcessor(File file, Integer accessionNumber, String datasetCode, String identifier) {
+    public TemplateProcessor(File file, String accessionNumber, String datasetCode, String identifier) {
         // we can't have a null value for accessionNumber or datasetCode if using this constructor
         if (accessionNumber == null || datasetCode == null) {
             throw new FimsRuntimeException("dataset code and accession number are required", 500);
@@ -726,7 +726,7 @@ public class TemplateProcessor {
 
         // Hide Project_id in first row, second column
         cell = row.createCell(1);
-        cell.setCellValue("~projectId=" + projectId + "~");
+        cell.setCellValue("~project_id=" + projectId + "~");
 
         row.setZeroHeight(true);
 
@@ -770,7 +770,7 @@ public class TemplateProcessor {
             rowIndex++;
             cell = row.createCell(0);
             cell.setCellStyle(titleStyle);
-            cell.setCellValue(formatKeyValueString("Accession Number: ", accessionNumber.toString()));
+            cell.setCellValue(formatKeyValueString("Accession Number: ", accessionNumber));
         }
 
 

@@ -29,7 +29,7 @@ public class ProcessController {
     private Validation validation;
     private String worksheetName;
     private StringBuilder statusSB = new StringBuilder();
-    private Integer accessionNumber;
+    private String accessionNumber;
     private String defaultSheetUniqueKey;
     private Boolean publicStatus = false;   // default to false
     private Boolean finalCopy = false;
@@ -235,11 +235,11 @@ public class ProcessController {
         return f.getAbsolutePath();
     }
 
-    public void setAccessionNumber(Integer accessionNumber) {
+    public void setAccessionNumber(String accessionNumber) {
         this.accessionNumber = accessionNumber;
     }
 
-    public Integer getAccessionNumber() {
+    public String getAccessionNumber() {
         return accessionNumber;
     }
 
