@@ -1,4 +1,4 @@
-package biocode.fims.rest.services;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.Bcid;
 import biocode.fims.bcid.BcidMinter;

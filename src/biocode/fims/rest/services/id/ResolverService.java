@@ -1,4 +1,4 @@
-package biocode.fims.rest.services;
+package biocode.fims.rest.services.id;
 
 import biocode.fims.bcid.Resolver;
 import biocode.fims.fimsExceptions.BadRequestException;

@@ -1,13 +1,13 @@
 ###########  biocode-fims-commons settings  ##########
 
 # the login page to redirect to when a user needs to login
-loginPageUrl = http://localhost:8080/biscicol/login.jsp
+loginPageUrl = http://localhost:8080/login.jsp
 
 # the webapp directory to use for caching config file, and storing templates for download
 uploadDir = tripleOutput
 
 # the url where the webapp is deployed
-appRoot = http://localhost:8080/biscicol
+appRoot = http://localhost:8080/
 
 # the naan to use for the bcid identifier
 naan = 21547
@@ -28,15 +28,15 @@ eziduser = user
 ezidpass = pass
 
 # MySql database settings
-bcidUser = root
-bcidPassword = root
-bcidUrl = jdbc:mysql://127.0.0.1:3306/biscicol
+bcidUser = mysqlUser
+bcidPassword = password
+bcidUrl = jdbc:mysql://host:port/db_name
 bcidClass = com.mysql.jdbc.Driver
 
 # Mail settings
-mailUser = dev.ewing.rj@gmail.com
-mailFrom = dev.ewing.rj@gmail.com
-mailPassword = \\\\Guitarman36521\\\\
+mailUser = user@email.com
+mailFrom = user@email.com
+mailPassword = emailPassword
 
 # The divider to use that separates the ARK portion and the Suffix Portion
 divider = _
@@ -45,6 +45,6 @@ divider = _
 rights = http://creativecommons.org/licenses/by/3.0/
 
 # The bcid resolver service
-resolverTargetPrefix = http://localhost:8080/biscicol/rest/
+resolverTargetPrefix = http://localhost:8080/id/
 # The bcid metadata service
-resolverMetadataPrefix = http://localhost:8080/biscicol/rest/metadata
+resolverMetadataPrefix = http://localhost:8080/rest/bcids/metadata

@@ -1,4 +1,4 @@
-package biocode.fims.rest.services;
+package biocode.fims.rest.services.rest;
 
 import org.glassfish.jersey.server.wadl.WadlApplicationContext;
 import org.glassfish.jersey.server.wadl.internal.ApplicationDescription;
@@ -21,7 +21,7 @@ import java.io.Writer;
  */
 @Produces({"application/vnd.sun.wadl+xml", "application/xml"})
 @Singleton
-@Path("bcid.wadl")
+@Path("fims.wadl")
 public final class WadlResources {
 
 

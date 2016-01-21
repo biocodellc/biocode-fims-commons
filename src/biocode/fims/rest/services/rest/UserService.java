@@ -1,4 +1,4 @@
-package biocode.fims.rest.services;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
