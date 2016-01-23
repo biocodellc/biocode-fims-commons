@@ -198,7 +198,6 @@ public class Process {
         }
 
         // Loop the mapping file and create a BCID for every entity that we specified there!
-        // TODO does this need to be done on the expedition or project level?
         if (mapping != null) {
             LinkedList<Entity> entities = mapping.getEntities();
             Iterator it = entities.iterator();
@@ -221,7 +220,7 @@ public class Process {
                 BcidMinter bcidMinter = new BcidMinter(ezidRequest);
 
                 String identifier = bcidMinter.createEntityBcid(new Bcid(processController.getUserId(), entity.getConceptAlias(),
-                        entity.getColumn(), "", null, null, false, false));
+                        entity.getConceptAlias(), "", null, null, false, false));
                 bcidMinter.close();
                 // Associate this Bcid with this expedition
                 expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());

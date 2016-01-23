@@ -540,7 +540,7 @@ public class ExpeditionMinter {
         try {
             String sql = "SELECT b.identifier, e.public, e.expeditionId, e.expeditionTitle " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
-                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionCode = ? and e.projectId = ? and" +
+                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionCode = ? and e.projectId = ? and " +
                     "b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
             stmt = conn.prepareStatement(sql);
 
