@@ -2,12 +2,16 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Field;
+import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
+import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -15,7 +19,9 @@ import org.json.simple.JSONValue;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -265,7 +271,7 @@ public class ProjectService extends FimsService {
      */
     @POST
     @Authenticated
-    @Path("/{projectId}/saveConfig")
+    @Path("/{projectId}/saveTemplateConfig")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response saveTemplateConfig(@FormParam("checkedOptions") List<String> checkedOptions,
@@ -278,8 +284,8 @@ public class ProjectService extends FimsService {
 
         ProjectMinter projectMinter = new ProjectMinter();
 
-        if (projectMinter.configExists(configName, projectId)) {
-            if (projectMinter.usersConfig(configName, projectId, userId)) {
+        if (projectMinter.templateConfigExists(configName, projectId)) {
+            if (projectMinter.usersTemplateConfig(configName, projectId, userId)) {
                 projectMinter.updateTemplateConfig(configName, projectId, userId, checkedOptions);
             } else {
                 return Response.ok("{\"error\": \"A configuration with that name already exists, and you are not the owner.\"}").build();
@@ -298,7 +304,7 @@ public class ProjectService extends FimsService {
      * @return
      */
     @GET
-    @Path("/{projectId}/getConfigs/")
+    @Path("/{projectId}/getTemplateConfigs/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTemplateConfigs(@PathParam("projectId") Integer projectId) {
         ProjectMinter p = new ProjectMinter();
@@ -315,7 +321,7 @@ public class ProjectService extends FimsService {
      * @return
      */
     @GET
-    @Path("/{projectId}/getConfig/{configName}")
+    @Path("/{projectId}/getTemplateConfig/{configName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getConfig(@PathParam("configName") String configName,
                               @PathParam("projectId") Integer projectId) {
@@ -333,7 +339,7 @@ public class ProjectService extends FimsService {
      */
     @GET
     @Authenticated
-    @Path("/{projectId}/removeConfig/{configName}")
+    @Path("/{projectId}/removeTemplateConfig/{configName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response removeConfig(@PathParam("configName") String configName,
                                  @PathParam("projectId") Integer projectId) {
@@ -342,7 +348,7 @@ public class ProjectService extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (p.configExists(configName, projectId) && p.usersConfig(configName, projectId, userId)) {
+        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, userId)) {
             p.removeTemplateConfig(configName, projectId);
         } else {
             return Response.ok("{\"error\": \"Only the owners of a configuration can remove the configuration.\"}").build();
@@ -369,5 +375,38 @@ public class ProjectService extends FimsService {
         e.close();
 
         return Response.ok(expeditions.toJSONString()).build();
+    }
+
+
+    /**
+     * Retrieve a list of valid values for a given column
+     *
+     * @param projectId
+     *
+     * @return
+     */
+    @GET
+    @Path("/{projectId}/getListFields/{listName}/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getListFields(@PathParam("projectId") Integer projectId,
+                                  @PathParam("listName") String listName) {
+
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+        Validation validation = new Validation();
+        validation.addValidationRules(new Digester(), configFile);
+
+        biocode.fims.digester.List results = validation.findList(listName);
+        JSONArray list = new JSONArray();
+
+        Iterator it = results.getFields().iterator();
+
+        // Get field values
+        while (it.hasNext()) {
+            Field f = (Field)it.next();
+            list.add(f.getValue());
+        }
+
+        return Response.ok(list.toJSONString()).build();
     }
 }

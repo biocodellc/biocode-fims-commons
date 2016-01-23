@@ -1292,17 +1292,11 @@ public class Rule {
                 int rowNum = resultSet.getInt("rowid");
                 // Only display messages for items that exist or na, that is empty cell contents are an approved value
                 if (!value.equals("")) {
-                    //msg = "\"" + resultSet.getString(getColumn()) + "\" not an approved " + getColumn() + ", see list";
 
                     msg = "\"" + resultSet.getString(getColumn()) + "\" not an approved \"" + getColumnWorksheetName() + "\"";
 
-                    URL url = new URL(serviceRoot);
-                    String urlPath = url.getPath();
-                    //msg += " <a  href='" + serviceRoot + "utils/getListFields/" + getList() + "/?" +
-                    String groupMessage = "\"" + getColumnWorksheetName() + "\" contains invalid value <a  href=\"#\" onclick=\"list('" + urlPath + "utils/getListFields/" + getList() + "/?" +
-                            "column_name=" + URLEncoder.encode(column, "utf-8") + "&" +
-                            "projectId=');\">see list</a>";
-                    //<a href="#" onclick="list('/biocode-fims/rest/utils/getListFields/phylum/?column_name=Phylum&projectId=1');">link</a>
+                    String groupMessage = "\"" + getColumnWorksheetName() + "\" contains invalid value <a  href=\"#\" onclick=\"list('" + getList() +
+                            "','" + column + "');\">see list</a>";
 
                     addMessage(msg, groupMessage, rowNum);
                 }
@@ -1310,10 +1304,6 @@ public class Rule {
 
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing checkInXMLFields rule", 500, e);
-        } catch (MalformedURLException e) {
-            throw new FimsRuntimeException(500, e);
-        } catch (UnsupportedEncodingException e) {
-            throw new FimsRuntimeException(500, e);
         } finally {
             try {
                 if (statement != null)

@@ -79,6 +79,7 @@ public class ExpeditionService extends FimsService {
      * @return
      */
     @GET
+    @Authenticated
     @Path("/graphMetadata/{graph}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGraphMetadata(@PathParam("graph") String graph) {
@@ -91,24 +92,24 @@ public class ExpeditionService extends FimsService {
     /**
      * Given a expedition code and a resource alias, return a BCID
      *
-     * @param expedition
+     * @param expeditionCode
      * @param resourceAlias
      *
      * @return
      */
     @GET
-    @Path("/{projectId}/{expedition}/{resourceAlias}")
+    @Path("/{projectId}/{expeditionCode}/{resourceAlias}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response fetchAlias(@PathParam("expedition") String expedition,
+    public Response fetchAlias(@PathParam("expeditionCode") String expeditionCode,
                                @PathParam("projectId") Integer projectId,
                                @PathParam("resourceAlias") String resourceAlias) {
         try {
-            expedition = URLDecoder.decode(expedition, "utf-8");
+            expeditionCode = URLDecoder.decode(expeditionCode, "utf-8");
         } catch (UnsupportedEncodingException e) {
             logger.warn("UnsupportedEncodingException in ExpeditionService.fetchAlias method.", e);
         }
 
-        Resolver r = new Resolver(expedition, projectId, resourceAlias);
+        Resolver r = new Resolver(expeditionCode, projectId, resourceAlias);
         String response = r.getIdentifier();
         r.close();
         if (response == null) {
@@ -204,6 +205,95 @@ public class ExpeditionService extends FimsService {
             e.close();
             return Response.ok("{\"success\": \"nothing to update.\"}").build();
         }
+    }
+
+    /**
+     * validateExpedition service checks the status of a new expedition code on the server and directing consuming
+     * applications on whether this user owns the expedition and if it exists within an project or not.
+     * Responses are error, update, or insert (first term followed by a colon)
+     *
+     * @param expeditionCode
+     * @param projectId
+     * @param ignoreUser     if specified as true then we don't perform a check on what user owns the dataset
+     *
+     * @return
+     */
+    @GET
+    @Authenticated
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/validate/{projectId}/{expeditionCode}")
+    public Response mint(@PathParam("expeditionCode") String expeditionCode,
+                         @PathParam("projectId") Integer projectId,
+                         @QueryParam("ignore_user") Boolean ignoreUser) {
+        String username;
+
+        // Default the lIgnore_user variable to false.  Set if true only if user specified it
+        Boolean lIgnore_user = false;
+        if (ignoreUser != null && ignoreUser) {
+            lIgnore_user = true;
+        }
+
+        // Decipher the expedition code
+        try {
+            expeditionCode = URLDecoder.decode(expeditionCode, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.warn("UnsupportedEncodingException in expeditionService.mint method.", e);
+        }
+
+        // Create the expeditionMinter object so we can test and validate it
+        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
+        ProjectMinter projectMinter = new ProjectMinter();
+
+        try {
+            //Check that the user exists in this project
+            if (!projectMinter.userExistsInProject(userId, projectId)) {
+                // If the user isn't in the project, then we can't update or create a new expedition
+                throw new ForbiddenRequestException("User is not authorized to update/create expeditions in this project.");
+            }
+
+            // If specified, ignore the user.. simply figure out whether we're updating or inserting
+            if (lIgnore_user) {
+                if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
+                    return Response.ok("{\"update\": \"update this expedition\"}").build();
+                } else {
+                    return Response.ok("{\"insert\": \"insert new expedition\"}").build();
+                }
+            }
+
+            // Else, pay attention to what user owns the initial project
+            else {
+                if (expeditionMinter.userOwnsExpedition(userId, expeditionCode, projectId)) {
+                    // If the user already owns the expedition, then great--- this is an update
+                    return Response.ok("{\"update\": \"user owns this expedition\"}").build();
+                    // If the expedition exists in the project but the user does not own the expedition then this means we can't
+                } else if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
+                    expeditionMinter.close();
+                    throw new ForbiddenRequestException("The expedition code '" + expeditionCode +
+                            "' exists in this project already and is owned by another user. " +
+                            "Please choose another expedition code.");
+                } else {
+                    return Response.ok("{\"insert\": \"the expedition does not exist with project and nobody owns it\"}").build();
+                }
+            }
+        } finally {
+            expeditionMinter.close();
+        }
+    }
+
+    @POST
+    @Authenticated
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/associate")
+    public Response mint(@FormParam("expedition_code") String expeditionCode,
+                         @FormParam("bcid") String identifier,
+                         @FormParam("project_id") Integer projectId) {
+        ExpeditionMinter expedition = new ExpeditionMinter();
+        expedition.attachReferenceToExpedition(expeditionCode, identifier, projectId);
+        expedition.close();
+
+        return Response.ok("{\"success\": \"Data Elements Root: " + expeditionCode + "\"}").build();
     }
 
 }

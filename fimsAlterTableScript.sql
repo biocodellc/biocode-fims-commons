@@ -1,5 +1,5 @@
 // First drop all foreign key constraints
-// List all foreign key constraints for the specified db with the following cmd, make sure to change table_schema to correct database name
+// List all foreign key constraints for the specified db with the following cmd, make sure to change table_schema= to correct database name
 
 mysql --batch --skip-column-names -e "SELECT concat('alter table ',table_schema,'.',table_name,' DROP FOREIGN KEY ',constraint_name,';') FROM information_schema.table_constraints WHERE constraint_type='FOREIGN KEY' AND table_schema='biscicol';"
 

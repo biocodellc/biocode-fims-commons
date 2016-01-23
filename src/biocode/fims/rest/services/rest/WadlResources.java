@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.rest.FimsService;
 import org.glassfish.jersey.server.wadl.WadlApplicationContext;
 import org.glassfish.jersey.server.wadl.internal.ApplicationDescription;
 
@@ -22,7 +23,7 @@ import java.io.Writer;
 @Produces({"application/vnd.sun.wadl+xml", "application/xml"})
 @Singleton
 @Path("fims.wadl")
-public final class WadlResources {
+public final class WadlResources extends FimsService {
 
 
     private WadlApplicationContext wadlContext;
@@ -38,7 +39,7 @@ public final class WadlResources {
     @GET
     public synchronized Response getWadl(@Context UriInfo uriInfo) {
 
-        String styleSheetUrl = uriInfo.getBaseUri().toString() + "../wadl.xsl";
+        String styleSheetUrl = appRoot + "wadl.xsl";
         ApplicationDescription ae = wadlContext.getApplication(uriInfo, true);
         this.application = ae.getApplication();
 

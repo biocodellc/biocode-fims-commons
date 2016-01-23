@@ -609,7 +609,6 @@ public class ProjectMinter {
     public String getMyLatestGraphs(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        JSONObject response = new JSONObject();
         HashMap projectMap = new HashMap();
         JSONArray projectDatasets;
 
@@ -720,7 +719,7 @@ public class ProjectMinter {
      * @param projectId
      * @return
      */
-    public boolean configExists(String configName, Integer projectId) {
+    public boolean templateConfigExists(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -748,7 +747,7 @@ public class ProjectMinter {
     /**
      * check if a user owns the config
      */
-    public boolean usersConfig(String configName, Integer projectId, Integer userId) {
+    public boolean usersTemplateConfig(String configName, Integer projectId, Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
