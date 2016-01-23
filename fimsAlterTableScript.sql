@@ -3,11 +3,12 @@
 
 mysql --batch --skip-column-names -e "SELECT concat('alter table ',table_schema,'.',table_name,' DROP FOREIGN KEY ',constraint_name,';') FROM information_schema.table_constraints WHERE constraint_type='FOREIGN KEY' AND table_schema='biscicol';"
 
+// Run the alter statements that are produced from the ABOVE COMMAND
+
+// Now, run statements below
 // drop the following tables
 DROP TABLE identifiers;
 DROP TABLE authorities;
-
-// run the alter statements that are produced
 
 ALTER TABLE users CHANGE user_id userId INT(11) AUTO_INCREMENT;
 ALTER TABLE users CHANGE set_password hasSetPassword boolean;
