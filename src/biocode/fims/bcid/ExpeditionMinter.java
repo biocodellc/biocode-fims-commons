@@ -125,13 +125,13 @@ public class ExpeditionMinter {
     public void attachReferenceToExpedition(String expeditionCode, String bcid, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
         Resolver r = new Resolver(bcid);
-        Integer bcidsId = r.getBcidId();
+        Integer bcidId = r.getBcidId();
         r.close();
 
-        attachReferenceToExpedition(expeditionId, bcidsId);
+        attachReferenceToExpedition(expeditionId, bcidId);
     }
 
-    private void attachReferenceToExpedition(Integer expeditionId, Integer bcidsId) {
+    private void attachReferenceToExpedition(Integer expeditionId, Integer bcidId) {
 
         String insertString = "INSERT INTO expeditionBcids " +
                 "(expeditionId, bcidId) " +
@@ -141,7 +141,7 @@ public class ExpeditionMinter {
         try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setInt(1, expeditionId);
-            insertStatement.setInt(2, bcidsId);
+            insertStatement.setInt(2, bcidId);
             insertStatement.execute();
         } catch (SQLException e) {
             throw new ServerErrorException("Db error attaching Reference to Expedition", e);
@@ -158,10 +158,10 @@ public class ExpeditionMinter {
      */
     public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
         Resolver r = new Resolver(identifier);
-        Integer bcidsId = r.getBcidId();
+        Integer bcidId = r.getBcidId();
         r.close();
 
-        attachReferenceToExpedition(expeditionId, bcidsId);
+        attachReferenceToExpedition(expeditionId, bcidId);
     }
 
     /**

@@ -14,10 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,8 +49,6 @@ public class Rule {
     private Worksheet digesterWorksheet;
     // Now a reference to a SQLLite connection
     private java.sql.Connection connection;
-    // Reference a service Root so we can include service calls where needed
-    private String serviceRoot;
 
     // Rules can also own their own fields
     private final LinkedList<String> fields = new LinkedList<String>();
@@ -102,10 +97,6 @@ public class Rule {
         } catch (FimsException e) {
             throw new FimsRuntimeException(500, e);
         }
-    }
-
-    public void setServiceRoot(String serviceRoot) {
-        this.serviceRoot = serviceRoot;
     }
 
     public String getDecimalLatitude() {

@@ -48,7 +48,7 @@ public class AuthenticationService extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response login(@FormParam("username") String usr,
                           @FormParam("password") String pass,
-                          @QueryParam("return_to") String return_to,
+                          @QueryParam("return_to") String returnTo,
                           @Context HttpServletResponse res) {
 
         if (!usr.isEmpty() && !pass.isEmpty()) {
@@ -87,8 +87,8 @@ public class AuthenticationService extends FimsService {
                     authenticator.close();
                 }
 
-                // Redirect to return_to uri if provided
-                if (return_to != null) {
+                // Redirect to returnTo uri if provided
+                if (returnTo != null) {
 
                     // check to see if oAuthLogin is in the session and set to true is so.
                     Object oAuthLogin = session.getAttribute("oAuthLogin");
@@ -96,7 +96,7 @@ public class AuthenticationService extends FimsService {
                         session.setAttribute("oAuthLogin", true);
                     }
 
-                    return Response.ok("{\"url\": \"" + return_to +
+                    return Response.ok("{\"url\": \"" + returnTo +
                             new QueryParams().getQueryParams(request.getParameterMap(), true) + "\"}")
                             .build();
                 } else {
@@ -216,7 +216,7 @@ public class AuthenticationService extends FimsService {
      * @return
      */
     @POST
-    @Path("/oauth/access_token")
+    @Path("/oauth/accessToken")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response access_token(@FormParam("code") String code,

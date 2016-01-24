@@ -1,11 +1,8 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.Bcid;
-import biocode.fims.bcid.BcidMinter;
-import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.bcid.Renderer.Renderer;
-import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
@@ -87,18 +84,19 @@ public class BcidService extends FimsService {
     /**
      * Return a JSON representation of bcids metadata
      *
-     * @param bcidId
      *
+     * @param bcidId
      * @return
      */
     @GET
     @Path("/metadata/{bcidId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String run(@PathParam("bcidId") Integer bcidId) {
+    public Response run(@PathParam("bcidId") Integer bcidId) {
         Bcid bcid = new Bcid(bcidId);
-        Renderer renderer = new JSONRenderer();
+        Resolver resolver = new Resolver(bcid.getIdentifier().toString());
+        Renderer renderer = new JSONRenderer(username, resolver);
 
-        return "[" + renderer.render(bcid) + "]";
+        return Response.ok(renderer.render(bcid)).build();
     }
 
     /**

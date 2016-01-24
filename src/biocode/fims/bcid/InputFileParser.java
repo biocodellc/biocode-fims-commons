@@ -85,7 +85,7 @@ public class InputFileParser {
                 count++;
             }
 
-            elementArrayList.add(new Bcid(suffix, webAddress, bcid.getBcidsId()));
+            elementArrayList.add(new Bcid(suffix, webAddress, bcid.getBcidId()));
         }
     }
 

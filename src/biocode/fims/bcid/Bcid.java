@@ -37,7 +37,7 @@ public class Bcid {
     protected String ts;
     protected Boolean suffixPassThrough = false;
     protected String doi;
-    protected Integer bcidsId;
+    protected Integer bcidId;
     protected Boolean isPublic;
     protected Integer userId;
     protected Boolean finalCopy;
@@ -97,10 +97,10 @@ public class Bcid {
     /**
      * Create data group
      *
-     * @param bcidsId
+     * @param bcidId
      */
-    public Bcid(Integer bcidsId) {
-        getBcid(bcidsId);
+    public Bcid(Integer bcidId) {
+        getBcid(bcidId);
     }
 
 
@@ -108,27 +108,27 @@ public class Bcid {
      * Create an element given a source Bcid, and a resource type Bcid
      *
      * @param suffix
-     * @param bcidsId
+     * @param bcidId
      */
-    public Bcid(String suffix, Integer bcidsId) {
+    public Bcid(String suffix, Integer bcidId) {
         this.suffix = suffix;
-        getBcid(bcidsId);
+        getBcid(bcidId);
         BcidMinter bcidMinter = new BcidMinter();
-        projectCode = bcidMinter.getProject(bcidsId);
+        projectCode = bcidMinter.getProject(bcidId);
         bcidMinter.close();
     }
 
     /**
-     * Create an element given a source Bcid, web address for resolution, and a bcidsId
+     * Create an element given a source Bcid, web address for resolution, and a bcidId
      * This method is meant for CREATING bcids.
      *
      * @param suffix
      * @param webAddress
-     * @param bcidsId
+     * @param bcidId
      */
-    public Bcid(String suffix, URI webAddress, Integer bcidsId) {
+    public Bcid(String suffix, URI webAddress, Integer bcidId) {
         this.suffix = suffix;
-        getBcid(bcidsId);
+        getBcid(bcidId);
         this.webAddress = webAddress;
 
         // Reformat webAddress in this constructor if there is a suffix
@@ -147,9 +147,9 @@ public class Bcid {
     /**
      * Internal functional for fetching the Bcid given the bcidId
      *
-     * @param pBcidsId
+     * @param pBcidId
      */
-    private void getBcid(Integer pBcidsId) {
+    private void getBcid(Integer pBcidId) {
         Database db = new Database();
         Connection conn = db.getConn();
         PreparedStatement stmt = null;
@@ -172,7 +172,7 @@ public class Bcid {
 
         try {
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, pBcidsId);
+            stmt.setInt(1, pBcidId);
 
             rs = stmt.executeQuery();
             rs.next();
@@ -201,8 +201,8 @@ public class Bcid {
                 try {
                     webAddress = new URI(lWebAddress);
                 } catch (URISyntaxException e) {
-                    logger.warn("URISyntaxException with uri: {} and bcidsId: {}", rs.getString("webAddress"),
-                            this.bcidsId, e);
+                    logger.warn("URISyntaxException with uri: {} and bcidId: {}", rs.getString("webAddress"),
+                            this.bcidId, e);
                 }
             }
             // A resolution target is specified AND there is a suffix AND suffixPassThrough
@@ -213,13 +213,13 @@ public class Bcid {
                 // Set the resolution target
                 resolutionTarget = new URI(webAddress + suffix);
             }
-            bcidsId = pBcidsId;
+            bcidId = pBcidId;
             setIsPublic();
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } catch (URISyntaxException e) {
             throw new ServerErrorException("Server Error","URISyntaxException from identifier: " + prefix +
-                    sm.retrieveValue("divider") + suffix + " from bcidsId: " + bcidsId, e);
+                    sm.retrieveValue("divider") + suffix + " from bcidId: " + bcidId, e);
         } finally {
             db.close(stmt, rs);
         }
@@ -242,7 +242,7 @@ public class Bcid {
 
         try {
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidsId);
+            stmt.setInt(1, bcidId);
 
             rs = stmt.executeQuery();
             if (rs.next())
@@ -290,8 +290,8 @@ public class Bcid {
         return identifier;
     }
 
-    public Integer getBcidsId() {
-        return bcidsId;
+    public Integer getBcidId() {
+        return bcidId;
     }
 
     /**

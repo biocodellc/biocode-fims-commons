@@ -223,15 +223,15 @@ public class ExpeditionService extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/validate/{projectId}/{expeditionCode}")
-    public Response mint(@PathParam("expeditionCode") String expeditionCode,
-                         @PathParam("projectId") Integer projectId,
-                         @QueryParam("ignore_user") Boolean ignoreUser) {
+    public Response validate(@PathParam("expeditionCode") String expeditionCode,
+                             @PathParam("projectId") Integer projectId,
+                             @QueryParam("ignoreUser") Boolean ignoreUser) {
         String username;
 
         // Default the lIgnore_user variable to false.  Set if true only if user specified it
-        Boolean lIgnore_user = false;
+        Boolean lIgnoreUser = false;
         if (ignoreUser != null && ignoreUser) {
-            lIgnore_user = true;
+            lIgnoreUser = true;
         }
 
         // Decipher the expedition code
@@ -253,7 +253,7 @@ public class ExpeditionService extends FimsService {
             }
 
             // If specified, ignore the user.. simply figure out whether we're updating or inserting
-            if (lIgnore_user) {
+            if (lIgnoreUser) {
                 if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
                     return Response.ok("{\"update\": \"update this expedition\"}").build();
                 } else {
@@ -286,9 +286,9 @@ public class ExpeditionService extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/associate")
-    public Response mint(@FormParam("expedition_code") String expeditionCode,
-                         @FormParam("bcid") String identifier,
-                         @FormParam("project_id") Integer projectId) {
+    public Response associate(@FormParam("expeditionCode") String expeditionCode,
+                              @FormParam("bcid") String identifier,
+                              @FormParam("projectId") Integer projectId) {
         ExpeditionMinter expedition = new ExpeditionMinter();
         expedition.attachReferenceToExpedition(expeditionCode, identifier, projectId);
         expedition.close();

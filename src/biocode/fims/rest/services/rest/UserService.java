@@ -94,8 +94,8 @@ public class UserService extends FimsService {
      * @param lastName
      * @param email
      * @param institution
-     * @param old_password
-     * @param new_password
+     * @param oldPassword
+     * @param newPassword
      * @param returnTo
      * @returns either error message or the url to redirect to upon success
      */
@@ -108,8 +108,8 @@ public class UserService extends FimsService {
                                   @FormParam("lastName") String lastName,
                                   @FormParam("email") String email,
                                   @FormParam("institution") String institution,
-                                  @FormParam("old_password") String old_password,
-                                  @FormParam("new_password") String new_password,
+                                  @FormParam("oldPassword") String oldPassword,
+                                  @FormParam("newPassword") String newPassword,
                                   @FormParam("username") String updateUser,
                                   @QueryParam("return_to") String returnTo) {
         Authorizer authorizer = new Authorizer();
@@ -129,14 +129,14 @@ public class UserService extends FimsService {
         // Only update user's password if both old_password and new_password fields contain values and the user is updating
         // their own profile
         if (!adminAccess) {
-            if (!old_password.isEmpty() && !new_password.isEmpty()) {
+            if (!oldPassword.isEmpty() && !newPassword.isEmpty()) {
                 Authenticator myAuth = new Authenticator();
                 // Call the login function to verify the user's old_password
-                Boolean valid_pass = myAuth.login(updateUser, old_password);
+                Boolean valid_pass = myAuth.login(updateUser, oldPassword);
 
                 // If user's old_password matches stored pass, then update the user's password to the new value
                 if (valid_pass) {
-                    Boolean success = myAuth.setHashedPass(updateUser, new_password);
+                    Boolean success = myAuth.setHashedPass(updateUser, newPassword);
                     if (!success) {
                         throw new ServerErrorException("Server Error", "User not found");
                     }
@@ -152,9 +152,9 @@ public class UserService extends FimsService {
             }
         } else {
             // set new password if given
-            if (!new_password.isEmpty()) {
+            if (!newPassword.isEmpty()) {
                 Authenticator authenticator = new Authenticator();
-                Boolean success = authenticator.setHashedPass(updateUser, new_password);
+                Boolean success = authenticator.setHashedPass(updateUser, newPassword);
                 authenticator.close();
                 if (!success) {
                     throw new BadRequestException("user: " + updateUser + "not found");

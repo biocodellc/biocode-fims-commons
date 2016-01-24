@@ -585,7 +585,7 @@ public class ProjectMinter {
 
                 // Grap the prefixes and concepts associated with this
                 dataset.put("ts", rs.getString("ts"));
-                dataset.put("bcidsId", rs.getString("id"));
+                dataset.put("bcidId", rs.getString("id"));
                 dataset.put("identifier", rs.getString("identifier"));
                 dataset.put("finalCopy", rs.getString("finalCopy"));
 
@@ -658,7 +658,7 @@ public class ProjectMinter {
                 dataset.put("expeditionCode", rs.getString("expeditionCode"));
                 dataset.put("expeditionTitle", rs.getString("expeditionTitle"));
                 dataset.put("ts", rs.getString("ts"));
-                dataset.put("bcidsId", rs.getString("id"));
+                dataset.put("bcidId", rs.getString("id"));
                 dataset.put("projectId", rs.getString("projectId"));
                 dataset.put("graph", rs.getString("graph"));
                 dataset.put("public", rs.getString("public"));

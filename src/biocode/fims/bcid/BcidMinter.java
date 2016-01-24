@@ -82,7 +82,7 @@ public class BcidMinter extends BcidEncoder {
     }
 
     /**
-     * Get the projectCode given a bcidsId
+     * Get the projectCode given a bcidId
      *
      * @param bcidId
      */
@@ -92,7 +92,7 @@ public class BcidMinter extends BcidEncoder {
                 "bcids b where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` " +
                 "and e.`projectId`=p.`projectId` and b.bcidId= ?";
 
-        System.out.println("sql = " + sql + "    bcidsId = " + bcidId);
+        System.out.println("sql = " + sql + "    bcidId = " + bcidId);
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -106,7 +106,7 @@ public class BcidMinter extends BcidEncoder {
             }
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error",
-                    "Exception retrieving projectCode for bcidsId: " + bcidId, e);
+                    "Exception retrieving projectCode for bcidId: " + bcidId, e);
         } finally {
             db.close(stmt, rs);
         }
@@ -165,23 +165,23 @@ public class BcidMinter extends BcidEncoder {
             insertStatement.setBoolean(10, bcid.finalCopy);
             insertStatement.execute();
 
-            // Get the bcidsId that was assigned
-            Integer bcidsId = checkBcidExists(internalId);
+            // Get the bcidId that was assigned
+            Integer bcidId = checkBcidExists(internalId);
 
             // Create the shoulder Bcid (String Bcid Bcid)
-            shoulder = encode(new BigInteger(bcidsId.toString()));
+            shoulder = encode(new BigInteger(bcidId.toString()));
 
             // Create the identifier
             identifier = new URI(bow + shoulder);
 
-            // Update the shoulder, and hence identifier, now that we know the bcidsId
+            // Update the shoulder, and hence identifier, now that we know the bcidId
             String updateString = "UPDATE bcids" +
                     " SET identifier = ?" +
                     " WHERE bcidId = ?";
             updateStatement = conn.prepareStatement(updateString);
 
             updateStatement.setString(1, identifier.toString());
-            updateStatement.setInt(2, bcidsId);
+            updateStatement.setInt(2, bcidId);
 
             updateStatement.executeUpdate();
 
@@ -198,7 +198,7 @@ public class BcidMinter extends BcidEncoder {
     }
 
     /**
-     * Return the bcidsId given the internalId
+     * Return the bcidId given the internalId
      *
      * @param bcidUUID
      *
@@ -237,7 +237,7 @@ public class BcidMinter extends BcidEncoder {
             rs.next();
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error",
-                    "Exception retrieving bcidsId for bcid with identifier: " + identifier, e);
+                    "Exception retrieving bcidId for bcid with identifier: " + identifier, e);
         } finally {
             db.close(stmt, rs);
         }

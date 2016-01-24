@@ -27,7 +27,7 @@ public class Resolver extends Database {
     String shoulder = null;     // The data group
     String suffix = null;        // The local Bcid
     BigInteger elementId = null;
-    Integer bcidsId = null;
+    Integer bcidId = null;
     public boolean forwardingResolution = false;
     static SettingsManager sm;
 
@@ -58,7 +58,7 @@ public class Resolver extends Database {
         naan = bits[1];
         // Now decipher the shoulder and suffix in the next bit
         setShoulderAndSuffix(bits[2]);
-        // Call setBcid() to set bcidsId
+        // Call setBcid() to set bcidId
         setBcid();
     }
 
@@ -117,7 +117,7 @@ public class Resolver extends Database {
      * @return
      */
     public Integer getBcidId () {
-        return bcidsId;
+        return bcidId;
     }
 
     /**
@@ -173,7 +173,7 @@ public class Resolver extends Database {
             throw new BadRequestException("Invalid bcid.");
         }
 
-        bcid = new Bcid(suffix, bcidsId);
+        bcid = new Bcid(suffix, bcidId);
 
         // A resolution target is specified AND there is a suffix AND suffixPassThrough
         if (bcid.forwardingResolution) {
@@ -184,7 +184,7 @@ public class Resolver extends Database {
         } else {
             resolution = bcid.getMetadataTarget();
 
-            this.project = getProjectID(bcidsId);
+            this.project = getProjectID(bcidId);
         }
 
         return resolution;
@@ -201,10 +201,10 @@ public class Resolver extends Database {
         // First  option is check if Bcid, then look at other options after this is determined
         if (setBcid()) {
 
-            bcid = new Bcid(bcidsId);
+            bcid = new Bcid(bcidId);
 
             if (suffix != null && bcid.getWebAddress() != null) {
-                bcid = new Bcid(suffix, bcid.getWebAddress(), bcidsId);
+                bcid = new Bcid(suffix, bcid.getWebAddress(), bcidId);
             }
         }
         return renderer.render(bcid);
@@ -259,28 +259,28 @@ public class Resolver extends Database {
     }
 
     private boolean isValidBCID() {
-        if (bcidsId != null)
+        if (bcidId != null)
             return true;
         else
             return false;
     }
 
     /**
-     * Check if this is a Bcid and set the bcidsId
+     * Check if this is a Bcid and set the bcidId
      *
      * @return
      */
     private boolean setBcid() {
         // Test Bcid is #1
         if (shoulder.equals("fk4") && naan.equals("99999")) {
-            bcidsId = 1;
+            bcidId = 1;
             return true;
         }
 
         // Decode a typical Bcid
-        bcidsId = new BcidEncoder().decode(shoulder).intValue();
+        bcidId = new BcidEncoder().decode(shoulder).intValue();
 
-        if (bcidsId == null) {
+        if (bcidId == null) {
             return false;
         } else {
             // Now we need to figure out if this bcidId exists or not in the Database
@@ -289,12 +289,12 @@ public class Resolver extends Database {
             ResultSet rs = null;
             try {
                 stmt = conn.prepareStatement(select);
-                stmt.setInt(1, bcidsId);
+                stmt.setInt(1, bcidId);
                 rs = stmt.executeQuery();
                 rs.next();
                 int count = rs.getInt("count");
                 if (count < 1) {
-                    bcidsId = null;
+                    bcidId = null;
                     return false;
                 } else {
                     return true;
@@ -308,11 +308,11 @@ public class Resolver extends Database {
     }
 
     /**
-     * Get the projectId given a bcidsId
+     * Get the projectId given a bcidId
      *
-     * @param bcidsId
+     * @param bcidId
      */
-    public String getProjectID(Integer bcidsId) {
+    public String getProjectID(Integer bcidId) {
         String projectId = "";
         String sql = "select p.projectId from projects p, expeditionBcids eb, expeditions e, " +
                 "bcids b where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` " +
@@ -322,14 +322,14 @@ public class Resolver extends Database {
         ResultSet rs = null;
         try {
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidsId);
+            stmt.setInt(1, bcidId);
             rs = stmt.executeQuery();
             rs.next();
             projectId = rs.getString("projectId");
 
         } catch (SQLException e) {
             // catch the exception and log it
-            logger.warn("Exception retrieving projectCode for bcid: " + bcidsId, e);
+            logger.warn("Exception retrieving projectCode for bcid: " + bcidId, e);
         } finally {
             close(stmt, rs);
         }
@@ -449,14 +449,14 @@ public class Resolver extends Database {
                     "where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` and b.bcidId = ?";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidsId);
+            stmt.setInt(1, bcidId);
             rs = stmt.executeQuery();
             rs.next();
             expeditionCode = rs.getString("expeditionCode");
 
         } catch (SQLException e) {
             // catch the exception and log it
-            logger.warn("Exception retrieving expeditionCode for bcid: " + bcidsId, e);
+            logger.warn("Exception retrieving expeditionCode for bcid: " + bcidId, e);
         } finally {
             close(stmt, rs);
         }
@@ -472,14 +472,14 @@ public class Resolver extends Database {
                     "where b.bcidId = eb.bcidId and b.bcidId = ?";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidsId);
+            stmt.setInt(1, bcidId);
             rs = stmt.executeQuery();
             rs.next();
             expeditionId = rs.getInt("eb.expeditionId");
 
         } catch (SQLException e) {
             // catch the exception and log it
-            logger.warn("Exception retrieving expeditionId for bcid: " + bcidsId, e);
+            logger.warn("Exception retrieving expeditionId for bcid: " + bcidId, e);
         } finally {
             close(stmt, rs);
         }
