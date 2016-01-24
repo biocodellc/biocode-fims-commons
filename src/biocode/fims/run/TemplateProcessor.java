@@ -737,7 +737,7 @@ public class TemplateProcessor {
         cell.setCellStyle(titleStyle);
         cell.setCellValue(projectTitle);
 
-        // if we have a datasetCode and accesstionNumber, hide them in the first row and make them visible
+        // if we have a datasetCode and accessionNumber, hide them in the first row and make them visible
         // if we have one, we have all three.
         if (accessionNumber != null) {
             // Hide the dataset_code in first row, third column
@@ -747,7 +747,7 @@ public class TemplateProcessor {
 
             // Hide the accession number in first row, fourth column
             cell = row.createCell(3);
-            cell.setCellValue("~accesstion_number=" + accessionNumber + "~");
+            cell.setCellValue("~accession_number=" + accessionNumber + "~");
 
             // Show the datasetCode
             row = instructionsSheet.createRow(rowIndex);
@@ -864,7 +864,7 @@ public class TemplateProcessor {
         font.setColor(IndexedColors.RED.getIndex());
         font.setBoldweight(Font.BOLDWEIGHT_BOLD);
         font.setFontHeightInPoints((short) 18);
-        HSSFRichTextString accessionString = new HSSFRichTextString(accesstionNumber.toString());
+        HSSFRichTextString accessionString = new HSSFRichTextString(accessionNumber.toString());
         accessionString.applyFont(font);
         textbox.setString(accessionString);
 
