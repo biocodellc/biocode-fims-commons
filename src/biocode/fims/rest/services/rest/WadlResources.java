@@ -5,6 +5,7 @@ import org.glassfish.jersey.server.wadl.WadlApplicationContext;
 import org.glassfish.jersey.server.wadl.internal.ApplicationDescription;
 
 import javax.inject.Singleton;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -39,7 +40,7 @@ public final class WadlResources extends FimsService {
     @GET
     public synchronized Response getWadl(@Context UriInfo uriInfo) {
 
-        String styleSheetUrl = appRoot + "wadl.xsl";
+        String styleSheetUrl = sm.retrieveValue("wadlPath");
         ApplicationDescription ae = wadlContext.getApplication(uriInfo, true);
         this.application = ae.getApplication();
 

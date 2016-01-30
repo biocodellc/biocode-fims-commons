@@ -1,5 +1,8 @@
 ###########  biocode-fims-commons settings  ##########
 
+# the path to the wadl stylesheet
+wadlPath = /wadl.xsl
+
 # the login page to redirect to when a user needs to login
 loginPageUrl = http://localhost:8080/login.jsp
 
