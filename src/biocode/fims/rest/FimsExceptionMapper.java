@@ -63,7 +63,7 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         // correct response type.
         try {
             mediaType = uriInfo.getMatchedResourceMethod().getProducedTypes().get(0).toString();
-        } catch(IndexOutOfBoundsException ex) {
+        } catch(IndexOutOfBoundsException | NullPointerException ex) {
             List<MediaType> accepts = httpHeaders.getAcceptableMediaTypes();
             logger.warn("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
             // if request accepts JSON, return the error in JSON, otherwise use html
