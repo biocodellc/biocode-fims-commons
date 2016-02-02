@@ -37,6 +37,7 @@ public class Process {
     public File configFile;
 
     Mapping mapping;
+    Validation validation;
 
     String outputFolder;
     String outputPrefix;
@@ -52,7 +53,6 @@ public class Process {
     /**
      * Setup class variables for processing FIMS data.
      *
-     * @param inputFilename The data to run.process, usually an Excel spreadsheet
      * @param outputFolder  Where to store output files
      */
     public Process(
@@ -60,24 +60,10 @@ public class Process {
             String outputFolder,
             ProcessController processController) {
 
-        // Update the processController Settings
-        this.processController = processController;
-
-        projectId = processController.getProjectId();
-
-        processController.setInputFilename(inputFilename);
-        this.outputFolder = outputFolder;
-
-        // Control the file outputPrefix... set them here to expedition codes.
-        this.outputPrefix = processController.getExpeditionCode() + "_output";
-
         // Read the Configuration File
         configFile = new ConfigurationFileFetcher(processController.getProjectId(), outputFolder, false).getOutputFile();
 
-
-        // Parse the Mapping object (this object is used extensively in downstream functions!)
-        mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        init(inputFilename, outputFolder, processController);
     }
 
     /**
@@ -92,6 +78,13 @@ public class Process {
             ProcessController processController,
             File configFile) {
 
+        // Read the Configuration File
+        this.configFile = configFile;
+
+        init(inputFilename, outputFolder, processController);
+    }
+
+    private void init(String inputFilename, String outputFolder, ProcessController processController) {
         // Update the processController Settings
         this.processController = processController;
 
@@ -103,12 +96,16 @@ public class Process {
         // Control the file outputPrefix... set them here to expedition codes.
         this.outputPrefix = processController.getExpeditionCode() + "_output";
 
-        // Read the Configuration File
-        this.configFile = configFile;
-
         // Parse the Mapping object (this object is used extensively in downstream functions!)
         mapping = new Mapping();
         mapping.addMappingRules(new Digester(), configFile);
+
+        // Load validation object as this is used in downstream functions
+        validation = new Validation();
+        validation.addValidationRules(new Digester(), configFile);
+
+        processController.setValidation(validation);
+        processController.setDefaultSheetUniqueKey(mapping.getDefaultSheetUniqueKey());
     }
 
     /**
@@ -257,8 +254,6 @@ public class Process {
     }
 
     public void runValidation() {
-        Validation validation = null;
-
         // Create the tabulardataReader for reading the input file
         ReaderManager rm = new ReaderManager();
         TabularDataReader tdr = null;
@@ -272,17 +267,12 @@ public class Process {
             processController.setCommandLineSB(new StringBuilder("Unable to open the file you attempted to upload."));
             return;
         }
-        // Load validation rules
-        validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile);
 
         // Run the validation
         validation.run(tdr, outputPrefix, outputFolder, mapping);
 
         //
         processController = validation.printMessages(processController);
-        processController.setValidation(validation);
-        processController.setDefaultSheetUniqueKey(mapping.getDefaultSheetUniqueKey());
     }
 
     /**
