@@ -56,7 +56,7 @@ public class ResolverService extends FimsService{
             }
 
             // The expected response for IDentifiers without a URL
-            return Response.status(Response.Status.SEE_OTHER).location(seeOtherUri).build();
+            return Response.ok("{\"url\": \"" + seeOtherUri + "\"}").build();
         } finally {
             r.close();
         }
