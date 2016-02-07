@@ -5,6 +5,7 @@ import biocode.fims.fimsExceptions.FimsAbstractException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.run.ProcessController;
+import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.ErrorInfo;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.slf4j.Logger;
@@ -80,22 +81,9 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
                     .type(MediaType.APPLICATION_JSON)
                     .build();
         } else {
-            try {
-//              send the user to error.jsp to display info about the exception/error
-                URI url = new URI("error.jsp");
-                session.setAttribute("errorInfo", errorInfo);
-
-                return Response.status(errorInfo.getHttpStatusCode())
-                        .location(url)
-                        .build();
-            } catch (URISyntaxException ex) {
-                logger.error("URISyntaxException forming url for bcid error page.", ex);
-                return Response.status(errorInfo.getHttpStatusCode())
-                        .entity(errorInfo.toJSON())
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-            }
-
+            // add errorInfo to session to be used on custom error page
+            session.setAttribute("errorInfo", errorInfo);
+            return Response.status(errorInfo.getHttpStatusCode()).build();
         }
     }
 
