@@ -45,7 +45,8 @@ public class Process {
     private static Logger logger = LoggerFactory.getLogger(Process.class);
     protected int projectId;
 
-    private static SettingsManager sm;
+    private static SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
+    //private static SettingsManager sm;
     static {
         sm = SettingsManager.getInstance();
     }
@@ -283,6 +284,7 @@ public class Process {
     public static void main(String args[]) {
         //processController processController = new processController();
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
+
         SettingsManager.getInstance("biocode-fims.props");
         Integer projectId = 0;
         //System.out.print(defaultOutputDirectory);

@@ -22,7 +22,9 @@ import java.util.UUID;
  */
 public class ExpeditionMinter {
     protected Connection conn;
-    private SettingsManager sm;
+    private  SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
+
+   /* private SettingsManager sm; */
     Database db;
 
     /**
@@ -413,14 +415,14 @@ public class ExpeditionMinter {
             */
 
             // Test creating a expedition
-            /*
-            Integer expeditionId = expedition.mint(
-                    "DEMOH",
-                    "Test creating expedition under an project for which it already exists",
-                    8, 4, false);
 
-            System.out.println(expedition.printMetadata(expeditionId));
-            */
+            Integer expeditionId = expedition.mint(
+                    "TEST214",
+                    "Test creating expedition under an project for which it already exists",
+                    8, 5, false);
+
+            System.out.println(expedition.getMetadata(expeditionId));
+
 
             //System.out.println(p.expeditionTable("demo"));
             expedition.close();
