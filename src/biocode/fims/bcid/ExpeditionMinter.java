@@ -546,16 +546,13 @@ public class ExpeditionMinter {
         ResultSet rs = null;
 
         try {
-            // The following SQL statement orders from the FIRST created BCID in an expedition which is NOT a
-            // resource||Resource.   This is a very generic way of fetching the concept of the Immutable expedition
-            // identifier.  More recent versions of the software call the Expedition a "Collection", but this method
-            // works with the older version as well.
+
             String sql = "SELECT b.identifier, e.public, e.expeditionId, e.expeditionTitle " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
                     "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionCode = ? and e.projectId = ? " +
-                    " AND b.resourceType not like '%esource%' " +
-                    " ORDER BY b.ts ASC LIMIT 1";
-            //" and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
+            //        " AND b.resourceType not like '%esource%' " +
+            //        " ORDER BY b.ts ASC LIMIT 1";
+            " and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, expeditionCode);
@@ -591,16 +588,13 @@ public class ExpeditionMinter {
         ResultSet rs = null;
 
         try {
-            // The following SQL statement orders from the FIRST created BCID in an expedition which is NOT a
-            // resource||Resource.   This is a very generic way of fetching the concept of the Immutable expedition
-            // identifier.  More recent versions of the software call the Expedition a "Collection", but this method
-            // works with the older version as well.
+
             String sql = "SELECT b.identifier, e.public, e.expeditionCode, e.projectId, e.expeditionTitle, b.resourceType " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
                     "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionId = ? " +
-                    " AND b.resourceType not like '%esource%' " +
-                    " ORDER BY b.ts ASC LIMIT 1";
-            //  " and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
+                   // " AND b.resourceType not like '%esource%' " +
+                   // " ORDER BY b.ts ASC LIMIT 1";
+             " and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
             stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, expeditionId);
