@@ -22,7 +22,9 @@ import java.util.UUID;
  */
 public class ExpeditionMinter {
     protected Connection conn;
-    private SettingsManager sm;
+    private SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
+
+    /* private SettingsManager sm; */
     Database db;
 
     /**
@@ -83,7 +85,7 @@ public class ExpeditionMinter {
                 "(internalId, expeditionCode, expeditionTitle, userId, projectId,public) " +
                 "values (?,?,?,?,?,?)";
         PreparedStatement insertStatement = null;
-        try{
+        try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setString(1, internalId.toString());
             insertStatement.setString(2, expeditionCode);
@@ -120,7 +122,6 @@ public class ExpeditionMinter {
      *
      * @param expeditionCode
      * @param bcid
-     *
      */
     public void attachReferenceToExpedition(String expeditionCode, String bcid, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
@@ -207,16 +208,16 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Db error while retrieving expeditionId",
                     "SQLException while retrieving expeditionId from expeditions table with expeditionCode: " +
-                    expeditionCode + " and projectId: " + projectId, e);
+                            expeditionCode + " and projectId: " + projectId, e);
         } finally {
             db.close(stmt, rs);
         }
     }
 
-    /***
-     *
+    /**
      * @param expeditionCode
      * @param ProjectId
+     *
      * @return
      */
     public Boolean expeditionExistsInProject(String expeditionCode, Integer ProjectId) {
@@ -244,8 +245,10 @@ public class ExpeditionMinter {
 
     /**
      * Verify that a user owns this expedition
+     *
      * @param userId
      * @param expeditionId
+     *
      * @return
      */
     public boolean userOwnsExpedition(Integer userId, Integer expeditionId) {
@@ -383,9 +386,10 @@ public class ExpeditionMinter {
             // See if the user owns this expedition or no
             ExpeditionMinter expedition = new ExpeditionMinter();
             //System.out.println(expedition.getGraphMetadata("_qNK_fuHVbRSTNvA_8pG.xlsx"));
-           System.out.println("starting ...");
+            System.out.println("starting ...");
 //            System.out.println(expedition.getExpeditionss(9,"trizna"));
-            System.out.println(expedition.getDatasets(30));
+            //System.out.println(expedition.getDatasets(30));
+
             System.out.println("ending ...");
             //System.out.println(expedition.listExpeditions(8,"mwangiwangui25@gmail.com"));
             //expedition.checkExpeditionCodeValid("JBD_foo-))");
@@ -413,14 +417,16 @@ public class ExpeditionMinter {
             */
 
             // Test creating a expedition
+
             /*
             Integer expeditionId = expedition.mint(
-                    "DEMOH",
+                    "TEST214",
                     "Test creating expedition under an project for which it already exists",
-                    8, 4, false);
+                    8, 5, false);
 
-            System.out.println(expedition.printMetadata(expeditionId));
             */
+            System.out.println(expedition.getMetadata(334));
+
 
             //System.out.println(p.expeditionTable("demo"));
             expedition.close();
@@ -528,8 +534,10 @@ public class ExpeditionMinter {
 
     /**
      * return the expedition metadata given the projectId and expeditionCode
+     *
      * @param projectId
      * @param expeditionCode
+     *
      * @return
      */
     public JSONObject getMetadata(Integer projectId, String expeditionCode) {
@@ -538,10 +546,16 @@ public class ExpeditionMinter {
         ResultSet rs = null;
 
         try {
+            // The following SQL statement orders from the FIRST created BCID in an expedition which is NOT a
+            // resource||Resource.   This is a very generic way of fetching the concept of the Immutable expedition
+            // identifier.  More recent versions of the software call the Expedition a "Collection", but this method
+            // works with the older version as well.
             String sql = "SELECT b.identifier, e.public, e.expeditionId, e.expeditionTitle " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
-                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionCode = ? and e.projectId = ? and " +
-                    "b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
+                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionCode = ? and e.projectId = ? " +
+                    " AND b.resourceType not like '%esource%' " +
+                    " ORDER BY b.ts ASC LIMIT 1";
+            //" and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, expeditionCode);
@@ -564,7 +578,7 @@ public class ExpeditionMinter {
         return metadata;
     }
 
-   /**
+    /**
      * Return the expedition's metadata
      *
      * @param expeditionId
@@ -577,10 +591,16 @@ public class ExpeditionMinter {
         ResultSet rs = null;
 
         try {
-            String sql = "SELECT b.identifier, e.public, e.expeditionCode, e.projectId, e.expeditionTitle " +
+            // The following SQL statement orders from the FIRST created BCID in an expedition which is NOT a
+            // resource||Resource.   This is a very generic way of fetching the concept of the Immutable expedition
+            // identifier.  More recent versions of the software call the Expedition a "Collection", but this method
+            // works with the older version as well.
+            String sql = "SELECT b.identifier, e.public, e.expeditionCode, e.projectId, e.expeditionTitle, b.resourceType " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
-                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionId = ? and " +
-                    "b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
+                    "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionId = ? " +
+                    " AND b.resourceType not like '%esource%' " +
+                    " ORDER BY b.ts ASC LIMIT 1";
+            //  " and b.resourceType = \"http://purl.org/dc/dcmitype/Collection\"";
             stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, expeditionId);
@@ -592,6 +612,7 @@ public class ExpeditionMinter {
                 metadata.put("expeditionCode", rs.getString("e.expeditionCode"));
                 metadata.put("projectId", rs.getString("e.projectId"));
                 metadata.put("expeditionTitle", rs.getString("e.expeditionTitle"));
+                metadata.put("resourceType", rs.getString("b.resourceType"));
                 metadata.put("expeditionId", expeditionId);
             }
         } catch (SQLException e) {
