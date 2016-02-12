@@ -23,7 +23,7 @@ public class ExpeditionUpdater {
     private static SettingsManager sm;
 
     static {
-        sm = SettingsManager.getInstance();
+        sm = SettingsManager.getInstance("biocode-fims.props");
     }
 
     /**
