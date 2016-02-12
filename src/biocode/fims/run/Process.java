@@ -100,13 +100,17 @@ public class Process {
         // Parse the Mapping object (this object is used extensively in downstream functions!)
         mapping = new Mapping();
         mapping.addMappingRules(new Digester(), configFile);
-
-        // Load validation object as this is used in downstream functions
-        validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile);
-
-        processController.setValidation(validation);
         processController.setDefaultSheetUniqueKey(mapping.getDefaultSheetUniqueKey());
+
+        if (processController.getValidation() == null) {
+            // Load validation object as this is used in downstream functions
+            validation = new Validation();
+            validation.addValidationRules(new Digester(), configFile);
+
+            processController.setValidation(validation);
+        } else {
+            validation = processController.getValidation();
+        }
     }
 
     /**

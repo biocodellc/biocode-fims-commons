@@ -50,8 +50,12 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         if (session != null) {
             ProcessController pc = (ProcessController) session.getAttribute("processController");
             if (pc != null) {
-                //delete any tmp files that were created
-                new File(pc.getInputFilename()).delete();
+                try {
+                    //delete any tmp files that were created
+                    new File(pc.getInputFilename()).delete();
+                } catch (NullPointerException e2) {
+                    logger.warn("NullPointerException thrown trying to delete processController.getInputFilename.");
+                }
 
                 //remove processController from session
                 session.removeAttribute("processController");

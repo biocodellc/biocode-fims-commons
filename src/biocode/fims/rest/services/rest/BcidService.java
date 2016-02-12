@@ -40,7 +40,7 @@ public class BcidService extends FimsService {
                          @FormParam("title") String title,
                          @FormParam("resourceType") String resourceTypeString,
                          @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
-                         @FormParam("suffixPassThrough") String stringSuffixPassThrough,
+                         @FormParam("suffixPassThrough") @DefaultValue("false") Boolean suffixPassThrough,
                          @FormParam("finalCopy") @DefaultValue("false") Boolean finalCopy) {
 
         // If resourceType is specified by an integer, then use that to set the String resourceType.
@@ -58,14 +58,7 @@ public class BcidService extends FimsService {
             throw new BadRequestException("ResourceType is required");
         }
 
-        Boolean suffixPassthrough = false;
-        if ((stringSuffixPassThrough != null && !stringSuffixPassThrough.isEmpty()) &&
-                (stringSuffixPassThrough.equalsIgnoreCase("true") || stringSuffixPassThrough.equalsIgnoreCase("on"))) {
-            suffixPassthrough = true;
-
-        }
-
-        if (suffixPassthrough && (webAddress == null || webAddress.isEmpty())) {
+        if (suffixPassThrough && (webAddress == null || webAddress.isEmpty())) {
             throw new BadRequestException("You must provide a Target URL if following suffixes.");
         }
 
@@ -75,7 +68,7 @@ public class BcidService extends FimsService {
             title = resourceTypeString;
         }
         String identifier = bcidMinter.createEntityBcid(new Bcid(userId, resourceTypeString, title,
-                webAddress, graph, doi, finalCopy, suffixPassthrough));
+                webAddress, graph, doi, finalCopy, suffixPassThrough));
         bcidMinter.close();
 
         return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
