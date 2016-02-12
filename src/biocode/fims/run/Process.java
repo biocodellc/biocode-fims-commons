@@ -403,6 +403,7 @@ public class Process {
                     outputDirectory,
                     processController
             );
+
         }
 
         FimsPrinter.out.println("Initializing ...");
