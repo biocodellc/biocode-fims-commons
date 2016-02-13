@@ -360,7 +360,7 @@ public class ExpeditionMinter {
             rs = stmt.executeQuery();
             if (rs.next()) {
                 // Grab the prefixes and concepts associated with this
-                metadata.put("graph", rs.getString("graphs"));
+                metadata.put("graph", rs.getString("graph"));
                 metadata.put("projectId", rs.getInt("projectId"));
                 metadata.put("expeditionOwner", rs.getString("expeditionOwner"));
                 metadata.put("uploader", rs.getString("uploader"));
