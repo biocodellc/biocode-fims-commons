@@ -38,6 +38,7 @@ public class ProjectMinter {
      * Find the BCID that denotes the validation file location for a particular expedition
      *
      * @param projectId defines the projectId to lookup
+     *
      * @return returns the BCID for this expedition and conceptURI combination
      */
     public String getValidationXML(Integer projectId) {
@@ -127,9 +128,11 @@ public class ProjectMinter {
 
     /**
      * A utility function to get the very latest graph loads for each expedition
-     * This is a public accessible function from the REST service so it only returns results that are declared as public
+     * This is a public accessible function from the REST service so it only returns results that are declared as
+     * public
      *
      * @param projectId pass in an project Bcid to limit the set of expeditions we are looking at
+     *
      * @return
      */
     public JSONArray getLatestGraphs(int projectId, String username) {
@@ -213,6 +216,7 @@ public class ProjectMinter {
      * Return a JSON representation of the projects a user is an admin for
      *
      * @param username
+     *
      * @return
      */
     public JSONArray getAdminProjects(String username) {
@@ -247,7 +251,9 @@ public class ProjectMinter {
 
     /**
      * return a JSON representation of the projects that a user is a member of
+     *
      * @param username
+     *
      * @return
      */
     public JSONArray listUsersProjects(String username) {
@@ -282,8 +288,10 @@ public class ProjectMinter {
 
     /**
      * Update the project's metadata with the values in the Hashtable.
+     *
      * @param updateTable
      * @param projectId
+     *
      * @return
      */
     public Boolean updateMetadata(Hashtable<String, String> updateTable, Integer projectId) {
@@ -340,8 +348,10 @@ public class ProjectMinter {
 
     /**
      * retrieve the project metadata for a given projectId and userId
+     *
      * @param projectId
      * @param username
+     *
      * @return
      */
     public JSONObject getMetadata(Integer projectId, String username) {
@@ -362,7 +372,7 @@ public class ProjectMinter {
             if (rs.next()) {
                 metadata.put("title", rs.getString("title"));
                 metadata.put("public", String.valueOf(rs.getBoolean("public")));
-                metadata.put("validationXml", (rs.getString("validationXml") != null) ? rs.getString("validationXml"):"");
+                metadata.put("validationXml", (rs.getString("validationXml") != null) ? rs.getString("validationXml") : "");
             } else {
                 throw new BadRequestException("You must be this project's admin in order to view its configuration.");
             }
@@ -394,7 +404,7 @@ public class ProjectMinter {
 
             // If the user belongs to this project then there will be a >=1 value and returns true, otherwise false.
             return rs.getInt("count") >= 1;
-        }  catch (SQLException e) {
+        } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
             db.close(stmt, rs);
@@ -408,8 +418,10 @@ public class ProjectMinter {
 
     /**
      * Check if a user is a given project's admin
+     *
      * @param userId
      * @param projectId
+     *
      * @return
      */
     public Boolean isProjectAdmin(Integer userId, Integer projectId) {
@@ -434,8 +446,10 @@ public class ProjectMinter {
 
     /**
      * Remove a user from a project. Once removed, a user can no longer create/view expeditions in the project.
+     *
      * @param userId
      * @param projectId
+     *
      * @return
      */
     public void removeUser(Integer userId, Integer projectId) {
@@ -456,8 +470,10 @@ public class ProjectMinter {
 
     /**
      * Add a user as a member to the project. This user can then create expeditions in this project.
+     *
      * @param userId
      * @param projectId
+     *
      * @return
      */
     public void addUserToProject(Integer userId, Integer projectId) {
@@ -480,7 +496,9 @@ public class ProjectMinter {
 
     /**
      * retrieve all the members of a given project.
+     *
      * @param projectId
+     *
      * @return
      */
     public JSONObject getProjectUsers(Integer projectId) {
@@ -531,16 +549,17 @@ public class ProjectMinter {
         ResultSet rs = null;
         HashMap projectMap = new HashMap();
 
+
         // We need a username
         if (username == null) {
             throw new ServerErrorException("server error", "username can't be null");
         }
         Integer userId = db.getUserId(username);
 
-
         try {
             String sql1 = "select e.expeditionTitle, p.projectTitle from expeditions e, projects p " +
                     "where e.userId = ? and p.projectId = e.projectId";
+
             stmt = conn.prepareStatement(sql1);
             stmt.setInt(1, userId);
 
@@ -566,7 +585,14 @@ public class ProjectMinter {
 
             }
 
-            String sql2 = "select e.expeditionCode, e.expeditionTitle, b.ts, b.identifier as identifier, b.bcidId as id, b.finalCopy, e.projectId, p.projectTitle\n" +
+            String sql2 = "select e.expeditionCode expeditionCode, " +
+                    "e.expeditionTitle as expeditionTitle," +
+                    "b.ts as ts, " +
+                    "b.identifier as identifier, " +
+                    "b.bcidId as id, " +
+                    "b.finalCopy as finalCopy, " +
+                    "e.projectId as projectId, " +
+                    "p.projectTitle as projectTitle \n" +
                     "from bcids b, expeditions e,  expeditionBcids eB, projects p\n" +
                     "where b.userId = ? and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
                     " and eB.bcidId=b.bcidId\n" +
@@ -575,11 +601,15 @@ public class ProjectMinter {
                     " order by projectId, expeditionCode, ts desc";
 
             stmt = conn.prepareStatement(sql2);
+
             stmt.setInt(1, userId);
 
             rs = stmt.executeQuery();
+
+
             while (rs.next()) {
                 JSONObject dataset = new JSONObject();
+
                 String projectTitle = rs.getString("projectTitle");
                 String expeditionTitle = rs.getString("expeditionTitle");
 
@@ -590,11 +620,21 @@ public class ProjectMinter {
                 dataset.put("finalCopy", rs.getString("finalCopy"));
 
                 JSONObject p = (JSONObject) projectMap.get(projectTitle);
-                ((JSONArray) p.get(expeditionTitle)).add(dataset);
-            }
 
+                // This line throwing null pointer exception
+                try {
+                    ((JSONArray) p.get(expeditionTitle)).add(dataset);
+                } catch (Exception e) {
+                    System.out.println("DEBUG projectMap is NULL?");
+                    System.out.println("   expeditionTitle = " + expeditionTitle);
+                    System.out.println("   dataset = " + dataset.toString());
+                    System.out.println("   projectTitle = " + projectTitle);
+                }
+            }
             return JSONValue.toJSONString(projectMap);
         } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("SQL Message : " + e.getMessage());
             throw new ServerErrorException("Server Error", "Trouble getting users datasets.", e);
         } finally {
             db.close(stmt, rs);
@@ -614,7 +654,7 @@ public class ProjectMinter {
 
         JSONArray projects = listUsersProjects(username);
 
-        for (Object p:  projects) {
+        for (Object p : projects) {
             JSONObject project = (JSONObject) p;
             projectMap.put(project.get("projectTitle"), new JSONArray());
         }
@@ -687,6 +727,7 @@ public class ProjectMinter {
 
     /**
      * save a template generator configuration
+     *
      * @param configName
      * @param projectId
      * @param userId
@@ -715,8 +756,10 @@ public class ProjectMinter {
 
     /**
      * check if a config exists
+     *
      * @param configName
      * @param projectId
+     *
      * @return
      */
     public boolean templateConfigExists(String configName, Integer projectId) {
@@ -737,7 +780,7 @@ public class ProjectMinter {
                 return true;
             }
             return false;
-        }  catch (SQLException e) {
+        } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
             db.close(stmt, rs);
@@ -766,7 +809,7 @@ public class ProjectMinter {
                 return true;
             }
             return false;
-        }  catch (SQLException e) {
+        } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
             db.close(stmt, rs);
@@ -775,7 +818,9 @@ public class ProjectMinter {
 
     /**
      * get the template generator configuration for the given project
+     *
      * @param projectId
+     *
      * @return
      */
     public JSONArray getTemplateConfigs(Integer projectId) {
@@ -806,8 +851,10 @@ public class ProjectMinter {
 
     /**
      * get a specific template generator configuration
+     *
      * @param configName
      * @param projectId
+     *
      * @return
      */
     public JSONObject getTemplateConfig(String configName, Integer projectId) {
