@@ -557,11 +557,19 @@ public class ProjectMinter {
         Integer userId = db.getUserId(username);
 
         try {
-            String sql1 = "select e.expeditionTitle, p.projectTitle from expeditions e, projects p " +
-                    "where e.userId = ? and p.projectId = e.projectId";
+            String sql1 = "SELECT e.expeditionTitle, p.projectTitle FROM expeditions e, projects p " +
+                    "WHERE e.userId = ? and p.projectId = e.projectId " +
+                    "UNION " +
+                    "SELECT e.expeditionTitle, p.projectTitle FROM expeditions e, expeditionBcids eB, projects p, bcids b " +
+                    "WHERE b.userId = ? and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and eB.bcidId=b.bcidId\n" +
+                    " and e.expeditionId=eB.expeditionId\n" +
+                    " and p.projectId=e.projectId\n" +
+                    " GROUP BY e.expeditionId";
 
             stmt = conn.prepareStatement(sql1);
             stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
 
             rs = stmt.executeQuery();
 
@@ -621,20 +629,10 @@ public class ProjectMinter {
 
                 JSONObject p = (JSONObject) projectMap.get(projectTitle);
 
-                // This line throwing null pointer exception
-                try {
-                    ((JSONArray) p.get(expeditionTitle)).add(dataset);
-                } catch (Exception e) {
-                    System.out.println("DEBUG projectMap is NULL?");
-                    System.out.println("   expeditionTitle = " + expeditionTitle);
-                    System.out.println("   dataset = " + dataset.toString());
-                    System.out.println("   projectTitle = " + projectTitle);
-                }
+                ((JSONArray) p.get(expeditionTitle)).add(dataset);
             }
             return JSONValue.toJSONString(projectMap);
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("SQL Message : " + e.getMessage());
             throw new ServerErrorException("Server Error", "Trouble getting users datasets.", e);
         } finally {
             db.close(stmt, rs);
