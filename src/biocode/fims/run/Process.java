@@ -57,24 +57,21 @@ public class Process {
      * @param outputFolder  Where to store output files
      */
     public Process(
-            String inputFilename,
             String outputFolder,
             ProcessController processController) {
 
         // Read the Configuration File
         configFile = new ConfigurationFileFetcher(processController.getProjectId(), outputFolder, false).getOutputFile();
 
-        init(inputFilename, outputFolder, processController);
+        init(outputFolder, processController);
     }
 
     /**
      * Setup class variables for processing FIMS data.
      *
-     * @param inputFilename The data to run.process, usually an Excel spreadsheet
      * @param outputFolder  Where to store output files
      */
     public Process(
-            String inputFilename,
             String outputFolder,
             ProcessController processController,
             File configFile) {
@@ -82,24 +79,28 @@ public class Process {
         // Read the Configuration File
         this.configFile = configFile;
 
-        init(inputFilename, outputFolder, processController);
+        init(outputFolder, processController);
     }
 
-    private void init(String inputFilename, String outputFolder, ProcessController processController) {
+    private void init(String outputFolder, ProcessController processController) {
         // Update the processController Settings
         this.processController = processController;
 
         projectId = processController.getProjectId();
 
-        processController.setInputFilename(inputFilename);
         this.outputFolder = outputFolder;
 
         // Control the file outputPrefix... set them here to expedition codes.
         this.outputPrefix = processController.getExpeditionCode() + "_output";
 
-        // Parse the Mapping object (this object is used extensively in downstream functions!)
-        mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        if (processController.getMapping() == null) {
+            // Parse the Mapping object (this object is used extensively in downstream functions!)
+            mapping = new Mapping();
+            mapping.addMappingRules(new Digester(), configFile);
+            processController.setMapping(mapping);
+        } else {
+            mapping = processController.getMapping();
+        }
         processController.setDefaultSheetUniqueKey(mapping.getDefaultSheetUniqueKey());
 
         if (processController.getValidation() == null) {
@@ -172,13 +173,13 @@ public class Process {
         runExpeditionCheck();
         if (processController.isExpeditionCreateRequired()) {
             System.out.println("Creating expedition " + processController.getExpeditionCode() + "...");
-            createExpedition(processController, mapping);
+            createExpedition(processController);
         }
         processController.setExpeditionCreateRequired(false);
         processController.setExpeditionAssignedToUserAndExists(true);
     }
 
-    private boolean createExpedition(ProcessController processController, Mapping mapping) {
+    private boolean createExpedition(ProcessController processController) {
         String status = "\tCreating expedition " + processController.getExpeditionCode() + " ... this is a one time process " +
                 "before loading each spreadsheet and may take a minute...\n";
         processController.appendStatus(status);
@@ -397,18 +398,18 @@ public class Process {
         if (cl.hasOption("configFile")) {
             System.out.println("using local config file = " + cl.getOptionValue("configFile").toString());
             p = new Process(
-                    inputFile,
                     outputDirectory,
                     processController,
                     new File(cl.getOptionValue("configFile")));
         } else {
             p = new Process(
-                    inputFile,
                     outputDirectory,
                     processController
             );
 
         }
+
+        processController.setInputFilename(inputFile);
 
         FimsPrinter.out.println("Initializing ...");
         FimsPrinter.out.println("\tinputFilename = " + inputFile);

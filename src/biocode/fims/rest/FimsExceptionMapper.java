@@ -52,7 +52,12 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
             if (pc != null) {
                 try {
                     //delete any tmp files that were created
-                    new File(pc.getInputFilename()).delete();
+                    if (pc.getInputFilename() != null) {
+                        new File(pc.getInputFilename()).delete();
+                    }
+                    if (pc.getFastaManager() != null && pc.getFastaManager().getFastaFilename() != null) {
+                        new File(pc.getFastaManager().getFastaFilename()).delete();
+                    }
                 } catch (NullPointerException e2) {
                     logger.warn("NullPointerException thrown trying to delete processController.getInputFilename.");
                 }

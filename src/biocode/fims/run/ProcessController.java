@@ -1,6 +1,8 @@
 package biocode.fims.run;
 
 import biocode.fims.digester.Validation;
+import biocode.fims.digester.Mapping;
+import biocode.fims.fasta.FastaManager;
 import biocode.fims.utils.StringGenerator;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -27,13 +29,16 @@ public class ProcessController {
     private Integer projectId;
     private Integer userId;
     private Validation validation;
+
+    private Mapping mapping;
+
+    private FastaManager fastaManager;
     private String worksheetName;
     private StringBuilder statusSB = new StringBuilder();
     private String accessionNumber;
     private String defaultSheetUniqueKey;
     private Boolean publicStatus = false;   // default to false
     private Boolean finalCopy = false;
-
     private static Logger logger = LoggerFactory.getLogger(ProcessController.class);
 
     public String getWorksheetName() {
@@ -56,13 +61,13 @@ public class ProcessController {
         this.expeditionCode = expeditionCode;
         this.projectId = projectId;
     }
-     public ProcessController() {
+
+    public ProcessController() {
 
     }
-
     public Integer getUserId() { return userId; }
-    public void setUserId(Integer userId) { this.userId = userId; }
 
+    public void setUserId(Integer userId) { this.userId = userId; }
     public Boolean isExpeditionCreateRequired() {
         return expeditionCreateRequired;
     }
@@ -139,10 +144,10 @@ public class ProcessController {
         return validation;
     }
 
-
     public void setValidation(Validation validation) {
         this.validation = validation;
     }
+
 
     public Boolean getPublicStatus() {
         return publicStatus;
@@ -168,7 +173,6 @@ public class ProcessController {
             return false;
     }
 
-
     /**
      * return a string that is to be used in html and is json safe
      *
@@ -180,6 +184,7 @@ public class ProcessController {
         s = s.replaceAll("\n", "<br>").replaceAll("\t", "");
         return JSONObject.escape(s);
     }
+
 
     public String printStatus() {
         String retVal = "";
@@ -254,15 +259,31 @@ public class ProcessController {
     public void setCommandLineSB(StringBuilder commandLineWarningsSB) {
         this.commandLineWarningsSB = commandLineWarningsSB;
     }
+
     public StringBuilder getCommandLineSB() {
         return commandLineWarningsSB;
     }
-
     public void setFinalCopy(Boolean finalCopy) {
         this.finalCopy = finalCopy;
     }
 
     public boolean getFinalCopy() {
         return finalCopy;
+    }
+
+    public FastaManager getFastaManager() {
+        return fastaManager;
+    }
+
+    public void setFastaManager(FastaManager fastaManager) {
+        this.fastaManager = fastaManager;
+    }
+
+    public Mapping getMapping() {
+        return mapping;
+    }
+
+    public void setMapping(Mapping mapping) {
+        this.mapping = mapping;
     }
 }

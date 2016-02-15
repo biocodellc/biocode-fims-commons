@@ -27,10 +27,12 @@ public abstract class FastaManager {
     // Store all messages related to this Worksheet
     private LinkedList<RowMessage> messages = new LinkedList<RowMessage>();
     protected ProcessController processController;
+    protected HashMap<String, String> fastaData = null;
+
     private String fastaFilename;
+
     private Boolean hasErrors = false;
     private Boolean hasWarnings = false;
-
     public FastaManager(ProcessController processController, String fastaFilename) {
         this.processController = processController;
         this.fastaFilename = fastaFilename;
@@ -72,7 +74,7 @@ public abstract class FastaManager {
         }
 
         // parse the FASTA file to get an array of sequence identifiers
-        HashMap<String, String> fastaData = parseFasta();
+        parseFasta();
         Set<String> fastaIds = fastaData.keySet();
 
         if (fastaData.isEmpty()) {
@@ -82,20 +84,75 @@ public abstract class FastaManager {
         }
 
         // verify that all fastaIds exist in the dataset
+        ArrayList<String> invalidIds = new ArrayList<>();
         for (String fastaId: fastaIds) {
             if (!datasetIds.contains(fastaId)) {
-                processController.appendStatus("<br>Sequences exist in the FASTA file that do not exist in the dataset.<br>");
-                processController.setHasWarnings(true);
+                invalidIds.add(fastaId);
             }
         }
-
-        // TODO generify Validation.printMessages and move to processController. Then call here
-        if (hasErrors) {
-            processController.getValidation().printMessages(processController);
+        if (!invalidIds.isEmpty()) {
+            processController.appendStatus("<br>The following sequences exist in the FASTA file that do not exist in the dataset.<br>");
+            processController.appendStatus("<ul>");
+            for (String id: invalidIds) {
+                processController.appendStatus("<li>" + id + "</li>");
+            }
+            processController.appendStatus("</ul>");
+            processController.setHasWarnings(true);
         }
     }
 
-    public abstract void upload();
+    /**
+     * fetches the graph from the most recent dataset loaded for the expeditionCode and projectId set in the
+     * processController. This should be called before a new dataset has been uploaded. This is useful for fetching the
+     * collection ids from an existing dataset or copying over the sequences from an old datset to a new dataset.
+     *
+     * @return graph or null
+     */
+    // TODO should this be abstract? Decide after MySql inplementation
+    public String fetchGraph() {
+        ResultSet rs = null;
+        PreparedStatement stmt = null;
+        Database db = new Database();
+
+        try {
+            String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +
+                    "(SELECT b1.graph, e.expeditionCode, max(b1.ts) as maxts FROM bcids b1, expeditionBcids eb, expeditions e " +
+                    "   WHERE eb.bcidId=b1.bcidId AND eb.expeditionId=e.expeditionId AND b1.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" " +
+                    "   AND e.expeditionCode = ? AND e.projectId = ? GROUP BY e.expeditionCode) as b2 " +
+                    "WHERE b.bcidId = eb.bcidId AND eb.expeditionId = e.expeditionId AND e.expeditionCode = ? AND " +
+                    "e.projectId = ? AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" AND b.ts = b2.maxts";
+
+            stmt = db.getConn().prepareStatement(query);
+            stmt.setString(1, processController.getExpeditionCode());
+            stmt.setInt(2, processController.getProjectId());
+            stmt.setString(3, processController.getExpeditionCode());
+            stmt.setInt(4, processController.getProjectId());
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("b.graph");
+            }
+
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            db.close(stmt, rs);
+            db.close();
+        }
+
+        return null;
+    }
+
+    public String getFastaFilename() {
+        return fastaFilename;
+    }
+
+    /**
+     * triplify and upload a fasta file to the specified graph
+     * @param graph
+     */
+    public abstract void upload(String graph);
 
     /**
      * copy over the fasta sequences <urn:sequence> from the previousGraph to the newGraph. Only copy the sequences where
@@ -105,6 +162,13 @@ public abstract class FastaManager {
      * @param newGraph
      */
     public abstract void copySequences(String previousGraph, String newGraph);
+
+    /**
+     * fetch the latest uploaded dataset and then parse the returned Resources.
+     *
+     * @return An array of identifiers that exist in the dataset
+     */
+    protected abstract ArrayList<String> fetchIds();
 
     /**
      * get the values for each row in the
@@ -141,18 +205,11 @@ public abstract class FastaManager {
     }
 
     /**
-     * fetch the latest uploaded dataset and then parse the returned Resources.
-     *
-     * @return An array of identifiers that exist in the dataset
-     */
-    public abstract ArrayList<String> fetchIds();
-
-    /**
      * parse the fasta file identifier-sequence pairs
      * @return HashMap<String, String> with (identifier, sequence) pairs
      */
     private HashMap<String, String> parseFasta() {
-        HashMap<String, String> fastaData = new HashMap<>();
+        fastaData = new HashMap<>();
         try {
             FileReader input = new FileReader(fastaFilename);
             BufferedReader bufRead = new BufferedReader(input);
@@ -181,49 +238,7 @@ public abstract class FastaManager {
         } catch (IOException e) {
             throw new ServerErrorException(e);
         }
-        return new HashMap<>();
-    }
-
-    /**
-     * fetches the graph from the most recent dataset loaded for the expeditionCode and projectId set in the
-     * processController
-     *
-     * @return graph or null
-     */
-    // TODO should this be abstract? Decide after MySql inplementation
-    protected String fetchGraph() {
-        ResultSet rs = null;
-        PreparedStatement stmt = null;
-        Database db = new Database();
-
-        try {
-            String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +
-                    "(SELECT b1.graph, e.expeditionCode, max(b1.ts) as maxts FROM bcids b1, expeditionBcids eb, expeditions e " +
-                    "   WHERE eb.bcidId=b1.bcidId AND eb.expeditionId=e.expeditionId AND b1.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" " +
-                    "   AND e.expeditionCode = ? AND e.projectId = ? GROUP BY e.expeditionCode) as b2 " +
-                    "WHERE b.bcidId = eb.bcidId AND eb.expeditionId = e.expeditionId AND e.expeditionCode = ? AND " +
-                    "e.projectId = ? AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" AND b.ts = b2.maxts";
-
-            stmt = db.getConn().prepareStatement(query);
-            stmt.setString(1, processController.getExpeditionCode());
-            stmt.setInt(2, processController.getProjectId());
-            stmt.setString(3, processController.getExpeditionCode());
-            stmt.setInt(4, processController.getProjectId());
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("b.graph");
-            }
-
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            db.close(stmt, rs);
-            db.close();
-        }
-
-        return null;
+        return fastaData;
     }
 
 }

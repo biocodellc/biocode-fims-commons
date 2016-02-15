@@ -41,9 +41,6 @@ public class Validation implements RendererInterface {
     // File reference for a sqlite Database
     private File sqliteFile;
 
-    // Create a reference to the mapping component
-    private Mapping mapping;
-
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
      */
@@ -113,7 +110,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder) throws FimsException {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, Mapping mapping) throws FimsException {
         PathManager pm = new PathManager();
         File processDirectory = null;
 
@@ -232,21 +229,12 @@ public class Validation implements RendererInterface {
     }
 
     /**
-     * Get the mapping component that was set by the run() method
-     * @return
-     */
-    public Mapping getMapping() {
-        return mapping;
-    }
-
-    /**
      * Begin the validation run.process, looping through worksheets
      *
      * @return
      */
     public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping) {
         FimsPrinter.out.println("Validate ...");
-        this.mapping = mapping;
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = null;
@@ -268,7 +256,7 @@ public class Validation implements RendererInterface {
         // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
         // processing data, such as worksheets containing duplicate column names, which will fail the data load.
         try {
-            connection = createSqlLite(filenamePrefix, outputFolder);
+            connection = createSqlLite(filenamePrefix, outputFolder, mapping);
         }   catch (FimsException e) {
             errorFree = false;
             sheet.getMessages().addLast(new RowMessage(
