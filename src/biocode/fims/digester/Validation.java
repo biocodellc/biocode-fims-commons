@@ -20,10 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import static ch.lambdaj.Lambda.*;
 
 /**
  * digester.Validation class holds all worksheets that are part of this validator
@@ -166,66 +167,26 @@ public class Validation implements RendererInterface {
     }
 
     /**
-     * Print output for the commandline
+     * iterate through each Worksheet and append the messages to the processController
      */
-    public ProcessController printMessages(ProcessController processController) {
-        StringBuilder warningSB = new StringBuilder();
-        // Create a simplified output stream just for commandline printing.
-        StringBuilder commandLineWarningSB = new StringBuilder();
-        Html2Text htmlParser = new Html2Text();
-
+    public void getMessages(ProcessController processController) {
+        HashMap<String, LinkedList<RowMessage>> messages = new HashMap();
         for (Iterator<Worksheet> w = worksheets.iterator(); w.hasNext(); ) {
             Worksheet worksheet = w.next();
+            messages.put(worksheet.getSheetname(), worksheet.getMessages());
             processController.setWorksheetName(worksheet.getSheetname());
-            String status1 = "\t<b>Validation results on \"" + worksheet.getSheetname() + "\" worksheet.</b>";
-            processController.appendStatus("<br>" + status1);
-
-            // Group all Messages using lambdaj jar library
-            Group<RowMessage> rowGroup = group(worksheet.getMessages(), by(on(RowMessage.class).getGroupMessageAsString()));
-            warningSB.append("<div id=\"expand\">");
-            for (String key : rowGroup.keySet()) {
-                warningSB.append("<dl>");
-                warningSB.append("<dt>" + key + "</dt>");
-                java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
-
-                // Parse the Row Messages that are meant for HTML display
-                commandLineWarningSB.append(htmlParser.convert(key)+"\n");
-
-                for (RowMessage m : rowMessageList) {
-                    warningSB.append("<dd>" + m.print() + "</dd>");
-                    commandLineWarningSB.append("\t" + m.print() + "\n");
-                }
-                warningSB.append("</dl>");
-            }
-            warningSB.append("</div>");
 
             // Worksheet has errors
             if (!worksheet.errorFree()) {
-
-                processController.appendStatus("<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>");
-                processController.appendStatus(warningSB.toString());
-
                 processController.setHasErrors(true);
-                processController.setCommandLineSB(commandLineWarningSB);
-                return processController;
-            } else {
+            } else if (!worksheet.warningFree()) {
                 // Worksheet has no errors but does have some warnings
-                if (!worksheet.warningFree()) {
-                    processController.appendStatus("<br><b>1 or more warnings found. Click each message for details</b><br>");
-                    processController.appendStatus(warningSB.toString());
-                    processController.setHasWarnings(true);
-                    processController.setCommandLineSB(commandLineWarningSB);
-
-                    return processController;
-                    //Worksheet has no errors or warnings
-                } else {
-                    processController.setHasWarnings(false);
-                    processController.setValidated(true);
-                    return processController;
-                }
+                processController.setHasWarnings(true);
+            } else {
+                processController.setValidated(true);
             }
         }
-        return processController;
+        processController.addMessages(messages);
     }
 
     /**

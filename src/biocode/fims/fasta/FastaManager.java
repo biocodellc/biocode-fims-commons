@@ -8,6 +8,7 @@ import biocode.fims.reader.ReaderManager;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.run.ProcessController;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -31,8 +32,6 @@ public abstract class FastaManager {
 
     private String fastaFilename;
 
-    private Boolean hasErrors = false;
-    private Boolean hasWarnings = false;
     public FastaManager(ProcessController processController, String fastaFilename) {
         this.processController = processController;
         this.fastaFilename = fastaFilename;
@@ -46,58 +45,67 @@ public abstract class FastaManager {
     public void validate(String outputFolder) {
         ArrayList<String> datasetIds;
 
-        if (processController.getInputFilename() != null) {
-            // Create the tabulardataReader for reading the input file
-            ReaderManager rm = new ReaderManager();
-            rm.loadReaders();
+        try {
+            if (processController.getInputFilename() != null) {
+                // Create the tabulardataReader for reading the input file
+                ReaderManager rm = new ReaderManager();
+                rm.loadReaders();
 
-            TabularDataReader tdr = rm.openFile(processController.getInputFilename(),
-                    processController.getDefaultSheetUniqueKey(), outputFolder);
+                TabularDataReader tdr = rm.openFile(processController.getInputFilename(),
+                        processController.getDefaultSheetUniqueKey(), outputFolder);
 
-            if (tdr == null) {
+                if (tdr == null) {
+                    messages.addLast(new RowMessage("Unable to open the file you attempted to upload.", "Spreadsheet check", RowMessage.ERROR));
+                    processController.setHasErrors(true);
+                    return;
+                }
+
+                datasetIds = fetchIds(tdr);
+            } else {
+                // fetch ids from fuseki
+                datasetIds = fetchIds();
+            }
+
+            if (datasetIds.isEmpty()) {
+                messages.addLast(new RowMessage("No data found", "Spreadsheet check", RowMessage.ERROR));
                 processController.setHasErrors(true);
-                processController.appendStatus("<br>Unable to open the file you attempted to upload.<br>");
-                processController.setCommandLineSB(new StringBuilder("Unable to open the file you attempted to upload."));
                 return;
             }
 
-            datasetIds = fetchIds(tdr);
-        } else {
-            // fetch ids from fuseki
-            datasetIds = fetchIds();
-        }
+            // parse the FASTA file to get an array of sequence identifiers
+            parseFasta();
+            Set<String> fastaIds = fastaData.keySet();
 
-        if (datasetIds.isEmpty()) {
-            processController.appendStatus("<br>No data was found in the dataset.<br>");
-            processController.setHasErrors(true);
-            return;
-        }
-
-        // parse the FASTA file to get an array of sequence identifiers
-        parseFasta();
-        Set<String> fastaIds = fastaData.keySet();
-
-        if (fastaData.isEmpty()) {
-            processController.appendStatus("<br>No data was found in the fasta file.<br>");
-            processController.setHasErrors(true);
-            return;
-        }
-
-        // verify that all fastaIds exist in the dataset
-        ArrayList<String> invalidIds = new ArrayList<>();
-        for (String fastaId: fastaIds) {
-            if (!datasetIds.contains(fastaId)) {
-                invalidIds.add(fastaId);
+            if (fastaData.isEmpty()) {
+                messages.addLast(new RowMessage("No data found", "FASTA check", RowMessage.ERROR));
+                processController.setHasErrors(true);
+                return;
             }
-        }
-        if (!invalidIds.isEmpty()) {
-            processController.appendStatus("<br>The following sequences exist in the FASTA file that do not exist in the dataset.<br>");
-            processController.appendStatus("<ul>");
-            for (String id: invalidIds) {
-                processController.appendStatus("<li>" + id + "</li>");
+
+            // verify that all fastaIds exist in the dataset
+            ArrayList<String> invalidIds = new ArrayList<>();
+            for (String fastaId: fastaIds) {
+                if (!datasetIds.contains(fastaId)) {
+                    invalidIds.add(fastaId);
+                }
             }
-            processController.appendStatus("</ul>");
-            processController.setHasWarnings(true);
+            if (!invalidIds.isEmpty()) {
+                int level;
+                // this is an error if no ids exist in the dataset
+                if (invalidIds.size() == fastaIds.size()) {
+                    level = RowMessage.ERROR;
+                    processController.setHasErrors(true);
+                } else {
+                    level = RowMessage.WARNING;
+                    processController.setHasWarnings(true);
+                }
+                messages.add(new RowMessage(StringUtils.join(invalidIds, ","),
+                        "The following sequences exist in the FASTA file, but not the dataset.", level));
+            }
+        } finally {
+            HashMap<String, LinkedList<RowMessage>> map = new HashMap<>();
+            map.put("FASTA", messages);
+            processController.addMessages(map);
         }
     }
 
@@ -185,20 +193,12 @@ public abstract class FastaManager {
             sheetName = sheet.getSheetname();
             tdr.setTable(sheetName);
         } catch (FimsException e) {
-            // An error here means the sheetname was not found, throw an application message
-            sheet.getMessages().addLast(new RowMessage("Unable to find a required worksheet named '" + sheetName + "' (no quotes)", "Spreadsheet check", RowMessage.ERROR));
-            hasErrors = true;
+            processController.setHasErrors(true);
             return datasetIds;
         }
 
-        // Default rule... always check that there is some data
-        if (tdr.getNumRows() < 1) {
-            messages.addLast(new RowMessage("No data found", "Spreadsheet check", RowMessage.ERROR));
-            hasErrors = true;
-        } else {
-            for (int row = 1; row <= tdr.getNumRows(); row++) {
-                datasetIds.add(tdr.getStringValue(processController.getDefaultSheetUniqueKey(), row));
-            }
+        for (int row = 1; row <= tdr.getNumRows(); row++) {
+            datasetIds.add(tdr.getStringValue(processController.getDefaultSheetUniqueKey(), row));
         }
 
         return datasetIds;

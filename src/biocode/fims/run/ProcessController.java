@@ -3,12 +3,18 @@ package biocode.fims.run;
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fasta.FastaManager;
+import biocode.fims.renderers.RowMessage;
+import biocode.fims.utils.Html2Text;
 import biocode.fims.utils.StringGenerator;
+import ch.lambdaj.group.Group;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.*;
+
+import static ch.lambdaj.Lambda.*;
 
 /**
  * Tracks status of data validation.  Helpful especially in a stateless environment.
@@ -29,11 +35,11 @@ public class ProcessController {
     private Integer projectId;
     private Integer userId;
     private Validation validation;
-
     private Mapping mapping;
-
     private FastaManager fastaManager;
     private String worksheetName;
+    // Store all messages as a k,v pair of sheetName: messages
+    private HashMap<String, List<RowMessage>> messages = new HashMap<>();
     private StringBuilder statusSB = new StringBuilder();
     private String accessionNumber;
     private String defaultSheetUniqueKey;
@@ -285,5 +291,62 @@ public class ProcessController {
 
     public void setMapping(Mapping mapping) {
         this.mapping = mapping;
+    }
+
+    public void addMessages(HashMap<String, LinkedList<RowMessage>> map) {
+        messages.putAll(map);
+    }
+
+    /**
+     * add Messages to the status string
+     * @return
+     */
+    public void printMessages() {
+        StringBuilder messagesSb = new StringBuilder();
+        // Create a simplified output stream just for commandline printing.
+        StringBuilder commandLineWarningSB = new StringBuilder();
+        Html2Text htmlParser = new Html2Text();
+
+        // iterate through each sheet in messages and append associated messages
+        Iterator it = messages.keySet().iterator();
+        while (it.hasNext()) {
+            String sheetName = (String) it.next();
+
+            String status = "\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+            appendStatus("<br>" + status);
+
+            // Group all Messages using lambdaj jar library
+            Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessageAsString()));
+            messagesSb.append("<div id=\"expand\">");
+            for (String key : rowGroup.keySet()) {
+                messagesSb.append("<dl>");
+                messagesSb.append("<dt>" + key + "</dt>");
+                java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
+
+                // Parse the Row Messages that are meant for HTML display
+                commandLineWarningSB.append(htmlParser.convert(key)+"\n");
+
+                for (RowMessage m : rowMessageList) {
+                    messagesSb.append("<dd>" + m.print() + "</dd>");
+                    commandLineWarningSB.append("\t" + m.print() + "\n");
+                }
+                messagesSb.append("</dl>");
+            }
+            messagesSb.append("</div>");
+
+            if (hasErrors) {
+
+                appendStatus("<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>");
+                appendStatus(messagesSb.toString());
+
+                setCommandLineSB(commandLineWarningSB);
+            } else if (hasWarnings) {
+                appendStatus("<br><b>1 or more warnings found. Click each message for details</b><br>");
+                appendStatus(messagesSb.toString());
+                setCommandLineSB(commandLineWarningSB);
+
+            }
+        }
+
     }
 }

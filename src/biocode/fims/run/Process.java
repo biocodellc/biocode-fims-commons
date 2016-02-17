@@ -244,6 +244,7 @@ public class Process {
 
         // Validation Step
         runValidation();
+        processController.printMessages();
 
         // If there is errors, tell the user and stop the operation
         if (processController.getHasErrors()) {
@@ -277,8 +278,8 @@ public class Process {
         // Run the validation
         validation.run(tdr, outputPrefix, outputFolder, mapping);
 
-        //
-        processController = validation.printMessages(processController);
+        // get the Messages from each worksheet and add them to the processController
+        validation.getMessages(processController);
     }
 
     /**
