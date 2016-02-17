@@ -99,7 +99,7 @@ public abstract class FastaManager {
                     level = RowMessage.WARNING;
                     processController.setHasWarnings(true);
                 }
-                messages.add(new RowMessage(StringUtils.join(invalidIds, ","),
+                messages.add(new RowMessage(StringUtils.join(invalidIds, ", "),
                         "The following sequences exist in the FASTA file, but not the dataset.", level));
             }
         } finally {
