@@ -8,6 +8,7 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import de.fuberlin.wiwiss.d2rq.sql.SQL;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -333,9 +334,9 @@ public class Rule {
             statement = connection.createStatement();
             rs = null;
             // Search for non-unique values in resultSet
-            sql = "select " + getColumn() + " from " + digesterWorksheet.getSheetname() +
-                    " WHERE ifnull(" + getColumn() + ",'') != '' " +
-                    " group by " + getColumn();
+            sql = "select `" + getColumn() + "` from " + digesterWorksheet.getSheetname() +
+                    " WHERE ifnull(`" + getColumn() + "`,'') != '' " +
+                    " group by `" + getColumn() + "`";
 
             rs = statement.executeQuery(sql);
 
@@ -395,9 +396,9 @@ public class Rule {
             statement = connection.createStatement();
             rs = null;
             // Search for non-unique values in resultSet
-            sql = "select " + getColumn() + ",count(*) from " + digesterWorksheet.getSheetname() +
-                    " WHERE ifnull(" + getColumn() + ",'') != '' " +
-                    " group by " + getColumn() +
+            sql = "select `" + getColumn() + "`,count(*) from " + digesterWorksheet.getSheetname() +
+                    " WHERE ifnull(`" + getColumn() + "`,'') != '' " +
+                    " group by `" + getColumn() + "`" +
                     " having count(*) > 1";
 
             rs = statement.executeQuery(sql);
@@ -528,10 +529,10 @@ public class Rule {
 
             // Look for non numeric values in minimum & maximum columns
             for (String thisColumn : Arrays.asList(minMaxArray)) {
-                String sql = "select " + thisColumn + " from  " + digesterWorksheet.getSheetname() +
-                        " where abs(" + thisColumn + ") == 0 AND " +
-                        "trim(" + thisColumn + ") != '0' AND " +
-                        thisColumn + " != \"\";";
+                String sql = "select `" + thisColumn + "` from  " + digesterWorksheet.getSheetname() +
+                        " where abs(`" + thisColumn + "`) == 0 AND " +
+                        "trim(`" + thisColumn + "`) != '0' AND " +
+                        "`" + thisColumn + "` != \"\";";
                 resultSet = statement.executeQuery(sql);
                 while (resultSet.next()) {
                     msg = "non-numeric value " + resultSet.getString(thisColumn) + " for " + thisColumn;
@@ -540,8 +541,8 @@ public class Rule {
             }
 
             // Check to see that minimum is less than maximum
-            String sql = "select " + minimum + "," + maximum + " from " + digesterWorksheet.getSheetname() +
-                    " where abs(" + minimum + ") > abs(" + maximum + ")";
+            String sql = "select `" + minimum + "`,`" + maximum + "` from " + digesterWorksheet.getSheetname() +
+                    " where abs(`" + minimum + "`) > abs(`" + maximum + "`)";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 msg = "Illegal values! " + minimum + " = " +
@@ -770,15 +771,15 @@ public class Rule {
         try {
             statement = connection.createStatement();
             // Do the select on values based on other column values
-            String sql = "SELECT rowid," + getColumn() + "," + getOtherColumn() + " FROM " + digesterWorksheet.getSheetname();
-            sql += " WHERE ifnull(" + getColumn() + ",'') == '' ";
+            String sql = "SELECT rowid,`" + getColumn() + "`,`" + getOtherColumn() + "` FROM " + digesterWorksheet.getSheetname();
+            sql += " WHERE ifnull(`" + getColumn() + "`,'') == '' ";
 
             // if null lookup look that we just have SOME value
             if (fieldListSB.toString().equals("")) {
-                sql += " AND ifnull(" + getOtherColumn() + ",'') != ''";
+                sql += " AND ifnull(`" + getOtherColumn() + "`,'') != ''";
                 // else we look in the lookup list
             } else {
-                sql += " AND " + getOtherColumn();
+                sql += " AND `" + getOtherColumn() + "`";
                 sql += " IN (" + fieldListSB.toString() + ")";
             }
             //System.out.println(sql);
@@ -983,19 +984,20 @@ public class Rule {
             String[] values = value.split("=|and");
 
             // Construct sql for
-            sql = "SELECT " + thisColumn +
+            sql = "SELECT `" + thisColumn + "`" +
                     " FROM " + digesterWorksheet.getSheetname() +
-                    " WHERE " +
-                    "   abs(" + thisColumn + ") " + URLDecoder.decode(values[0], "utf-8");
+                    // next line tests whether or not the value is a number
+                    " WHERE NOT abs(`" + thisColumn + "`) > 0" +
+                    " OR ( NOT cast(`" + thisColumn + "` as int) " + URLDecoder.decode(values[0], "utf-8");
 
             if (values.length > 1) {
-                sql += " and abs(" + thisColumn + ") " + URLDecoder.decode(values[1], "utf-8");
+                sql += " OR NOT cast(`" + thisColumn + "` as int) " + URLDecoder.decode(values[1], "utf-8");
             }
 
-            sql += " and " + thisColumn + " != \"\";";
+            sql += ") AND `" + thisColumn + "` != \"\";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                msg = "Value out of range " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\" using range validation = " + value;
+                msg = "Value out of range " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\" using range validation = " + URLDecoder.decode(value, "utf-8");
                 addMessage(msg, groupMessage);
                 validNumber = false;
             }
@@ -1036,10 +1038,10 @@ public class Rule {
 
         try {
             Statement statement = connection.createStatement();
-            String sql = "select " + thisColumn + " from  " + digesterWorksheet.getSheetname() +
-                    " where abs(" + thisColumn + ") == 0 AND " +
-                    "trim(" + thisColumn + ") != '0' AND " +
-                    thisColumn + " != \"\";";
+            String sql = "select `" + thisColumn + "` from  " + digesterWorksheet.getSheetname() +
+                    " where abs(`" + thisColumn + "`) == 0 AND " +
+                    "trim(`" + thisColumn + "`) != '0' AND " +
+                    "`" + thisColumn + "` != \"\";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 msg = "Non-numeric value " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\"";
@@ -1162,15 +1164,15 @@ public class Rule {
             Statement statement = connection.createStatement();
 
             // Construct sql for
-            sql = "SELECT " + getDecimalLatitude() + "," + getDecimalLongitude() +
+            sql = "SELECT `" + getDecimalLatitude() + "`,`" + getDecimalLongitude() + "`" +
                     " FROM " + digesterWorksheet.getSheetname() +
                     " WHERE " +
-                    " abs(" + getDecimalLatitude() + ") " + URLDecoder.decode("<=90", "utf-8") +
-                    " AND abs(" + getDecimalLatitude() + ") " + URLDecoder.decode(">=-90", "utf-8") +
-                    " AND abs(" + getDecimalLongitude() + ") " + URLDecoder.decode("<=180", "utf-8") +
-                    " AND abs(" + getDecimalLongitude() + ") " + URLDecoder.decode(">=-180", "utf-8") +
-                    " AND " + getDecimalLatitude() + " != \"\"" +
-                    " AND " + getDecimalLongitude() + " != \"\"";
+                    " abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode("<=90", "utf-8") +
+                    " AND abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode(">=-90", "utf-8") +
+                    " AND abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode("<=180", "utf-8") +
+                    " AND abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode(">=-180", "utf-8") +
+                    " AND `" + getDecimalLatitude() + "` != \"\"" +
+                    " AND `" + getDecimalLongitude() + "` != \"\"";
 
 
             rs = statement.executeQuery(sql);
@@ -1270,12 +1272,12 @@ public class Rule {
 
         try {
             statement = connection.createStatement();
-            String sql = "select rowid," + getColumn() + " from " + digesterWorksheet.getSheetname() +
-                    " where (" + getColumn() + " NOT NULL AND " + getColumn() + " != \"\") AND ";
+            String sql = "select rowid,`" + getColumn() + "` from " + digesterWorksheet.getSheetname() +
+                    " where (`" + getColumn() + "` NOT NULL AND `" + getColumn() + "` != \"\") AND ";
             if (caseInsensitiveSearch)
-                sql += "UPPER(" + getColumn() + ")";
+                sql += "UPPER(`" + getColumn() + "`)";
             else
-                sql += getColumn();
+                sql += "`" + getColumn() + "`";
             sql += " not in (" + lookupSB.toString() + ")";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
