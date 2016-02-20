@@ -986,14 +986,14 @@ public class Rule {
             sql = "SELECT `" + thisColumn + "`" +
                     " FROM " + digesterWorksheet.getSheetname() +
                     // next line tests whether or not the value is a number
-                    " WHERE NOT abs(`" + thisColumn + "`) > 0" +
-                    " OR ( NOT cast(`" + thisColumn + "` as int) " + URLDecoder.decode(values[0], "utf-8");
+                    " WHERE ( NOT abs(`" + thisColumn + "`) > 0 AND `" + thisColumn + "` != \"0\"" +
+                    " OR ( NOT cast(`" + thisColumn + "` as real) " + URLDecoder.decode(values[0], "utf-8");
 
             if (values.length > 1) {
-                sql += " OR NOT cast(`" + thisColumn + "` as int) " + URLDecoder.decode(values[1], "utf-8");
+                sql += " OR NOT cast(`" + thisColumn + "` as real) " + URLDecoder.decode(values[1], "utf-8");
             }
 
-            sql += ") AND `" + thisColumn + "` != \"\";";
+            sql += ")) AND `" + thisColumn + "` != \"\";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 msg = "Value out of range " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\" using range validation = " + URLDecoder.decode(value, "utf-8");
