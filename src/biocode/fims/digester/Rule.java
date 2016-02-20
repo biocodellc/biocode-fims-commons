@@ -8,7 +8,6 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
-import de.fuberlin.wiwiss.d2rq.sql.SQL;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
