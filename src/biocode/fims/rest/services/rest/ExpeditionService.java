@@ -79,7 +79,6 @@ public class ExpeditionService extends FimsService {
      * @return
      */
     @GET
-    @Authenticated
     @Path("/graphMetadata/{graph}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGraphMetadata(@PathParam("graph") String graph) {
