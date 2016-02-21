@@ -244,16 +244,15 @@ public class Process {
 
         // Validation Step
         runValidation();
-        processController.printMessages();
 
         // If there is errors, tell the user and stop the operation
         if (processController.getHasErrors()) {
-            FimsPrinter.out.println(processController.getCommandLineSB().toString());
+            FimsPrinter.out.println(processController.printMessages());
             return;
         }
         // Run the validation step
         if (!processController.isValidated() && processController.getHasWarnings()) {
-            String message = "\tWarnings found on " + mapping.getDefaultSheetName() + " worksheet.\n" + processController.getCommandLineSB().toString();
+            String message = "\tWarnings found on " + mapping.getDefaultSheetName() + " worksheet.\n" + processController.printMessages();
             FimsPrinter.out.println(message);
             processController.setClearedOfWarnings(true);
             processController.setValidated(true);

@@ -7,6 +7,7 @@ import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
 import biocode.fims.utils.StringGenerator;
 import ch.lambdaj.group.Group;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -298,11 +299,10 @@ public class ProcessController {
     }
 
     /**
-     * add Messages to the status string
+     * print messages for the command line
      * @return
      */
-    public void printMessages() {
-        StringBuilder messagesSb = new StringBuilder();
+    public String printMessages() {
         // Create a simplified output stream just for commandline printing.
         StringBuilder commandLineWarningSB = new StringBuilder();
         Html2Text htmlParser = new Html2Text();
@@ -312,41 +312,74 @@ public class ProcessController {
         while (it.hasNext()) {
             String sheetName = (String) it.next();
 
-            String status = "\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
-            appendStatus("<br>" + status);
-
             // Group all Messages using lambdaj jar library
             Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessageAsString()));
-            messagesSb.append("<div id=\"expand\">");
             for (String key : rowGroup.keySet()) {
-                messagesSb.append("<dl>");
-                messagesSb.append("<dt>" + key + "</dt>");
                 java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
 
                 // Parse the Row Messages that are meant for HTML display
                 commandLineWarningSB.append(htmlParser.convert(key)+"\n");
 
                 for (RowMessage m : rowMessageList) {
-                    messagesSb.append("<dd>" + m.print() + "</dd>");
                     commandLineWarningSB.append("\t" + m.print() + "\n");
                 }
-                messagesSb.append("</dl>");
             }
-            messagesSb.append("</div>");
 
-            if (hasErrors) {
+        }
+        return commandLineWarningSB.toString();
+    }
 
-                appendStatus("<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>");
-                appendStatus(messagesSb.toString());
+    /**
+     * get messages as JSON
+     * @return
+     */
+    public JSONArray getMessages() {
+        JSONArray messageArray = new JSONArray();
 
-                setCommandLineSB(commandLineWarningSB);
-            } else if (hasWarnings) {
-                appendStatus("<br><b>1 or more warnings found. Click each message for details</b><br>");
-                appendStatus(messagesSb.toString());
-                setCommandLineSB(commandLineWarningSB);
+        // iterate through each sheet in messages and append associated messages
+        Iterator it = messages.keySet().iterator();
+        while (it.hasNext()) {
+            String sheetName = (String) it.next();
+            JSONObject sheetMessages = new JSONObject();
+            JSONArray warningMessages = new JSONArray();
+            JSONArray errorMessages = new JSONArray();
 
+            String status = "\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+            appendStatus("<br>" + status);
+
+            // Group all Messages using lambdaj jar library
+            Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessage()));
+            for (String key : rowGroup.keySet()) {
+                JSONArray warningGroupArray = new JSONArray();
+                JSONArray errorGroupArray = new JSONArray();
+                java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
+
+                for (RowMessage m : rowMessageList) {
+                    if (m.getLevel() == RowMessage.ERROR) {
+                        errorGroupArray.add(m.print());
+                    } else {
+                        warningGroupArray.add(m.print());
+                    }
+                }
+                if (errorGroupArray.size() > 0) {
+                    JSONObject group = new JSONObject();
+                    group.put(key, errorGroupArray);
+                    errorMessages.add(group);
+                }
+                if (warningGroupArray.size() > 0) {
+                    JSONObject group = new JSONObject();
+                    group.put(key, warningGroupArray);
+                    warningMessages.add(group);
+                }
             }
+
+            sheetMessages.put("warnings", warningMessages);
+            sheetMessages.put("errors", errorMessages);
+            JSONObject sheet = new JSONObject();
+            sheet.put(sheetName, sheetMessages);
+            messageArray.add(sheet);
         }
 
+        return messageArray;
     }
 }
