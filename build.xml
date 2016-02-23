@@ -22,7 +22,7 @@
 
 <!-- Need classpath to run this -->
 <target name="compile" depends="init" description="compile the source ">
-    <javac includeantruntime="false" srcdir="${src.dir}"
+    <javac includeantruntime="false" srcdir="${src.dir}" debug="true"
            destdir="${build.dir}" classpathref="classpath"
            source="1.7" target="1.7" />
 </target>
