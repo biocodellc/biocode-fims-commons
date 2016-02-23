@@ -344,9 +344,6 @@ public class ProcessController {
             JSONArray warningMessages = new JSONArray();
             JSONArray errorMessages = new JSONArray();
 
-            String status = "\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
-            appendStatus("<br>" + status);
-
             // Group all Messages using lambdaj jar library
             Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessage()));
             for (String key : rowGroup.keySet()) {
