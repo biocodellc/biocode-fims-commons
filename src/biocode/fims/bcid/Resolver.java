@@ -11,7 +11,6 @@ import biocode.fims.utils.Timer;
 
 import java.math.BigInteger;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +27,7 @@ public class Resolver extends Database {
     String suffix = null;        // The local Bcid
     BigInteger elementId = null;
     Integer bcidId = null;
+    private Bcid bcid;
     public boolean forwardingResolution = false;
     static SettingsManager sm;
 
@@ -59,7 +59,11 @@ public class Resolver extends Database {
         // Now decipher the shoulder and suffix in the next bit
         setShoulderAndSuffix(bits[2]);
         // Call setBcid() to set bcidId
-        setBcid();
+        if (!setBcid()) {
+            throw new BadRequestException("Invalid identifier");
+        }
+
+        bcid = new Bcid(suffix, bcidId);
     }
 
     /**
@@ -161,55 +165,50 @@ public class Resolver extends Database {
     }
 
     /**
+     * Determine if we should forward this identifier
+     * @return
+     */
+    public Boolean forwardBCID() {
+        if (bcid.forwardingResolution) {
+            return true;
+        }
+        return false;
+    }
+
+    public URI getResolutionTarget() {
+        return bcid.resolutionTarget;
+    }
+
+    /**
      * Attempt to resolve a particular identifier.
      *
      * @return URI content location URL
      */
-    public URI resolveIdentifier() throws URISyntaxException {
-        Bcid bcid;
-        URI resolution;
-
-        // First  option is check if Bcid, then look at other options after this is determined
-        if (!isValidBCID()) {
-            throw new BadRequestException("Invalid bcid.");
-        }
-
-        bcid = new Bcid(suffix, bcidId);
-
-        // A resolution target is specified AND there is a suffix AND suffixPassThrough
-        if (bcid.forwardingResolution) {
-            forwardingResolution = true;
-
-            // Immediately return resolution result
-            resolution = bcid.resolutionTarget;
-        } else {
-            resolution = bcid.getMetadataTarget();
-
-            this.project = getProjectID(bcidId);
-        }
-
-        return resolution;
-    }
-
-    /**
-     * Print Metadata for a particular Bcid
-     *
-     * @return JSON String with content for the interface
-     */
-    public String printMetadata(Renderer renderer) {
-        Bcid bcid = null;
-
-        // First  option is check if Bcid, then look at other options after this is determined
-        if (setBcid()) {
-
-            bcid = new Bcid(bcidId);
-
-            if (suffix != null && bcid.getWebAddress() != null) {
-                bcid = new Bcid(suffix, bcid.getWebAddress(), bcidId);
-            }
-        }
-        return renderer.render(bcid);
-    }
+//    public URI resolveIdentifier() throws URISyntaxException {
+//        Bcid bcid;
+//        URI resolution;
+//
+//        // First  option is check if Bcid, then look at other options after this is determined
+//        if (!isValidBCID()) {
+//            throw new BadRequestException("Invalid bcid.");
+//        }
+//
+//        bcid = new Bcid(suffix, bcidId);
+//
+//        // A resolution target is specified AND there is a suffix AND suffixPassThrough
+//        if (bcid.forwardingResolution) {
+//            forwardingResolution = true;
+//
+//            // Immediately return resolution result
+//            resolution = bcid.resolutionTarget;
+//        } else {
+//            resolution = bcid.getMetadataTarget();
+//
+//            this.project = getProjectID(bcidId);
+//        }
+//
+//        return resolution;
+//    }
 
     /**
      * Resolve an EZID version of this identifier
@@ -228,7 +227,8 @@ public class Resolver extends Database {
             //TODO should we silence this exception?
             logger.warn("URISyntaxException thrown", e);
         }
-        return renderer.render(ezid);
+        renderer.setBcid(ezid);
+        return renderer.render();
     }
 
 
@@ -241,29 +241,22 @@ public class Resolver extends Database {
      */
     public String resolveAllAsJSON(EzidService ezidService) {
         Timer t = new Timer();
-        Renderer renderer = new JSONRenderer();
+        Renderer renderer = new JSONRenderer(bcid);
         StringBuilder sb = new StringBuilder();
         sb.append("[\n");
 
-        try {
-            sb.append("  " + this.resolveIdentifier().toString());
-        } catch (URISyntaxException e) {
-            //TODO should we silence this exception?
-            logger.warn("URISyntaxException thrown", e);
-        }
+//        try {
+//            sb.append("  " + this.resolveIdentifier().toString());
+//        } catch (URISyntaxException e) {
+//            TODO should we silence this exception?
+//            logger.warn("URISyntaxException thrown", e);
+//        }
         t.lap("resolveIdentifier");
         sb.append("\n  ,\n");
         sb.append("  " + this.resolveEZID(ezidService, renderer));
         t.lap("resolveEZID");
         sb.append("\n]");
         return sb.toString();
-    }
-
-    private boolean isValidBCID() {
-        if (bcidId != null)
-            return true;
-        else
-            return false;
     }
 
     /**
@@ -349,7 +342,7 @@ public class Resolver extends Database {
         try {
             //r = new Resolver("ark:/21547/S2MBIO56");
             r = new Resolver("ark:/21547/fR2");
-            System.out.println("  " + r.resolveIdentifier());
+//            System.out.println("  " + r.resolveIdentifier());
 //            System.out.println(r.resolveIdentifierAs("tab"));
 
         } catch (Exception e) {
@@ -485,5 +478,9 @@ public class Resolver extends Database {
             close(stmt, rs);
         }
         return expeditionId;
+    }
+
+    public Bcid getBcid() {
+        return bcid;
     }
 }

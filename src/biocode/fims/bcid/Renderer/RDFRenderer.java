@@ -1,9 +1,15 @@
 package biocode.fims.bcid.Renderer;
 
+import biocode.fims.bcid.Bcid;
+
 /**
  * Renders a BCID as RDF.  This is for machine negotiation of an Bcid
  */
 public class RDFRenderer extends Renderer {
+
+    public RDFRenderer(Bcid bcid) {
+        super(bcid);
+    }
 
     public void enter() {
         outputSB.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

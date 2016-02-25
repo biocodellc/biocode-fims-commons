@@ -1,8 +1,11 @@
 package biocode.fims.bcid.Renderer;
 
 import biocode.fims.bcid.*;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
+
+import java.lang.reflect.Field;
 
 /**
  * jsonRenderer renders objects as JSON
@@ -21,39 +24,22 @@ public class JSONRenderer extends Renderer {
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Resolver resolver) {
+    public JSONRenderer(String username, Resolver resolver, Bcid bcid) {
+        super(bcid);
         Database db = new Database();
         userId = db.getUserId(username);
         this.resolver = resolver;
     }
 
-    public JSONRenderer() {
-
+    public JSONRenderer(Bcid bcid) {
+        super(bcid);
     }
 
     public void enter() {
-        json = new JSONObject();
     }
 
     public void printMetadata() {
-        appender(identifier);
-        appender(resource);
-        appender(about);
-        appender(dcMediator);
-        appender(dcHasVersion);
-        appender(dcIsReferencedBy);
-        appender(dcRights);
-        appender(dcIsPartOf);
-        appender(dcDate);
-        appender(dcCreator);
-        appender(dcTitle);
-        appender(dcSource);
-        appender(bscSuffixPassthrough);
-        appender(dcPublisher);
-        appender(forwardingResolution);
-        appender(resolutionTarget);
-        appender(isPublic);
-        appendExpeditionOrDatasetData(resource);
+        getMetadata();
     }
 
     public void leave() {
@@ -69,13 +55,35 @@ public class JSONRenderer extends Renderer {
         }
     }
 
-    private void appender(metadataElement map) {
-        JSONObject metadataElement = new JSONObject();
-        metadataElement.put("description", map.getDescription());
-        metadataElement.put("value", map.getValue());
-        metadataElement.put("shortValue", map.getShortValue());
-        metadataElement.put("fullKey", map.getFullKey());
-        json.put(map.getKey(), metadataElement);
+    /**
+     * get a JSONObject of the BcidMetadataSchema
+     * @return
+     */
+    public JSONObject getMetadata() {
+        json = new JSONObject();
+        Field[] fields = getClass().getFields();
+        for (Field field: fields) {
+            // loop through all Fields of BcidMetadataSchema that are metadataElement
+            if (field.getType().equals(metadataElement.class)) {
+                try {
+                    metadataElement element = (metadataElement) field.get(this);
+                    JSONObject obj = new JSONObject();
+
+                    obj.put("value", element.getValue());
+                    obj.put("shortValue", element.getShortValue());
+                    obj.put("fullKey", element.getFullKey());
+                    obj.put("description", element.getDescription());
+
+                    json.put(element.getKey(), obj);
+                } catch (IllegalAccessException e) {
+                    throw new ServerErrorException();
+                }
+
+            }
+        }
+
+        appendExpeditionOrDatasetData(resource);
+        return json;
     }
 
     /**

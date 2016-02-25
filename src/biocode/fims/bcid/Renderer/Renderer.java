@@ -11,14 +11,21 @@ public abstract class Renderer extends BcidMetadataSchema implements RendererInt
     protected StringBuilder outputSB;
     protected Bcid bcid;
 
+    public Renderer(Bcid bcid) {
+        this.bcid = bcid;
+        BCIDMetadataInit(bcid);
+    }
+
+    public void setBcid(Bcid bcid) {
+        this.bcid = bcid;
+    }
+
     /**
      * render an Identifier
      *
      * @return
      */
-    public String render(Bcid bcid) {
-        this.bcid = bcid;
-        BCIDMetadataInit(bcid);
+    public String render() {
         outputSB = new StringBuilder();
 
         if (validIdentifier()) {

@@ -2,13 +2,10 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
-import biocode.fims.bcid.Renderer.Renderer;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import org.json.simple.JSONArray;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -87,9 +84,9 @@ public class BcidService extends FimsService {
     public Response run(@PathParam("bcidId") Integer bcidId) {
         Bcid bcid = new Bcid(bcidId);
         Resolver resolver = new Resolver(bcid.getIdentifier().toString());
-        Renderer renderer = new JSONRenderer(username, resolver);
+        JSONRenderer renderer = new JSONRenderer(username, resolver, bcid);
 
-        return Response.ok(renderer.render(bcid)).build();
+        return Response.ok(renderer.render()).build();
     }
 
     /**
