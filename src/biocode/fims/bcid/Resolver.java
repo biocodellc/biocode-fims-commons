@@ -97,8 +97,9 @@ public class Resolver extends Database {
 
             //System.out.println("Resolver query = " + query);
             rs = stmt.executeQuery();
-            rs.next();
-            this.identifier = rs.getString("identifier");
+            if (rs.next()) {
+                this.identifier = rs.getString("identifier");
+            }
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
