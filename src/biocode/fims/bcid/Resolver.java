@@ -87,6 +87,8 @@ public class Resolver extends Database {
                     "p.expeditionCode= ? && \n" +
                     "p.projectId = ? && \n" +
                     "(b.resourceType=? || b.resourceType= ?)";
+            System.out.println(query + ";expeditionCode="+expeditionCode+";projectId="+projectId+";uri ="+uri+";" +
+                    "conceptAlias="+conceptAlias);
             stmt = conn.prepareStatement(query);
 
             stmt.setString(1, expeditionCode);
