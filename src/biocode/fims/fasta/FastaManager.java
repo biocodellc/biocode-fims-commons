@@ -160,7 +160,7 @@ public abstract class FastaManager {
      * triplify and upload a fasta file to the specified graph
      * @param graph
      */
-    public abstract void upload(String graph);
+    public abstract void upload(String graphId, String outputFolder, String filenamePrefix);
 
     /**
      * copy over the fasta sequences <urn:sequence> from the previousGraph to the newGraph. Only copy the sequences where
