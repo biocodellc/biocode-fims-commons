@@ -485,7 +485,11 @@ public class EzidService {
      * @return the escaped String
      */
     private String escape(String str) {
-        return str.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D").replace(":", "%3A");
+        if (str == null) {
+            return "";
+        } else {
+            return str.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D").replace(":", "%3A");
+        }
     }
 
     /**
