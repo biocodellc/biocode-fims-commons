@@ -50,4 +50,4 @@ rights = http://creativecommons.org/licenses/by/3.0/
 # The bcid resolver service
 resolverTargetPrefix = http://localhost:8080/id/
 # The bcid metadata service
-resolverMetadataPrefix = http://localhost:8080/id/metadata/
+resolverMetadataPrefix = http://localhost:8080/id/
