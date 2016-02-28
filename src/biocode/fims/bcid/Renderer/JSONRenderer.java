@@ -3,6 +3,7 @@ package biocode.fims.bcid.Renderer;
 import biocode.fims.bcid.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
@@ -73,6 +74,8 @@ public class JSONRenderer extends Renderer {
                     obj.put("shortValue", element.getShortValue());
                     obj.put("fullKey", element.getFullKey());
                     obj.put("description", element.getDescription());
+                    UrlValidator urlValidator = new UrlValidator();
+                    obj.put("isResource", (urlValidator.isValid(element.getValue())));
 
                     json.put(element.getKey(), obj);
                 } catch (IllegalAccessException e) {
@@ -105,7 +108,10 @@ public class JSONRenderer extends Renderer {
     private void appendExpeditionDatasets() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         if (displayDatasets()) {
-            json.put("datasets", expeditionMinter.getDatasets(resolver.getExpeditionId()));
+            JSONObject datasets = new JSONObject();
+            datasets.put("datasets", expeditionMinter.getDatasets(resolver.getExpeditionId()));
+            datasets.put("appRoot", sm.retrieveValue("appRoot"));
+            json.put("datasets", datasets);
         }
     }
 
@@ -116,10 +122,9 @@ public class JSONRenderer extends Renderer {
             String projectId = resolver.getProjectID(resolver.getBcidId());
 
             // Excel option
-            download.put("excel", appRoot + "query/excel?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
-
-            // TAB delimited option
-            download.put("tab", appRoot + "query/tab?graphs=" + bcid.getGraph() + "&projectId=" + projectId);
+            download.put("graph", bcid.getGraph());
+            download.put("projectId", projectId);
+            download.put("appRoot", appRoot);
 
             // n3 option
             download.put("n3", bcid.getWebAddress().toASCIIString());
