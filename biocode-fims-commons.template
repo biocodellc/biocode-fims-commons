@@ -47,7 +47,11 @@ divider = _
 # The license used for the bcids that are created
 rights = http://creativecommons.org/licenses/by/3.0/
 
+# When resolving a bcid, should we forward to the redirectionTarget (webAddress) when suffixPassThrough = false AND graph != null
+forwardNonNullGraph = false
+
 # The bcid resolver service
 resolverTargetPrefix = http://localhost:8080/id/
+
 # The bcid metadata service
-resolverMetadataPrefix = http://localhost:8080/id/
+resolverMetadataPrefix = http://localhost:8080/id/metadata/

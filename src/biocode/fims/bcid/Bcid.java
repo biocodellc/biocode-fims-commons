@@ -213,6 +213,7 @@ public class Bcid {
                 // Set the resolution target
                 resolutionTarget = new URI(webAddress + suffix);
             }
+
             bcidId = pBcidId;
             setIsPublic();
         } catch (SQLException e) {

@@ -11,6 +11,7 @@ import biocode.fims.utils.Timer;
 
 import java.math.BigInteger;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -169,14 +170,31 @@ public class Resolver extends Database {
      * @return
      */
     public Boolean forwardBCID() {
-        if (bcid.forwardingResolution) {
+        if (bcid.forwardingResolution || (!bcid.suffixPassThrough && (bcid.webAddress != null && !bcid.webAddress.equals(""))
+                && (bcid.graph == null || bcid.graph.trim().equals(""))) ||
+                (!bcid.suffixPassThrough && (bcid.webAddress != null && !bcid.webAddress.equals("")) &&
+                        (bcid.graph != null && !bcid.graph.equals("")) &&
+                        Boolean.valueOf(sm.retrieveValue("forwardNonNullGraph", "false")))) {
             return true;
         }
         return false;
     }
 
     public URI getResolutionTarget() {
-        return bcid.resolutionTarget;
+        if (bcid.forwardingResolution) {
+            return bcid.resolutionTarget;
+        } else {
+            return bcid.webAddress;
+        }
+    }
+
+    public URI getMetadataTarget() {
+        try {
+            return bcid.getMetadataTarget();
+        } catch (URISyntaxException e) {
+            throw new ServerErrorException("Server Error", "Syntax exception thrown for metadataTargetPrefix: \"" +
+                    bcid.resolverMetadataPrefix + "\" and identifier: \"" + bcid.getIdentifier() + "\"", e);
+        }
     }
 
     /**
@@ -184,31 +202,17 @@ public class Resolver extends Database {
      *
      * @return URI content location URL
      */
-//    public URI resolveIdentifier() throws URISyntaxException {
-//        Bcid bcid;
-//        URI resolution;
-//
-//        // First  option is check if Bcid, then look at other options after this is determined
-//        if (!isValidBCID()) {
-//            throw new BadRequestException("Invalid bcid.");
-//        }
-//
-//        bcid = new Bcid(suffix, bcidId);
-//
-//        // A resolution target is specified AND there is a suffix AND suffixPassThrough
-//        if (bcid.forwardingResolution) {
-//            forwardingResolution = true;
-//
-//            // Immediately return resolution result
-//            resolution = bcid.resolutionTarget;
-//        } else {
-//            resolution = bcid.getMetadataTarget();
-//
-//            this.project = getProjectID(bcidId);
-//        }
-//
-//        return resolution;
-//    }
+    public URI resolveIdentifier() {
+        URI resolution;
+
+        if (forwardBCID()) {
+            resolution = getResolutionTarget();
+        } else {
+            resolution = getMetadataTarget();
+        }
+
+        return resolution;
+    }
 
     /**
      * Resolve an EZID version of this identifier

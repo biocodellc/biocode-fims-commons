@@ -116,7 +116,7 @@ public class JSONRenderer extends Renderer {
     }
 
     private void appendDataset() {
-        if (displayDatasets()) {
+        if (displayDatasets() && bcid.getGraph() != null) {
             JSONObject download = new JSONObject();
             String appRoot = sm.retrieveValue("appRoot");
             String projectId = resolver.getProjectID(resolver.getBcidId());
@@ -130,6 +130,11 @@ public class JSONRenderer extends Renderer {
             download.put("n3", bcid.getWebAddress().toASCIIString());
 
             json.put("download", download);
+        } else if (bcid.getGraph() != null) {
+            JSONObject msg = new JSONObject();
+            msg.put("message", "This is listed as a private dataset, You must be logged in to download data.");
+
+            json.put("download", msg);
         }
     }
 

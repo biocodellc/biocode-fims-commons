@@ -1,7 +1,5 @@
 package biocode.fims.rest.services.id;
 
-import biocode.fims.bcid.Bcid;
-import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.bcid.Renderer.RDFRenderer;
 import biocode.fims.bcid.Resolver;
@@ -14,20 +12,14 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This is the core Resolver Service for BCIDs.  It returns URIs
  */
-@Path("ark:")
+@Path("/")
 public class ResolverService extends FimsService{
 
     String scheme = "ark:";
-
-    private static Logger logger = LoggerFactory.getLogger(ResolverService.class);
 
     /**
      * User passes in an Bcid of the form scheme:/naan/shoulder_identifier
@@ -38,7 +30,7 @@ public class ResolverService extends FimsService{
      * @return
      */
     @GET
-    @Path("/{naan}/{shoulderPlusIdentifier}")
+    @Path("ark:/{naan}/{shoulderPlusIdentifier}")
     @Produces({MediaType.TEXT_HTML, "application/rdf+xml"})
     public Response run(
             @PathParam("naan") String naan,
@@ -64,35 +56,38 @@ public class ResolverService extends FimsService{
                 // Return RDF when the Accepts header specifies rdf+xml
                 String response = new RDFRenderer(r.getBcid()).render();
                 return Response.ok(response).build();
-            } else if (r.forwardBCID()) {
-                return Response.seeOther(r.getResolutionTarget()).build();
-
             } else {
-
-                // This next section uses the Jersey Viewable class, which is a type of Model, View, Controller
-                // construct, enabling us to pass content JSP code to a JSP template.  We do this in this section
-                // so we can have a REST style call and provide human readable content with BCID header/footer
-//                Map<String, Object> map = new HashMap<String, Object>();
-//                String response = r.printMetadata(new HTMLTableRenderer());
-//                BcidMetadataSchema.metadataElement metadataElement = new BcidMetadataSchema.metadataElement()
-//                map.put("metadata", r.getMetadata());
-                JSONRenderer renderer = new JSONRenderer(username, r, r.getBcid());
-
-                Viewable v = new Viewable("/bcidMetadata.jsp", renderer.getMetadata());
-                return Response.ok(v).build();
+                return Response.seeOther(r.resolveIdentifier()).build();
             }
 
-
-//            } catch (URISyntaxException e) {
-//                logger.warn("URISyntaxException while trying to resolve ARK for element: {}", element, e);
-//                throw new BadRequestException("Server error while trying to resolve ARK. Did you supply a valid naan?");
-//            }
-
-            // The expected response for IDentifiers without a URL
-//            return Response.ok("{\"url\": \"" + seeOtherUri + "\"}").build();
         } finally {
             r.close();
         }
 
+    }
+
+    @GET
+    @Path("metadata/ark:/{naan}/{shoulderPlusIdentifier}")
+    @Produces(MediaType.TEXT_HTML)
+    public Response metadata (
+            @PathParam("naan") String naan,
+            @PathParam("shoulderPlusIdentifier") String shoulderPlusIdentifier) {
+        shoulderPlusIdentifier = shoulderPlusIdentifier.trim();
+
+        // Structure the Bcid element from path parameters
+        String element = scheme + "/" + naan + "/" + shoulderPlusIdentifier;
+
+        Resolver resolver = new Resolver(element);
+        try {
+            // This next section uses the Jersey Viewable class, which is a type of Model, View, Controller
+            // construct, enabling us to pass content JSP code to a JSP template.  We do this in this section
+            // so we can have a REST style call and provide human readable content with BCID header/footer
+            JSONRenderer renderer = new JSONRenderer(username, resolver, resolver.getBcid());
+
+            Viewable v = new Viewable("/bcidMetadata.jsp", renderer.getMetadata());
+            return Response.ok(v).build();
+        } finally {
+            resolver.close();
+        }
     }
 }
