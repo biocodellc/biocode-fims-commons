@@ -345,7 +345,7 @@ public class Resolver extends Database {
 
         try {
             //r = new Resolver("ark:/21547/S2MBIO56");
-            r = new Resolver("ark:/21547/fR2");
+            r = new Resolver("ark:/21547/Ala2");
 //            System.out.println("  " + r.resolveIdentifier());
 //            System.out.println(r.resolveIdentifierAs("tab"));
 

@@ -114,7 +114,12 @@ public class Bcid {
         this.suffix = suffix;
         getBcid(bcidId);
         BcidMinter bcidMinter = new BcidMinter();
-        projectCode = bcidMinter.getProject(bcidId);
+        try {
+            projectCode = bcidMinter.getProject(bcidId);
+        } catch (Exception e) {
+            System.out.println("project code has not been set");
+            projectCode = "Unassigned to a project";
+        }
         bcidMinter.close();
     }
 

@@ -119,6 +119,7 @@ public class JSONRenderer extends Renderer {
         if (displayDatasets() && bcid.getGraph() != null) {
             JSONObject download = new JSONObject();
             String appRoot = sm.retrieveValue("appRoot");
+
             String projectId = resolver.getProjectID(resolver.getBcidId());
 
             // Excel option
@@ -140,7 +141,15 @@ public class JSONRenderer extends Renderer {
 
     private Boolean displayDatasets() {
         Boolean ignoreUser = Boolean.getBoolean(sm.retrieveValue("ignoreUser"));
-        Integer projectId = Integer.parseInt(resolver.getProjectID(resolver.getBcidId()));
+        Integer projectId;
+        try {
+            projectId = Integer.parseInt(resolver.getProjectID(resolver.getBcidId()));
+        } catch (Exception e) {
+            // TODO: come up with a cleaner way to detect unassociated data.
+            // if there is an exception here, then return data... unassociated project
+            // data is public
+            return true;
+        }
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         ProjectMinter projectMinter = new ProjectMinter();
 
