@@ -128,7 +128,7 @@ public class JSONRenderer extends Renderer {
             download.put("appRoot", appRoot);
 
             // n3 option
-            download.put("n3", bcid.getWebAddress().toASCIIString());
+            download.put("n3", (bcid.getWebAddress() != null) ? bcid.getWebAddress().toASCIIString() : null);
 
             json.put("download", download);
         } else if (bcid.getGraph() != null) {
