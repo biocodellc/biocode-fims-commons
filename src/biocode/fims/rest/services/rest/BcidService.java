@@ -107,7 +107,7 @@ public class BcidService extends FimsService {
     }
 
     /**
-     * Service to update a Bcid's configuration.
+     * Service to update a Bcid's metadata
      *
      * @param doi
      * @param webAddress
@@ -131,33 +131,39 @@ public class BcidService extends FimsService {
                                @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
                                @FormParam("suffixPassThrough") String stringSuffixPassThrough,
                                @FormParam("identifier") String identifier) {
-        Hashtable<String, String> config;
+        Hashtable<String, String> metadata;
         Hashtable<String, String> update = new Hashtable<String, String>();
-
-        // get this BCID's config
-
         BcidMinter bcidMinter = new BcidMinter();
-        config = bcidMinter.getBcidMetadata(identifier, username);
+
+        if (identifier == null || identifier.isEmpty()) {
+            throw new BadRequestException("You must include an identifier.");
+        }
+        if (!bcidMinter.userOwnsBcid(identifier, userId)) {
+            throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
+        }
+
+        // get this BCID's metadata
+        metadata = bcidMinter.getBcidMetadata(identifier);
 
         if (resourceTypesMinusDataset != null && resourceTypesMinusDataset > 0) {
             resourceTypeString = new ResourceTypes().get(resourceTypesMinusDataset).string;
         }
 
         // compare every field and if they don't match, add them to the update hashtable
-        if (doi != null && (!config.containsKey("doi") || !config.get("doi").equals(doi))) {
+        if (doi != null && (!metadata.containsKey("doi") || !metadata.get("doi").equals(doi))) {
             update.put("doi", doi);
         }
-        if (webAddress != null && (!config.containsKey("webAddress") || !config.get("webAddress").equals(webAddress))) {
+        if (webAddress != null && (!metadata.containsKey("webAddress") || !metadata.get("webAddress").equals(webAddress))) {
             update.put("webAddress", webAddress);
         }
-        if (!config.containsKey("title") || !config.get("title").equals(title)) {
+        if (title != null && (!metadata.containsKey("title") || !metadata.get("title").equals(title))) {
             update.put("title", title);
         }
-        if (!config.containsKey("resourceType") || !config.get("resourceType").equals(resourceTypeString)) {
+        if (resourceTypeString != null && (!metadata.containsKey("resourceType") || !metadata.get("resourceType").equals(resourceTypeString))) {
             update.put("resourceTypeString", resourceTypeString);
         }
-        if ((stringSuffixPassThrough != null && (stringSuffixPassThrough.equals("on") || stringSuffixPassThrough.equals("true")) && config.get("suffix").equals("false")) ||
-                (stringSuffixPassThrough == null && config.get("suffix").equals("true"))) {
+        if ((stringSuffixPassThrough != null && (stringSuffixPassThrough.equals("on") || stringSuffixPassThrough.equals("true")) && metadata.get("suffix").equals("false")) ||
+                (stringSuffixPassThrough == null && metadata.get("suffix").equals("true"))) {
             if (stringSuffixPassThrough != null && (stringSuffixPassThrough.equals("on") || stringSuffixPassThrough.equals("true"))) {
                 update.put("suffixPassthrough", "true");
             } else {
@@ -168,8 +174,8 @@ public class BcidService extends FimsService {
         if (update.isEmpty()) {
             bcidMinter.close();
             return Response.ok("{\"success\": \"Nothing needed to be updated.\"}").build();
-        // try to update the config by calling d.updateBcidMetadata
-        } else if (bcidMinter.updateBcidMetadata(update, identifier, username.toString())) {
+        // try to update the metadata by calling d.updateBcidMetadata
+        } else if (bcidMinter.updateBcidMetadata(update, identifier)) {
             bcidMinter.close();
             return Response.ok("{\"success\": \"BCID successfully updated.\"}").build();
         } else {

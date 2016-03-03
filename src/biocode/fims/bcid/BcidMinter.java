@@ -359,23 +359,21 @@ public class BcidMinter extends BcidEncoder {
     }
 
     /**
-     * fetch a BCID's metadata given a identifier and username
+     * fetch a BCID's metadata given an identifier
      *
      * @param identifier
-     * @param username
      *
      * @return
      */
-    public Hashtable<String, String> getBcidMetadata(String identifier, String username) {
+    public Hashtable<String, String> getBcidMetadata(String identifier) {
         Hashtable<String, String> metadata = new Hashtable<String, String>();
         ResourceTypes rts = new ResourceTypes();
-        Integer userId = db.getUserId(username);
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
             String sql = "SELECT suffixPassThrough as suffix, doi, title, webAddress, resourceType " +
-                    "FROM bcids WHERE BINARY identifier = ? AND userId = \"" + userId + "\"";
+                    "FROM bcids WHERE BINARY identifier = ?";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, identifier);
@@ -405,11 +403,39 @@ public class BcidMinter extends BcidEncoder {
             }
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException while retrieving configuration for " +
-                    "bcid with identifier: " + identifier + " and userId: " + userId, e);
+                    "bcid with identifier: " + identifier, e);
         } finally {
             db.close(stmt, rs);
         }
         return metadata;
+    }
+
+    /**
+     * verify that an indentifier exists and the user owns the bcid
+     * @param identifier
+     * @param userId
+     * @return
+     */
+    public Boolean userOwnsBcid(String identifier, Integer userId) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            String sql = "SELECT count(*) as count FROM bcids WHERE BINARY identifier = ? AND userId = ?";
+            stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, identifier);
+            stmt.setInt(2, userId);
+
+            rs = stmt.executeQuery();
+            rs.next();
+
+            return rs.getInt("count") > 0;
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            db.close(stmt, rs);
+        }
     }
 
     /**
@@ -421,10 +447,9 @@ public class BcidMinter extends BcidEncoder {
      *
      * @return
      */
-    public Boolean updateBcidMetadata(Hashtable<String, String> metadata, String identifier, String username) {
+    public Boolean updateBcidMetadata(Hashtable<String, String> metadata, String identifier) {
         PreparedStatement stmt = null;
         try {
-            Integer userId = db.getUserId(username);
             String sql = "UPDATE bcids SET ";
 
             // update resourceTypeString to the correct uri
@@ -441,7 +466,7 @@ public class BcidMinter extends BcidEncoder {
                 if (e.hasMoreElements()) {
                     sql += ", ";
                 } else {
-                    sql += " WHERE BINARY identifier =\"" + identifier + "\" AND userId =\"" + userId + "\";";
+                    sql += " WHERE BINARY identifier =\"" + identifier + "\";";
                 }
             }
 
@@ -477,7 +502,7 @@ public class BcidMinter extends BcidEncoder {
             }
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException while updating configuration for " +
-                    "bcid with identifier: " + identifier + " and user: " + username, e);
+                    "bcid with identifier: " + identifier, e);
         } finally {
             db.close(stmt, null);
         }
