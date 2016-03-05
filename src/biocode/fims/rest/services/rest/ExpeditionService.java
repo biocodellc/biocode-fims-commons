@@ -46,6 +46,7 @@ public class ExpeditionService extends FimsService {
     public Response mint(@FormParam("expeditionCode") String expeditionCode,
                          @FormParam("expeditionTitle") String expeditionTitle,
                          @FormParam("projectId") Integer projectId,
+                         @FormParam("webAddress") String webAddress,
                          @FormParam("public") Boolean isPublic) {
 
         if (isPublic == null) {
@@ -60,6 +61,7 @@ public class ExpeditionService extends FimsService {
                     expeditionTitle,
                     userId,
                     projectId,
+                    webAddress,
                     isPublic
             );
 

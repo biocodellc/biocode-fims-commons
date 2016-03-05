@@ -193,6 +193,7 @@ public class Process {
                     processController.getExpeditionTitle(),
                     processController.getUserId(),
                     projectId,
+                    null,
                     processController.getPublicStatus()
             );
         } catch (FimsException e) {

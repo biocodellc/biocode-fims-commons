@@ -58,6 +58,7 @@ public class ExpeditionMinter {
             String expeditionTitle,
             Integer userId,
             Integer projectId,
+            String webAddress,
             Boolean isPublic) throws FimsException {
 
         Integer expeditionId = null;
@@ -102,7 +103,7 @@ public class ExpeditionMinter {
             // upon successful expedition creation, create the expedition Bcid
             BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
             String identifier = bcidMinter.createEntityBcid(new Bcid(userId, "http://purl.org/dc/dcmitype/Collection",
-                    expeditionTitle, null, null, null, false, false));
+                    expeditionTitle, webAddress, null, null, false, false));
             bcidMinter.close();
 
             // Associate this Bcid with this expedition
@@ -662,7 +663,7 @@ public class ExpeditionMinter {
 
         try {
 
-            String sql = "SELECT b.identifier, e.public, e.expeditionCode, e.projectId, e.expeditionTitle, b.resourceType " +
+            String sql = "SELECT b.identifier, e.public, e.expeditionCode, e.projectId, e.expeditionTitle, b.webAddress, b.resourceType " +
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
                     "WHERE b.bcidId = eB.bcidId && eB.expeditionId = e.expeditionId && e.expeditionId = ? " +
                    // " AND b.resourceType not like '%esource%' " +
@@ -679,6 +680,7 @@ public class ExpeditionMinter {
                 metadata.put("expeditionCode", rs.getString("e.expeditionCode"));
                 metadata.put("projectId", rs.getString("e.projectId"));
                 metadata.put("expeditionTitle", rs.getString("e.expeditionTitle"));
+                metadata.put("webAddress", rs.getString("webAddress"));
                 metadata.put("resourceType", rs.getString("b.resourceType"));
                 metadata.put("expeditionId", expeditionId);
             }
