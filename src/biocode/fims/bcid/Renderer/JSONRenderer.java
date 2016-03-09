@@ -29,6 +29,7 @@ public class JSONRenderer extends Renderer {
         super(bcid);
         Database db = new Database();
         userId = db.getUserId(username);
+        db.close();
         this.resolver = resolver;
     }
 

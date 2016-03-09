@@ -228,6 +228,7 @@ public class Bcid {
                     sm.retrieveValue("divider") + suffix + " from bcidId: " + bcidId, e);
         } finally {
             db.close(stmt, rs);
+            db.close();
         }
     }
 
@@ -257,6 +258,7 @@ public class Bcid {
             throw new ServerErrorException(e);
         } finally {
             db.close(stmt, rs);
+            db.close();
         }
     }
 
