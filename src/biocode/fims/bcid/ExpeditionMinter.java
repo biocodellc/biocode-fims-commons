@@ -347,7 +347,7 @@ public class ExpeditionMinter {
                             " b.title, " +
                             " e.expeditionTitle " +
                             "FROM " +
-                            " expeditions e, expeditionBCIDs b, bcids b " +
+                            " expeditions e, expeditionBCIDs eb, bcids b " +
                             "WHERE" +
                             " e.expeditionId = eb.expeditionId && " +
                             " eb.bcidId = b.bcidId && \n" +
