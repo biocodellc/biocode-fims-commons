@@ -66,7 +66,6 @@ public class BcidService extends FimsService {
         }
         String identifier = bcidMinter.createEntityBcid(new Bcid(userId, resourceTypeString, title,
                 webAddress, graph, doi, finalCopy, suffixPassThrough));
-        bcidMinter.close();
 
         return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
     }
@@ -101,7 +100,6 @@ public class BcidService extends FimsService {
     public Response bcidList() {
         BcidMinter bcidMinter = new BcidMinter();
         JSONArray response = bcidMinter.bcidList(username);
-        bcidMinter.close();
 
         return Response.ok(response.toJSONString()).build();
     }
@@ -172,14 +170,11 @@ public class BcidService extends FimsService {
         }
 
         if (update.isEmpty()) {
-            bcidMinter.close();
             return Response.ok("{\"success\": \"Nothing needed to be updated.\"}").build();
         // try to update the metadata by calling d.updateBcidMetadata
         } else if (bcidMinter.updateBcidMetadata(update, identifier)) {
-            bcidMinter.close();
             return Response.ok("{\"success\": \"BCID successfully updated.\"}").build();
         } else {
-            bcidMinter.close();
             // if we are here, the Bcid wasn't found
             throw new BadRequestException("Bcid wasn't found");
         }

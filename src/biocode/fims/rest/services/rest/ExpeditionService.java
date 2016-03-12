@@ -68,8 +68,6 @@ public class ExpeditionService extends FimsService {
             return Response.ok(expedition.getMetadata(expeditionId).toJSONString()).build();
         } catch (FimsException e) {
             throw new BadRequestException(e.getMessage());
-        } finally {
-            expedition.close();
         }
     }
 
@@ -86,7 +84,6 @@ public class ExpeditionService extends FimsService {
     public Response getGraphMetadata(@PathParam("graph") String graph) {
         ExpeditionMinter e = new ExpeditionMinter();
         JSONObject response = e.getGraphMetadata(graph);
-        e.close();
         return Response.ok(response.toJSONString()).build();
     }
 
@@ -112,7 +109,6 @@ public class ExpeditionService extends FimsService {
 
         Resolver r = new Resolver(expeditionCode, projectId, resourceAlias);
         String response = r.getIdentifier();
-        r.close();
         if (response == null) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();
         } else {
@@ -140,7 +136,6 @@ public class ExpeditionService extends FimsService {
 
         ExpeditionMinter e = new ExpeditionMinter();
         JSONArray expeditions = e.getExpeditions(projectId, username);
-        e.close();
         return Response.ok(expeditions.toJSONString()).build();
     }
 
@@ -164,7 +159,6 @@ public class ExpeditionService extends FimsService {
 
         ProjectMinter p = new ProjectMinter();
         Boolean projectAdmin = p.isProjectAdmin(username, projectId);
-        p.close();
 
         if (!projectAdmin) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update a project expedition's public status.");
@@ -172,7 +166,6 @@ public class ExpeditionService extends FimsService {
         ExpeditionMinter e = new ExpeditionMinter();
 
         e.updateExpeditionsPublicStatus(data, projectId);
-        e.close();
         return Response.ok("{\"success\": \"successfully updated.\"}").build();
     }
 
@@ -200,10 +193,8 @@ public class ExpeditionService extends FimsService {
         // Update the expedition public status for what was just passed in
 
         if (e.updateExpeditionPublicStatus(userId, expeditionCode, projectId, publicStatus)) {
-            e.close();
             return Response.ok("{\"success\": \"successfully updated.\"}").build();
         } else {
-            e.close();
             return Response.ok("{\"success\": \"nothing to update.\"}").build();
         }
     }
@@ -246,39 +237,34 @@ public class ExpeditionService extends FimsService {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         ProjectMinter projectMinter = new ProjectMinter();
 
-        try {
-            //Check that the user exists in this project
-            if (!projectMinter.userExistsInProject(userId, projectId)) {
-                // If the user isn't in the project, then we can't update or create a new expedition
-                throw new ForbiddenRequestException("User is not authorized to update/create expeditions in this project.");
-            }
+        //Check that the user exists in this project
+        if (!projectMinter.userExistsInProject(userId, projectId)) {
+            // If the user isn't in the project, then we can't update or create a new expedition
+            throw new ForbiddenRequestException("User is not authorized to update/create expeditions in this project.");
+        }
 
-            // If specified, ignore the user.. simply figure out whether we're updating or inserting
-            if (lIgnoreUser) {
-                if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
-                    return Response.ok("{\"update\": \"update this expedition\"}").build();
-                } else {
-                    return Response.ok("{\"insert\": \"insert new expedition\"}").build();
-                }
+        // If specified, ignore the user.. simply figure out whether we're updating or inserting
+        if (lIgnoreUser) {
+            if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
+                return Response.ok("{\"update\": \"update this expedition\"}").build();
+            } else {
+                return Response.ok("{\"insert\": \"insert new expedition\"}").build();
             }
+        }
 
-            // Else, pay attention to what user owns the initial project
-            else {
-                if (expeditionMinter.userOwnsExpedition(userId, expeditionCode, projectId)) {
-                    // If the user already owns the expedition, then great--- this is an update
-                    return Response.ok("{\"update\": \"user owns this expedition\"}").build();
-                    // If the expedition exists in the project but the user does not own the expedition then this means we can't
-                } else if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
-                    expeditionMinter.close();
-                    throw new ForbiddenRequestException("The expedition code '" + expeditionCode +
-                            "' exists in this project already and is owned by another user. " +
-                            "Please choose another expedition code.");
-                } else {
-                    return Response.ok("{\"insert\": \"the expedition does not exist with project and nobody owns it\"}").build();
-                }
+        // Else, pay attention to what user owns the initial project
+        else {
+            if (expeditionMinter.userOwnsExpedition(userId, expeditionCode, projectId)) {
+                // If the user already owns the expedition, then great--- this is an update
+                return Response.ok("{\"update\": \"user owns this expedition\"}").build();
+                // If the expedition exists in the project but the user does not own the expedition then this means we can't
+            } else if (expeditionMinter.expeditionExistsInProject(expeditionCode, projectId)) {
+                throw new ForbiddenRequestException("The expedition code '" + expeditionCode +
+                        "' exists in this project already and is owned by another user. " +
+                        "Please choose another expedition code.");
+            } else {
+                return Response.ok("{\"insert\": \"the expedition does not exist with project and nobody owns it\"}").build();
             }
-        } finally {
-            expeditionMinter.close();
         }
     }
 
@@ -292,7 +278,6 @@ public class ExpeditionService extends FimsService {
                               @FormParam("projectId") Integer projectId) {
         ExpeditionMinter expedition = new ExpeditionMinter();
         expedition.attachReferenceToExpedition(expeditionCode, identifier, projectId);
-        expedition.close();
 
         return Response.ok("{\"success\": \"Data Elements Root: " + expeditionCode + "\"}").build();
     }

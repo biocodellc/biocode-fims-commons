@@ -72,20 +72,16 @@ public class UserService extends FimsService {
 
         UserMinter u = new UserMinter();
         ProjectMinter p = new ProjectMinter();
-        try {
-            if (u.checkUsernameExists(createUser)) {
-                throw new BadRequestException("username already exists");
-            }
-            // check if the user is this project's admin
-            if (!p.isProjectAdmin(username, projectId)) {
-                throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
-            }
-            u.createUser(userInfo, projectId);
-            return Response.ok("{\"success\": \"successfully created new user\"}").build();
-        } finally {
-            u.close();
-            p.close();
+
+        if (u.checkUsernameExists(createUser)) {
+            throw new BadRequestException("username already exists");
         }
+        // check if the user is this project's admin
+        if (!p.isProjectAdmin(username, projectId)) {
+            throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
+        }
+        u.createUser(userInfo, projectId);
+        return Response.ok("{\"success\": \"successfully created new user\"}").build();
     }
 
     /**
@@ -122,8 +118,6 @@ public class UserService extends FimsService {
         if (!username.equals(updateUser.trim()) && authorizer.userProjectAdmin(username))
             adminAccess = true;
 
-        authorizer.close();
-
         Hashtable<String, String> update = new Hashtable<String, String>();
 
         // Only update user's password if both old_password and new_password fields contain values and the user is updating
@@ -147,7 +141,6 @@ public class UserService extends FimsService {
                 } else {
                     throw new BadRequestException("Wrong Password");
                 }
-                myAuth.close();
 
             }
         } else {
@@ -155,7 +148,6 @@ public class UserService extends FimsService {
             if (!newPassword.isEmpty()) {
                 Authenticator authenticator = new Authenticator();
                 Boolean success = authenticator.setHashedPass(updateUser, newPassword);
-                authenticator.close();
                 if (!success) {
                     throw new BadRequestException("user: " + updateUser + "not found");
                 } else {
@@ -168,41 +160,37 @@ public class UserService extends FimsService {
         // Check if any other fields should be updated
         UserMinter u = new UserMinter();
 
-        try {
-            if (!firstName.equals(u.getFirstName(updateUser))) {
-                update.put("firstName", firstName);
-            }
-            if (!lastName.equals(u.getLastName(updateUser))) {
-                update.put("lastName", lastName);
-            }
-            if (!email.equals(u.getEmail(updateUser))) {
-                // check that a valid email is given
-                if (email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
-                    update.put("email", email);
-                } else {
-                    throw new BadRequestException("please enter a valid email");
-                }
-            }
-            if (!institution.equals(u.getInstitution(updateUser))) {
-                update.put("institution", institution);
-            }
-
-            if (!update.isEmpty()) {
-                Boolean success = u.updateProfile(update, updateUser);
-                if (!success) {
-                    throw new ServerErrorException("Server Error", "User not found");
-                }
-            }
-
-            JSONObject response = new JSONObject();
-            response.put("adminAccess", adminAccess);
-            if (returnTo != null) {
-                response.put("returnTo", returnTo);
-            }
-            return Response.ok(response.toJSONString()).build();
-        } finally {
-            u.close();
+        if (!firstName.equals(u.getFirstName(updateUser))) {
+            update.put("firstName", firstName);
         }
+        if (!lastName.equals(u.getLastName(updateUser))) {
+            update.put("lastName", lastName);
+        }
+        if (!email.equals(u.getEmail(updateUser))) {
+            // check that a valid email is given
+            if (email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
+                update.put("email", email);
+            } else {
+                throw new BadRequestException("please enter a valid email");
+            }
+        }
+        if (!institution.equals(u.getInstitution(updateUser))) {
+            update.put("institution", institution);
+        }
+
+        if (!update.isEmpty()) {
+            Boolean success = u.updateProfile(update, updateUser);
+            if (!success) {
+                throw new ServerErrorException("Server Error", "User not found");
+            }
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("adminAccess", adminAccess);
+        if (returnTo != null) {
+            response.put("returnTo", returnTo);
+        }
+        return Response.ok(response.toJSONString()).build();
     }
 
     /**
@@ -216,7 +204,6 @@ public class UserService extends FimsService {
         if (accessToken != null) {
             UserMinter u = new UserMinter();
             JSONObject response = u.getOauthProfile(accessToken);
-            u.close();
             return Response.ok(response.toJSONString()).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");
@@ -246,14 +233,10 @@ public class UserService extends FimsService {
         Authenticator authenticator = new Authenticator();
 
         if (!authorizer.validResetToken(token)) {
-            authenticator.close();
-            authorizer.close();
             throw new BadRequestException("Expired Reset Token");
         }
 
         Boolean resetPass = authenticator.resetPass(token, password);
-        authorizer.close();
-        authenticator.close();
 
         if (!resetPass) {
             throw new ServerErrorException("Server Error", "Error while updating user's password");

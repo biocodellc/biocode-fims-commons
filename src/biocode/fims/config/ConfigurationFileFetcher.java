@@ -77,7 +77,6 @@ public class ConfigurationFileFetcher {
             // Get the URL for this configuration File
             ProjectMinter project = new ProjectMinter();
             String url = project.getValidationXML(projectId);
-            project.close();
             try {
                 // Initialize the connection
                 init(new URL(url), defaultOutputDirectory);

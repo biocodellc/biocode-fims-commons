@@ -19,7 +19,6 @@ import java.util.HashMap;
 public class ExpeditionUpdater {
 
     protected static Database db;
-    protected static Connection conn;
     private static SettingsManager sm;
 
     static {
@@ -35,6 +34,7 @@ public class ExpeditionUpdater {
         HashMap expeditions = new HashMap();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String sql = "SELECT expeditionId, userId " +
@@ -48,7 +48,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
 
         return expeditions;
@@ -56,8 +56,7 @@ public class ExpeditionUpdater {
 
     public static void main(String args[]) {
         SettingsManager.getInstance("biocode-fims.props");
-        db = new Database();
-        conn = db.getConn();
+
         ExpeditionUpdater expeditionUpdater = new ExpeditionUpdater();
         HashMap expeditions = expeditionUpdater.getAllExpeditions();
 
@@ -69,12 +68,10 @@ public class ExpeditionUpdater {
                 BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
                 String identifier = bcidMinter.createEntityBcid(new Bcid((Integer) expeditions.get(expeditionId),
                         "http://purl.org/dc/dcmitype/Collection", "Expedition", null, null, null, false, false));
-                bcidMinter.close();
 
                 // Associate this Bcid with this expedition
                 ExpeditionMinter expedition = new ExpeditionMinter();
                 expedition.attachReferenceToExpedition((Integer) expeditionId, identifier);
-                expedition.close();
 
             }
         }
@@ -83,6 +80,7 @@ public class ExpeditionUpdater {
     private boolean expeditionHasBCID(Integer expeditionId ) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String sql = "SELECT count(*) FROM bcids b, expeditionBcids eB " +
@@ -98,7 +96,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 }

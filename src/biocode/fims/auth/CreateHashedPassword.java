@@ -8,6 +8,5 @@ public class CreateHashedPassword {
         String password = "demo";
         Authenticator authenticator = new Authenticator();
         System.out.println(authenticator.createHash(password));
-        authenticator.close();
     }
 }

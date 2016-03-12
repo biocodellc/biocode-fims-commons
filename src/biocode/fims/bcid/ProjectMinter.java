@@ -2,7 +2,6 @@ package biocode.fims.bcid;
 
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -17,8 +16,7 @@ import java.util.*;
  * Mint new expeditions.  Includes the automatic creation of a core set of entity types
  */
 public class ProjectMinter {
-    protected Connection conn;
-    Database db;
+    private Database db = new Database();
 
     /**
      * The constructor defines the class-level variables used when minting Expeditions.
@@ -26,12 +24,6 @@ public class ProjectMinter {
      * that can be used for any expedition.
      */
     public ProjectMinter() {
-        db = new Database();
-        conn = db.getConn();
-    }
-
-    public void close() {
-        db.close();
     }
 
     /**
@@ -44,6 +36,7 @@ public class ProjectMinter {
     public String getValidationXML(Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String query = "select \n" +
@@ -61,7 +54,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting Configuration File", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -74,6 +67,7 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String query = "SELECT \n" +
@@ -122,7 +116,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting list of all projects.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -140,6 +134,7 @@ public class ProjectMinter {
         JSONArray graphs = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             // Construct the query
@@ -199,7 +194,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting latest graphs.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -209,7 +204,6 @@ public class ProjectMinter {
         //System.out.println(project.listProjects());
 //        System.out.println("datasets = \n" + project.getMyTemplatesAndDatasets("demo"));
         System.out.println("datasets = \n" + project.getMyLatestGraphs("demo"));
-        project.close();
     }
 
     /**
@@ -223,6 +217,7 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             Integer userId = db.getUserId(username);
@@ -245,7 +240,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -260,6 +255,7 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             Integer userId = db.getUserId(username);
@@ -280,7 +276,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
 
         return projects;
@@ -309,6 +305,7 @@ public class ProjectMinter {
             }
         }
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
         try {
             stmt = conn.prepareStatement(updateString);
 
@@ -341,7 +338,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
         return false;
     }
@@ -358,6 +355,7 @@ public class ProjectMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             Integer userId = db.getUserId(username);
@@ -380,7 +378,7 @@ public class ProjectMinter {
             throw new ServerErrorException("Server Error", "SQLException retrieving project configuration for projectID: " +
                     projectId, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return metadata;
     }
@@ -391,6 +389,7 @@ public class ProjectMinter {
     public Boolean userProject(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM users u, projects p, userProjects uP " +
@@ -407,7 +406,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -427,6 +426,7 @@ public class ProjectMinter {
     public Boolean isProjectAdmin(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "SELECT count(*) as count FROM projects WHERE userId = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);
@@ -440,7 +440,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -454,6 +454,7 @@ public class ProjectMinter {
      */
     public void removeUser(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "DELETE FROM userProjects WHERE userId = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);
@@ -464,7 +465,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error while removing user", e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -478,6 +479,7 @@ public class ProjectMinter {
      */
     public void addUserToProject(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String insertStatement = "INSERT INTO userProjects (userId, projectId) VALUES(?,?)";
@@ -490,7 +492,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error while adding user to project.", e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -506,6 +508,7 @@ public class ProjectMinter {
         JSONArray users = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String userProjectSql = "SELECT userId FROM userProjects WHERE projectId = \"" + projectId + "\"";
@@ -516,7 +519,7 @@ public class ProjectMinter {
             rs.next();
             response.put("projectTitle", rs.getString("projectTitle"));
 
-            db.close(stmt, rs);
+            db.close(null, stmt, rs);
 
             stmt = conn.prepareStatement(userProjectSql);
             rs = stmt.executeQuery();
@@ -534,7 +537,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error retrieving project users.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -547,6 +550,7 @@ public class ProjectMinter {
     public String getMyTemplatesAndDatasets(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         HashMap projectMap = new HashMap();
 
 
@@ -635,7 +639,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting users datasets.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -647,6 +651,7 @@ public class ProjectMinter {
     public String getMyLatestGraphs(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         HashMap projectMap = new HashMap();
         JSONArray projectDatasets;
 
@@ -719,7 +724,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Trouble getting latest graphs.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -733,6 +738,7 @@ public class ProjectMinter {
      */
     public void saveTemplateConfig(String configName, Integer projectId, Integer userId, List<String> checkedOptions) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String insertStatement = "INSERT INTO templateConfigs (userId, projectId, configName, config) " +
@@ -748,7 +754,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error while saving template config.", e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -763,6 +769,7 @@ public class ProjectMinter {
     public boolean templateConfigExists(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM templateConfigs " +
@@ -781,7 +788,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -791,6 +798,7 @@ public class ProjectMinter {
     public boolean usersTemplateConfig(String configName, Integer projectId, Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM templateConfigs " +
@@ -810,7 +818,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -824,6 +832,7 @@ public class ProjectMinter {
     public JSONArray getTemplateConfigs(Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         JSONArray configNames = new JSONArray();
 
@@ -842,7 +851,7 @@ public class ProjectMinter {
             throw new ServerErrorException("Server Error", "SQLException retrieving template configurations for projectID: " +
                     projectId, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return configNames;
     }
@@ -858,6 +867,7 @@ public class ProjectMinter {
     public JSONObject getTemplateConfig(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         JSONObject obj = new JSONObject();
 
@@ -876,7 +886,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException retrieving template config.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
 
         return obj;
@@ -884,6 +894,7 @@ public class ProjectMinter {
 
     public void updateTemplateConfig(String configName, Integer projectId, Integer userId, List<String> checkedOptions) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String updateStatement = "UPDATE templateConfigs SET config = ? WHERE " +
@@ -899,12 +910,13 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error while updating template config.", e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
     public void removeTemplateConfig(String configName, Integer projectId) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String sql = "DELETE FROM templateConfigs WHERE projectId = ? AND configName = ?";
@@ -917,7 +929,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server error while removing template config.");
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -933,6 +945,7 @@ public class ProjectMinter {
         String selectString = "SELECT count(*) as count FROM userProjects WHERE userId = ? && projectId = ?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             stmt = conn.prepareStatement(selectString);
@@ -946,7 +959,7 @@ public class ProjectMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 }

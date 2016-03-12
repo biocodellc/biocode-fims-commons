@@ -44,7 +44,6 @@ public class ProjectService extends FimsService {
 
         ProjectMinter project = new ProjectMinter();
         JSONArray response = project.listProjects(userId);
-        project.close();
 
         return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -62,7 +61,6 @@ public class ProjectService extends FimsService {
         ProjectMinter project= new ProjectMinter();
 
         JSONArray graphs = project.getLatestGraphs(projectId, username);
-        project.close();
 
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -93,7 +91,6 @@ public class ProjectService extends FimsService {
         ProjectMinter project= new ProjectMinter();
 
         String response = project.getMyLatestGraphs(username);
-        project.close();
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -111,7 +108,6 @@ public class ProjectService extends FimsService {
         ProjectMinter project= new ProjectMinter();
 
         String response = project.getMyTemplatesAndDatasets(username);
-        project.close();
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -128,7 +124,6 @@ public class ProjectService extends FimsService {
     public Response getUserAdminProjects() {
         ProjectMinter project= new ProjectMinter();
         JSONArray projects = project.getAdminProjects(username);
-        project.close();
 
         return Response.ok(projects.toJSONString()).build();
     }
@@ -154,41 +149,37 @@ public class ProjectService extends FimsService {
                                  @FormParam("public") String publicProject) {
         ProjectMinter p = new ProjectMinter();
 
-        try {
-            if (!p.isProjectAdmin(userId, projectID)) {
-                throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
-            }
+        if (!p.isProjectAdmin(userId, projectID)) {
+            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
+        }
 
-            JSONObject metadata = p.getMetadata(projectID, username);
-            Hashtable<String, String> update = new Hashtable<String, String>();
+        JSONObject metadata = p.getMetadata(projectID, username);
+        Hashtable<String, String> update = new Hashtable<String, String>();
 
-            if (title != null &&
-                    !metadata.get("title").equals(title)) {
-                update.put("projectTitle", title);
-            }
-            if (!metadata.containsKey("validationXml") || !metadata.get("validationXml").equals(validationXML)) {
-                update.put("validationXml", validationXML);
-            }
-            if ((publicProject != null && (publicProject.equals("on") || publicProject.equals("true")) && metadata.get("public").equals("false")) ||
-                    (publicProject == null && metadata.get("public").equals("true"))) {
-                if (publicProject != null && (publicProject.equals("on") || publicProject.equals("true"))) {
-                    update.put("public", "true");
-                } else {
-                    update.put("public", "false");
-                }
-            }
-
-            if (!update.isEmpty()) {
-                if (p.updateMetadata(update, projectID)) {
-                    return Response.ok("{\"success\": \"Successfully updated project metadata.\"}").build();
-                } else {
-                    throw new BadRequestException("Project wasn't found");
-                }
+        if (title != null &&
+                !metadata.get("title").equals(title)) {
+            update.put("projectTitle", title);
+        }
+        if (!metadata.containsKey("validationXml") || !metadata.get("validationXml").equals(validationXML)) {
+            update.put("validationXml", validationXML);
+        }
+        if ((publicProject != null && (publicProject.equals("on") || publicProject.equals("true")) && metadata.get("public").equals("false")) ||
+                (publicProject == null && metadata.get("public").equals("true"))) {
+            if (publicProject != null && (publicProject.equals("on") || publicProject.equals("true"))) {
+                update.put("public", "true");
             } else {
-                return Response.ok("{\"success\": \"nothing needed to be updated\"}").build();
+                update.put("public", "false");
             }
-        } finally {
-            p.close();
+        }
+
+        if (!update.isEmpty()) {
+            if (p.updateMetadata(update, projectID)) {
+                return Response.ok("{\"success\": \"Successfully updated project metadata.\"}").build();
+            } else {
+                throw new BadRequestException("Project wasn't found");
+            }
+        } else {
+            return Response.ok("{\"success\": \"nothing needed to be updated\"}").build();
         }
     }
 
@@ -211,7 +202,6 @@ public class ProjectService extends FimsService {
         }
 
         p.removeUser(userId, projectId);
-        p.close();
 
         return Response.ok("{\"success\": \"User has been successfully removed\"}").build();
     }
@@ -238,11 +228,9 @@ public class ProjectService extends FimsService {
 
         ProjectMinter p = new ProjectMinter();
         if (!p.isProjectAdmin(username, projectId)) {
-            p.close();
             throw new ForbiddenRequestException("You are not this project's admin");
         }
         p.addUserToProject(userId, projectId);
-        p.close();
 
         return Response.ok("{\"success\": \"User has been successfully added to this project\"}").build();
     }
@@ -258,7 +246,6 @@ public class ProjectService extends FimsService {
     public Response getUserProjects() {
         ProjectMinter p = new ProjectMinter();
         JSONArray projects = p.listUsersProjects(username);
-        p.close();
         return Response.ok(projects.toJSONString()).build();
     }
 
@@ -293,7 +280,6 @@ public class ProjectService extends FimsService {
         } else {
             projectMinter.saveTemplateConfig(configName, projectId, userId, checkedOptions);
         }
-        projectMinter.close();
 
         return Response.ok("{\"success\": \"Successfully saved template configuration.\"}").build();
     }
@@ -309,7 +295,6 @@ public class ProjectService extends FimsService {
     public Response getTemplateConfigs(@PathParam("projectId") Integer projectId) {
         ProjectMinter p = new ProjectMinter();
         JSONArray configs = p.getTemplateConfigs(projectId);
-        p.close();
 
         return Response.ok(configs.toJSONString()).build();
     }
@@ -327,7 +312,6 @@ public class ProjectService extends FimsService {
                               @PathParam("projectId") Integer projectId) {
         ProjectMinter p = new ProjectMinter();
         JSONObject response = p.getTemplateConfig(configName, projectId);
-        p.close();
 
         return Response.ok(response.toJSONString()).build();
     }
@@ -353,7 +337,6 @@ public class ProjectService extends FimsService {
         } else {
             return Response.ok("{\"error\": \"Only the owners of a configuration can remove the configuration.\"}").build();
         }
-        p.close();
 
         return Response.ok("{\"success\": \"Successfully removed template configuration.\"}").build();
     }
@@ -372,7 +355,6 @@ public class ProjectService extends FimsService {
     public Response listExpeditions(@PathParam("projectId") Integer projectId) {
         ExpeditionMinter e = new ExpeditionMinter();
         JSONArray expeditions = e.listExpeditions(projectId, username);
-        e.close();
 
         return Response.ok(expeditions.toJSONString()).build();
     }

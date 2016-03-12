@@ -163,7 +163,6 @@ public class Process {
         if (!checkExpedition) {
             processController.setExpeditionAssignedToUserAndExists(true);
         }
-        expeditionMinter.close();
     }
 
     /**
@@ -197,7 +196,6 @@ public class Process {
                     processController.getPublicStatus()
             );
         } catch (FimsException e) {
-            expedition.close();
             throw new BadRequestException(e.getMessage());
         }
 
@@ -225,12 +223,11 @@ public class Process {
 
                 String identifier = bcidMinter.createEntityBcid(new Bcid(processController.getUserId(), entity.getConceptAlias(),
                         entity.getConceptAlias(), "", null, null, false, false));
-                bcidMinter.close();
+
                 // Associate this Bcid with this expedition
                 expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
             }
         }
-        expedition.close();
 
         return true;
 
