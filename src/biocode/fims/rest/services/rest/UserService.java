@@ -223,18 +223,18 @@ public class UserService extends FimsService {
     }
 
     /**
-     * Service for a user to exchange their reset token in order to update their password
+     * Service for a user to exchange their reset resetToken in order to update their password
      *
      * @param password
-     * @param token
+     * @param resetToken
      */
     @POST
     @Path("/resetPassword")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response resetPassword(@FormParam("password") String password,
-                                  @FormParam("token") String token) {
-        if (token == null || token.isEmpty()) {
+                                  @FormParam("resetToken") String resetToken) {
+        if (resetToken == null || resetToken.isEmpty()) {
             throw new BadRequestException("Invalid Reset Token");
         }
 
@@ -245,13 +245,13 @@ public class UserService extends FimsService {
         Authorizer authorizer = new Authorizer();
         Authenticator authenticator = new Authenticator();
 
-        if (!authorizer.validResetToken(token)) {
+        if (!authorizer.validResetToken(resetToken)) {
             authenticator.close();
             authorizer.close();
             throw new BadRequestException("Expired Reset Token");
         }
 
-        Boolean resetPass = authenticator.resetPass(token, password);
+        Boolean resetPass = authenticator.resetPass(resetToken, password);
         authorizer.close();
         authenticator.close();
 
