@@ -36,8 +36,6 @@ public class AdminFilter implements ContainerRequestFilter {
             String username = provider.validateToken(accessToken.toString());
             Authorizer authorizer = new Authorizer();
             projectAdmin = authorizer.userProjectAdmin(username);
-            authorizer.close();
-            provider.close();
         }
 
         if (projectAdmin == null) {

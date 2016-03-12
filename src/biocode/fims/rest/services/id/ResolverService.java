@@ -51,17 +51,12 @@ public class ResolverService extends FimsService{
             throw e;
         }
 
-        try {
-            if (accept.equalsIgnoreCase("application/rdf+xml")) {
-                // Return RDF when the Accepts header specifies rdf+xml
-                String response = new RDFRenderer(r.getBcid()).render();
-                return Response.ok(response).build();
-            } else {
-                return Response.seeOther(r.resolveIdentifier()).build();
-            }
-
-        } finally {
-            r.close();
+        if (accept.equalsIgnoreCase("application/rdf+xml")) {
+            // Return RDF when the Accepts header specifies rdf+xml
+            String response = new RDFRenderer(r.getBcid()).render();
+            return Response.ok(response).build();
+        } else {
+            return Response.seeOther(r.resolveIdentifier()).build();
         }
 
     }
@@ -78,16 +73,13 @@ public class ResolverService extends FimsService{
         String element = scheme + "/" + naan + "/" + shoulderPlusIdentifier;
 
         Resolver resolver = new Resolver(element);
-        try {
-            // This next section uses the Jersey Viewable class, which is a type of Model, View, Controller
-            // construct, enabling us to pass content JSP code to a JSP template.  We do this in this section
-            // so we can have a REST style call and provide human readable content with BCID header/footer
-            JSONRenderer renderer = new JSONRenderer(username, resolver, resolver.getBcid());
 
-            Viewable v = new Viewable("/bcidMetadata.jsp", renderer.getMetadata());
-            return Response.ok(v).build();
-        } finally {
-            resolver.close();
-        }
+        // This next section uses the Jersey Viewable class, which is a type of Model, View, Controller
+        // construct, enabling us to pass content JSP code to a JSP template.  We do this in this section
+        // so we can have a REST style call and provide human readable content with BCID header/footer
+        JSONRenderer renderer = new JSONRenderer(username, resolver, resolver.getBcid());
+
+        Viewable v = new Viewable("/bcidMetadata.jsp", renderer.getMetadata());
+        return Response.ok(v).build();
     }
 }

@@ -29,7 +29,6 @@ public class JSONRenderer extends Renderer {
         super(bcid);
         Database db = new Database();
         userId = db.getUserId(username);
-        db.close();
         this.resolver = resolver;
     }
 
@@ -154,23 +153,18 @@ public class JSONRenderer extends Renderer {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         ProjectMinter projectMinter = new ProjectMinter();
 
-        try {
-            //if public expedition, return true
-            if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
+        //if public expedition, return true
+        if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
+            return true;
+        } else if (userId != null) {
+            // if ignore_user and user in project, return true
+            if (ignoreUser && projectMinter.userExistsInProject(userId, projectId)) {
                 return true;
-            } else if (userId != null) {
-                // if ignore_user and user in project, return true
-                if (ignoreUser && projectMinter.userExistsInProject(userId, projectId)) {
-                    return true;
-                }
-                // if !ignore_user and userOwnsExpedition, return true
-                else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
-                    return true;
-                }
             }
-        } finally {
-            expeditionMinter.close();
-            projectMinter.close();
+            // if !ignore_user and userOwnsExpedition, return true
+            else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
+                return true;
+            }
         }
 
         return false;

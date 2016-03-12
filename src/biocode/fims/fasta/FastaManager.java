@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -121,6 +122,7 @@ public abstract class FastaManager {
         ResultSet rs = null;
         PreparedStatement stmt = null;
         Database db = new Database();
+        Connection conn = db.getBcidConn();
 
         try {
             String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +
@@ -130,7 +132,7 @@ public abstract class FastaManager {
                     "WHERE b.bcidId = eb.bcidId AND eb.expeditionId = e.expeditionId AND e.expeditionCode = ? AND " +
                     "e.projectId = ? AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" AND b.ts = b2.maxts";
 
-            stmt = db.getConn().prepareStatement(query);
+            stmt = conn.prepareStatement(query);
             stmt.setString(1, processController.getExpeditionCode());
             stmt.setInt(2, processController.getProjectId());
             stmt.setString(3, processController.getExpeditionCode());
@@ -145,8 +147,7 @@ public abstract class FastaManager {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
-            db.close();
+            db.close(conn, stmt, rs);
         }
 
         return null;
@@ -158,7 +159,7 @@ public abstract class FastaManager {
 
     /**
      * triplify and upload a fasta file to the specified graph
-     * @param graph
+     * @param graphId
      */
     public abstract void upload(String graphId, String outputFolder, String filenamePrefix);
 

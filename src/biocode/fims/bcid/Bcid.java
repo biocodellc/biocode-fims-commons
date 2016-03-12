@@ -120,7 +120,6 @@ public class Bcid {
             System.out.println("project code has not been set");
             projectCode = "Unassigned to a project";
         }
-        bcidMinter.close();
     }
 
     /**
@@ -156,7 +155,7 @@ public class Bcid {
      */
     private void getBcid(Integer pBcidId) {
         Database db = new Database();
-        Connection conn = db.getConn();
+        Connection conn = db.getBcidConn();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +
@@ -227,8 +226,7 @@ public class Bcid {
             throw new ServerErrorException("Server Error","URISyntaxException from identifier: " + prefix +
                     sm.retrieveValue("divider") + suffix + " from bcidId: " + bcidId, e);
         } finally {
-            db.close(stmt, rs);
-            db.close();
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -238,7 +236,7 @@ public class Bcid {
      */
     private void setIsPublic() {
         Database db = new Database();
-        Connection conn = db.getConn();
+        Connection conn = db.getBcidConn();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +
@@ -257,8 +255,7 @@ public class Bcid {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
-            db.close();
+            db.close(conn, stmt, rs);
         }
     }
 

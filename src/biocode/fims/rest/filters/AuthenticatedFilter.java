@@ -33,11 +33,9 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
         if (accessToken != null) {
             OAuthProvider provider = new OAuthProvider();
             if (provider.validateToken(accessToken.toString()) == null) {
-                provider.close();
                 throw new UnauthorizedRequestException("You must be logged in to access this service",
                         "Invalid/Expired access_token");
             }
-            provider.close();
         }
         if (user == null) {
             throw new UnauthorizedRequestException("You must be logged in to access this service.");

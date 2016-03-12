@@ -42,6 +42,7 @@ public class AuthenticationService extends FimsService {
      *
      * @throws IOException
      */
+
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)
@@ -63,7 +64,6 @@ public class AuthenticationService extends FimsService {
                 session.setAttribute("username", usr);
                 Database db = new Database();
                 session.setAttribute("userId", db.getUserId(usr));
-                db.close();
 
                 Authorizer myAuthorizer = new Authorizer();
 
@@ -72,19 +72,13 @@ public class AuthenticationService extends FimsService {
                     session.setAttribute("projectAdmin", true);
                 }
 
-                myAuthorizer.close();
-
                 // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
                 if (!authenticator.userSetPass(usr)) {
                     // don't need authenticator anymore
-                    authenticator.close();
 
                     return Response.ok("{\"url\": \"" + appRoot + "secure/profile.jsp?error=Update Your Password" +
                             new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
                             .build();
-                } else {
-                    // don't need authenticator anymore
-                    authenticator.close();
                 }
 
                 // Redirect to returnTo uri if provided
@@ -106,7 +100,6 @@ public class AuthenticationService extends FimsService {
             // stored and entered passwords don't match, invalidate the session to be sure that a user is not in the session
             else {
                 session.invalidate();
-                authenticator.close();
             }
         }
 
@@ -148,23 +141,19 @@ public class AuthenticationService extends FimsService {
 
             if (callback != null) {
                 try {
-                    p.close();
                     return Response.status(302).location(new URI(callback + "?error=invalid_request")).build();
                 } catch (URISyntaxException e) {
                     logger.warn("Malformed callback URI for oAuth client {} and callback {}", clientId, callback);
                 }
             }
-            p.close();
             throw new BadRequestException("invalid_request");
         }
 
         if (clientId == null || !p.validClientId(clientId)) {
             redirectURL += "?error=unauthorized_client";
             try {
-                p.close();
                 return Response.status(302).location(new URI(redirectURL)).build();
             } catch (URISyntaxException e) {
-                p.close();
                 throw new BadRequestException("invalid_request", "invalid redirect_uri provided");
             }
         }
@@ -173,19 +162,16 @@ public class AuthenticationService extends FimsService {
             session.setAttribute("oAuthLogin", "false");
             // need the user to login
             try {
-                p.close();
                 return Response.status(Response.Status.TEMPORARY_REDIRECT)
                         .location(new URI(appRoot + "login.jsp?return_to=/id/authenticationService/oauth/authorize?"
                                     + request.getQueryString()))
                         .build();
             } catch (URISyntaxException e) {
-                p.close();
                 throw new ServerErrorException(e);
             }
         }
         //TODO ask user if they want to share profile information with requesting party
         String code = p.generateCode(clientId, redirectURL, username.toString());
-        p.close();
 
         // no longer need oAuthLogin session attribute
         session.removeAttribute("oAuthLogin");
@@ -231,7 +217,6 @@ public class AuthenticationService extends FimsService {
         JSONObject accessToken;
 
         if (clientId == null || clientSecret == null || !p.validateClient(clientId, clientSecret)) {
-            p.close();
             throw new BadRequestException("invalid_client");
         }
 
@@ -241,7 +226,6 @@ public class AuthenticationService extends FimsService {
             }
 
             if (code == null || !p.validateCode(clientId, code, redirectURL)) {
-                p.close();
                 throw new BadRequestException("invalid_grant", "Either code was null or the code doesn't match the " +
                         "clientId or the redirect_uri didn't match the redirect_uri sent with the authorization_code request");
             }
@@ -256,7 +240,6 @@ public class AuthenticationService extends FimsService {
         } else {
             throw new BadRequestException("unsupported_grant_type", "invalid grant_type was requested");
         }
-        p.close();
 
         return Response.ok(accessToken.toJSONString())
                 .header("Cache-Control", "no-store")
@@ -283,12 +266,10 @@ public class AuthenticationService extends FimsService {
         OAuthProvider p = new OAuthProvider();
 
         if (clientId == null || clientSecret == null || !p.validateClient(clientId, clientSecret)) {
-            p.close();
             throw new BadRequestException("invalid_client");
         }
 
         if (refreshToken == null || !p.validateRefreshToken(refreshToken)) {
-            p.close();
             throw new BadRequestException("invalid_grant", "refresh_token is invalid");
         }
 
@@ -296,7 +277,6 @@ public class AuthenticationService extends FimsService {
 
         // refresh tokens are only good once, so delete the old access token so the refresh token can no longer be used
         p.deleteAccessToken(refreshToken);
-        p.close();
 
         return Response.ok(accessToken.toJSONString())
                 .header("Cache-Control", "no-store")

@@ -33,9 +33,7 @@ public class BcidMinter extends BcidEncoder {
 
     private static SettingsManager sm;
 
-    // Mysql Connection
-    protected Connection conn;
-    Database db;
+    private Database db;
     protected String bow = "";
     protected String scheme = "ark:";
     protected String shoulder = "";
@@ -65,7 +63,7 @@ public class BcidMinter extends BcidEncoder {
      */
     private void bcidMinterSetup (String shoulder, Integer NAAN) {
         db = new Database();
-        conn = db.getConn();
+        Connection conn = db.getBcidConn();
         // Generate defaults in constructor, these will be overridden later
         if (shoulder == null) {
             this.shoulder = "fk4";
@@ -92,10 +90,10 @@ public class BcidMinter extends BcidEncoder {
                 "bcids b where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` " +
                 "and e.`projectId`=p.`projectId` and b.bcidId= ?";
 
-        System.out.println("sql = " + sql + "    bcidId = " + bcidId);
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, bcidId);
@@ -108,10 +106,9 @@ public class BcidMinter extends BcidEncoder {
             throw new ServerErrorException("Server Error",
                     "Exception retrieving projectCode for bcidId: " + bcidId, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
 
-        System.out.println(projectCode);
         return projectCode;
     }
 
@@ -144,6 +141,7 @@ public class BcidMinter extends BcidEncoder {
         // Insert the values into the Database
         PreparedStatement insertStatement = null;
         PreparedStatement updateStatement = null;
+        Connection conn = db.getBcidConn();
         try {
             // Use auto increment in Database to assign the actual Bcid.. this is threadsafe this way
             String insertString = "INSERT INTO bcids (userId, resourceType, doi, webAddress, graph, title, internalId, ezidRequest, suffixPassThrough, finalCopy) " +
@@ -190,8 +188,8 @@ public class BcidMinter extends BcidEncoder {
         } catch (URISyntaxException e) {
             throw new ServerErrorException("Server Error", bow + shoulder + " is not a valid URI", e);
         } finally {
-            db.close(insertStatement, null);
-            db.close(updateStatement, null);
+            db.close(null, insertStatement, null);
+            db.close(conn, updateStatement, null);
         }
 
         return identifier.toString();
@@ -209,6 +207,8 @@ public class BcidMinter extends BcidEncoder {
     private Integer checkBcidExists(UUID bcidUUID) throws SQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
+
         try {
             String sql = "select bcidId from bcids where internalId = ?";
             stmt = conn.prepareStatement(sql);
@@ -217,7 +217,7 @@ public class BcidMinter extends BcidEncoder {
             rs.next();
             return rs.getInt("bcidId");
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -229,6 +229,8 @@ public class BcidMinter extends BcidEncoder {
     public void checkBcidExists(String identifier) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
+
         try {
             String sql = "select bcidId from bcids where identifier = ?";
             stmt = conn.prepareStatement(sql);
@@ -239,16 +241,9 @@ public class BcidMinter extends BcidEncoder {
             throw new ServerErrorException("Server Error",
                     "Exception retrieving bcidId for bcid with identifier: " + identifier, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return;
-    }
-
-    /**
-     * Close the SQL connection
-     */
-    public void close() {
-        db.close();
     }
 
     /**
@@ -263,6 +258,8 @@ public class BcidMinter extends BcidEncoder {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
+
         try {
             String sql = "select b.bcidId as bcidId, concat_ws(' ',identifier,title) as identifier from bcids b, users u where u.username = ? && " +
                     "b.userId=u.userId";
@@ -280,7 +277,7 @@ public class BcidMinter extends BcidEncoder {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "Exception retrieving bcids for user " + username, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return bcids;
     }
@@ -351,7 +348,6 @@ public class BcidMinter extends BcidEncoder {
         try {
 //            System.out.println(b.bcidTable("biocode"));
         } catch (Exception e) {
-            b.close();
             e.printStackTrace();
         }
 
@@ -371,6 +367,8 @@ public class BcidMinter extends BcidEncoder {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
+
         try {
             String sql = "SELECT suffixPassThrough as suffix, doi, title, webAddress, resourceType " +
                     "FROM bcids WHERE BINARY identifier = ?";
@@ -405,7 +403,7 @@ public class BcidMinter extends BcidEncoder {
             throw new ServerErrorException("Server Error", "SQLException while retrieving configuration for " +
                     "bcid with identifier: " + identifier, e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return metadata;
     }
@@ -419,6 +417,7 @@ public class BcidMinter extends BcidEncoder {
     public Boolean userOwnsBcid(String identifier, Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
 
         try {
             String sql = "SELECT count(*) as count FROM bcids WHERE BINARY identifier = ? AND userId = ?";
@@ -434,7 +433,7 @@ public class BcidMinter extends BcidEncoder {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
     }
 
@@ -449,6 +448,7 @@ public class BcidMinter extends BcidEncoder {
      */
     public Boolean updateBcidMetadata(Hashtable<String, String> metadata, String identifier) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
         try {
             String sql = "UPDATE bcids SET ";
 
@@ -504,7 +504,7 @@ public class BcidMinter extends BcidEncoder {
             throw new ServerErrorException("Server Error", "SQLException while updating configuration for " +
                     "bcid with identifier: " + identifier, e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -538,7 +538,6 @@ public class BcidMinter extends BcidEncoder {
             } catch (EzidException e) {
                 logger.warn("EZID NOT CREATED FOR BCID = " + identifier, e);
             } finally {
-                creator.close();
             }
         }
         return identifier;

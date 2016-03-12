@@ -21,7 +21,6 @@ import java.util.Hashtable;
  */
 public class Authenticator {
     protected Database db;
-    protected Connection conn;
     protected SettingsManager sm;
     private static Logger logger = LoggerFactory.getLogger(Authenticator.class);
 
@@ -29,10 +28,8 @@ public class Authenticator {
      * Constructor that initializes the class level variables
      */
     public Authenticator() {
-
         // Initialize Database
         this.db = new Database();
-        this.conn = db.getConn();
 
         // Initialize settings manager
         sm = SettingsManager.getInstance();
@@ -69,6 +66,7 @@ public class Authenticator {
     private String getHashedPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String selectString = "SELECT password FROM users WHERE username = ?";
             //System.out.println(selectString + " " + username);
@@ -83,7 +81,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return null;
     }
@@ -97,6 +95,7 @@ public class Authenticator {
      */
     public Boolean setHashedPass(String username, String password) {
         PreparedStatement stmt = null;
+        Connection conn = db.getBcidConn();
 
         String hashedPass = createHash(password);
 
@@ -117,7 +116,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -132,6 +131,7 @@ public class Authenticator {
     public Boolean resetPass(String token, String password) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             String username = null;
             String sql = "SELECT username FROM users where passwordResetToken = ?";
@@ -144,7 +144,7 @@ public class Authenticator {
                 username = rs.getString("username");
             }
             if (username != null) {
-                db.close(stmt, null);
+                db.close(null, stmt, null);
                 String updateSql = "UPDATE users SET passwordResetToken = null, passwordResetExpiration = null WHERE username = \"" + username + "\"";
                 stmt = conn.prepareStatement(updateSql);
                 stmt.executeUpdate();
@@ -154,7 +154,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error resetting password.", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return false;
     }
@@ -186,6 +186,7 @@ public class Authenticator {
     public void createUser(Hashtable<String, String> userInfo) {
         PreparedStatement stmt = null;
         String hashedPass = createHash(userInfo.get("password"));
+        Connection conn = db.getBcidConn();
 
         try {
             String insertString = "INSERT INTO users (username, password, email, firstName, lastName, institution)" +
@@ -204,7 +205,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(stmt, null);
+            db.close(conn, stmt, null);
         }
     }
 
@@ -216,6 +217,7 @@ public class Authenticator {
     public Boolean userSetPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         Boolean hasSetPassword = false;
         try {
             String selectString = "SELECT hasSetPassword FROM users WHERE username = ?";
@@ -231,7 +233,7 @@ public class Authenticator {
         } catch (SQLException e) {
             logger.warn("SQLException thrown", e);
         } finally {
-            db.close(stmt, rs);
+            db.close(conn, stmt, rs);
         }
         return hasSetPassword;
     }
@@ -252,6 +254,7 @@ public class Authenticator {
         PreparedStatement stmt = null;
         PreparedStatement stmt2 = null;
         ResultSet rs = null;
+        Connection conn = db.getBcidConn();
         try {
             stmt = conn.prepareStatement(sql);
 
@@ -288,8 +291,8 @@ public class Authenticator {
             throw new ServerErrorException("Server Error while generating reset token.", "db error retrieving email for user "
                     + username, e);
         } finally {
-            db.close(stmt, rs);
-            db.close(stmt2, null);
+            db.close(null, stmt, rs);
+            db.close(conn, stmt2, null);
         }
     }
 
@@ -299,9 +302,6 @@ public class Authenticator {
      * @param args username and password
      */
     public static void main(String args[]) {
-
-
-
 
         // Some classes to help us
         CommandLineParser clp = new GnuParser();
@@ -342,9 +342,10 @@ public class Authenticator {
         }
 
         // change hasSetPassword field to 0 so user has to create new password next time they login
+        Connection conn = authenticator.db.getBcidConn();
         Statement stmt = null;
         try {
-            stmt = authenticator.conn.createStatement();
+            stmt = conn.createStatement();
             Integer result = stmt.executeUpdate("UPDATE users SET hasSetPassword=\"0\" WHERE username=\"" + username + "\"");
 
             if (result == 0) {
@@ -353,20 +354,11 @@ public class Authenticator {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            authenticator.close();
+            authenticator.db.close(conn, stmt, null);
         }
 
         System.out.println("Successfully set new password for " + username);
 
-    }
-
-    public void close() {
-        db.close();
     }
 }
 
