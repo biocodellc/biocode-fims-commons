@@ -21,29 +21,29 @@ import java.util.Random;
  * SQLite Database.  Each table in the source data is converted to a matching
  * table in the SQLite Database.
  */
-public final class TabularDataConverter {
+public final class SqLiteTabularDataConverter {
     TabularDataReader source;
     String dest;
     String tableName;
 
-    private static Logger logger = LoggerFactory.getLogger(TabularDataConverter.class);
+    private static Logger logger = LoggerFactory.getLogger(SqLiteTabularDataConverter.class);
     /**
-     * Constructs a new TabularDataConverter for the specified source.
+     * Constructs a new SqLiteTabularDataConverter for the specified source.
      *
      * @param source A TabularDataReader with an open data source.
      */
-    public TabularDataConverter(TabularDataReader source) {
+    public SqLiteTabularDataConverter(TabularDataReader source) {
         this(source, "");
     }
 
     /**
-     * Constructs a new TabularDataConverter for the specified source and
+     * Constructs a new SqLiteTabularDataConverter for the specified source and
      * destination Database connection.
      *
      * @param source A TabularDataReader with an open data source.
      * @param dest   A valid SQLIte JDBC connection string.
      */
-    public TabularDataConverter(TabularDataReader source, String dest) {
+    public SqLiteTabularDataConverter(TabularDataReader source, String dest) {
         // load the Sqlite JDBC driver
         //Class.forName("org.sqlite.JDBC");
 
@@ -52,7 +52,7 @@ public final class TabularDataConverter {
     }
 
     /**
-     * Set the source data for this TabularDataConverter.  The source
+     * Set the source data for this SqLiteTabularDataConverter.  The source
      * TabularDataReader must have a data source open and ready to access.
      *
      * @param source The data source from which to read.

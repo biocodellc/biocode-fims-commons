@@ -271,6 +271,8 @@ public class Process {
             return;
         }
 
+        processController.setTabularDataReader(tdr);
+
         // Run the validation
         validation.run(tdr, outputPrefix, outputFolder, mapping);
 

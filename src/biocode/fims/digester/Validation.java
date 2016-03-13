@@ -2,15 +2,13 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.reader.TabularDataConverter;
+import biocode.fims.reader.SqLiteTabularDataConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.run.ProcessController;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
-import biocode.fims.utils.Html2Text;
-import ch.lambdaj.group.Group;
 import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -129,13 +126,12 @@ public class Validation implements RendererInterface {
         String pathPrefix = processDirectory + File.separator + filenamePrefix;
         sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
 
-        TabularDataConverter tdc = new TabularDataConverter(tabularDataReader, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        SqLiteTabularDataConverter tdc = new SqLiteTabularDataConverter(tabularDataReader, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
         try {
             tdc.convert(mapping);
         } catch (Exception e) {
             throw new FimsException(e);
         }
-        tabularDataReader.closeFile();
 
         // Create the SQLLite connection
         try {

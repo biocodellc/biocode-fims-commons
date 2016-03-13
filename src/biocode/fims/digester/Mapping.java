@@ -67,6 +67,18 @@ public class Mapping {
     }
 
     /**
+     * Get a list of the column names for each entity in the mapping
+     * @return LinkedList<String> of columnNames
+     */
+    public LinkedList<String> getColumnNames() {
+        LinkedList<String> columnNames = new LinkedList<>();
+        for (Entity entity: entities) {
+            columnNames.add(entity.getColumn());
+        }
+        return columnNames;
+    }
+
+    /**
      * Add an Entity to this Mapping by appending to the LinkedList of entities
      *
      * @param e

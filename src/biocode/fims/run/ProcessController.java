@@ -3,6 +3,7 @@ package biocode.fims.run;
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fasta.FastaManager;
+import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
 import biocode.fims.utils.StringGenerator;
@@ -39,6 +40,7 @@ public class ProcessController {
     private Mapping mapping;
     private FastaManager fastaManager;
     private String worksheetName;
+    private TabularDataReader tabularDataReader;
     // Store all messages as a k,v pair of sheetName: messages
     private HashMap<String, List<RowMessage>> messages = new HashMap<>();
     private StringBuilder statusSB = new StringBuilder();
@@ -378,5 +380,13 @@ public class ProcessController {
         }
 
         return messageArray;
+    }
+
+    public TabularDataReader getTabularDataReader() {
+        return tabularDataReader;
+    }
+
+    public void setTabularDataReader(TabularDataReader tabularDataReader) {
+        this.tabularDataReader = tabularDataReader;
     }
 }
