@@ -20,7 +20,6 @@ import java.util.Hashtable;
  * Used for all authentication duties such as login, changing passwords, creating users, resetting passwords, etc.
  */
 public class Authenticator {
-    protected Database db;
     protected SettingsManager sm;
     private static Logger logger = LoggerFactory.getLogger(Authenticator.class);
 
@@ -28,9 +27,6 @@ public class Authenticator {
      * Constructor that initializes the class level variables
      */
     public Authenticator() {
-        // Initialize Database
-        this.db = new Database();
-
         // Initialize settings manager
         sm = SettingsManager.getInstance();
     }
@@ -66,7 +62,7 @@ public class Authenticator {
     private String getHashedPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT password FROM users WHERE username = ?";
             //System.out.println(selectString + " " + username);
@@ -81,7 +77,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -95,7 +91,7 @@ public class Authenticator {
      */
     public Boolean setHashedPass(String username, String password) {
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         String hashedPass = createHash(password);
 
@@ -116,7 +112,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
     }
 
@@ -131,7 +127,7 @@ public class Authenticator {
     public Boolean resetPass(String token, String password) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String username = null;
             String sql = "SELECT username FROM users where passwordResetToken = ?";
@@ -144,7 +140,7 @@ public class Authenticator {
                 username = rs.getString("username");
             }
             if (username != null) {
-                db.close(null, stmt, null);
+                Database.close(null, stmt, null);
                 String updateSql = "UPDATE users SET passwordResetToken = null, passwordResetExpiration = null WHERE username = \"" + username + "\"";
                 stmt = conn.prepareStatement(updateSql);
                 stmt.executeUpdate();
@@ -154,7 +150,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error resetting password.", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }
@@ -186,7 +182,7 @@ public class Authenticator {
     public void createUser(Hashtable<String, String> userInfo) {
         PreparedStatement stmt = null;
         String hashedPass = createHash(userInfo.get("password"));
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String insertString = "INSERT INTO users (username, password, email, firstName, lastName, institution)" +
@@ -205,7 +201,7 @@ public class Authenticator {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
     }
 
@@ -217,7 +213,7 @@ public class Authenticator {
     public Boolean userSetPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         Boolean hasSetPassword = false;
         try {
             String selectString = "SELECT hasSetPassword FROM users WHERE username = ?";
@@ -233,7 +229,7 @@ public class Authenticator {
         } catch (SQLException e) {
             logger.warn("SQLException thrown", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return hasSetPassword;
     }
@@ -254,7 +250,7 @@ public class Authenticator {
         PreparedStatement stmt = null;
         PreparedStatement stmt2 = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             stmt = conn.prepareStatement(sql);
 
@@ -291,8 +287,8 @@ public class Authenticator {
             throw new ServerErrorException("Server Error while generating reset token.", "db error retrieving email for user "
                     + username, e);
         } finally {
-            db.close(null, stmt, rs);
-            db.close(conn, stmt2, null);
+            Database.close(null, stmt, rs);
+            Database.close(conn, stmt2, null);
         }
     }
 
@@ -342,7 +338,7 @@ public class Authenticator {
         }
 
         // change hasSetPassword field to 0 so user has to create new password next time they login
-        Connection conn = authenticator.db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         Statement stmt = null;
         try {
             stmt = conn.createStatement();
@@ -354,7 +350,7 @@ public class Authenticator {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            authenticator.db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
 
         System.out.println("Successfully set new password for " + username);

@@ -12,11 +12,9 @@ import java.util.Calendar;
  * Class to check whether a user has certain permissions, such as if they are a project admin
  */
 public class Authorizer {
-    private Database db;
     private static Logger logger = LoggerFactory.getLogger(Authorizer.class);
 
     public Authorizer() {
-        db = new Database();
     }
 
     /**
@@ -27,9 +25,9 @@ public class Authorizer {
     public Boolean userProjectAdmin(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
-            Integer userId = db.getUserId(username);
+            Integer userId = Database.getUserId(username);
             String selectString = "SELECT count(*) as count FROM projects WHERE userId = ?";
 
             stmt = conn.prepareStatement(selectString);
@@ -42,7 +40,7 @@ public class Authorizer {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -54,7 +52,7 @@ public class Authorizer {
     public Boolean validResetToken(String token) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT passwordResetExpiration as ts FROM users WHERE passwordResetToken = ?";
 
@@ -73,7 +71,7 @@ public class Authorizer {
             throw new ServerErrorException("Server Error while validating reset token",
                     "db error retrieving reset token expiration", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }

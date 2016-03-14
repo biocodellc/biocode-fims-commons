@@ -25,7 +25,6 @@ public class ManageEZID {
 
     private String publisher;
     private String creator;
-    private Database db;
     private static SettingsManager sm;
     private static String resolverTargetPrefix;
     private static Logger logger = LoggerFactory.getLogger(ManageEZID.class);
@@ -36,8 +35,6 @@ public class ManageEZID {
     }
 
     public ManageEZID() {
-        db = new Database();
-
         publisher = sm.retrieveValue("publisher");
         if (publisher == null || publisher.trim().equalsIgnoreCase("")) {
             publisher = "Biocode FIMS System";
@@ -83,7 +80,7 @@ public class ManageEZID {
     public void updateBcidsEZID(EzidService ezid, int bcidId) throws EzidException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
 
             String sql = "SELECT " +
@@ -135,7 +132,7 @@ public class ManageEZID {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -155,7 +152,7 @@ public class ManageEZID {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         ArrayList<String> idSuccessList = new ArrayList();
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT b.bcidId as bcidId," +
                     "b.identifier as identifier," +
@@ -216,7 +213,7 @@ public class ManageEZID {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException when creating EZID", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
         // Update the Identifiers Table and let it know that we've created the EZID
@@ -240,7 +237,7 @@ public class ManageEZID {
     private void updateEZIDMadeField(ArrayList idSuccessList) throws SQLException {
 
         PreparedStatement updateStatement = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         // Turn off autocommits at beginning of the next block
         conn.setAutoCommit(false);
@@ -270,7 +267,7 @@ public class ManageEZID {
 
         } finally {
             conn.setAutoCommit(true);
-            db.close(conn, updateStatement, null);
+            Database.close(conn, updateStatement, null);
         }
     }
 }

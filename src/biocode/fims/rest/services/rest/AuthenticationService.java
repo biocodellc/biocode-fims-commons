@@ -62,8 +62,7 @@ public class AuthenticationService extends FimsService {
             if (isAuthenticated) {
                 // Place the user in the session
                 session.setAttribute("username", usr);
-                Database db = new Database();
-                session.setAttribute("userId", db.getUserId(usr));
+                session.setAttribute("userId", Database.getUserId(usr));
 
                 Authorizer myAuthorizer = new Authorizer();
 

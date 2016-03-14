@@ -19,10 +19,8 @@ import java.util.Hashtable;
  * Class to manage user creation and profile information.
  */
 public class UserMinter {
-    private Database db = new Database();
 
     public UserMinter() {
-        db = new Database();
     }
 
     /**
@@ -35,7 +33,7 @@ public class UserMinter {
         Authenticator auth = new Authenticator();
         auth.createUser(userInfo);
         // add user to project
-        Integer userId = db.getUserId(userInfo.get("username"));
+        Integer userId = Database.getUserId(userInfo.get("username"));
         ProjectMinter p = new ProjectMinter();
 
         p.addUserToProject(userId, projectId);
@@ -50,7 +48,7 @@ public class UserMinter {
         JSONObject profile = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectStatement = "Select institution, email, firstName, lastName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -70,7 +68,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
     }
@@ -83,7 +81,7 @@ public class UserMinter {
     public String getInstitution(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectStatement = "Select institution from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -98,7 +96,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -111,7 +109,7 @@ public class UserMinter {
     public String getEmail(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectStatement = "Select email from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -126,7 +124,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -139,7 +137,7 @@ public class UserMinter {
     public String getFirstName(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectStatement = "Select firstName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -153,7 +151,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -166,7 +164,7 @@ public class UserMinter {
     public String getLastName(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectStatement = "Select lastName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -180,7 +178,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -194,11 +192,11 @@ public class UserMinter {
         OAuthProvider p = new OAuthProvider();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         String username = p.validateToken(token);
         if (username != null) {
-            Integer userId = db.getUserId(username);
+            Integer userId = Database.getUserId(username);
             try {
                 String sql = "SELECT lastName, firstName, email, institution, hasSetPassword " +
                         "FROM users WHERE userId = ?";
@@ -224,7 +222,7 @@ public class UserMinter {
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             } finally {
-                db.close(conn, stmt, rs);
+                Database.close(conn, stmt, rs);
             }
         }
 
@@ -239,7 +237,7 @@ public class UserMinter {
     public Boolean checkUsernameExists(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT count(*) as count FROM users WHERE username = ?";
             stmt = conn.prepareStatement(sql);
@@ -253,7 +251,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -280,7 +278,7 @@ public class UserMinter {
         }
 
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             stmt = conn.prepareStatement(updateString);
@@ -306,7 +304,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
     }
 
@@ -318,7 +316,7 @@ public class UserMinter {
         JSONArray users = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT userId FROM users";
             stmt = conn.prepareStatement(sql);
@@ -329,7 +327,7 @@ public class UserMinter {
                 JSONObject user = new JSONObject();
                 Integer userId = rs.getInt("userId");
                 user.put("userId", userId.toString());
-                user.put("username", db.getUserName(userId));
+                user.put("username", Database.getUserName(userId));
                 users.add(user);
             }
 
@@ -337,7 +335,7 @@ public class UserMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 }

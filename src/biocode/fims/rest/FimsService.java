@@ -43,8 +43,7 @@ public abstract class FimsService {
         if (accessToken != null && !accessToken.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
             username = provider.validateToken(accessToken);
-            Database db = new Database();
-            userId = db.getUserId(username);
+            userId = Database.getUserId(username);
         } else {
             username = (String) session.getAttribute("username");
             userId = (Integer) session.getAttribute("userId");

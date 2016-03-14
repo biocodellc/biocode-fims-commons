@@ -154,8 +154,7 @@ public class Bcid {
      * @param pBcidId
      */
     private void getBcid(Integer pBcidId) {
-        Database db = new Database();
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +
@@ -226,7 +225,7 @@ public class Bcid {
             throw new ServerErrorException("Server Error","URISyntaxException from identifier: " + prefix +
                     sm.retrieveValue("divider") + suffix + " from bcidId: " + bcidId, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -235,8 +234,7 @@ public class Bcid {
      * a bcid isn't associated with an expedition
      */
     private void setIsPublic() {
-        Database db = new Database();
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +
@@ -255,7 +253,7 @@ public class Bcid {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 

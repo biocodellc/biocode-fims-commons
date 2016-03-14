@@ -23,16 +23,12 @@ import java.util.UUID;
 public class ExpeditionMinter {
     private SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
 
-    private Database db;
-
     /**
      * The constructor defines the class-level variables used when minting Expeditions.
      * It defines a generic set of entities (process, information content, objects, agents)
      * that can be used for any expedition.
      */
     public ExpeditionMinter() {
-        db = new Database();
-
         // Initialize settings manager
         sm = SettingsManager.getInstance();
     }
@@ -77,7 +73,7 @@ public class ExpeditionMinter {
                 "(internalId, expeditionCode, expeditionTitle, userId, projectId,public) " +
                 "values (?,?,?,?,?,?)";
         PreparedStatement insertStatement = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setString(1, internalId.toString());
@@ -103,7 +99,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, insertStatement, null);
+            Database.close(conn, insertStatement, null);
         }
         return expeditionId;
     }
@@ -130,7 +126,7 @@ public class ExpeditionMinter {
                 "values (?,?)";
 
         PreparedStatement insertStatement = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setInt(1, expeditionId);
@@ -139,7 +135,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Db error attaching Reference to Expedition", e);
         } finally {
-            db.close(conn, insertStatement, null);
+            Database.close(conn, insertStatement, null);
         }
     }
 
@@ -167,7 +163,7 @@ public class ExpeditionMinter {
      */
     private Integer getExpeditionId(UUID expeditionUUID) {
         String sql = "select expeditionId from expeditions where internalId = ?";
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -179,14 +175,14 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException while getting expedition Identifier", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
     private Integer getExpeditionId(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT expeditionId " +
                     "FROM expeditions " +
@@ -205,7 +201,7 @@ public class ExpeditionMinter {
                     "SQLException while retrieving expeditionId from expeditions table with expeditionCode: " +
                             expeditionCode + " and projectId: " + projectId, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -218,7 +214,7 @@ public class ExpeditionMinter {
     public Boolean expeditionExistsInProject(String expeditionCode, Integer ProjectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "select expeditionId from expeditions " +
                     "where expeditionCode = ? && " +
@@ -233,7 +229,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }
@@ -250,7 +246,7 @@ public class ExpeditionMinter {
     public boolean userOwnsExpedition(Integer userId, Integer expeditionId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT " +
                     "   count(*) as count " +
@@ -273,7 +269,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -288,7 +284,7 @@ public class ExpeditionMinter {
     public boolean userOwnsExpedition(Integer userId, String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
 
             String sql = "SELECT " +
@@ -314,7 +310,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
@@ -333,7 +329,7 @@ public class ExpeditionMinter {
         String expeditionTitle = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         JSONObject response = new JSONObject();
         JSONArray deepRoots = new JSONArray();
@@ -377,7 +373,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
         response.put("data", deepRoots);
@@ -403,7 +399,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql =
@@ -448,7 +444,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return metadata;
     }
@@ -537,7 +533,7 @@ public class ExpeditionMinter {
     private boolean isExpeditionCodeAvailable(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql = "SELECT count(*) as count " +
@@ -559,7 +555,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
     }
@@ -576,9 +572,9 @@ public class ExpeditionMinter {
         JSONArray expeditions = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
-        Integer userId = db.getUserId(username);
+        Integer userId = Database.getUserId(username);
 
         try {
             String sql = "SELECT expeditionId, expeditionTitle, expeditionCode, public " +
@@ -601,7 +597,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return expeditions;
     }
@@ -618,7 +614,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
 
@@ -645,7 +641,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return metadata;
     }
@@ -661,7 +657,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
 
@@ -689,7 +685,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return metadata;
     }
@@ -706,7 +702,7 @@ public class ExpeditionMinter {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         ResourceTypes rts = new ResourceTypes();
 
         try {
@@ -748,7 +744,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return resources;
     }
@@ -764,7 +760,7 @@ public class ExpeditionMinter {
         ArrayList<JSONObject> datasets = new ArrayList();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql = "SELECT b.ts, b.identifier, b.resourceType, b.title " +
@@ -787,7 +783,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return datasets;
     }
@@ -807,11 +803,11 @@ public class ExpeditionMinter {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         ProjectMinter p = new ProjectMinter();
         try {
-            Integer userId = db.getUserId(username);
+            Integer userId = Database.getUserId(username);
 
             if (!p.isProjectAdmin(userId, projectId)) {
                 throw new ForbiddenRequestException("You must be this project's admin to view its expeditions.");
@@ -843,7 +839,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return expeditions;
     }
@@ -858,7 +854,7 @@ public class ExpeditionMinter {
         }
 
         PreparedStatement updateStatement = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String updateString = "UPDATE expeditions SET public = ?" +
@@ -876,7 +872,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException while updating expedition public status.", e);
         } finally {
-            db.close(conn, updateStatement, null);
+            Database.close(conn, updateStatement, null);
         }
     }
 
@@ -892,7 +888,7 @@ public class ExpeditionMinter {
         List<String> updateExpeditions = new ArrayList<String>();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql = "SELECT expeditionId, public FROM expeditions WHERE projectId = ?";
@@ -914,7 +910,7 @@ public class ExpeditionMinter {
                         " public = CASE WHEN public ='0' THEN '1' WHEN public = '1' THEN '0' END" +
                         " WHERE expeditionId IN (" + updateExpeditions.toString().replaceAll("[\\[\\]]", "") + ")";
 
-                db.close(null, stmt, null);
+                Database.close(null, stmt, null);
                 stmt = conn.prepareStatement(updateString);
 
                 stmt.executeUpdate();
@@ -923,14 +919,14 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException("Db error while updating Expeditions public status.", e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 
     public boolean isPublic(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT public FROM expeditions WHERE expeditionCode = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);
@@ -944,7 +940,7 @@ public class ExpeditionMinter {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 }

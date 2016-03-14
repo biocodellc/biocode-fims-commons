@@ -18,7 +18,6 @@ import java.util.HashMap;
  */
 public class ExpeditionUpdater {
 
-    protected static Database db;
     private static SettingsManager sm;
 
     static {
@@ -34,7 +33,7 @@ public class ExpeditionUpdater {
         HashMap expeditions = new HashMap();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql = "SELECT expeditionId, userId " +
@@ -48,7 +47,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
         return expeditions;
@@ -80,7 +79,7 @@ public class ExpeditionUpdater {
     private boolean expeditionHasBCID(Integer expeditionId ) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
 
         try {
             String sql = "SELECT count(*) FROM bcids b, expeditionBcids eB " +
@@ -96,7 +95,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
     }
 }

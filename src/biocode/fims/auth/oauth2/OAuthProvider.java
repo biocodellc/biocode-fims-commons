@@ -15,7 +15,6 @@ import java.sql.*;
  * This class handles all aspects of oAuth2 support.
  */
 public class OAuthProvider {
-    private Database db = new Database();
     private static Logger logger = LoggerFactory.getLogger(OAuthProvider.class);
 
     public OAuthProvider() {
@@ -31,7 +30,7 @@ public class OAuthProvider {
     public Boolean validClientId(String clientId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT count(*) as count FROM oAuthClients WHERE clientId = ?";
             stmt = conn.prepareStatement(selectString);
@@ -45,7 +44,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "error validating client_id", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }
@@ -60,7 +59,7 @@ public class OAuthProvider {
     public String getCallback(String clientID) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT callback FROM oAuthClients WHERE clientId = ?";
             stmt = conn.prepareStatement(selectString);
@@ -73,6 +72,8 @@ public class OAuthProvider {
             }
         } catch (SQLException e) {
             throw new OAuthException("server_error", "SQLException while trying to retrieve callback url for oAuth client_id: " + clientID, 500, e);
+        } finally {
+            Database.close(conn, stmt, rs);
         }
         return null;
     }
@@ -90,13 +91,13 @@ public class OAuthProvider {
         StringGenerator sg = new StringGenerator();
         String code = sg.generateString(20);
 
-        Integer userId = db.getUserId(username);
+        Integer userId = Database.getUserId(username);
         if (userId == null) {
             throw new OAuthException("server_error", "null userId returned for username: " + username, 500);
         }
 
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         String insertString = "INSERT INTO oAuthNonces (clientId, code, userId, redirectUri) VALUES(?, \"" + code + "\",?,?)";
         try {
             stmt = conn.prepareStatement(insertString);
@@ -109,7 +110,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "error saving oAuth nonce to db", 500, e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
         return code;
     }
@@ -145,7 +146,7 @@ public class OAuthProvider {
     public Boolean validateClient(String clientId, String clientSecret) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT count(*) as count FROM oAuthClients WHERE clientId = ? AND clientSecret = ?";
 
@@ -163,7 +164,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "Server Error validating oAuth client", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }
@@ -181,7 +182,7 @@ public class OAuthProvider {
     public Boolean validateCode(String clientID, String code, String redirectURL) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT current_timestamp() as current,ts FROM oAuthNonces WHERE clientId = ? AND code = ? AND redirectUri = ?";
             stmt = conn.prepareStatement(selectString);
@@ -207,7 +208,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "Server Error validating oAuth code", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return false;
     }
@@ -224,7 +225,7 @@ public class OAuthProvider {
         Integer userId = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT userId FROM oAuthNonces WHERE clientId=? AND code=?";
             stmt = conn.prepareStatement(selectString);
@@ -241,13 +242,13 @@ public class OAuthProvider {
             throw new ServerErrorException("server_error",
                     "SQLException thrown while retrieving the userID that belongs to the oAuth code: " + code, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
         return userId;
     }
 
     /**
-     * Remove the given oAuth code from the db. This is called when the code is exchanged for an access token,
+     * Remove the given oAuth code from the Database. This is called when the code is exchanged for an access token,
      * as oAuth codes are only usable once.
      *
      * @param clientId
@@ -255,7 +256,7 @@ public class OAuthProvider {
      */
     private void deleteNonce(String clientId, String code) {
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String deleteString = "DELETE FROM oAuthNonces WHERE clientId = ? AND code = ?";
             stmt = conn.prepareStatement(deleteString);
@@ -267,7 +268,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             logger.warn("SQLException thrown while deleting oAuth nonce with code: {}", code, e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
     }
 
@@ -279,7 +280,7 @@ public class OAuthProvider {
      * @return
      */
     public JSONObject generateToken(String clientId, String username) {
-        Integer userId = db.getUserId(username);
+        Integer userId = Database.getUserId(username);
 
         return generateToken(clientId, userId, null);
     }
@@ -297,7 +298,7 @@ public class OAuthProvider {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         String sql = "SELECT clientId, userId FROM oAuthTokens WHERE refreshToken = ?";
         try {
             stmt = conn.prepareStatement(sql);
@@ -312,7 +313,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "error retrieving oAuth client information from db", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
         if (userId == null || clientId == null) {
@@ -360,7 +361,7 @@ public class OAuthProvider {
         String insertString = "INSERT INTO oAuthTokens (clientId, token, refreshToken, userId) VALUE " +
                 "(?, \"" + token + "\",\"" + refreshToken + "\", ?)";
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             stmt = conn.prepareStatement(insertString);
 
@@ -368,9 +369,9 @@ public class OAuthProvider {
             stmt.setInt(2, userId);
             stmt.execute();
         } catch (SQLException e) {
-            throw new OAuthException("server_error", "Server error while trying to save oAuth access token to db.", 500, e);
+            throw new OAuthException("server_error", "Server error while trying to save oAuth access token to Database.", 500, e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
 
         accessToken.put("access_token", token);
@@ -391,7 +392,7 @@ public class OAuthProvider {
      */
     public void deleteAccessToken(String refreshToken) {
         PreparedStatement stmt = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String deleteString = "DELETE FROM oAuthTokens WHERE refreshToken = ?";
             stmt = conn.prepareStatement(deleteString);
@@ -402,7 +403,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             logger.warn("SQLException while deleting oAuth access token with the refreshToken: {}", refreshToken, e);
         } finally {
-            db.close(conn, stmt, null);
+            Database.close(conn, stmt, null);
         }
     }
 
@@ -416,7 +417,7 @@ public class OAuthProvider {
     public Boolean validateRefreshToken(String refreshToken) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String sql = "SELECT current_timestamp() as current,ts FROM oAuthTokens WHERE refreshToken = ?";
             stmt = conn.prepareStatement(sql);
@@ -441,7 +442,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "server error validating refresh token", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 //        System.out.println(sql + refreshToken);
         return false;
@@ -457,7 +458,7 @@ public class OAuthProvider {
     public String validateToken(String token) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = db.getBcidConn();
+        Connection conn = Database.getBcidConn();
         try {
             String selectString = "SELECT current_timestamp() as current,t.ts as ts, u.username as username " +
                     "FROM oAuthTokens t, users u WHERE t.token=? && u.userId = t.userId";
@@ -482,7 +483,7 @@ public class OAuthProvider {
         } catch (SQLException e) {
             throw new OAuthException("server_error", "error while validating access_token", 500, e);
         } finally {
-            db.close(conn, stmt, rs);
+            Database.close(conn, stmt, rs);
         }
 
         return null;
@@ -561,7 +562,7 @@ public class OAuthProvider {
             e.printStackTrace();
             return;
         } finally {
-            p.db.close(stmt, null);
+            p.Database.close(stmt, null);
             p.close();
         }
         */

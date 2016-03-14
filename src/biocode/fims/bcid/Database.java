@@ -15,40 +15,26 @@ import java.sql.Connection;
  * Settings come from the biocode.fims.settings.SettingsManager/Property file defining the user/password/url/class
  * for the mysql Database where the data lives.
  */
-public class Database {
+public final class Database {
 
-    private static DataSource bcidDataSource;
-    private static String bcidUser;
-    private static String bcidPassword;
-    private static String bcidUrl;
-    private static String bcidClass;
+    private final static DataSource bcidDataSource;
 
     final static Logger logger = LoggerFactory.getLogger(Database.class);
 
     static {
         SettingsManager sm = SettingsManager.getInstance();
-        bcidUser = sm.retrieveValue("bcidUser");
-        bcidPassword = sm.retrieveValue("bcidPassword");
-        bcidUrl = sm.retrieveValue("bcidUrl");
-        bcidClass = sm.retrieveValue("bcidClass");
-    }
-
-    /**
-     * Load settings for creating this Database connection from the bcidsettings.properties file
-     */
-    public Database() {
-        // Construct BasicDataSource
         BasicDataSource bds = new BasicDataSource();
-        bds.setDriverClassName(bcidClass);
-        bds.setUrl(bcidUrl);
-        bds.setUsername(bcidUser);
-        bds.setPassword(bcidPassword);
+        bds.setUsername(sm.retrieveValue("bcidUser"));
+        bds.setPassword(sm.retrieveValue("bcidPassword"));
+        bds.setUrl(sm.retrieveValue("bcidUrl"));
+        bds.setDriverClassName(sm.retrieveValue("bcidClass"));
 
         bcidDataSource = bds;
-
     }
 
-    public Connection getBcidConn() {
+    private Database() {}
+
+    public static Connection getBcidConn() {
         try {
             return bcidDataSource.getConnection();
         } catch (SQLException e) {
@@ -56,7 +42,7 @@ public class Database {
         }
     }
 
-    public void close(Connection conn, Statement stmt, ResultSet rs) {
+    public static void close(Connection conn, Statement stmt, ResultSet rs) {
         if (stmt != null) {
             try {
                 stmt.close();
@@ -82,7 +68,7 @@ public class Database {
     }
 
 
-    public void close(Connection conn, PreparedStatement stmt, ResultSet rs) {
+    public static void close(Connection conn, PreparedStatement stmt, ResultSet rs) {
        close(conn, (Statement)stmt, rs);
     }
 
@@ -91,7 +77,7 @@ public class Database {
      * @param username
      * @return
      */
-    public Integer getUserId(String username) {
+    public static Integer getUserId(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = getBcidConn();
@@ -118,7 +104,7 @@ public class Database {
      * @param userId
      * @return
      */
-    public String getUserName(Integer userId) {
+    public static String getUserName(Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = getBcidConn();
