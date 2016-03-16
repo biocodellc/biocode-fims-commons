@@ -195,7 +195,7 @@ public class Validation implements RendererInterface {
      * @return
      */
     public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping) {
-        FimsPrinter.out.println("Validate ...");
+//        FimsPrinter.out.println("Validate ...");
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = null;

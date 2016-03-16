@@ -226,8 +226,6 @@ public class Worksheet {
      * @return
      */
     public boolean run(Object parent) {
-        SettingsManager sm = SettingsManager.getInstance();
-        //SettingsManager sm = SettingsManager.getInstance("/Users/rjewing/IdeaProjects/biocode-fims/biocode-fims.props");
 
         // Set a reference to the validation parent
         validation = (Validation) parent;
