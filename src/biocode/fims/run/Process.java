@@ -1,9 +1,6 @@
 package biocode.fims.run;
 
-import biocode.fims.bcid.Bcid;
-import biocode.fims.bcid.BcidMinter;
-import biocode.fims.bcid.Database;
-import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.*;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
@@ -212,7 +209,7 @@ public class Process {
                 // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
                 // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
                 boolean ezidRequest = true;
-                String username = Database.getUserName(processController.getUserId());
+                String username = BcidDatabase.getUserName(processController.getUserId());
                 if (username.equals("demo") || sm.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
                     ezidRequest = false;
                 }

@@ -80,7 +80,7 @@ public class ManageEZID {
     public void updateBcidsEZID(EzidService ezid, int bcidId) throws EzidException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
 
             String sql = "SELECT " +
@@ -132,7 +132,7 @@ public class ManageEZID {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
     }
 
@@ -152,7 +152,7 @@ public class ManageEZID {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         ArrayList<String> idSuccessList = new ArrayList();
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT b.bcidId as bcidId," +
                     "b.identifier as identifier," +
@@ -213,7 +213,7 @@ public class ManageEZID {
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error", "SQLException when creating EZID", e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
 
         // Update the Identifiers Table and let it know that we've created the EZID
@@ -237,7 +237,7 @@ public class ManageEZID {
     private void updateEZIDMadeField(ArrayList idSuccessList) throws SQLException {
 
         PreparedStatement updateStatement = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
 
         // Turn off autocommits at beginning of the next block
         conn.setAutoCommit(false);
@@ -267,7 +267,7 @@ public class ManageEZID {
 
         } finally {
             conn.setAutoCommit(true);
-            Database.close(conn, updateStatement, null);
+            BcidDatabase.close(conn, updateStatement, null);
         }
     }
 }

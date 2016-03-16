@@ -1,6 +1,6 @@
 package biocode.fims.auth;
 
-import biocode.fims.bcid.Database;
+import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +25,9 @@ public class Authorizer {
     public Boolean userProjectAdmin(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
-            Integer userId = Database.getUserId(username);
+            Integer userId = BcidDatabase.getUserId(username);
             String selectString = "SELECT count(*) as count FROM projects WHERE userId = ?";
 
             stmt = conn.prepareStatement(selectString);
@@ -40,7 +40,7 @@ public class Authorizer {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
     }
 
@@ -52,7 +52,7 @@ public class Authorizer {
     public Boolean validResetToken(String token) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT passwordResetExpiration as ts FROM users WHERE passwordResetToken = ?";
 
@@ -71,7 +71,7 @@ public class Authorizer {
             throw new ServerErrorException("Server Error while validating reset token",
                     "db error retrieving reset token expiration", e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
         return false;
     }

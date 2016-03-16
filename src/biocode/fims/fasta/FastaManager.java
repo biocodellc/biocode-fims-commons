@@ -1,6 +1,6 @@
 package biocode.fims.fasta;
 
-import biocode.fims.bcid.Database;
+import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.digester.Worksheet;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ServerErrorException;
@@ -121,7 +121,7 @@ public abstract class FastaManager {
     public String fetchGraph() {
         ResultSet rs = null;
         PreparedStatement stmt = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +
@@ -146,7 +146,7 @@ public abstract class FastaManager {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
 
         return null;

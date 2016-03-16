@@ -3,7 +3,7 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.oauth2.OAuthProvider;
-import biocode.fims.bcid.Database;
+import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.OAuthException;
 import biocode.fims.fimsExceptions.ServerErrorException;
@@ -62,7 +62,7 @@ public class AuthenticationService extends FimsService {
             if (isAuthenticated) {
                 // Place the user in the session
                 session.setAttribute("username", usr);
-                session.setAttribute("userId", Database.getUserId(usr));
+                session.setAttribute("userId", BcidDatabase.getUserId(usr));
 
                 Authorizer myAuthorizer = new Authorizer();
 

@@ -1,7 +1,7 @@
 package biocode.fims.rest;
 
 import biocode.fims.auth.oauth2.OAuthProvider;
-import biocode.fims.bcid.Database;
+import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.settings.SettingsManager;
 
 import javax.servlet.ServletContext;
@@ -43,7 +43,7 @@ public abstract class FimsService {
         if (accessToken != null && !accessToken.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
             username = provider.validateToken(accessToken);
-            userId = Database.getUserId(username);
+            userId = BcidDatabase.getUserId(username);
         } else {
             username = (String) session.getAttribute("username");
             userId = (Integer) session.getAttribute("userId");

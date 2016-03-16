@@ -1,9 +1,6 @@
 package biocode.fims.utils;
 
-import biocode.fims.bcid.Bcid;
-import biocode.fims.bcid.BcidMinter;
-import biocode.fims.bcid.Database;
-import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
 
@@ -33,7 +30,7 @@ public class ExpeditionUpdater {
         HashMap expeditions = new HashMap();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT expeditionId, userId " +
@@ -47,7 +44,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
 
         return expeditions;
@@ -79,7 +76,7 @@ public class ExpeditionUpdater {
     private boolean expeditionHasBCID(Integer expeditionId ) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT count(*) FROM bcids b, expeditionBcids eB " +
@@ -95,7 +92,7 @@ public class ExpeditionUpdater {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
     }
 }

@@ -2,6 +2,7 @@ package biocode.fims.reader;
 
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
+import biocode.fims.settings.PathManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,18 +17,21 @@ import java.util.*;
  */
 public class CsvTabularDataConverter {
     private TabularDataReader source;
-    private String dest;
+    private String outputDir;
+    private String filenamePrefix;
+    private File csvFile;
 
     /**
      * Constructs a new CsvTabularDataConverter for the specified source and
      * destination Database connection.
      *
      * @param source A TabularDataReader with an open data source.
-     * @param dest   A valid filepath for the new csv file
+     * @param outputDir   A valid filepath for the new csv file
      */
-    public CsvTabularDataConverter(TabularDataReader source, String dest) {
+    public CsvTabularDataConverter(TabularDataReader source, String outputDir, String filenamePrefix) {
         this.source = source;
-        this.dest = dest;
+        this.outputDir = outputDir;
+        this.filenamePrefix = filenamePrefix;
     }
 
     /**
@@ -36,7 +40,7 @@ public class CsvTabularDataConverter {
      * @return The filepath of the csv file
      */
     public String getDestination() {
-        return dest;
+        return outputDir;
     }
 
     /**
@@ -66,7 +70,7 @@ public class CsvTabularDataConverter {
 
         // For storing data into CSV files
         StringBuffer data = new StringBuffer();
-        File csvFile = new File(dest);
+        csvFile = PathManager.createFile(filenamePrefix + ".csv", outputDir);
 
         try {
             FileOutputStream fos = new FileOutputStream(csvFile);
@@ -88,5 +92,9 @@ public class CsvTabularDataConverter {
         } catch (IOException ioe) {
             throw new ServerErrorException(ioe);
         }
+    }
+
+    public File getCsvFile() {
+        return csvFile;
     }
 }

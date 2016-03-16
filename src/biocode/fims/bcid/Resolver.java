@@ -86,7 +86,7 @@ public class Resolver {
         String uri = rt.uri;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String query = "select \n" +
                     "b.identifier as identifier \n" +
@@ -114,7 +114,7 @@ public class Resolver {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
     }
 
@@ -291,7 +291,7 @@ public class Resolver {
             String select = "SELECT count(*) as count FROM bcids where bcidId = ?";
             PreparedStatement stmt = null;
             ResultSet rs = null;
-            Connection conn = Database.getBcidConn();
+            Connection conn = BcidDatabase.getConnection();
             try {
                 stmt = conn.prepareStatement(select);
                 stmt.setInt(1, bcidId);
@@ -307,7 +307,7 @@ public class Resolver {
             } catch (SQLException e) {
                 throw new ServerErrorException(e);
             } finally {
-                Database.close(conn, stmt, rs);
+                BcidDatabase.close(conn, stmt, rs);
             }
         }
     }
@@ -325,7 +325,7 @@ public class Resolver {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, bcidId);
@@ -337,7 +337,7 @@ public class Resolver {
             // catch the exception and log it
             logger.warn("Exception retrieving projectCode for bcid: " + bcidId, e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
         return projectId;
     }
@@ -450,7 +450,7 @@ public class Resolver {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "select e.expeditionCode from expeditionBcids eb, expeditions e, bcids b " +
                     "where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` and b.bcidId = ?";
@@ -465,7 +465,7 @@ public class Resolver {
             // catch the exception and log it
             logger.warn("Exception retrieving expeditionCode for bcid: " + bcidId, e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
         return expeditionCode;
     }
@@ -474,7 +474,7 @@ public class Resolver {
         Integer expeditionId = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = Database.getBcidConn();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "select eb.expeditionId from expeditionBcids eb, bcids b " +
                     "where b.bcidId = eb.bcidId and b.bcidId = ?";
@@ -489,7 +489,7 @@ public class Resolver {
             // catch the exception and log it
             logger.warn("Exception retrieving expeditionId for bcid: " + bcidId, e);
         } finally {
-            Database.close(conn, stmt, rs);
+            BcidDatabase.close(conn, stmt, rs);
         }
         return expeditionId;
     }
