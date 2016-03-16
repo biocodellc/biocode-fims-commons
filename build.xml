@@ -5,6 +5,7 @@
 
 <property name="projectName" value="biocode-fims-commons" />
 <property name="src.dir" location="src" />
+    <property name="doc.dir" location="javadocs" />
 <property name="build.dir" location="classes" />
 <property name="dist.dir" location="dist" />
 <property name="dist.lib.dir" location="dist/lib" />
@@ -61,5 +62,9 @@
 
 <!-- Default, run this -->
 <target name="main" depends="clean, compile, jar" />
+
+    <target name="javadoc" depends="init" description="generate documentation">
+        <javadoc sourcepath="${src.dir}" destdir="${doc.dir}"/>
+    </target>
 
 </project>
