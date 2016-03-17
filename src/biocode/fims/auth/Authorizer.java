@@ -25,9 +25,9 @@ public class Authorizer {
     public Boolean userProjectAdmin(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
-            Integer userId = BcidDatabase.getUserId(username);
+            Integer userId = new BcidDatabase().getUserId(username);
             String selectString = "SELECT count(*) as count FROM projects WHERE userId = ?";
 
             stmt = conn.prepareStatement(selectString);
@@ -52,7 +52,7 @@ public class Authorizer {
     public Boolean validResetToken(String token) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT passwordResetExpiration as ts FROM users WHERE passwordResetToken = ?";
 

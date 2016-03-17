@@ -1,6 +1,7 @@
 package biocode.fims.auth;
 
 import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.bcid.Database;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
@@ -62,7 +63,7 @@ public class Authenticator {
     private String getHashedPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT password FROM users WHERE username = ?";
             //System.out.println(selectString + " " + username);
@@ -91,7 +92,7 @@ public class Authenticator {
      */
     public Boolean setHashedPass(String username, String password) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         String hashedPass = createHash(password);
 
@@ -127,7 +128,7 @@ public class Authenticator {
     public Boolean resetPass(String token, String password) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String username = null;
             String sql = "SELECT username FROM users where passwordResetToken = ?";
@@ -182,7 +183,7 @@ public class Authenticator {
     public void createUser(Hashtable<String, String> userInfo) {
         PreparedStatement stmt = null;
         String hashedPass = createHash(userInfo.get("password"));
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String insertString = "INSERT INTO users (username, password, email, firstName, lastName, institution)" +
@@ -213,7 +214,7 @@ public class Authenticator {
     public Boolean userSetPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         Boolean hasSetPassword = false;
         try {
             String selectString = "SELECT hasSetPassword FROM users WHERE username = ?";
@@ -250,7 +251,7 @@ public class Authenticator {
         PreparedStatement stmt = null;
         PreparedStatement stmt2 = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             stmt = conn.prepareStatement(sql);
 
@@ -338,7 +339,7 @@ public class Authenticator {
         }
 
         // change hasSetPassword field to 0 so user has to create new password next time they login
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         Statement stmt = null;
         try {
             stmt = conn.createStatement();

@@ -43,7 +43,7 @@ public abstract class FimsService {
         if (accessToken != null && !accessToken.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
             username = provider.validateToken(accessToken);
-            userId = BcidDatabase.getUserId(username);
+            userId = new BcidDatabase().getUserId(username);
         } else {
             username = (String) session.getAttribute("username");
             userId = (Integer) session.getAttribute("userId");

@@ -121,7 +121,7 @@ public abstract class FastaManager {
     public String fetchGraph() {
         ResultSet rs = null;
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +

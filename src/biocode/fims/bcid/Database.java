@@ -1,8 +1,10 @@
 package biocode.fims.bcid;
 
+import biocode.fims.fimsExceptions.ServerErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.*;
 
 /**
@@ -10,6 +12,16 @@ import java.sql.*;
  */
 public abstract class Database {
     final static Logger logger = LoggerFactory.getLogger(Database.class);
+
+    protected DataSource dataSource;
+
+    public Connection getConnection() {
+        try {
+            return dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
 
     public static void close(Connection conn, Statement stmt, ResultSet rs) {
         if (stmt != null) {
@@ -34,10 +46,5 @@ public abstract class Database {
             }
         }
         return;
-    }
-
-
-    public static void close(Connection conn, PreparedStatement stmt, ResultSet rs) {
-        close(conn, (Statement)stmt, rs);
     }
 }

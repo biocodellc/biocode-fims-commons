@@ -30,7 +30,7 @@ public class OAuthProvider {
     public Boolean validClientId(String clientId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT count(*) as count FROM oAuthClients WHERE clientId = ?";
             stmt = conn.prepareStatement(selectString);
@@ -59,7 +59,7 @@ public class OAuthProvider {
     public String getCallback(String clientID) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT callback FROM oAuthClients WHERE clientId = ?";
             stmt = conn.prepareStatement(selectString);
@@ -91,13 +91,13 @@ public class OAuthProvider {
         StringGenerator sg = new StringGenerator();
         String code = sg.generateString(20);
 
-        Integer userId = BcidDatabase.getUserId(username);
+        Integer userId = new BcidDatabase().getUserId(username);
         if (userId == null) {
             throw new OAuthException("server_error", "null userId returned for username: " + username, 500);
         }
 
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         String insertString = "INSERT INTO oAuthNonces (clientId, code, userId, redirectUri) VALUES(?, \"" + code + "\",?,?)";
         try {
             stmt = conn.prepareStatement(insertString);
@@ -146,7 +146,7 @@ public class OAuthProvider {
     public Boolean validateClient(String clientId, String clientSecret) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT count(*) as count FROM oAuthClients WHERE clientId = ? AND clientSecret = ?";
 
@@ -182,7 +182,7 @@ public class OAuthProvider {
     public Boolean validateCode(String clientID, String code, String redirectURL) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT current_timestamp() as current,ts FROM oAuthNonces WHERE clientId = ? AND code = ? AND redirectUri = ?";
             stmt = conn.prepareStatement(selectString);
@@ -225,7 +225,7 @@ public class OAuthProvider {
         Integer userId = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT userId FROM oAuthNonces WHERE clientId=? AND code=?";
             stmt = conn.prepareStatement(selectString);
@@ -256,7 +256,7 @@ public class OAuthProvider {
      */
     private void deleteNonce(String clientId, String code) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String deleteString = "DELETE FROM oAuthNonces WHERE clientId = ? AND code = ?";
             stmt = conn.prepareStatement(deleteString);
@@ -280,7 +280,7 @@ public class OAuthProvider {
      * @return
      */
     public JSONObject generateToken(String clientId, String username) {
-        Integer userId = BcidDatabase.getUserId(username);
+        Integer userId = new BcidDatabase().getUserId(username);
 
         return generateToken(clientId, userId, null);
     }
@@ -298,7 +298,7 @@ public class OAuthProvider {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         String sql = "SELECT clientId, userId FROM oAuthTokens WHERE refreshToken = ?";
         try {
             stmt = conn.prepareStatement(sql);
@@ -361,7 +361,7 @@ public class OAuthProvider {
         String insertString = "INSERT INTO oAuthTokens (clientId, token, refreshToken, userId) VALUE " +
                 "(?, \"" + token + "\",\"" + refreshToken + "\", ?)";
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             stmt = conn.prepareStatement(insertString);
 
@@ -392,7 +392,7 @@ public class OAuthProvider {
      */
     public void deleteAccessToken(String refreshToken) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String deleteString = "DELETE FROM oAuthTokens WHERE refreshToken = ?";
             stmt = conn.prepareStatement(deleteString);
@@ -417,7 +417,7 @@ public class OAuthProvider {
     public Boolean validateRefreshToken(String refreshToken) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT current_timestamp() as current,ts FROM oAuthTokens WHERE refreshToken = ?";
             stmt = conn.prepareStatement(sql);
@@ -458,7 +458,7 @@ public class OAuthProvider {
     public String validateToken(String token) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String selectString = "SELECT current_timestamp() as current,t.ts as ts, u.username as username " +
                     "FROM oAuthTokens t, users u WHERE t.token=? && u.userId = t.userId";
@@ -562,7 +562,7 @@ public class OAuthProvider {
             e.printStackTrace();
             return;
         } finally {
-            p.Database.close(stmt, null);
+            p.BcidDatabase.close(stmt, null);
             p.close();
         }
         */

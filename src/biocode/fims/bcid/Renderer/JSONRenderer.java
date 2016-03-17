@@ -27,7 +27,7 @@ public class JSONRenderer extends Renderer {
      */
     public JSONRenderer(String username, Resolver resolver, Bcid bcid) {
         super(bcid);
-        userId = BcidDatabase.getUserId(username);
+        userId = new BcidDatabase().getUserId(username);
         this.resolver = resolver;
     }
 

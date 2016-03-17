@@ -154,7 +154,7 @@ public class Bcid {
      * @param pBcidId
      */
     private void getBcid(Integer pBcidId) {
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +
@@ -234,7 +234,7 @@ public class Bcid {
      * a bcid isn't associated with an expedition
      */
     private void setIsPublic() {
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sql = "SELECT " +

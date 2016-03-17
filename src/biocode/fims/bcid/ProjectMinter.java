@@ -35,7 +35,7 @@ public class ProjectMinter {
     public String getValidationXML(Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String query = "select \n" +
@@ -66,7 +66,7 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String query = "SELECT \n" +
@@ -133,7 +133,7 @@ public class ProjectMinter {
         JSONArray graphs = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             // Construct the query
@@ -169,7 +169,7 @@ public class ProjectMinter {
 
             // Enforce restriction on viewing particular bcids -- this is important for protected bcids
             if (username != null) {
-                Integer userId = BcidDatabase.getUserId(username);
+                Integer userId = new BcidDatabase().getUserId(username);
                 stmt.setInt(3, userId);
             }
 
@@ -216,10 +216,10 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
-            Integer userId = BcidDatabase.getUserId(username);
+            Integer userId = new BcidDatabase().getUserId(username);
 
             String sql = "SELECT projectId, projectCode, projectTitle, projectTitle, validationXml FROM projects WHERE userId = \"" + userId + "\"";
             stmt = conn.prepareStatement(sql);
@@ -254,10 +254,10 @@ public class ProjectMinter {
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
-            Integer userId = BcidDatabase.getUserId(username);
+            Integer userId = new BcidDatabase().getUserId(username);
 
             String sql = "SELECT p.projectId, p.projectCode, p.projectTitle, p.validationXml FROM projects p, userProjects u WHERE p.projectId = u.projectId && u.userId = \"" + userId + "\"";
             stmt = conn.prepareStatement(sql);
@@ -304,7 +304,7 @@ public class ProjectMinter {
             }
         }
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             stmt = conn.prepareStatement(updateString);
 
@@ -354,10 +354,10 @@ public class ProjectMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
-            Integer userId = BcidDatabase.getUserId(username);
+            Integer userId = new BcidDatabase().getUserId(username);
 
             String sql = "SELECT projectTitle as title, public, validationXml as validationXml FROM projects WHERE projectId=?"
                     + " AND userId= ?";
@@ -388,7 +388,7 @@ public class ProjectMinter {
     public Boolean userProject(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM users u, projects p, userProjects uP " +
@@ -410,7 +410,7 @@ public class ProjectMinter {
     }
 
     public Boolean isProjectAdmin(String username, Integer projectId) {
-        int userId = BcidDatabase.getUserId(username);
+        int userId = new BcidDatabase().getUserId(username);
         return isProjectAdmin(userId, projectId);
     }
 
@@ -425,7 +425,7 @@ public class ProjectMinter {
     public Boolean isProjectAdmin(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT count(*) as count FROM projects WHERE userId = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);
@@ -453,7 +453,7 @@ public class ProjectMinter {
      */
     public void removeUser(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "DELETE FROM userProjects WHERE userId = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);
@@ -478,7 +478,7 @@ public class ProjectMinter {
      */
     public void addUserToProject(Integer userId, Integer projectId) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String insertStatement = "INSERT INTO userProjects (userId, projectId) VALUES(?,?)";
@@ -507,7 +507,7 @@ public class ProjectMinter {
         JSONArray users = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String userProjectSql = "SELECT userId FROM userProjects WHERE projectId = \"" + projectId + "\"";
@@ -527,7 +527,7 @@ public class ProjectMinter {
                 JSONObject user = new JSONObject();
                 int userId = rs.getInt("userId");
                 user.put("userId", userId);
-                user.put("username", BcidDatabase.getUserName(userId));
+                user.put("username", new BcidDatabase().getUserName(userId));
                 users.add(user);
             }
             response.put("users", users);
@@ -549,7 +549,7 @@ public class ProjectMinter {
     public String getMyTemplatesAndDatasets(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         HashMap projectMap = new HashMap();
 
 
@@ -557,7 +557,7 @@ public class ProjectMinter {
         if (username == null) {
             throw new ServerErrorException("server error", "username can't be null");
         }
-        Integer userId = BcidDatabase.getUserId(username);
+        Integer userId = new BcidDatabase().getUserId(username);
 
         try {
             String sql1 = "SELECT e.expeditionTitle, p.projectTitle FROM expeditions e, projects p " +
@@ -650,7 +650,7 @@ public class ProjectMinter {
     public String getMyLatestGraphs(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         HashMap projectMap = new HashMap();
         JSONArray projectDatasets;
 
@@ -688,7 +688,7 @@ public class ProjectMinter {
                     "    and e.userId = ?";
 
             stmt = conn.prepareStatement(sql);
-            Integer userId = BcidDatabase.getUserId(username);
+            Integer userId = new BcidDatabase().getUserId(username);
             stmt.setInt(1, userId);
 
             rs = stmt.executeQuery();
@@ -737,7 +737,7 @@ public class ProjectMinter {
      */
     public void saveTemplateConfig(String configName, Integer projectId, Integer userId, List<String> checkedOptions) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String insertStatement = "INSERT INTO templateConfigs (userId, projectId, configName, config) " +
@@ -768,7 +768,7 @@ public class ProjectMinter {
     public boolean templateConfigExists(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM templateConfigs " +
@@ -797,7 +797,7 @@ public class ProjectMinter {
     public boolean usersTemplateConfig(String configName, Integer projectId, Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
         try {
             String sql = "SELECT count(*) as count " +
                     "FROM templateConfigs " +
@@ -831,7 +831,7 @@ public class ProjectMinter {
     public JSONArray getTemplateConfigs(Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         JSONArray configNames = new JSONArray();
 
@@ -866,7 +866,7 @@ public class ProjectMinter {
     public JSONObject getTemplateConfig(String configName, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         JSONObject obj = new JSONObject();
 
@@ -893,7 +893,7 @@ public class ProjectMinter {
 
     public void updateTemplateConfig(String configName, Integer projectId, Integer userId, List<String> checkedOptions) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String updateStatement = "UPDATE templateConfigs SET config = ? WHERE " +
@@ -915,7 +915,7 @@ public class ProjectMinter {
 
     public void removeTemplateConfig(String configName, Integer projectId) {
         PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             String sql = "DELETE FROM templateConfigs WHERE projectId = ? AND configName = ?";
@@ -944,7 +944,7 @@ public class ProjectMinter {
         String selectString = "SELECT count(*) as count FROM userProjects WHERE userId = ? && projectId = ?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
+        Connection conn = new BcidDatabase().getConnection();
 
         try {
             stmt = conn.prepareStatement(selectString);
