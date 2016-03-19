@@ -30,7 +30,7 @@ public class ExpeditionUpdater {
         HashMap expeditions = new HashMap();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT expeditionId, userId " +
@@ -76,7 +76,7 @@ public class ExpeditionUpdater {
     private boolean expeditionHasBCID(Integer expeditionId ) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT count(*) FROM bcids b, expeditionBcids eB " +

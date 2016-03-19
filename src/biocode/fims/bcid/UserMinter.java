@@ -33,7 +33,7 @@ public class UserMinter {
         Authenticator auth = new Authenticator();
         auth.createUser(userInfo);
         // add user to project
-        Integer userId = new BcidDatabase().getUserId(userInfo.get("username"));
+        Integer userId = BcidDatabase.getUserId(userInfo.get("username"));
         ProjectMinter p = new ProjectMinter();
 
         p.addUserToProject(userId, projectId);
@@ -48,7 +48,7 @@ public class UserMinter {
         JSONObject profile = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String selectStatement = "Select institution, email, firstName, lastName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -81,7 +81,7 @@ public class UserMinter {
     public String getInstitution(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String selectStatement = "Select institution from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -109,7 +109,7 @@ public class UserMinter {
     public String getEmail(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String selectStatement = "Select email from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -137,7 +137,7 @@ public class UserMinter {
     public String getFirstName(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String selectStatement = "Select firstName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -164,7 +164,7 @@ public class UserMinter {
     public String getLastName(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String selectStatement = "Select lastName from users where username = ?";
             stmt = conn.prepareStatement(selectStatement);
@@ -192,11 +192,11 @@ public class UserMinter {
         OAuthProvider p = new OAuthProvider();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         String username = p.validateToken(token);
         if (username != null) {
-            Integer userId = new BcidDatabase().getUserId(username);
+            Integer userId = BcidDatabase.getUserId(username);
             try {
                 String sql = "SELECT lastName, firstName, email, institution, hasSetPassword " +
                         "FROM users WHERE userId = ?";
@@ -237,7 +237,7 @@ public class UserMinter {
     public Boolean checkUsernameExists(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT count(*) as count FROM users WHERE username = ?";
             stmt = conn.prepareStatement(sql);
@@ -278,7 +278,7 @@ public class UserMinter {
         }
 
         PreparedStatement stmt = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             stmt = conn.prepareStatement(updateString);
@@ -316,7 +316,7 @@ public class UserMinter {
         JSONArray users = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT userId FROM users";
             stmt = conn.prepareStatement(sql);
@@ -327,7 +327,7 @@ public class UserMinter {
                 JSONObject user = new JSONObject();
                 Integer userId = rs.getInt("userId");
                 user.put("userId", userId.toString());
-                user.put("username", new BcidDatabase().getUserName(userId));
+                user.put("username", BcidDatabase.getUserName(userId));
                 users.add(user);
             }
 

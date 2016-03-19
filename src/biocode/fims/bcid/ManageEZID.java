@@ -80,7 +80,7 @@ public class ManageEZID {
     public void updateBcidsEZID(EzidService ezid, int bcidId) throws EzidException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
 
             String sql = "SELECT " +
@@ -152,7 +152,7 @@ public class ManageEZID {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         ArrayList<String> idSuccessList = new ArrayList();
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT b.bcidId as bcidId," +
                     "b.identifier as identifier," +
@@ -237,7 +237,7 @@ public class ManageEZID {
     private void updateEZIDMadeField(ArrayList idSuccessList) throws SQLException {
 
         PreparedStatement updateStatement = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         // Turn off autocommits at beginning of the next block
         conn.setAutoCommit(false);

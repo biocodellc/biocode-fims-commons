@@ -73,7 +73,7 @@ public class ExpeditionMinter {
                 "(internalId, expeditionCode, expeditionTitle, userId, projectId,public) " +
                 "values (?,?,?,?,?,?)";
         PreparedStatement insertStatement = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setString(1, internalId.toString());
@@ -126,7 +126,7 @@ public class ExpeditionMinter {
                 "values (?,?)";
 
         PreparedStatement insertStatement = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setInt(1, expeditionId);
@@ -163,7 +163,7 @@ public class ExpeditionMinter {
      */
     private Integer getExpeditionId(UUID expeditionUUID) {
         String sql = "select expeditionId from expeditions where internalId = ?";
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         try {
@@ -182,7 +182,7 @@ public class ExpeditionMinter {
     private Integer getExpeditionId(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT expeditionId " +
                     "FROM expeditions " +
@@ -214,7 +214,7 @@ public class ExpeditionMinter {
     public Boolean expeditionExistsInProject(String expeditionCode, Integer ProjectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "select expeditionId from expeditions " +
                     "where expeditionCode = ? && " +
@@ -246,7 +246,7 @@ public class ExpeditionMinter {
     public boolean userOwnsExpedition(Integer userId, Integer expeditionId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT " +
                     "   count(*) as count " +
@@ -284,7 +284,7 @@ public class ExpeditionMinter {
     public boolean userOwnsExpedition(Integer userId, String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
 
             String sql = "SELECT " +
@@ -329,7 +329,7 @@ public class ExpeditionMinter {
         String expeditionTitle = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         JSONObject response = new JSONObject();
         JSONArray deepRoots = new JSONArray();
@@ -399,7 +399,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql =
@@ -533,7 +533,7 @@ public class ExpeditionMinter {
     private boolean isExpeditionCodeAvailable(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT count(*) as count " +
@@ -572,9 +572,9 @@ public class ExpeditionMinter {
         JSONArray expeditions = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
-        Integer userId = new BcidDatabase().getUserId(username);
+        Integer userId = BcidDatabase.getUserId(username);
 
         try {
             String sql = "SELECT expeditionId, expeditionTitle, expeditionCode, public " +
@@ -614,7 +614,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
 
@@ -657,7 +657,7 @@ public class ExpeditionMinter {
         JSONObject metadata = new JSONObject();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
 
@@ -702,7 +702,7 @@ public class ExpeditionMinter {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         ResourceTypes rts = new ResourceTypes();
 
         try {
@@ -760,7 +760,7 @@ public class ExpeditionMinter {
         ArrayList<JSONObject> datasets = new ArrayList();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT b.ts, b.identifier, b.resourceType, b.title " +
@@ -803,11 +803,11 @@ public class ExpeditionMinter {
 
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         ProjectMinter p = new ProjectMinter();
         try {
-            Integer userId = new BcidDatabase().getUserId(username);
+            Integer userId = BcidDatabase.getUserId(username);
 
             if (!p.isProjectAdmin(userId, projectId)) {
                 throw new ForbiddenRequestException("You must be this project's admin to view its expeditions.");
@@ -854,7 +854,7 @@ public class ExpeditionMinter {
         }
 
         PreparedStatement updateStatement = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String updateString = "UPDATE expeditions SET public = ?" +
@@ -888,7 +888,7 @@ public class ExpeditionMinter {
         List<String> updateExpeditions = new ArrayList<String>();
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
 
         try {
             String sql = "SELECT expeditionId, public FROM expeditions WHERE projectId = ?";
@@ -926,7 +926,7 @@ public class ExpeditionMinter {
     public boolean isPublic(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Connection conn = new BcidDatabase().getConnection();
+        Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "SELECT public FROM expeditions WHERE expeditionCode = ? AND projectId = ?";
             stmt = conn.prepareStatement(sql);

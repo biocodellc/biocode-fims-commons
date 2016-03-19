@@ -1,10 +1,9 @@
 package biocode.fims.bcid;
 
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.settings.*;
+import org.apache.commons.dbcp2.BasicDataSource;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.sql.*;
 import java.sql.Connection;
 
@@ -15,12 +14,23 @@ import java.sql.Connection;
  */
 public final class BcidDatabase extends Database {
 
-    public BcidDatabase() {
+    private final static BasicDataSource bcidDataSource = new BasicDataSource();
+
+    static {
+        SettingsManager sm = SettingsManager.getInstance();
+        bcidDataSource.setUsername(sm.retrieveValue("bcidUser"));
+        bcidDataSource.setPassword(sm.retrieveValue("bcidPassword"));
+        bcidDataSource.setUrl(sm.retrieveValue("bcidUrl"));
+        bcidDataSource.setDriverClassName(sm.retrieveValue("bcidClass"));
+    }
+
+    private BcidDatabase() {}
+
+    public static Connection getConnection() {
         try {
-            InitialContext ctx = new InitialContext();
-            dataSource = (DataSource) ctx.lookup("java:comp/env/jdbc/bcid");
-        } catch (NamingException e) {
-            throw new ServerErrorException("Error connecting to Biscicol db");
+            return bcidDataSource.getConnection();
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
         }
     }
 
@@ -29,7 +39,7 @@ public final class BcidDatabase extends Database {
      * @param username
      * @return
      */
-    public Integer getUserId(String username) {
+    public static Integer getUserId(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = getConnection();
@@ -56,7 +66,7 @@ public final class BcidDatabase extends Database {
      * @param userId
      * @return
      */
-    public String getUserName(Integer userId) {
+    public static String getUserName(Integer userId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = getConnection();

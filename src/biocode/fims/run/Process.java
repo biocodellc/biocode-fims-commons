@@ -209,7 +209,7 @@ public class Process {
                 // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
                 // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
                 boolean ezidRequest = true;
-                String username = new BcidDatabase().getUserName(processController.getUserId());
+                String username = BcidDatabase.getUserName(processController.getUserId());
                 if (username.equals("demo") || sm.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
                     ezidRequest = false;
                 }
