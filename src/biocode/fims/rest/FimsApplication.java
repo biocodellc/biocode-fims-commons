@@ -4,6 +4,10 @@ import biocode.fims.rest.filters.AdminFilter;
 import biocode.fims.rest.filters.AuthenticatedFilter;
 import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
@@ -12,12 +16,17 @@ import javax.ws.rs.core.Context;
  */
 public class FimsApplication extends ResourceConfig {
 
-    public FimsApplication(@Context ServletContext sc) {
+    public FimsApplication() {
         super();
+        ApplicationContext rootCtx = ContextLoader.getCurrentWebApplicationContext();
         // retrieve the properties filename from the web.xml
-        String filename = sc.getInitParameter("propsFilename");
+        String filename = ((XmlWebApplicationContext) rootCtx).getServletContext().getInitParameter("propsFilename");
         //initialize the settings manager
         SettingsManager.getInstance(filename);
+
+        register(FimsExceptionMapper.class);
+
+        register(RequestContextFilter.class);
         register(AuthenticatedFilter.class);
         register(AdminFilter.class);
     }
