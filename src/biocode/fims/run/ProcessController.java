@@ -389,4 +389,8 @@ public class ProcessController {
     public void setTabularDataReader(TabularDataReader tabularDataReader) {
         this.tabularDataReader = tabularDataReader;
     }
+
+    public void addMessage(String sheetName, RowMessage rowMessage) {
+        messages.get(sheetName).add(rowMessage);
+    }
 }

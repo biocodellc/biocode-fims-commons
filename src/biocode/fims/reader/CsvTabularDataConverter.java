@@ -74,7 +74,7 @@ public class CsvTabularDataConverter {
 
         try {
             FileOutputStream fos = new FileOutputStream(csvFile);
-            while (source.tableHasNextRow()) {
+            for (int rowNum=0; rowNum < source.getNumRows(); rowNum++) {
                 String[] row = source.tableGetNextRow();
 
                 for (int col=0; col < colcnt; col++) {
