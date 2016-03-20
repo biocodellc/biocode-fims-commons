@@ -41,6 +41,12 @@ public class Rule {
     private String value;
     private String otherColumn;
 
+    private Mapping mapping;
+
+    public Rule(Mapping mapping){
+        this.mapping = mapping;
+    }
+
     // A reference to the validation object this rule belongs to
     //private Validation validation;
     // A reference to the worksheet object this rule belongs to
@@ -1551,4 +1557,19 @@ public class Rule {
         return ruleMetadata;
     }
 
+    /**
+     * datasetContainsExtraColumns check to see if the uploaded dataset contains any columns that
+     * do not exist in the project configuration
+     */
+    public void datasetContainsExtraColumns() {
+        String groupMessge = "Undefined columns. Column(s) will not be persisted.";
+        List<String> datasetColumns = worksheet.getColNames();
+        List<String> definedColumns = mapping.getColumnNames();
+
+        for (String colName: datasetColumns) {
+            if (!definedColumns.contains(colName)) {
+                addMessage("Dataset contains undefined column: " + colName, groupMessge);
+            }
+        }
+    }
 }

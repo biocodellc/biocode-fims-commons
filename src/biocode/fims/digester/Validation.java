@@ -10,6 +10,7 @@ import biocode.fims.run.ProcessController;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.ObjectCreateRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -260,8 +261,9 @@ public class Validation implements RendererInterface {
      * Process validation component rules
      *
      * @param d
+     * @param mapping
      */
-    public synchronized void addValidationRules(Digester d, File configFile) {
+    public synchronized void addValidationRules(Digester d, File configFile, Mapping mapping) {
         d.push(this);
 
         // Create worksheet objects
@@ -269,8 +271,12 @@ public class Validation implements RendererInterface {
         d.addSetProperties("fims/validation/worksheet");
         d.addSetNext("fims/validation/worksheet", "addWorksheet");
 
+        ObjectCreateRule ruleCreateRule = new ObjectCreateRule(Rule.class);
+        ruleCreateRule.setConstructorArgumentTypes(Mapping.class);
+        ruleCreateRule.setDefaultConstructorArguments(mapping);
+
         // Create rule objects
-        d.addObjectCreate("fims/validation/worksheet/rule", Rule.class);
+        d.addRule("fims/validation/worksheet/rule", ruleCreateRule);
         d.addSetProperties("fims/validation/worksheet/rule");
         d.addSetNext("fims/validation/worksheet/rule", "addRule");
         d.addCallMethod("fims/validation/worksheet/rule/field", "addField", 0);

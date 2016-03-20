@@ -103,7 +103,7 @@ public class Process {
         if (processController.getValidation() == null) {
             // Load validation object as this is used in downstream functions
             validation = new Validation();
-            validation.addValidationRules(new Digester(), configFile);
+            validation.addValidationRules(new Digester(), configFile, mapping);
 
             processController.setValidation(validation);
         } else {

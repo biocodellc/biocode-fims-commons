@@ -74,7 +74,7 @@ public class TemplateProcessor {
         mapping.addMappingRules(new Digester(), configFile.getOutputFile());
 
         validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile.getOutputFile());
+        validation.addValidationRules(new Digester(), configFile.getOutputFile(), mapping);
 
         this.workbook = (XSSFWorkbook) workbook;
         // Set the default heading style
@@ -120,9 +120,8 @@ public class TemplateProcessor {
         mapping = new Mapping();
         mapping.addMappingRules(new Digester(), configFile);
 
-
         validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile);
+        validation.addValidationRules(new Digester(), configFile, mapping);
 
         // Create the workbook
         workbook = new XSSFWorkbook();

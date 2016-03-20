@@ -376,7 +376,7 @@ public class ProjectService extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Validation validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile);
+        validation.addValidationRules(new Digester(), configFile, null);
 
         biocode.fims.digester.List results = validation.findList(listName);
         JSONArray list = new JSONArray();
