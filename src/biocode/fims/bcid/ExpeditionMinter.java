@@ -590,7 +590,7 @@ public class ExpeditionMinter {
                 JSONObject expedition = new JSONObject();
                 expedition.put("expeditionId", rs.getString("expeditionId"));
                 expedition.put("expeditionCode", rs.getString("expeditionCode"));
-                expedition.put("expeditionTitle", rs.getString("expeditionTitle"));
+                expedition.put("expeditionTitle", (rs.getString("expeditionTitle") != null) ? rs.getString("expeditionTitle") : "null title");
                 expedition.put("public", rs.getString("public"));
                 expeditions.add(expedition);
             }
