@@ -27,6 +27,11 @@ public class Authenticator {
      * Constructor that initializes the class level variables
      */
     public Authenticator() {
+        getSettingsManager();
+
+    }
+
+    protected void getSettingsManager() {
         // Initialize settings manager
         sm = SettingsManager.getInstance();
     }
@@ -59,7 +64,7 @@ public class Authenticator {
      *
      * @return
      */
-    private String getHashedPass(String username) {
+    protected String getHashedPass(String username) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = BcidDatabase.getConnection();
