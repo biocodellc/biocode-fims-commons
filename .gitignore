@@ -2,10 +2,7 @@
 *.iml
 *.props
 *.properties
-dist/lib/*
 build/*
 classes/*
-javadocs/*
-javadocs/
 .gradle
 jetty-env.xml
