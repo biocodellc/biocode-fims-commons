@@ -1,34 +1,12 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "org.ajoberstar:gradle-git:1.4.2"
-    }
+plugins {
+    id 'org.ajoberstar.github-pages' version '1.4.2'
 }
 
 apply plugin: "java"
-apply plugin: 'org.ajoberstar.github-pages'
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src/'
-        }
-        resources {
-            srcDir 'src/resources'
-        }
-    }
-}
-
-javadoc {
-    failOnError = false
-}
 
 repositories {
     mavenCentral()
@@ -52,10 +30,24 @@ dependencies {
     compile 'org.apache.httpcomponents:httpclient:4.2.1'
     compile 'com.ibm.icu:icu4j:3.4.4'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    compile 'mysql:mysql-connector-java:5.1.38'
+    compile 'org.xerial:sqlite-jdbc:3.7.2'
     compile 'org.slf4j:slf4j-log4j12:1.7.19'
 
 
     testCompile "junit:junit-dep:4.10"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/'
+        }
+    }
+}
+
+javadoc {
+    failOnError = false
 }
 
 githubPages {

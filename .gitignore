@@ -1,10 +1,11 @@
-workspace.xml
-tasks.xml
-.idea/libraries/Gradle__*
+.idea/*
+*.iml
 *.props
 *.properties
 dist/lib/*
 build/*
+classes/*
 javadocs/*
 javadocs/
 .gradle
+jetty-env.xml
