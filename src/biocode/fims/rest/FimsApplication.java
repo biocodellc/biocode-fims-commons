@@ -9,8 +9,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Context;
 /**
  * This class extends the jax-rs Application class and initializes the biocode.fims.settings.SettingsManager upon startup
  */
