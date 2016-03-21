@@ -38,14 +38,6 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src/'
-        }
-    }
-}
-
 javadoc {
     failOnError = false
 }
