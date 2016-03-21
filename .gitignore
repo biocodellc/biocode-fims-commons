@@ -1,0 +1,10 @@
+workspace.xml
+tasks.xml
+.idea/libraries/Gradle__*
+*.props
+*.properties
+dist/lib/*
+build/*
+javadocs/*
+javadocs/
+.gradle
