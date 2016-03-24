@@ -1,0 +1,8 @@
+.idea/*
+*.iml
+*.props
+*.properties
+build/*
+classes/*
+.gradle
+jetty-env.xml
