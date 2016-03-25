@@ -49,3 +49,5 @@ githubPages {
         from javadoc
     }
 }
+
+libsDirName = "../dist"
