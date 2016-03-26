@@ -6,3 +6,5 @@ build/*
 classes/*
 .gradle
 jetty-env.xml
+tripleOutput/
+dist/
