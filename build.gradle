@@ -1,8 +1,14 @@
-plugins {
-    id 'org.ajoberstar.github-pages' version '1.4.2'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.ajoberstar:gradle-git:1.4.2"
+    }
 }
 
 apply plugin: "java"
+apply plugin: "org.ajoberstar.github-pages"
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
