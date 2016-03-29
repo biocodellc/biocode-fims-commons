@@ -39,6 +39,7 @@ public class Validation implements RendererInterface {
     private static Logger logger = LoggerFactory.getLogger(Validation.class);
     // File reference for a sqlite Database
     private File sqliteFile;
+    private SqLiteTabularDataConverter tdc;
 
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
@@ -56,7 +57,10 @@ public class Validation implements RendererInterface {
         return sqliteFile;
     }
 
-    public TabularDataReader getTabularDataReader() {return tabularDataReader;}
+    public TabularDataReader getTabularDataReader() {
+        return tabularDataReader;
+    }
+
     /**
      * Add a worksheet to the validation component
      *
@@ -127,7 +131,8 @@ public class Validation implements RendererInterface {
         String pathPrefix = processDirectory + File.separator + filenamePrefix;
         sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
 
-        SqLiteTabularDataConverter tdc = new SqLiteTabularDataConverter(tabularDataReader, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        tdc = new SqLiteTabularDataConverter(tabularDataReader, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+
         try {
             tdc.convert(mapping);
         } catch (Exception e) {
@@ -215,26 +220,49 @@ public class Validation implements RendererInterface {
         // processing data, such as worksheets containing duplicate column names, which will fail the data load.
         try {
             connection = createSqlLite(filenamePrefix, outputFolder, mapping);
-        }   catch (FimsException e) {
-            errorFree = false;
+
+        } catch (FimsException e) {
             sheet.getMessages().addLast(new RowMessage(
-                    "Unable to parse spreadsheet.  This is most likely caused by having two columns with the same " +
-                    "name.  Please rename or delete the extra column to pass validation.",
+                    "Unable to parse spreadsheet.  This may be caused by having two columns with the same " +
+                            "name.  " +
+                            "Please add columns to pass validation.",
                     "Initial Spreadsheet check",
                     RowMessage.ERROR));
-            e.printStackTrace();
+
+            // Alsways have an error here
+            return false;
         }
 
+
+        // Attempt to build hashes
+        boolean hashErrorFree = true;
+        try {
+            tdc.buildHashes(mapping);
+        } catch (Exception e) {
+            hashErrorFree = false;
+        }
+
+        // Run validation components
+        boolean processingErrorFree = true;
         if (errorFree) {
             // Loop rules to be run after connection
             for (Iterator<Worksheet> i = worksheets.iterator(); i.hasNext(); ) {
                 Worksheet w = i.next();
 
                 boolean thisError = w.run(this);
-                if (errorFree)
-                    errorFree = thisError;
+                if (processingErrorFree)
+                    processingErrorFree = thisError;
             }
-            return errorFree;
+        }
+
+        if (processingErrorFree && hashErrorFree) {
+            return true;
+        } else if (!hashErrorFree) {
+            sheet.getMessages().addLast(new RowMessage(
+                    "Error building hashes.  Likely a required column constraint failed.",
+                    "Initial Spreadsheet check",
+                    RowMessage.ERROR));
+            return false;
         } else {
             return false;
         }
