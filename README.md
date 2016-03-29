@@ -1,4 +1,4 @@
-The Biocode Field Information Management System (FIMS) validates field data and tracks PHYSICAL SAMPLES for use in collections management systems, laboratory information management systems, genbank, and publications. You can visit a working Biocode FIMS instance at http://biscicol.org/
+The Biocode Field Information Management System (FIMS) validates field data and tracks physical samples and collecting events for use in collections management systems, laboratory information management systems, genbank, and publications. You can visit a working Biocode FIMS instance at http://biscicol.org/
 
 FIMS Documentation is located at http://fims.readthedocs.org/en/latest/
 
