@@ -277,6 +277,9 @@ public class ExpeditionService extends FimsService {
                               @FormParam("bcid") String identifier,
                               @FormParam("projectId") Integer projectId) {
         ExpeditionMinter expedition = new ExpeditionMinter();
+        if (identifier == null || expeditionCode == null) {
+            throw new BadRequestException("bcid and expeditionCode must not be null.");
+        }
         expedition.attachReferenceToExpedition(expeditionCode, identifier, projectId);
 
         return Response.ok("{\"success\": \"Data Elements Root: " + expeditionCode + "\"}").build();

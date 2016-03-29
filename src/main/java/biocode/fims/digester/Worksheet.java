@@ -291,6 +291,8 @@ public class Worksheet {
             connection.close();
         } catch (SQLException e) {
             logger.warn("SQLException", e);
+        } catch (Exception e) {
+            logger.warn("Null connection, unable to close", e);
         }
 
         return errorFree();

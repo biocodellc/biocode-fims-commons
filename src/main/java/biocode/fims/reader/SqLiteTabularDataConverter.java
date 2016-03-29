@@ -27,6 +27,7 @@ public final class SqLiteTabularDataConverter {
     String tableName;
 
     private static Logger logger = LoggerFactory.getLogger(SqLiteTabularDataConverter.class);
+
     /**
      * Constructs a new SqLiteTabularDataConverter for the specified source.
      *
@@ -109,11 +110,44 @@ public final class SqLiteTabularDataConverter {
      * non-alphanumeric characters are removed.
      *
      * @param tName The table name to fix, if needed.
+     *
      * @return The corrected table name.
      */
     private String fixSQLiteIdentifierName(String tName) {
         SqlLiteNameCleaner cleaner = new SqlLiteNameCleaner();
         return cleaner.fixNames(tName);
+    }
+
+    /**
+     * Builds hashes from source data.  This should be called AFTER the convert method
+     * below as we want helpful Rules messages displayed before we attempt this method.
+     * We don't want the WHOLE connection to fail as the hash methods are more brittle than
+     * other items in the convert process.
+     *
+     * @param mapping
+     */
+    public void buildHashes(Mapping mapping) {
+        Connection connection = null;
+        try {
+            String tName = source.getCurrentTableName();
+            connection = DriverManager.getConnection(dest);
+            // TODO: arrange for source table to multiple, or at least check if this is the first
+            // this method assumes it is called after convert, which sets the current table name.
+            //if (source.tableHasNextRow()) {
+                String fixedtName = fixSQLiteIdentifierName(tName);
+                buildHashes(connection, mapping, fixedtName);
+            //}
+        } catch (SQLException e) {
+            // If we through an excaption here, it could be ANYTHING that SQLlite doesn't like, including duplicate columnnames
+            throw new FimsRuntimeException(500, e);
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException e) {
+                logger.warn("SQLException", e);
+            }
+        }
     }
 
     /**
@@ -131,7 +165,6 @@ public final class SqLiteTabularDataConverter {
      * an instance of DwCAFixer.
      */
     public void convert(Mapping mapping) {
-        //int tablecnt = 0;
         Connection connection = null;
         try {
             String tName = source.getCurrentTableName();
@@ -140,7 +173,7 @@ public final class SqLiteTabularDataConverter {
             if (source.tableHasNextRow()) {
                 String fixedtName = fixSQLiteIdentifierName(tName);
                 buildTable(connection, fixedtName);
-                buildHashes(connection, mapping, fixedtName);
+                //buildHashes(connection, mapping, fixedtName);
             }
 
             // TODO: loop tables as the original triplifier did (see commented code below).  For now, we just name one table
@@ -312,7 +345,7 @@ public final class SqLiteTabularDataConverter {
                 for (String dataval : source.tableGetNextRow()) {
                     // Ignore any data that is NA or na by setting it to blank
                     if (dataval.equalsIgnoreCase("na"))
-                        dataval="";
+                        dataval = "";
                     sb.append(dataval);
                     insstmt.setString(++cnt, dataval);
                 }
