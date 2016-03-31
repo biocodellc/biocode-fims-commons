@@ -129,7 +129,6 @@ public class ProjectMinter {
      * @return
      */
     public JSONArray getLatestGraphs(int projectId, String username) {
-        StringBuilder sb = new StringBuilder();
         JSONArray graphs = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -162,6 +161,7 @@ public class ProjectMinter {
             } else {
                 sql += "    and p.public = 1";
             }
+            sql += " ORDER BY expeditionTitle";
 
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, projectId);
@@ -177,7 +177,6 @@ public class ProjectMinter {
             while (rs.next()) {
                 JSONObject graph = new JSONObject();
                 // Grap the prefixes and concepts associated with this
-                sb.append("\t\t{\n");
                 graph.put("expeditionCode", rs.getString("expeditionCode"));
                 graph.put("expeditionTitle", rs.getString("expeditionTitle"));
                 graph.put("ts", rs.getString("ts"));

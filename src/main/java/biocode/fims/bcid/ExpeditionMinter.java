@@ -579,7 +579,8 @@ public class ExpeditionMinter {
         try {
             String sql = "SELECT expeditionId, expeditionTitle, expeditionCode, public " +
                     "FROM expeditions " +
-                    "WHERE projectId = ? && userId = ?";
+                    "WHERE projectId = ? && userId = ? " +
+                    "ORDER BY expeditionTitle";
             stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, projectId);
