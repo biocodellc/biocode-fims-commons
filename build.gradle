@@ -13,8 +13,6 @@ apply plugin: "org.ajoberstar.github-pages"
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
-libsDirName = "../dist"
-
 repositories {
     mavenCentral()
 }
@@ -44,6 +42,12 @@ dependencies {
 
 
     testCompile "junit:junit-dep:4.10"
+}
+
+libsDirName = "../dist"
+
+clean {
+    delete libsDir
 }
 
 javadoc {
