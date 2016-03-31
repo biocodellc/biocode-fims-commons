@@ -8,6 +8,7 @@ buildscript {
 }
 
 apply plugin: "java"
+apply plugin: "application"
 apply plugin: "org.ajoberstar.github-pages"
 
 targetCompatibility = 1.7
@@ -60,4 +61,11 @@ githubPages {
     pages {
         from javadoc
     }
+}
+
+// installs the biocode-fims-commons as an application. specify the mainClassName below
+// installs under build/install/biocode-fims-commons/bin/biocode-fims-commons
+task installClass {
+    mainClassName = "biocode.fims.run.BulkLoader"
+    dependsOn installDist
 }
