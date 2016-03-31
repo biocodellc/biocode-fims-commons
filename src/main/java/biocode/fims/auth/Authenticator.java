@@ -41,7 +41,7 @@ public class Authenticator {
 
         String hashedPass = getHashedPass(username);
 
-        if (!hashedPass.isEmpty()) {
+        if (hashedPass != null && !hashedPass.isEmpty()) {
             try {
                 return PasswordHash.validatePassword(password, hashedPass);
             } catch (InvalidKeySpecException e) {

@@ -217,8 +217,12 @@ public class Process {
                 // Create the entity BCID
                 BcidMinter bcidMinter = new BcidMinter(ezidRequest);
 
-                String identifier = bcidMinter.createEntityBcid(new Bcid(processController.getUserId(), entity.getConceptAlias(),
-                        entity.getConceptAlias(), "", null, null, false, false));
+                String identifier = bcidMinter.createEntityBcid(new Bcid(
+                        processController.getUserId(),
+                        entity.getConceptURI(),
+                        entity.getConceptAlias(),
+                        "",
+                        null, null, false, false));
 
                 // Associate this Bcid with this expedition
                 expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
