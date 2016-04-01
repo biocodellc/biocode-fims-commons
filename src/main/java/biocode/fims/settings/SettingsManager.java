@@ -1,6 +1,8 @@
 package biocode.fims.settings;
 
 import biocode.fims.fimsExceptions.FimsConnectorException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import org.springframework.core.io.Resource;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +23,19 @@ public class SettingsManager {
 
     private Properties props;
     private String propsFile;
+
+    /**
+     * Constructor to inject the propsFile Resource via spring
+     * @param propsFileResource
+     */
+    private SettingsManager(Resource propsFileResource) {
+        try {
+            propsFile = propsFileResource.getURI().getPath();
+            loadProperties();
+        } catch (IOException e) {
+            throw new FimsRuntimeException(500, e);
+        }
+    }
 
     private SettingsManager(String propsFile) {
         this.propsFile = propsFile;

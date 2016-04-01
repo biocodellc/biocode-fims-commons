@@ -17,8 +17,8 @@ import java.io.IOException;
 public class SecureFilter implements Filter {
     private FilterConfig fc = null;
 
-    private static SettingsManager sm;
-    private static String loginPageUrl;
+    protected static SettingsManager sm;
+    protected static String loginPageUrl;
 
     public void init (FilterConfig fc)
         throws ServletException {
