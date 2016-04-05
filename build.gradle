@@ -31,7 +31,7 @@ dependencies {
     compile 'commons-cli:commons-cli:1.2'
     compile 'org.apache.commons:commons-dbcp2:2.1.1'
     compile 'commons-lang:commons-lang:2.6'
-    compile 'javax.mail:javax.mail-api:1.5.5'
+    compile 'com.sun.mail:javax.mail:1.5.5'
     compile 'joda-time:joda-time:2.1'
     compile 'com.googlecode.lambdaj:lambdaj:2.3.3' //need 2.4, but not hosted in maven. trying this
     compile 'org.apache.httpcomponents:httpcore:4.2.1'
