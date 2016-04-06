@@ -539,4 +539,25 @@ public class BcidMinter extends BcidEncoder {
         }
         return identifier;
     }
+
+    /**
+     * update the bcid ts to the current time
+     * @param graph the graph of the bcid
+     */
+    public void updateBcidTimestamp(String graph) {
+        PreparedStatement stmt = null;
+        Connection conn = BcidDatabase.getConnection();
+        try {
+            String sql = "UPDATE bcids SET ts=now() WHERE graph=?";
+            stmt = conn.prepareStatement(sql);
+
+            stmt.setString(1, graph);
+
+            stmt.execute();
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        } finally {
+            Database.close(conn, stmt, null);
+        }
+    }
 }
