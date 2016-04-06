@@ -53,7 +53,7 @@ public abstract class FastaManager {
                 rm.loadReaders();
 
                 TabularDataReader tdr = rm.openFile(processController.getInputFilename(),
-                        processController.getDefaultSheetUniqueKey(), outputFolder);
+                        processController.getMapping().getDefaultSheetName(), outputFolder);
 
                 if (tdr == null) {
                     messages.addLast(new RowMessage("Unable to open the file you attempted to upload.", "Spreadsheet check", RowMessage.ERROR));
@@ -186,12 +186,8 @@ public abstract class FastaManager {
     private ArrayList<String> fetchIds(TabularDataReader tdr) {
         ArrayList<String> datasetIds = new ArrayList<>();
 
-        Worksheet sheet = null;
-        String sheetName = "";
         try {
-            sheet = processController.getValidation().getWorksheets().get(0);
-            sheetName = sheet.getSheetname();
-            tdr.setTable(sheetName);
+            tdr.setTable(processController.getMapping().getDefaultSheetName());
         } catch (FimsException e) {
             processController.setHasErrors(true);
             return datasetIds;
