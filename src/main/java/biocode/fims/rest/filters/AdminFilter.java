@@ -13,6 +13,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Custom filter for checking if a user is a project admin
@@ -29,11 +30,11 @@ public class AdminFilter implements ContainerRequestFilter {
             throws IOException {
         HttpSession session = webRequest.getSession();
         Object projectAdmin = session.getAttribute("projectAdmin");
-        Object accessToken = requestContext.getUriInfo().getQueryParameters().get("access_token");
+        List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
 
-        if (accessToken != null) {
+        if (accessTokenList != null && !accessTokenList.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
-            String username = provider.validateToken(accessToken.toString());
+            String username = provider.validateToken((String) accessTokenList.get(0));
             Authorizer authorizer = new Authorizer();
             projectAdmin = authorizer.userProjectAdmin(username);
         }
