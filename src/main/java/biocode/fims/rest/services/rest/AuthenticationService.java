@@ -215,11 +215,16 @@ public class AuthenticationService extends FimsService {
         OAuthProvider p = new OAuthProvider();
         JSONObject accessToken;
 
-        if (clientId == null || clientSecret == null || !p.validateClient(clientId, clientSecret)) {
+        if (clientId == null) {
             throw new BadRequestException("invalid_client");
         }
 
         if (grantType.equalsIgnoreCase("authorization_code")) {
+
+            if (clientSecret == null || !p.validateClient(clientId, clientSecret)) {
+                throw new BadRequestException("invalid_client");
+            }
+
             if (redirectURL == null) {
                 throw new BadRequestException("invalid_request", "redirect_uri is null");
             }
@@ -230,6 +235,10 @@ public class AuthenticationService extends FimsService {
             }
             accessToken = p.generateToken(clientId, state, code);
         } else if (grantType.equalsIgnoreCase("password")) {
+            if (!p.validClientId(clientId)) {
+                throw new BadRequestException("invalid_client");
+            }
+
             Authenticator authenticator = new Authenticator();
             if (username == null || password == null || !authenticator.login(username, password)) {
                 throw new BadRequestException("the supplied username and/or password are incorrect", "invalid_request");
@@ -250,7 +259,6 @@ public class AuthenticationService extends FimsService {
      * Service for an oAuth client app to exchange a refresh token for a valid access token.
      *
      * @param clientId
-     * @param clientSecret
      * @param refreshToken
      *
      * @return
@@ -260,11 +268,10 @@ public class AuthenticationService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response refresh(@FormParam("client_id") String clientId,
-                            @FormParam("client_secret") String clientSecret,
                             @FormParam("refresh_token") String refreshToken) {
         OAuthProvider p = new OAuthProvider();
 
-        if (clientId == null || clientSecret == null || !p.validateClient(clientId, clientSecret)) {
+        if (clientId == null || !p.validClientId(clientId)) {
             throw new BadRequestException("invalid_client");
         }
 
