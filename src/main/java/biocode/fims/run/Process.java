@@ -33,8 +33,8 @@ public class Process {
 
     public File configFile;
 
-    Mapping mapping;
-    Validation validation;
+    private Mapping mapping;
+    private Validation validation;
 
     String outputFolder;
     String outputPrefix;
@@ -258,13 +258,7 @@ public class Process {
     }
 
     public void runValidation() {
-        // Create the tabulardataReader for reading the input file
-        ReaderManager rm = new ReaderManager();
-        TabularDataReader tdr = null;
-        rm.loadReaders();
-
-        tdr = rm.openFile(processController.getInputFilename(), mapping.getDefaultSheetName(), outputFolder);
-
+        TabularDataReader tdr = getTabularDataReader();
         if (tdr == null) {
             processController.setHasErrors(true);
             processController.appendStatus("<br>Unable to open the file you attempted to upload.<br>");
@@ -272,13 +266,30 @@ public class Process {
             return;
         }
 
-        processController.setTabularDataReader(tdr);
-
         // Run the validation
         validation.run(tdr, outputPrefix, outputFolder, mapping);
 
+        tdr.closeFile();
+
         // get the Messages from each worksheet and add them to the processController
         validation.getMessages(processController);
+    }
+
+    /**
+     * get a TabularDataReader object. the inputFilename must be set on processController. You also need
+     * to call TabularDataReader.closeFile() when you are done with the TabularDataReader
+     *
+     * @return TabulardataReader
+     */
+    public TabularDataReader getTabularDataReader() {
+        // Create the tabulardataReader for reading the input file
+        ReaderManager rm = new ReaderManager();
+        TabularDataReader tdr = null;
+        rm.loadReaders();
+
+        tdr = rm.openFile(processController.getInputFilename(), mapping.getDefaultSheetName(), outputFolder);
+
+        return tdr;
     }
 
     /**

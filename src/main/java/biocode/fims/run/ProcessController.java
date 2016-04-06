@@ -43,7 +43,6 @@ public class ProcessController {
     private Mapping mapping;
     private FastaManager fastaManager;
     private String worksheetName;
-    private TabularDataReader tabularDataReader;
     // Store all messages as a k,v pair of sheetName: messages
     private HashMap<String, List<RowMessage>> messages = new HashMap<>();
     private StringBuilder statusSB = new StringBuilder();
@@ -383,14 +382,6 @@ public class ProcessController {
         }
 
         return messageArray;
-    }
-
-    public TabularDataReader getTabularDataReader() {
-        return tabularDataReader;
-    }
-
-    public void setTabularDataReader(TabularDataReader tabularDataReader) {
-        this.tabularDataReader = tabularDataReader;
     }
 
     public void addMessage(String sheetName, RowMessage rowMessage) {
