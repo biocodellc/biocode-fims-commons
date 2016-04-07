@@ -62,27 +62,35 @@ public class ProjectMinter {
      *
      * @return returns all projects a user can access
      */
-    public JSONArray listProjects(Integer userId) {
+    public JSONArray listProjects(Integer userId, boolean includePublic) {
+        if (!includePublic && userId == null) {
+            throw new ServerErrorException("Server Error", "userId can't be null if includePublic is false");
+        }
+
         JSONArray projects = new JSONArray();
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String query = "SELECT \n" +
-                    "\tp.projectId,\n" +
-                    "\tp.projectCode,\n" +
-                    "\tp.projectTitle,\n" +
-                    "\tp.validationXml\n" +
-                    " FROM \n" +
-                    "\tprojects p\n" +
-                    " WHERE \n" +
-                    "\tp.public = true\n";
-
+            String query = "";
+            if (includePublic) {
+                query += "SELECT \n" +
+                        "\tp.projectId,\n" +
+                        "\tp.projectCode,\n" +
+                        "\tp.projectTitle,\n" +
+                        "\tp.validationXml\n" +
+                        " FROM \n" +
+                        "\tprojects p\n" +
+                        " WHERE \n" +
+                        "\tp.public = true\n";
+            }
 
             if (userId != null) {
-                query += " UNION \n" +
-                        " SELECT \n" +
+                if (!query.isEmpty()) {
+                    query += " UNION \n";
+                }
+                query += " SELECT \n" +
                         "\tp.projectId,\n" +
                         "\tp.projectCode,\n" +
                         "\tp.projectTitle, \n" +

@@ -41,10 +41,15 @@ public class ProjectService extends FimsService {
     @GET
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response fetchList() {
+    public Response fetchList(@QueryParam("includePublic") @DefaultValue("false") boolean includePublic) {
 
         ProjectMinter project = new ProjectMinter();
-        JSONArray response = project.listProjects(userId);
+
+        if (userId == null && !includePublic) {
+            throw new BadRequestException("You must be logged in if you don't want to include public projects");
+        }
+
+        JSONArray response = project.listProjects(userId, includePublic);
 
         return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
