@@ -4,6 +4,7 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
+import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -375,8 +376,11 @@ public class ProjectService extends FimsService {
 
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+
         Validation validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile, null);
+        validation.addValidationRules(new Digester(), configFile, mapping);
 
         biocode.fims.digester.List results = validation.findList(listName);
         JSONArray list = new JSONArray();
