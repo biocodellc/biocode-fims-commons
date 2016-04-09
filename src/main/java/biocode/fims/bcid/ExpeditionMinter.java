@@ -21,17 +21,7 @@ import java.util.UUID;
  * Mint new expeditions.  Includes the automatic creation of a core set of entity types
  */
 public class ExpeditionMinter {
-    private SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
-
-    /**
-     * The constructor defines the class-level variables used when minting Expeditions.
-     * It defines a generic set of entities (process, information content, objects, agents)
-     * that can be used for any expedition.
-     */
-    public ExpeditionMinter() {
-        // Initialize settings manager
-        sm = SettingsManager.getInstance();
-    }
+    private SettingsManager sm = SettingsManager.getInstance();
 
     /**
      * mint Expedition
@@ -359,7 +349,7 @@ public class ExpeditionMinter {
             rs = stmt.executeQuery();
             while (rs.next()) {
                 // Grap the expedition_title in the query
-                if (expeditionTitle == null & !rs.getString("expeditionTitle").equals(""))
+                if (expeditionTitle == null && rs.getString("expeditionTitle") != null && !rs.getString("expeditionTitle").equals(""))
                     expeditionTitle = rs.getString("expeditionTitle");
 
                 JSONObject data = new JSONObject();

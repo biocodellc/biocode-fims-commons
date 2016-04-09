@@ -16,12 +16,6 @@ public class FimsApplication extends ResourceConfig {
 
     public FimsApplication() {
         super();
-        ApplicationContext rootCtx = ContextLoader.getCurrentWebApplicationContext();
-        // retrieve the properties filename from the web.xml
-        String filename = ((XmlWebApplicationContext) rootCtx).getServletContext().getInitParameter("propsFilename");
-        //initialize the settings manager
-        SettingsManager.getInstance(filename);
-
         register(FimsExceptionMapper.class);
 
         register(RequestContextFilter.class);

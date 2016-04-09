@@ -10,6 +10,8 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -349,7 +351,7 @@ public class Resolver {
      */
     public static void main(String args[]) {
         Resolver r = null;
-        SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
 
         try {
             //r = new Resolver("ark:/21547/S2MBIO56");

@@ -3,6 +3,8 @@ package biocode.fims.utils;
 import biocode.fims.bcid.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,11 +17,7 @@ import java.util.HashMap;
  */
 public class ExpeditionUpdater {
 
-    private static SettingsManager sm;
-
-    static {
-        sm = SettingsManager.getInstance("biocode-fims.props");
-    }
+    private SettingsManager sm = SettingsManager.getInstance();
 
     /**
      * Return a JSON response of the user's expeditions in a project
@@ -51,7 +49,8 @@ public class ExpeditionUpdater {
     }
 
     public static void main(String args[]) {
-        SettingsManager.getInstance("biocode-fims.props");
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        SettingsManager sm = SettingsManager.getInstance();
 
         ExpeditionUpdater expeditionUpdater = new ExpeditionUpdater();
         HashMap expeditions = expeditionUpdater.getAllExpeditions();

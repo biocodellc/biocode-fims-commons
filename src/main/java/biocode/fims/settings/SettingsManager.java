@@ -1,12 +1,12 @@
 package biocode.fims.settings;
 
-import biocode.fims.fimsExceptions.FimsConnectorException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import org.springframework.core.io.Resource;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 
@@ -29,17 +29,7 @@ public class SettingsManager {
      * @param propsFileResource
      */
     private SettingsManager(Resource propsFileResource) {
-        try {
-            propsFile = propsFileResource.getURI().getPath();
-            loadProperties();
-        } catch (IOException e) {
-            throw new FimsRuntimeException(500, e);
-        }
-    }
-
-    private SettingsManager(String propsFile) {
-        this.propsFile = propsFile;
-        loadProperties();
+        loadProperties(propsFileResource);
     }
 
     /**
@@ -50,14 +40,15 @@ public class SettingsManager {
      */
     public static SettingsManager getInstance() {
         if (instance == null) {
-            throw new FimsConnectorException("SettingsManager should be initialized on startup using the FimsApplication" +
-                "class or in the calling class main method. Check web.xml to verify correct settings.", 500);
+            throw new ServerErrorException("SettingsManager should be initialized on startup using the FimsApplication" +
+                "class or in the calling class main method. Check web.xml to verify correct settings.");
         }
         return instance;
     }
+
     /**
      * Get a reference to the global biocode.fims.settings.SettingsManager object, specifying a
-     * properties file to use.  If this is the first request for a
+     * resource to use.  If this is the first request for a
      * biocode.fims.settings.SettingsManager instance, then a new biocode.fims.settings.SettingsManager object will be
      * created using the specified properties file.  Otherwise, the existing
      * biocode.fims.settings.SettingsManager will be returned and the specified properties file is
@@ -68,10 +59,9 @@ public class SettingsManager {
      *
      * @return A reference to the global biocode.fims.settings.SettingsManager object.
      */
-    public static SettingsManager getInstance(String file) {
+    public static SettingsManager getInstance(Resource file) {
         if (instance == null) {
-            String propsfile = Thread.currentThread().getContextClassLoader().getResource(file).getFile();
-            instance = new SettingsManager(propsfile);
+            instance = new SettingsManager(file);
         }
 
         return instance;
@@ -108,12 +98,36 @@ public class SettingsManager {
             props.load(in);
             in.close();
         } catch (FileNotFoundException e) {
-            throw new FimsConnectorException("Unable to find settings file " + propsFile +
-                    ". Make sure you have included this file in the root class of your deployed application!", 500, e);
+            throw new ServerErrorException("Unable to find settings file " + propsFile +
+                    ". Make sure you have included this file in the root class of your deployed application!", e);
         } catch (IOException e) {
-            throw new FimsConnectorException("Error while loading the settings file " + propsFile + ". Is the file correct?",
-                    500, e);
+            throw new ServerErrorException("Error while loading the settings file " + propsFile + ". Is the file correct?", e);
         }
+    }
+
+    /**
+     * Attempt to load the properties file associated with this biocode.fims.settings.SettingsManager.
+     * This method must be called to properly initialize the biocode.fims.settings.SettingsManager
+     * before it can be used by Configurable classes.
+     */
+    private void loadProperties(Resource propsResource) {
+        InputStream inputStream = null;
+        try {
+            props = new Properties();
+            inputStream = propsResource.getInputStream();
+            props.load(inputStream);
+        } catch (IOException e) {
+            throw new ServerErrorException("Error while loading the settings file " + propsFile + ". Is the file correct?", e);
+        } finally {
+            if (inputStream != null)
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new ServerErrorException("Error while closing the propsFile input stream", e);
+                }
+        }
+
+
     }
 
     /**

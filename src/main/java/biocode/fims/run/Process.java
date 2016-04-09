@@ -42,11 +42,7 @@ public class Process {
     private static Logger logger = LoggerFactory.getLogger(Process.class);
     protected int projectId;
 
-    private static SettingsManager sm = SettingsManager.getInstance("biocode-fims.props");
-    //private static SettingsManager sm;
-    static {
-        sm = SettingsManager.getInstance();
-    }
+    private static SettingsManager sm = SettingsManager.getInstance();
 
     /**
      * Setup class variables for processing FIMS data.
@@ -301,7 +297,6 @@ public class Process {
         //processController processController = new processController();
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
 
-        SettingsManager.getInstance("biocode-fims.props");
         Integer projectId = 0;
         //System.out.print(defaultOutputDirectory);
 
