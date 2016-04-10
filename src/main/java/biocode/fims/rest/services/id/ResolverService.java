@@ -5,9 +5,6 @@ import biocode.fims.bcid.Renderer.RDFRenderer;
 import biocode.fims.bcid.Resolver;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
-import org.glassfish.jersey.server.mvc.Viewable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -63,7 +60,7 @@ public class ResolverService extends FimsService{
 
     @GET
     @Path("metadata/ark:/{naan}/{shoulderPlusIdentifier}")
-    @Produces(MediaType.TEXT_HTML)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response metadata (
             @PathParam("naan") String naan,
             @PathParam("shoulderPlusIdentifier") String shoulderPlusIdentifier) {
@@ -79,7 +76,6 @@ public class ResolverService extends FimsService{
         // so we can have a REST style call and provide human readable content with BCID header/footer
         JSONRenderer renderer = new JSONRenderer(username, resolver, resolver.getBcid());
 
-        Viewable v = new Viewable("/bcidMetadata.jsp", renderer.getMetadata());
-        return Response.ok(v).build();
+        return Response.ok(renderer.getMetadata().toJSONString()).build();
     }
 }

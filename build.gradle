@@ -20,8 +20,7 @@ repositories {
 dependencies {
     compile 'jstl:jstl:1.2'
     compile 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
-    compile 'org.glassfish.jersey.ext:jersey-mvc:2.22.2'
-    compile 'org.glassfish.jersey.ext:jersey-mvc-jsp:2.22.2'
+    compile 'javax.servlet:servlet-api:2.4'
     compile 'org.apache.poi:poi:3.10.1'
     compile 'org.apache.poi:poi-ooxml:3.10.1'
     compile 'org.apache.commons:commons-digester3:3.2'
