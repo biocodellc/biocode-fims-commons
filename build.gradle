@@ -36,6 +36,7 @@ dependencies {
     compile 'com.ibm.icu:icu4j:3.4.4'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
     compile 'mysql:mysql-connector-java:5.1.38'
+    compile 'org.springframework:spring-jdbc:3.2.16.RELEASE'
     compile 'org.xerial:sqlite-jdbc:3.7.2'
     compile 'org.slf4j:slf4j-log4j12:1.7.19'
 

@@ -25,6 +25,8 @@ public class Bcid {
     private String graph;
     private boolean finalCopy;
 
+    //TODO add User object
+
     public static class BcidBuilder {
 
         // Required parameters
@@ -125,6 +127,10 @@ public class Bcid {
 
     public void setIdentifier(URI identifier) {
         this.identifier = identifier;
+    }
+
+    public Integer getBcidId() {
+        return bcidId;
     }
 
     public boolean isEzidMade() {
