@@ -41,6 +41,7 @@ public class Bcid {
         private URI identifier;
         private String doi;
         private String title;
+        private URI webAddress;
         private String graph;
         private boolean finalCopy = false;
         public BcidBuilder(int userId, String resourceType) {
@@ -84,6 +85,11 @@ public class Bcid {
             return this;
         }
 
+        public BcidBuilder webAddress(URI val) {
+            webAddress = val;
+            return this;
+        }
+
         public BcidBuilder graph(String val) {
             graph = val;
             return this;
@@ -116,6 +122,7 @@ public class Bcid {
         identifier = builder.identifier;
         doi = builder.doi;
         title = builder.title;
+        webAddress = builder.webAddress;
         graph = builder.graph;
         finalCopy = builder.finalCopy;
     }
@@ -128,9 +135,45 @@ public class Bcid {
         this.bcidId = bcidId;
     }
 
-    public void setIdentifier(URI identifier) {
-        this.identifier = identifier;
+    public void setEzidMade(boolean ezidMade) {
+        this.ezidMade = ezidMade;
     }
+
+    public void setSuffixPassThrough(boolean suffixPassThrough) {
+        this.suffixPassThrough = suffixPassThrough;
+    }
+
+    /**
+     * This will only set the identifier if the current identifier is null. This method is only to be used when
+     * fetching a Bcid from the db
+     * @param identifier
+     */
+    public void setIdentifier(URI identifier) {
+        if (identifier == null)
+            this.identifier = identifier;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setDoi(String doi) {
+        this.doi = doi;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setWebAddress(URI webAddress) {
+        this.webAddress = webAddress;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    public void setTs(Timestamp ts) { this.ts = ts; }
 
     public Integer getBcidId() {
         return bcidId;
@@ -186,5 +229,25 @@ public class Bcid {
 
     public boolean isFinalCopy() {
         return finalCopy;
+    }
+
+    @Override
+    public String toString() {
+        return "Bcid{" +
+                "bcidId=" + bcidId +
+                ", ezidMade=" + ezidMade +
+                ", ezidRequest=" + ezidRequest +
+                ", suffixPassThrough=" + suffixPassThrough +
+                ", internalId=" + internalId +
+                ", identifier=" + identifier +
+                ", userId=" + userId +
+                ", doi='" + doi + '\'' +
+                ", title='" + title + '\'' +
+                ", webAddress=" + webAddress +
+                ", resourceType='" + resourceType + '\'' +
+                ", ts=" + ts +
+                ", graph='" + graph + '\'' +
+                ", finalCopy=" + finalCopy +
+                '}';
     }
 }

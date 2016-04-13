@@ -10,20 +10,37 @@ import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.jdbc.core.SqlParameterValue;
+import org.springframework.jdbc.core.SqlTypeValue;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URI;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Repository class for {@link Bcid} domain objects
  */
+@Repository
 public class BcidRepository {
     final static Logger logger = LoggerFactory.getLogger(BcidRepository.class);
 
-    @Autowired
     private BcidDao bcidDao;
+    private SettingsManager settingsManager;
 
-    private static SettingsManager settingsManager = SettingsManager.getInstance();
+    @Autowired
+    public BcidRepository(BcidDao bcidDao, SettingsManager settingsManager) {
+        this.bcidDao = bcidDao;
+        this.settingsManager = settingsManager;
+    }
 
-    @Transactional
+    //TODO get @Transactional working
+//    @Transactional
     public void save(Bcid bcid) {
         if (bcid.isNew()) {
             int naan = new Integer(settingsManager.retrieveValue("naan"));
@@ -34,6 +51,16 @@ public class BcidRepository {
             bcidDao.update(bcid);
         }
 
+    }
+
+    /**
+     * @param identifier the identifier of the {@link Bcid} to fetch
+     * @return the {@link Bcid} with the provided identifier
+     */
+    public Bcid findByIdentifier(String identifier) {
+        Map<String, String> params = new HashMap<>();
+        params.put("identifier", identifier);
+        return bcidDao.findBcid(params);
     }
 
     private void createEzid(Bcid bcid) {

@@ -2,7 +2,9 @@ package biocode.fims.dao;
 
 import biocode.fims.bcid.BcidEncoder;
 import biocode.fims.entities.Bcid;
+import biocode.fims.rowMapper.BcidRowMapper;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -11,6 +13,9 @@ import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Map;
 
 /**
  *
@@ -34,10 +39,10 @@ public class BcidDao {
     }
 
     public void update(Bcid bcid) {
-        String updateTemplate = "UPDATE bcid SET ezidMade=:ezidMade, ezidRequest=:ezidRequest, " +
-                "suffixPassThrough=:suffixPassThrough, internalId=:internalId, identifier=:identifier, " +
-                "userId=:userId, doi=:doi, title=:title, webAddress=:webAddress, resourceType=:resourceType, " +
-                "ts=:ts, graph=:graph, finalCopy=:finalCopy";
+        String updateTemplate = "UPDATE bcids SET ezidMade=:ezidMade, ezidRequest=:ezidRequest, " +
+                "suffixPassThrough=:suffixPassThrough, userId=:userId, doi=:doi, title=:title, " +
+                "webAddress=:webAddress, resourceType=:resourceType, ts=:ts, graph=:graph, " +
+                "finalCopy=:finalCopy WHERE bcidId=:bcidId";
 
         this.namedParameterJdbcTemplate.update(
                 updateTemplate,
@@ -64,6 +69,34 @@ public class BcidDao {
         update(bcid);
     }
 
+    public Bcid findBcid(Map<String, String> params) throws EmptyResultDataAccessException {
+        StringBuilder selectStringBuilder = new StringBuilder(
+                "SELECT bcidId, ezidMade, ezidRequest, suffixPassThrough, internalId, identifier, userId, doi, title," +
+                        "webAddress, resourceType, ts, graph, finalCopy FROM bcids WHERE ");
+
+        int cnt = 0;
+        for (String key: params.keySet()) {
+            if (cnt > 0)
+                selectStringBuilder.append(", ");
+
+            // add BINARY to make identifier case sensitive
+            if (key.equals("identifier"))
+                selectStringBuilder.append("BINARY ");
+
+            selectStringBuilder.append(key);
+            selectStringBuilder.append("=:");
+            selectStringBuilder.append(key);
+
+            cnt++;
+        }
+
+        return this.namedParameterJdbcTemplate.queryForObject(
+                selectStringBuilder.toString(),
+                params,
+                new BcidRowMapper()
+        );
+    }
+
     private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
         String bow = scheme + "/" + naan+ "/";
 
@@ -83,14 +116,12 @@ public class BcidDao {
                 .addValue("ezidMade", bcid.isEzidMade())
                 .addValue("ezidRequest", bcid.isEzidRequest())
                 .addValue("suffixPassThrough", bcid.isSuffixPassThrough())
-                .addValue("internalId", bcid.getInternalId())
-                .addValue("identifier", bcid.getIdentifier())
                 .addValue("userId", bcid.getUserId())
                 .addValue("doi", bcid.getDoi())
                 .addValue("title", bcid.getTitle())
                 .addValue("webAddress", bcid.getWebAddress())
                 .addValue("resourceType", bcid.getResourceType())
-                .addValue("ts", "now()")
+                .addValue("ts", new Timestamp(new Date().getTime()))
                 .addValue("graph", bcid.getGraph())
                 .addValue("finalCopy", bcid.isFinalCopy());
     }
