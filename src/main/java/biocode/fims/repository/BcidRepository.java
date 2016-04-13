@@ -5,16 +5,17 @@ import biocode.fims.dao.BcidDao;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Repository class for {@link Bcid} domain objects
@@ -53,7 +54,11 @@ public class BcidRepository {
     public Bcid findByIdentifier(String identifier) {
         Map<String, String> params = new HashMap<>();
         params.put("identifier", identifier);
-        return bcidDao.findBcid(params);
+        try {
+            return bcidDao.findBcid(params);
+        } catch (EmptyResultDataAccessException e) {
+            throw new BadRequestException("Invalid Identifier");
+        }
     }
 
     /**
@@ -62,10 +67,10 @@ public class BcidRepository {
      * @return the {@link Bcid} Collection associated with the provided {@link biocode.fims.entities.Expedition}, containing
      * the provided resourceType
      */
-    public Collection<Bcid> findByExpeditionAndResourceType(int expeditionId, String resourceType) {
+    public Collection<Bcid> findByExpeditionAndResourceType(int expeditionId, String... resourceType) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("expeditionId", expeditionId)
-                .addValue("resourceType", resourceType);
+                .addValue("resourceType", Arrays.asList(resourceType));
 
         return bcidDao.findBcidsAssociatedWithExpedition(params);
     }

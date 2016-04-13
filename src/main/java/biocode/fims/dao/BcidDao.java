@@ -2,11 +2,9 @@ package biocode.fims.dao;
 
 import biocode.fims.bcid.BcidEncoder;
 import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
 import biocode.fims.rowMapper.BcidRowMapper;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -19,6 +17,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -118,8 +117,14 @@ public class BcidDao {
                 selectStringBuilder.append(" and ");
 
             selectStringBuilder.append(key);
-            selectStringBuilder.append("=:");
-            selectStringBuilder.append(key);
+            if (params.getValue(key) instanceof List) {
+                selectStringBuilder.append(" IN (:");
+                selectStringBuilder.append(key);
+                selectStringBuilder.append(")");
+            } else {
+                selectStringBuilder.append("=:");
+                selectStringBuilder.append(key);
+            }
 
             cnt++;
         }
