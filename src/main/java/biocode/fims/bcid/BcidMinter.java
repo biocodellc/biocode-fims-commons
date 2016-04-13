@@ -520,10 +520,6 @@ public class BcidMinter extends BcidEncoder {
         // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
         // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
         // in the Database.
-        // Never request EZID for user=demo
-        if (BcidDatabase.getUserName(bcid.userId).equalsIgnoreCase("demo")) {
-            ezidRequest = false;
-        }
 
         if (ezidRequest) {
             ManageEZID creator = new ManageEZID();

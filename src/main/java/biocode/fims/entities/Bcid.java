@@ -55,11 +55,7 @@ public class Bcid {
         }
 
         public BcidBuilder ezidRequest(boolean val) {
-            // Never request EZID for user=demo
-            if (!BcidDatabase.getUserName(userId).equalsIgnoreCase("demo"))
-                ezidRequest = false;
-            else
-                ezidRequest = val;
+            ezidRequest = val;
             return this;
         }
 
@@ -98,7 +94,14 @@ public class Bcid {
             return this;
         }
 
+        private void checkEzidRequest() {
+            // Never request EZID for user=demo
+            if (ezidRequest && BcidDatabase.getUserName(userId).equalsIgnoreCase("demo"))
+                ezidRequest = false;
+        }
+
         public Bcid build() {
+            checkEzidRequest();
             return new Bcid(this);
         }
 
@@ -184,6 +187,4 @@ public class Bcid {
     public boolean isFinalCopy() {
         return finalCopy;
     }
-
-
 }
