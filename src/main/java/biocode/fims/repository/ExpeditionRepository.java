@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
+import java.util.Collection;
 
 /**
  * Repository class for {@link Expedition} domain objects
@@ -51,17 +52,18 @@ public class ExpeditionRepository {
     }
 
     public Expedition findById(int id) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("expeditionId", id);
-        Expedition expedition = expeditionDao.findExpedition(params);
-
-        expedition.setBcid(
-                bcidRepository.findByExpeditionAndResourceType(
-                        expedition.getExpeditionId(), Expedition.EXPEDITION_RESOURCE_TYPE
-                ).iterator().next()
+        return find(
+                new MapSqlParameterSource()
+                    .addValue("expeditionId", id)
         );
+    }
 
-        return expedition;
+    public Expedition findByExpeditionCodeAndProjectId(String expeditionCode, int projectId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("expeditionCode", expeditionCode)
+                .addValue("projectId", projectId);
+
+        return find(params);
     }
 
     private Bcid createExpeditionBcid(Expedition expedition, URI webAddress) {
@@ -75,6 +77,18 @@ public class ExpeditionRepository {
 
         bcidRepository.save(expditionBcid);
         return expditionBcid;
+    }
+
+    private Expedition find(MapSqlParameterSource params) {
+        Expedition expedition = expeditionDao.findExpedition(params);
+
+        expedition.setBcid(
+                bcidRepository.findByExpeditionAndResourceType(
+                        expedition.getExpeditionId(), Expedition.EXPEDITION_RESOURCE_TYPE
+                ).iterator().next()
+        );
+
+        return expedition;
     }
 
     public static void main(String[] args) {

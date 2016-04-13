@@ -26,8 +26,8 @@ public class Expedition {
         private int projectId;
         // Optional
         private String expeditionTitle;
-
         private boolean isPublic = true;
+
         public ExpeditionBuilder(String expeditionCode, int userId, int projectId) {
             this.expeditionCode = expeditionCode;
             this.userId = userId;
