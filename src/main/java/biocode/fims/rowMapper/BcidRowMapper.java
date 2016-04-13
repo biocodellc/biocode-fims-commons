@@ -23,7 +23,6 @@ public class BcidRowMapper implements RowMapper<Bcid> {
                             .ezidMade(rs.getBoolean("ezidMade"))
                             .ezidRequest(rs.getBoolean("ezidRequest"))
                             .suffixPassThrough(rs.getBoolean("suffixPassThrough"))
-                            .internalId(UUID.fromString(rs.getString("internalId")))
                             .identifier(URI.create(rs.getString("identifier")))
                             .doi(rs.getString("doi"))
                             .title(rs.getString("title"))

@@ -1,6 +1,5 @@
 package biocode.fims.repository;
 
-import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.bcid.ManageEZID;
 import biocode.fims.dao.BcidDao;
 import biocode.fims.entities.Bcid;
@@ -10,16 +9,10 @@ import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.jdbc.core.SqlParameterValue;
-import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URI;
-import java.sql.Types;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,6 +54,20 @@ public class BcidRepository {
         Map<String, String> params = new HashMap<>();
         params.put("identifier", identifier);
         return bcidDao.findBcid(params);
+    }
+
+    /**
+     * @param expeditionId the {@link biocode.fims.entities.Expedition} the bcids are associated with
+     * @param resourceType the resourceType of the Bcids to find
+     * @return the {@link Bcid} Collection associated with the provided {@link biocode.fims.entities.Expedition}, containing
+     * the provided resourceType
+     */
+    public Collection<Bcid> findByExpeditionAndResourceType(int expeditionId, String resourceType) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("expeditionId", expeditionId)
+                .addValue("resourceType", resourceType);
+
+        return bcidDao.findBcidsAssociatedWithExpedition(params);
     }
 
     private void createEzid(Bcid bcid) {

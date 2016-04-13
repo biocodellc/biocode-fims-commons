@@ -2,9 +2,11 @@ package biocode.fims.dao;
 
 import biocode.fims.bcid.BcidEncoder;
 import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.rowMapper.BcidRowMapper;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -14,6 +16,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -33,16 +37,16 @@ public class BcidDao {
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 
         this.insertBcid = new SimpleJdbcInsert(dataSource)
-                .withTableName("bcid")
+                .withTableName("bcids")
                 .usingGeneratedKeyColumns("bcidId");
 
     }
 
     public void update(Bcid bcid) {
         String updateTemplate = "UPDATE bcids SET ezidMade=:ezidMade, ezidRequest=:ezidRequest, " +
-                "suffixPassThrough=:suffixPassThrough, userId=:userId, doi=:doi, title=:title, " +
-                "webAddress=:webAddress, resourceType=:resourceType, ts=:ts, graph=:graph, " +
-                "finalCopy=:finalCopy WHERE bcidId=:bcidId";
+                "suffixPassThrough=:suffixPassThrough, identifier=:identifier, userId=:userId, " +
+                "doi=:doi, title=:title, webAddress=:webAddress, resourceType=:resourceType, " +
+                "ts=:ts, graph=:graph, finalCopy=:finalCopy WHERE bcidId=:bcidId";
 
         this.namedParameterJdbcTemplate.update(
                 updateTemplate,
@@ -51,8 +55,8 @@ public class BcidDao {
 
     public void create(Bcid bcid, int naan) {
 
-        int bcidId = (int) this.insertBcid.executeAndReturnKey(
-                createBcidParameterSource(bcid));
+        int bcidId = this.insertBcid.executeAndReturnKey(
+                createBcidParameterSource(bcid)).intValue();
 
         bcid.setBcidId(bcidId);
 
@@ -77,7 +81,7 @@ public class BcidDao {
         int cnt = 0;
         for (String key: params.keySet()) {
             if (cnt > 0)
-                selectStringBuilder.append(", ");
+                selectStringBuilder.append(" and ");
 
             // add BINARY to make identifier case sensitive
             if (key.equals("identifier"))
@@ -91,6 +95,36 @@ public class BcidDao {
         }
 
         return this.namedParameterJdbcTemplate.queryForObject(
+                selectStringBuilder.toString(),
+                params,
+                new BcidRowMapper()
+        );
+    }
+
+    /**
+     * Fetch the Bcids associated with the expeditionId provided {@link MapSqlParameterSource} params.
+     * @param params the query params used to find the {@link Bcid}'s. expects expeditionId to be in the params map
+     * @return
+     */
+    public Collection<Bcid> findBcidsAssociatedWithExpedition(MapSqlParameterSource params) {
+        StringBuilder selectStringBuilder = new StringBuilder(
+                "SELECT bcids.bcidId, ezidMade, ezidRequest, suffixPassThrough, internalId, identifier, userId, doi, title," +
+                        "webAddress, resourceType, ts, graph, finalCopy FROM bcids, expeditionBcids WHERE " +
+                        "bcids.bcidId = expeditionBcids.bcidId and ");
+
+        int cnt = 0;
+        for (String key: params.getValues().keySet()) {
+            if (cnt > 0)
+                selectStringBuilder.append(" and ");
+
+            selectStringBuilder.append(key);
+            selectStringBuilder.append("=:");
+            selectStringBuilder.append(key);
+
+            cnt++;
+        }
+
+        return this.namedParameterJdbcTemplate.query(
                 selectStringBuilder.toString(),
                 params,
                 new BcidRowMapper()
@@ -116,6 +150,7 @@ public class BcidDao {
                 .addValue("ezidMade", bcid.isEzidMade())
                 .addValue("ezidRequest", bcid.isEzidRequest())
                 .addValue("suffixPassThrough", bcid.isSuffixPassThrough())
+                .addValue("identifier", bcid.getIdentifier(), Types.VARCHAR)
                 .addValue("userId", bcid.getUserId())
                 .addValue("doi", bcid.getDoi())
                 .addValue("title", bcid.getTitle())

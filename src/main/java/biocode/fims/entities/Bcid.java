@@ -14,7 +14,6 @@ public class Bcid {
     private boolean ezidMade;
     private boolean ezidRequest;
     private boolean suffixPassThrough;
-    private UUID internalId;
     private URI identifier;
     private int userId;
     private String doi;
@@ -37,7 +36,6 @@ public class Bcid {
 
         private boolean ezidRequest = true;
         private boolean suffixPassThrough = false;
-        private UUID internalId = UUID.randomUUID();
         private URI identifier;
         private String doi;
         private String title;
@@ -62,11 +60,6 @@ public class Bcid {
 
         public BcidBuilder suffixPassThrough(boolean val) {
             suffixPassThrough = val;
-            return this;
-        }
-
-        public BcidBuilder internalId(UUID val) {
-            internalId = val;
             return this;
         }
 
@@ -118,7 +111,6 @@ public class Bcid {
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
         suffixPassThrough = builder.suffixPassThrough;
-        internalId = builder.internalId;
         identifier = builder.identifier;
         doi = builder.doi;
         title = builder.title;
@@ -131,8 +123,14 @@ public class Bcid {
         return (this.bcidId == null);
     }
 
+    /**
+     * This will only set the bcidId if the current bcidId is null. This method is only to be used when
+     * fetching a Bcid from the db
+     * @param bcidId
+     */
     public void setBcidId(Integer bcidId) {
-        this.bcidId = bcidId;
+        if (this.bcidId == null)
+            this.bcidId = bcidId;
     }
 
     public void setEzidMade(boolean ezidMade) {
@@ -149,7 +147,7 @@ public class Bcid {
      * @param identifier
      */
     public void setIdentifier(URI identifier) {
-        if (identifier == null)
+        if (this.identifier == null)
             this.identifier = identifier;
     }
 
@@ -189,10 +187,6 @@ public class Bcid {
 
     public boolean isSuffixPassThrough() {
         return suffixPassThrough;
-    }
-
-    public UUID getInternalId() {
-        return internalId;
     }
 
     public URI getIdentifier() {
@@ -238,7 +232,6 @@ public class Bcid {
                 ", ezidMade=" + ezidMade +
                 ", ezidRequest=" + ezidRequest +
                 ", suffixPassThrough=" + suffixPassThrough +
-                ", internalId=" + internalId +
                 ", identifier=" + identifier +
                 ", userId=" + userId +
                 ", doi='" + doi + '\'' +
