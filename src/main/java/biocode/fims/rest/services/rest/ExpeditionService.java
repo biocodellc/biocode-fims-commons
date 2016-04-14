@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 
 /**
@@ -108,11 +109,11 @@ public class ExpeditionService extends FimsService {
         }
 
         Resolver r = new Resolver(expeditionCode, projectId, resourceAlias);
-        String response = r.getIdentifier();
-        if (response == null) {
+        URI identifier = r.getBcid().getIdentifier();
+        if (identifier == null) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();
         } else {
-            return Response.ok("{\"identifier\": \"" + response + "\"}").build();
+            return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
         }
     }
 

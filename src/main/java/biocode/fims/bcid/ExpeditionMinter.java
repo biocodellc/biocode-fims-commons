@@ -99,14 +99,14 @@ public class ExpeditionMinter {
      * Attach an individual URI reference to a expedition
      *
      * @param expeditionCode
-     * @param bcid
+     * @param identifier
      */
-    public void attachReferenceToExpedition(String expeditionCode, String bcid, Integer projectId) {
+    public void attachReferenceToExpedition(String expeditionCode, String identifier, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
-        Resolver r = new Resolver(bcid);
-        Integer bcidId = r.getBcidId();
+        Resolver r = new Resolver(identifier);
+        biocode.fims.entities.Bcid bcid = r.getBcid();
 
-        attachReferenceToExpedition(expeditionId, bcidId);
+        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
 
     private void attachReferenceToExpedition(Integer expeditionId, Integer bcidId) {
@@ -137,9 +137,9 @@ public class ExpeditionMinter {
      */
     public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
         Resolver r = new Resolver(identifier);
-        Integer bcidId = r.getBcidId();
+        biocode.fims.entities.Bcid bcid = r.getBcid();
 
-        attachReferenceToExpedition(expeditionId, bcidId);
+        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
 
     /**

@@ -1,5 +1,6 @@
 package biocode.fims.repository;
 
+import biocode.fims.bcid.Resolver;
 import biocode.fims.dao.ExpeditionDao;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
@@ -103,15 +104,18 @@ public class ExpeditionRepository {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         ExpeditionRepository expeditionRepository = applicationContext.getBean(ExpeditionRepository.class);
 //        BcidRepository bcidRepository = applicationContext.getBean(BcidRepository.class);
+        Resolver resolver = new Resolver("ark:/21547/R2");
+//        Resolver resolver = applicationContext.getBean(Resolver.class);
+        System.out.println(resolver.getBcid());
 
-        Expedition expedition = new Expedition.ExpeditionBuilder("DEMOHIT", 8, 1).build();
-        System.out.println(expedition);
+//        Expedition expedition = new Expedition.ExpeditionBuilder("DEMOHIT", 8, 1).build();
+//        System.out.println(expedition);
 //
-        expeditionRepository.create(expedition, null);
-        System.out.println(expedition);
-
-        System.out.println("Finding expedition");
-        System.out.println(expeditionRepository.findById(expedition.getExpeditionId()));
+//        expeditionRepository.create(expedition, null);
+//        System.out.println(expedition);
+//
+//        System.out.println("Finding expedition");
+//        System.out.println(expeditionRepository.findById(expedition.getExpeditionId()));
 //        System.out.println(expeditionRepository.findById(310));
 
     }

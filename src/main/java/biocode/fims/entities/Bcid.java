@@ -1,6 +1,8 @@
 package biocode.fims.entities;
 
 import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.repository.ExpeditionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -23,6 +25,11 @@ public class Bcid {
     private boolean finalCopy;
 
     //TODO add User object
+
+    @Autowired
+    private ExpeditionRepository expeditionRepository;
+    private Expedition expedition = null;
+    private boolean attemptedToFetchExpedition = false;
 
     public static class BcidBuilder {
 
@@ -97,6 +104,7 @@ public class Bcid {
         }
 
     }
+
     private Bcid(BcidBuilder builder) {
         resourceType = builder.resourceType;
         userId = builder.userId;
@@ -108,6 +116,20 @@ public class Bcid {
         webAddress = builder.webAddress;
         graph = builder.graph;
         finalCopy = builder.finalCopy;
+    }
+
+    /**
+     * Get the {@link Expedition} this {@link Bcid} belongs to. Null if this {@link Bcid} doesn't
+     * belong to an {@link Expedition}
+     * @return
+     */
+    public Expedition getExpedition() {
+        if (!attemptedToFetchExpedition && expedition == null) {
+            expedition = expeditionRepository.findByBcid(this);
+            attemptedToFetchExpedition = true;
+        }
+
+        return expedition;
     }
 
     public boolean isNew() {
@@ -223,6 +245,9 @@ public class Bcid {
                 ", ts=" + ts +
                 ", graph='" + graph + '\'' +
                 ", finalCopy=" + finalCopy +
+                ", expeditionRepository=" + expeditionRepository +
+                ", expedition=" + expedition +
+                ", attemptedToFetchExpedition=" + attemptedToFetchExpedition +
                 '}';
     }
 }
