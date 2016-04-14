@@ -70,6 +70,40 @@ public class ExpeditionDao {
         );
     }
 
+    /**
+     * Fetch the Expedition associated with the bcidId provided {@link MapSqlParameterSource} params.
+     * @param params the query params used to find the {@link Expedition}'s. expects bcidId to be in the params map
+     * @return
+     */
+    public Expedition findExpeditionByBcid(MapSqlParameterSource params) throws EmptyResultDataAccessException {
+         StringBuilder selectStringBuilder = new StringBuilder(
+                "SELECT expeditions.expeditionId, expeditionCode, expeditionTitle, expeditions.userId, ts, projectId, " +
+                        "public FROM expeditions, expeditionBcids WHERE expedition.expeditionId=expeditionBcids.expeditionId" +
+                        " and bcidId=:bcidId"
+         );
+
+        int cnt = 0;
+        for (String key: params.getValues().keySet()) {
+            if (!key.equals("bcidId")) {
+                if (cnt > 0)
+                    selectStringBuilder.append(" and ");
+
+                selectStringBuilder.append(key);
+                selectStringBuilder.append("=:");
+                selectStringBuilder.append(key);
+
+                cnt++;
+            }
+        }
+
+        return this.namedParameterJdbcTemplate.queryForObject(
+                selectStringBuilder.toString(),
+                params,
+                new ExpeditionRowMapper()
+        );
+
+    }
+
     public void attachBcid(Bcid bcid, Expedition expedition) {
         Map<String, Integer> params = new HashMap<>();
         params.put("bcidId", bcid.getBcidId());

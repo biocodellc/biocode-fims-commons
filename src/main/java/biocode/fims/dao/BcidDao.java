@@ -43,7 +43,7 @@ public class BcidDao {
 
     public void update(Bcid bcid) {
         String updateTemplate = "UPDATE bcids SET ezidMade=:ezidMade, ezidRequest=:ezidRequest, " +
-                "suffixPassThrough=:suffixPassThrough, identifier=:identifier, userId=:userId, " +
+                "identifier=:identifier, userId=:userId, " +
                 "doi=:doi, title=:title, webAddress=:webAddress, resourceType=:resourceType, " +
                 "ts=:ts, graph=:graph, finalCopy=:finalCopy WHERE bcidId=:bcidId";
 
@@ -72,13 +72,13 @@ public class BcidDao {
         update(bcid);
     }
 
-    public Bcid findBcid(Map<String, String> params) throws EmptyResultDataAccessException {
+    public Bcid findBcid(MapSqlParameterSource params) {
         StringBuilder selectStringBuilder = new StringBuilder(
-                "SELECT bcidId, ezidMade, ezidRequest, suffixPassThrough, internalId, identifier, userId, doi, title," +
+                "SELECT bcidId, ezidMade, ezidRequest, internalId, identifier, userId, doi, title," +
                         "webAddress, resourceType, ts, graph, finalCopy FROM bcids WHERE ");
 
         int cnt = 0;
-        for (String key: params.keySet()) {
+        for (String key: params.getValues().keySet()) {
             if (cnt > 0)
                 selectStringBuilder.append(" and ");
 
@@ -107,7 +107,7 @@ public class BcidDao {
      */
     public Collection<Bcid> findBcidsAssociatedWithExpedition(MapSqlParameterSource params) {
         StringBuilder selectStringBuilder = new StringBuilder(
-                "SELECT bcids.bcidId, ezidMade, ezidRequest, suffixPassThrough, internalId, identifier, userId, doi, title," +
+                "SELECT bcids.bcidId, ezidMade, ezidRequest, internalId, identifier, userId, doi, title," +
                         "webAddress, resourceType, ts, graph, finalCopy FROM bcids, expeditionBcids WHERE " +
                         "bcids.bcidId = expeditionBcids.bcidId and ");
 
@@ -154,7 +154,6 @@ public class BcidDao {
                 .addValue("bcidId", bcid.getBcidId())
                 .addValue("ezidMade", bcid.isEzidMade())
                 .addValue("ezidRequest", bcid.isEzidRequest())
-                .addValue("suffixPassThrough", bcid.isSuffixPassThrough())
                 .addValue("identifier", bcid.getIdentifier(), Types.VARCHAR)
                 .addValue("userId", bcid.getUserId())
                 .addValue("doi", bcid.getDoi())

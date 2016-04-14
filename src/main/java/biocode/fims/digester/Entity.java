@@ -14,6 +14,7 @@ public class Entity {
     private String conceptAlias;
     private String conceptURI;
     private String entityId;
+    private String conceptForwardingAddress;
 
     private final LinkedList<Attribute> attributes = new LinkedList<Attribute>();
 
@@ -71,13 +72,19 @@ public class Entity {
     }
 
     /**
-    /**
      * Get the table.column notation
-     *
      * @return
      */
     public String getColumn() {
         return worksheet + "." + worksheetUniqueKey;
+    }
+
+    public String getConceptForwardingAddress() {
+        return conceptForwardingAddress;
+    }
+
+    public void setConceptForwardingAddress(String conceptForwardingAddress) {
+        this.conceptForwardingAddress = conceptForwardingAddress;
     }
 
     /**

@@ -35,7 +35,6 @@ public class Bcid {
     protected Boolean ezidMade;
     protected Boolean ezidRequest;
     protected String ts;
-    protected Boolean suffixPassThrough = false;
     protected String doi;
     protected Integer bcidId;
     protected Boolean isPublic;
@@ -47,8 +46,6 @@ public class Bcid {
     }
 
     protected String graph;
-    protected Boolean forwardingResolution = false;
-    protected URI resolutionTarget;
 
     protected static String rights;
     protected static String resolverTargetPrefix;
@@ -77,10 +74,9 @@ public class Bcid {
     /**
      * constructor used for creating a new bcid
      */
-    public Bcid(Integer userId, String resourceType, String title, String webAddress, String graph, String doi, Boolean finalCopy, Boolean suffixPassThrough) {
+    public Bcid(Integer userId, String resourceType, String title, String webAddress, String graph, String doi, Boolean finalCopy) {
         this.userId = userId;
         this.resourceType = resourceType;
-        this.suffixPassThrough = suffixPassThrough;
         this.doi = doi;
         if (webAddress != null) {
             try {
@@ -95,139 +91,27 @@ public class Bcid {
     }
 
     /**
-     * Create data group
-     *
-     * @param bcidId
+     * temporary constructor while we switch to the new Bcid Entity
+     * @param bcid
      */
-    public Bcid(Integer bcidId) {
-        getBcid(bcidId);
+    public Bcid(biocode.fims.entities.Bcid bcid) {
+
+        bcidId = bcid.getBcidId();
+        identifier = bcid.getIdentifier();
+        ezidRequest = bcid.isEzidRequest();
+        ezidMade = bcid.isEzidMade();
+        doi = bcid.getDoi();
+        title = bcid.getTitle();
+        ts = bcid.getTs().toString();
+        // TODO this should be a first + last name of the User
+        who = BcidDatabase.getUserName(bcid.getUserId());
+        resourceType = bcid.getResourceType();
+        graph = bcid.getGraph();
+        webAddress = bcid.getWebAddress();
+
+        setIsPublic();
     }
 
-
-    /**
-     * Create an element given a source Bcid, and a resource type Bcid
-     *
-     * @param suffix
-     * @param bcidId
-     */
-    public Bcid(String suffix, Integer bcidId) {
-        this.suffix = suffix;
-        getBcid(bcidId);
-        BcidMinter bcidMinter = new BcidMinter();
-        try {
-            projectCode = bcidMinter.getProject(bcidId);
-        } catch (Exception e) {
-            System.out.println("project code has not been set");
-            projectCode = "Unassigned to a project";
-        }
-    }
-
-    /**
-     * Create an element given a source Bcid, web address for resolution, and a bcidId
-     * This method is meant for CREATING bcids.
-     *
-     * @param suffix
-     * @param webAddress
-     * @param bcidId
-     */
-    public Bcid(String suffix, URI webAddress, Integer bcidId) {
-        this.suffix = suffix;
-        getBcid(bcidId);
-        this.webAddress = webAddress;
-
-        // Reformat webAddress in this constructor if there is a suffix
-        if (suffix != null && webAddress != null && !suffix.toString().trim().equals("") && !webAddress.toString().trim().equals("")) {
-            //System.out.println("HERE" + webAddress);
-            try {
-                this.webAddress = new URI(webAddress + suffix);
-            } catch (URISyntaxException e) {
-                //TODO should we silence this exception?
-                logger.warn("URISyntaxException for uri: {}", webAddress + suffix, e);
-            }
-        }
-    }
-
-
-    /**
-     * Internal functional for fetching the Bcid given the bcidId
-     *
-     * @param pBcidId
-     */
-    private void getBcid(Integer pBcidId) {
-        Connection conn = BcidDatabase.getConnection();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        String sql = "SELECT " +
-                "b.identifier as identifier," +
-                "b.ezidRequest as ezidRequest," +
-                "b.ezidMade as ezidMade," +
-                "b.suffixPassthrough as suffixPassthrough," +
-                "b.doi as doi," +
-                "b.title as title," +
-                "b.ts as ts, " +
-                "CONCAT_WS(' ',u.firstName, u.lastName) as who, " +
-                "b.webAddress as webAddress," +
-                "b.graph as graph," +
-                "b.resourceType as resourceType" +
-                " FROM bcids b, users u " +
-                " WHERE b.bcidId = ?" +
-                " AND b.userId = u.userId ";
-
-        try {
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, pBcidId);
-
-            rs = stmt.executeQuery();
-            rs.next();
-
-            identifier = new URI(rs.getString("identifier"));
-            ezidRequest = rs.getBoolean("ezidRequest");
-            ezidMade = rs.getBoolean("ezidMade");
-            doi = rs.getString("doi");
-            title = rs.getString("title");
-            ts = rs.getString("ts");
-            who = rs.getString("who");
-            suffixPassThrough = rs.getBoolean("suffixPassthrough");
-            resourceType = rs.getString("resourceType");
-            graph = rs.getString("graph");
-
-            // set the prefix
-            if (suffixPassThrough && suffix != null && !suffix.equals("")) {
-                prefix = identifier;
-                identifier = new URI(prefix + sm.retrieveValue("divider") + suffix);
-            } else {
-                prefix = identifier;
-            }
-
-            String lWebAddress = rs.getString("webAddress");
-            if (lWebAddress != null && !lWebAddress.trim().equals("")) {
-                try {
-                    webAddress = new URI(lWebAddress);
-                } catch (URISyntaxException e) {
-                    logger.warn("URISyntaxException with uri: {} and bcidId: {}", rs.getString("webAddress"),
-                            this.bcidId, e);
-                }
-            }
-            // A resolution target is specified AND there is a suffix AND suffixPassThrough
-            if (webAddress != null && !webAddress.equals("") &&
-                    suffix != null && !suffix.trim().equals("") && suffixPassThrough) {
-                forwardingResolution = true;
-
-                // Set the resolution target
-                resolutionTarget = new URI(webAddress + suffix);
-            }
-
-            bcidId = pBcidId;
-            setIsPublic();
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException("Server Error","URISyntaxException from identifier: " + prefix +
-                    sm.retrieveValue("divider") + suffix + " from bcidId: " + bcidId, e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-    }
 
     /**
      * method to set the bcid isPublic variable. We can't do this with the getBcid query as it was returning null whne
@@ -261,8 +145,9 @@ public class Bcid {
         return webAddress;
     }
 
+    // TODO when refactoring this, if there is a suffix, we should add that
     public URI getMetadataTarget() throws URISyntaxException {
-        return new URI(resolverMetadataPrefix + getIdentifier());
+        return new URI(resolverMetadataPrefix + identifier);
     }
 
     private void put(String key, String val) {
@@ -279,18 +164,6 @@ public class Bcid {
         if (val != null) {
             map.put(key, val.toString());
         }
-    }
-
-    public Boolean getSuffixPassThrough() {
-        return suffixPassThrough;
-    }
-
-    /**
-     * method to return the identifier of the Bcid.
-     * @return
-     */
-    public URI getIdentifier() {
-        return identifier;
     }
 
     public Integer getBcidId() {
@@ -312,21 +185,14 @@ public class Bcid {
         put("suffix", suffix);
         put("doi", doi);
         put("ezidMade", ezidMade);
-        put("bcidsSuffixPassThrough", suffixPassThrough);
         put("ezidRequest", ezidRequest);
         put("prefix", prefix);
         put("ts", ts);
         put("rights", rights);
-        put("forwardingResolution", forwardingResolution);
         if (isPublic != null)
             put("isPublic", isPublic);
         else
             put("isPublic", "null");
-        if (resolutionTarget != null) {
-            put("resolutionTarget", resolutionTarget);
-        } else {
-            put("resolutionTarget", "");
-        }
         return map;
     }
 }

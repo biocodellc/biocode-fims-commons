@@ -1,6 +1,7 @@
 package biocode.fims.bcid.Renderer;
 
 import biocode.fims.bcid.*;
+import biocode.fims.entities.Bcid;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.validator.routines.UrlValidator;

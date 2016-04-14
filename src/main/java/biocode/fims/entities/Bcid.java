@@ -4,7 +4,6 @@ import biocode.fims.bcid.BcidDatabase;
 
 import java.net.URI;
 import java.sql.Timestamp;
-import java.util.UUID;
 
 /**
  * bcid entity object
@@ -13,7 +12,6 @@ public class Bcid {
     private Integer bcidId;
     private boolean ezidMade;
     private boolean ezidRequest;
-    private boolean suffixPassThrough;
     private URI identifier;
     private int userId;
     private String doi;
@@ -35,7 +33,6 @@ public class Bcid {
         private boolean ezidMade = false;
 
         private boolean ezidRequest = true;
-        private boolean suffixPassThrough = false;
         private URI identifier;
         private String doi;
         private String title;
@@ -55,11 +52,6 @@ public class Bcid {
 
         public BcidBuilder ezidRequest(boolean val) {
             ezidRequest = val;
-            return this;
-        }
-
-        public BcidBuilder suffixPassThrough(boolean val) {
-            suffixPassThrough = val;
             return this;
         }
 
@@ -110,7 +102,6 @@ public class Bcid {
         userId = builder.userId;
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
-        suffixPassThrough = builder.suffixPassThrough;
         identifier = builder.identifier;
         doi = builder.doi;
         title = builder.title;
@@ -135,10 +126,6 @@ public class Bcid {
 
     public void setEzidMade(boolean ezidMade) {
         this.ezidMade = ezidMade;
-    }
-
-    public void setSuffixPassThrough(boolean suffixPassThrough) {
-        this.suffixPassThrough = suffixPassThrough;
     }
 
     /**
@@ -185,10 +172,6 @@ public class Bcid {
         return ezidRequest;
     }
 
-    public boolean isSuffixPassThrough() {
-        return suffixPassThrough;
-    }
-
     public URI getIdentifier() {
         return identifier;
     }
@@ -231,7 +214,6 @@ public class Bcid {
                 "bcidId=" + bcidId +
                 ", ezidMade=" + ezidMade +
                 ", ezidRequest=" + ezidRequest +
-                ", suffixPassThrough=" + suffixPassThrough +
                 ", identifier=" + identifier +
                 ", userId=" + userId +
                 ", doi='" + doi + '\'' +

@@ -1,22 +1,34 @@
 package biocode.fims.rest.services.id;
 
+import biocode.fims.bcid.Bcid;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.bcid.Renderer.RDFRenderer;
 import biocode.fims.bcid.Resolver;
+import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Mapping;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
+import org.apache.commons.digester3.Digester;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 
 /**
  * This is the core Resolver Service for BCIDs.  It returns URIs
  */
 @Path("/")
-public class ResolverService extends FimsService{
+public class ResolverService extends FimsService {
 
     String scheme = "ark:";
+
+    @Autowired
+    ExpeditionRepository expeditionRepository;
 
     /**
      * User passes in an Bcid of the form scheme:/naan/shoulder_identifier
@@ -53,7 +65,22 @@ public class ResolverService extends FimsService{
             String response = new RDFRenderer(r.getBcid()).render();
             return Response.ok(response).build();
         } else {
-            return Response.seeOther(r.resolveIdentifier()).build();
+            Mapping mapping = null;
+
+            try {
+                Expedition expedition = expeditionRepository.findByBcid(r.getBcid());
+
+                File configFile = new ConfigurationFileFetcher(
+                        expedition.getProjectId(), uploadPath(), false
+                ).getOutputFile();
+
+                mapping = new Mapping();
+                mapping.addMappingRules(new Digester(), configFile);
+            } catch (EmptyResultDataAccessException e) {
+                // do nothing as not every Bcid is associated with an Expedition
+            }
+
+            return Response.seeOther(r.resolveIdentifier(mapping)).build();
         }
 
     }

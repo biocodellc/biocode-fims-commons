@@ -141,7 +141,7 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
         try {
             // Use auto increment in Database to assign the actual Bcid.. this is threadsafe this way
-            String insertString = "INSERT INTO bcids (userId, resourceType, doi, webAddress, graph, title, internalId, ezidRequest, suffixPassThrough, finalCopy) " +
+            String insertString = "INSERT INTO bcids (userId, resourceType, doi, webAddress, graph, title, internalId, ezidRequest, finalCopy) " +
                     "values (?,?,?,?,?,?,?,?,?,?)";
 
             insertStatement = conn.prepareStatement(insertString);
@@ -156,8 +156,7 @@ public class BcidMinter extends BcidEncoder {
             insertStatement.setString(6, bcid.title);
             insertStatement.setString(7, internalId.toString());
             insertStatement.setBoolean(8, ezidRequest);
-            insertStatement.setBoolean(9, bcid.suffixPassThrough);
-            insertStatement.setBoolean(10, bcid.finalCopy);
+            insertStatement.setBoolean(9, bcid.finalCopy);
             insertStatement.execute();
 
             // Get the bcidId that was assigned
@@ -367,7 +366,7 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "SELECT suffixPassThrough as suffix, doi, title, webAddress, resourceType " +
+            String sql = "SELECT doi, title, webAddress, resourceType " +
                     "FROM bcids WHERE BINARY identifier = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -375,7 +374,6 @@ public class BcidMinter extends BcidEncoder {
 
             rs = stmt.executeQuery();
             if (rs.next()) {
-                metadata.put("suffix", String.valueOf(rs.getBoolean("suffix")));
                 if (rs.getString("doi") != null) {
                     metadata.put("doi", rs.getString("doi"));
                 }

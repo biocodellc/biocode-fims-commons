@@ -11,6 +11,7 @@ public class Metadata {
     private String eml_location;
     private String target;
     private String queryTarget;
+    private String expeditionForwardingAddress;
     private String nmnh;
 
     private String textAbstract;
@@ -72,12 +73,25 @@ public class Metadata {
         this.textAbstract = textAbstract;
     }
 
-    public void print() {
-        FimsPrinter.out.println("\tMetadata");
-        FimsPrinter.out.println("\t\tdoi = " + doi);
-        FimsPrinter.out.println("\t\tshortName = " + shortname);
-        FimsPrinter.out.println("\t\teml_locaiton = " + eml_location);
-        FimsPrinter.out.println("\t\ttarget = " + target);
-        FimsPrinter.out.println("\t\ttextAbstract = " + textAbstract);
+    public String getExpeditionForwardingAddress() {
+        return expeditionForwardingAddress;
+    }
+
+    public void setExpeditionForwardingAddress(String expeditionForwardingAddress) {
+        this.expeditionForwardingAddress = expeditionForwardingAddress;
+    }
+
+    @Override
+    public String toString() {
+        return "Metadata{" +
+                "doi='" + doi + '\'' +
+                ", shortname='" + shortname + '\'' +
+                ", eml_location='" + eml_location + '\'' +
+                ", target='" + target + '\'' +
+                ", queryTarget='" + queryTarget + '\'' +
+                ", expeditionForwardingAddress='" + expeditionForwardingAddress + '\'' +
+                ", nmnh='" + nmnh + '\'' +
+                ", textAbstract='" + textAbstract + '\'' +
+                '}';
     }
 }

@@ -1,5 +1,7 @@
 package biocode.fims.bcid;
 
+import biocode.fims.entities.Bcid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,8 +86,9 @@ public class InputFileParser {
                 }
                 count++;
             }
+            bcid.setWebAddress(webAddress);
 
-            elementArrayList.add(new Bcid(suffix, webAddress, bcid.getBcidId()));
+            elementArrayList.add(bcid);
         }
     }
 

@@ -3,9 +3,11 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.repository.BcidRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import org.json.simple.JSONArray;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +20,9 @@ import java.util.Hashtable;
  */
 @Path("bcids")
 public class BcidService extends FimsService {
+    @Autowired
+    BcidRepository bcidRepository;
+
     /**
      * Create a data group
      *
@@ -37,7 +42,6 @@ public class BcidService extends FimsService {
                          @FormParam("title") String title,
                          @FormParam("resourceType") String resourceTypeString,
                          @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
-                         @FormParam("suffixPassThrough") @DefaultValue("false") Boolean suffixPassThrough,
                          @FormParam("finalCopy") @DefaultValue("false") Boolean finalCopy) {
 
         // If resourceType is specified by an integer, then use that to set the String resourceType.
@@ -55,9 +59,6 @@ public class BcidService extends FimsService {
             throw new BadRequestException("ResourceType is required");
         }
 
-        if (suffixPassThrough && (webAddress == null || webAddress.isEmpty())) {
-            throw new BadRequestException("You must provide a Target URL if following suffixes.");
-        }
 
         // Mint the Bcid
         BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
@@ -65,7 +66,7 @@ public class BcidService extends FimsService {
             title = resourceTypeString;
         }
         String identifier = bcidMinter.createEntityBcid(new Bcid(userId, resourceTypeString, title,
-                webAddress, graph, doi, finalCopy, suffixPassThrough));
+                webAddress, graph, doi, finalCopy));
 
         return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
     }
@@ -81,7 +82,7 @@ public class BcidService extends FimsService {
     @Path("/metadata/{bcidId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
-        Bcid bcid = new Bcid(bcidId);
+        biocode.fims.entities.Bcid bcid = bcidRepository.findById(bcidId);
         Resolver resolver = new Resolver(bcid.getIdentifier().toString());
         JSONRenderer renderer = new JSONRenderer(username, resolver, bcid);
 
@@ -112,7 +113,6 @@ public class BcidService extends FimsService {
      * @param title
      * @param resourceTypeString
      * @param resourceTypesMinusDataset
-     * @param stringSuffixPassThrough
      * @param identifier
      *
      * @return
@@ -127,7 +127,6 @@ public class BcidService extends FimsService {
                                @FormParam("title") String title,
                                @FormParam("resourceType") String resourceTypeString,
                                @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
-                               @FormParam("suffixPassThrough") String stringSuffixPassThrough,
                                @FormParam("identifier") String identifier) {
         Hashtable<String, String> metadata;
         Hashtable<String, String> update = new Hashtable<String, String>();
@@ -159,14 +158,6 @@ public class BcidService extends FimsService {
         }
         if (resourceTypeString != null && (!metadata.containsKey("resourceType") || !metadata.get("resourceType").equals(resourceTypeString))) {
             update.put("resourceTypeString", resourceTypeString);
-        }
-        if ((stringSuffixPassThrough != null && (stringSuffixPassThrough.equals("on") || stringSuffixPassThrough.equals("true")) && metadata.get("suffix").equals("false")) ||
-                (stringSuffixPassThrough == null && metadata.get("suffix").equals("true"))) {
-            if (stringSuffixPassThrough != null && (stringSuffixPassThrough.equals("on") || stringSuffixPassThrough.equals("true"))) {
-                update.put("suffixPassthrough", "true");
-            } else {
-                update.put("suffixPassthrough", "false");
-            }
         }
 
         if (update.isEmpty()) {

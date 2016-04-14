@@ -81,7 +81,7 @@ public class ExpeditionMinter {
             // upon successful expedition creation, create the expedition Bcid
             BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
             String identifier = bcidMinter.createEntityBcid(new Bcid(userId, "http://purl.org/dc/dcmitype/Collection",
-                    expeditionTitle, webAddress, null, null, false, false));
+                    expeditionTitle, webAddress, null, null, false));
 
             // Associate this Bcid with this expedition
             ExpeditionMinter expedition = new ExpeditionMinter();

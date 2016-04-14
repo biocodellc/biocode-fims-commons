@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Repository class for {@link Expedition} domain objects
@@ -62,6 +63,13 @@ public class ExpeditionRepository {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("expeditionCode", expeditionCode)
                 .addValue("projectId", projectId);
+
+        return find(params);
+    }
+
+    public Expedition findByBcid(Bcid bcid) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("bcidId", bcid.getBcidId());
 
         return find(params);
     }

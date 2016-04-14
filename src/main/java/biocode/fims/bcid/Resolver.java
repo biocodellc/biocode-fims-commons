@@ -1,19 +1,18 @@
 package biocode.fims.bcid;
 
-import biocode.fims.bcid.Renderer.JSONRenderer;
-import biocode.fims.bcid.Renderer.Renderer;
-import biocode.fims.ezid.EzidException;
-import biocode.fims.ezid.EzidService;
-import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.digester.Mapping;
+import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.repository.BcidRepository;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -27,51 +26,30 @@ import java.sql.SQLException;
  * then check if there is a suffix and if THAT is resolvable.
  */
 public class Resolver {
-    String identifier = null;
-    String naan = null;
-    String shoulder = null;     // The data group
-    String suffix = null;        // The local Bcid
-    BigInteger elementId = null;
-    Integer bcidId = null;
-    private Bcid bcid;
-    public boolean forwardingResolution = false;
-    static SettingsManager sm;
-
     final static Logger logger = LoggerFactory.getLogger(Resolver.class);
+    private final IdentifierIncludingSuffix identifierIncludingSuffix;
+
+    private biocode.fims.entities.Bcid bcid;
+
+
+    @Autowired
+    BcidRepository bcidRepository;
+    @Autowired
+    ExpeditionRepository expeditionRepository;
+    @Autowired
+    public SettingsManager settingsManager;
 
     /**
-     * Load settings manager, set ontModelSpec.
-     */
-    static {
-        // Initialize settings manager
-        sm = SettingsManager.getInstance();
-    }
-
-    private String project;
-
-    /**
-     * Pass an identifier to the Resolver
+     * Pass an identifierIncludingSuffix to the Resolver
      *
-     * @param identifier
+     * @param identifierIncludingSuffix
      */
-    public Resolver(String identifier) {
-        super();
+    public Resolver(String identifierIncludingSuffix) {
 
+        this.identifierIncludingSuffix = new IdentifierIncludingSuffix(identifierIncludingSuffix);
+        String identifier = this.identifierIncludingSuffix.getBcidIdentifier();
 
-        this.identifier = identifier;
-        // Pull off potential last piece of string which would represent the local Identifier
-        // The piece to decode is ark:/NAAN/bcidIdentifer (anything else after a last trailing "/" not decoded)
-        String bits[] = identifier.split("/", 3);
-        // just want the first chunk between the "/"'s
-        naan = bits[1];
-        // Now decipher the shoulder and suffix in the next bit
-        setShoulderAndSuffix(bits[2]);
-        // Call setBcid() to set bcidId
-        if (!setBcid()) {
-            throw new BadRequestException("Invalid identifier");
-        }
-
-        bcid = new Bcid(suffix, bcidId);
+        bcid = bcidRepository.findByIdentifier(identifier);
     }
 
     /**
@@ -83,46 +61,22 @@ public class Resolver {
      * @return returns the BCID for this expedition and conceptURI combination
      */
     public Resolver(String expeditionCode, Integer projectId, String conceptAlias) {
+        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectId(expeditionCode, projectId);
+
         ResourceTypes resourceTypes = new ResourceTypes();
         ResourceType rt = resourceTypes.getByShortName(conceptAlias);
         String uri = rt.uri;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String query = "select \n" +
-                    "b.identifier as identifier \n" +
-                    "from \n" +
-                    "bcids b, expeditionBcids eb, expeditions p \n" +
-                    "where \n" +
-                    "b.bcidId=eb.bcidId&& \n" +
-                    "eb.expeditionId=p.expeditionId && \n" +
-                    "p.expeditionCode= ? && \n" +
-                    "p.projectId = ? && \n" +
-                    "(b.resourceType=? || b.resourceType= ?)";
-            stmt = conn.prepareStatement(query);
 
-            stmt.setString(1, expeditionCode);
-            stmt.setInt(2, projectId);
-            stmt.setString(3, uri);
-            stmt.setString(4, conceptAlias);
+        this.bcid = bcidRepository.findByExpeditionAndResourceType(
+                expedition.getExpeditionId(),
+                conceptAlias, uri
+        ).iterator().next();
 
-
-            //System.out.println("Resolver query = " + query);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                this.identifier = rs.getString("identifier");
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
+        this.identifierIncludingSuffix = new IdentifierIncludingSuffix(this.bcid.getIdentifier().toString());
     }
 
-
     public String getIdentifier() {
-        return identifier;
+        return String.valueOf(bcid.getIdentifier());
     }
 
     /**
@@ -131,187 +85,53 @@ public class Resolver {
      * @return
      */
     public Integer getBcidId () {
-        return bcidId;
+        return bcid.getBcidId();
     }
 
     /**
-     * Return an Bcid representing a data element
-     *
-     * @return
-     */
-    public BigInteger getElementID() {
-        return elementId;
-    }
-
-    /**
-     * Set the shoulder and suffix variables for this identifier
-     *
-     * @param a
-     */
-    private void setShoulderAndSuffix (String a) {
-        boolean reachedShoulder = false;
-        StringBuilder sbShoulder = new StringBuilder();
-        StringBuilder sbSuffix = new StringBuilder();
-
-        for (int i = 0; i < a.length(); i++) {
-            char c = a.charAt(i);
-            if (!reachedShoulder)
-                sbShoulder.append(c);
-            else
-                sbSuffix.append(c);
-            if (Character.isDigit(c))
-                reachedShoulder = true;
-        }
-        shoulder = sbShoulder.toString();
-        suffix = sbSuffix.toString();
-
-        // String the slash between the shoulder and the suffix
-        if (!sm.retrieveValue("divider").equals("")) {
-            if (suffix.startsWith(sm.retrieveValue("divider"))) {
-                suffix = suffix.substring(1);
-            }
-        }
-    }
-
-    /**
-     * Determine if we should forward this identifier
-     * @return
-     */
-    public Boolean forwardBCID() {
-        if (bcid.forwardingResolution || (!bcid.suffixPassThrough && (bcid.webAddress != null && !bcid.webAddress.equals(""))
-                && (bcid.graph == null || bcid.graph.trim().equals(""))) ||
-                (!bcid.suffixPassThrough && (bcid.webAddress != null && !bcid.webAddress.equals("")) &&
-                        (bcid.graph != null && !bcid.graph.equals("")) &&
-                        Boolean.valueOf(sm.retrieveValue("forwardNonNullGraph", "false")))) {
-            return true;
-        }
-        return false;
-    }
-
-    public URI getResolutionTarget() {
-        if (bcid.forwardingResolution) {
-            return bcid.resolutionTarget;
-        } else {
-            return bcid.webAddress;
-        }
-    }
-
-    public URI getMetadataTarget() {
-        try {
-            return bcid.getMetadataTarget();
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException("Server Error", "Syntax exception thrown for metadataTargetPrefix: \"" +
-                    bcid.resolverMetadataPrefix + "\" and identifier: \"" + bcid.getIdentifier() + "\"", e);
-        }
-    }
-
-    /**
-     * Attempt to resolve a particular identifier.
+     * Attempt to resolve a particular identifierIncludingSuffix.
      *
      * @return URI content location URL
      */
-    public URI resolveIdentifier() {
-        URI resolution;
+    public URI resolveIdentifier(Mapping mapping) {
+        URI resolution = null;
+        String resolverMetadataPrefix = settingsManager.retrieveValue("resolverMetadataPrefix");
 
-        if (forwardBCID()) {
-            resolution = getResolutionTarget();
-        } else {
-            resolution = getMetadataTarget();
+        try {
+            if (bcid.getWebAddress() != null) {
+                resolution = new URI(bcid.getWebAddress() + identifierIncludingSuffix.suffix);
+            } else if (mapping != null) {
+                switch (bcid.getResourceType()) {
+                    case Expedition.EXPEDITION_RESOURCE_TYPE:
+                        // Try and get expeditionForwardingAddress in Mapping.metadata
+                        String expeditionForwardingAddress = mapping.getExpeditionForwardingAddress();
+
+                        if (expeditionForwardingAddress != null && !expeditionForwardingAddress.isEmpty())
+                            expeditionForwardingAddress.replace("{ark}", identifierIncludingSuffix.identifierIncludingSuffix);
+                            resolution = new URI(expeditionForwardingAddress);
+
+                        break;
+                    case ResourceTypes.DATASET_RESOURCE_TYPE:
+                        String conceptForwardingAddress = mapping.getConceptForwardingAddress();
+
+                        if (conceptForwardingAddress!= null && !conceptForwardingAddress.isEmpty())
+                            conceptForwardingAddress.replace("{ark}", identifierIncludingSuffix.identifierIncludingSuffix);
+                        resolution = new URI(conceptForwardingAddress);
+
+                        break;
+                }
+            }
+
+            // if resolution is still null, then resolve to the default metadata service
+            if (resolution == null) {
+                resolution = new URI(resolverMetadataPrefix + getIdentifier());
+            }
+        } catch(URISyntaxException e) {
+            throw new ServerErrorException("Server Error", "Syntax exception thrown for metadataTargetPrefix: \"" +
+                    resolverMetadataPrefix + "\" and bcid: \"" + bcid + "\"", e);
         }
 
         return resolution;
-    }
-
-    /**
-     * Resolve an EZID version of this identifier
-     *
-     * @param ezidService
-     *
-     * @return JSON string to send to interface
-     */
-    public String resolveEZID(EzidService ezidService, Renderer renderer) {
-        // First fetch from EZID, and populate a map
-        Ezid ezid = null;
-
-        try {
-            ezid = new Ezid(ezidService.getMetadata(identifier));
-        } catch (EzidException e) {
-            //TODO should we silence this exception?
-            logger.warn("URISyntaxException thrown", e);
-        }
-        renderer.setBcid(ezid);
-        return renderer.render();
-    }
-
-
-    /**
-     * Resolve identifiers through BCID AND EZID -- This method assumes JSONRenderer
-     *
-     * @param ezidService
-     *
-     * @return JSON string with information about BCID/EZID results
-     */
-    public String resolveAllAsJSON(EzidService ezidService) {
-        Timer t = new Timer();
-        Renderer renderer = new JSONRenderer(bcid);
-        StringBuilder sb = new StringBuilder();
-        sb.append("[\n");
-
-//        try {
-//            sb.append("  " + this.resolveIdentifier().toString());
-//        } catch (URISyntaxException e) {
-//            TODO should we silence this exception?
-//            logger.warn("URISyntaxException thrown", e);
-//        }
-        t.lap("resolveIdentifier");
-        sb.append("\n  ,\n");
-        sb.append("  " + this.resolveEZID(ezidService, renderer));
-        t.lap("resolveEZID");
-        sb.append("\n]");
-        return sb.toString();
-    }
-
-    /**
-     * Check if this is a Bcid and set the bcidId
-     *
-     * @return
-     */
-    private boolean setBcid() {
-        // Test Bcid is #1
-        if (shoulder.equals("fk4") && naan.equals("99999")) {
-            bcidId = 1;
-            return true;
-        }
-
-        // Decode a typical Bcid
-        bcidId = new BcidEncoder().decode(shoulder).intValue();
-
-        if (bcidId == null) {
-            return false;
-        } else {
-            // Now we need to figure out if this bcidId exists or not in the Database
-            String select = "SELECT count(*) as count FROM bcids where bcidId = ?";
-            PreparedStatement stmt = null;
-            ResultSet rs = null;
-            Connection conn = BcidDatabase.getConnection();
-            try {
-                stmt = conn.prepareStatement(select);
-                stmt.setInt(1, bcidId);
-                rs = stmt.executeQuery();
-                rs.next();
-                int count = rs.getInt("count");
-                if (count < 1) {
-                    bcidId = null;
-                    return false;
-                } else {
-                    return true;
-                }
-            } catch (SQLException e) {
-                throw new ServerErrorException(e);
-            } finally {
-                BcidDatabase.close(conn, stmt, rs);
-            }
-        }
     }
 
     /**
@@ -413,7 +233,7 @@ public class Resolver {
             System.out.println(r.resolveIdentifier());
                  */
             // EzidService service = new EzidService();
-            // service.login(sm.retrieveValue("eziduser"), sm.retrieveValue("ezidpass"));
+            // service.login(settingsManager.retrieveValue("eziduser"), settingsManager.retrieveValue("ezidpass"));
             //System.out.println(r.);
             //Renderer ren = new RDFRenderer();
             //System.out.println(r.printMetadata(ren));
@@ -458,14 +278,14 @@ public class Resolver {
                     "where b.bcidId = eb.bcidId and e.expeditionId=eb.`expeditionId` and b.bcidId = ?";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidId);
+            stmt.setInt(1, bcid.getBcidId());
             rs = stmt.executeQuery();
             rs.next();
             expeditionCode = rs.getString("expeditionCode");
 
         } catch (SQLException e) {
             // catch the exception and log it
-            logger.warn("Exception retrieving expeditionCode for bcid: " + bcidId, e);
+            logger.warn("Exception retrieving expeditionCode for bcid: " + bcid.getBcidId(), e);
         } finally {
             BcidDatabase.close(conn, stmt, rs);
         }
@@ -482,14 +302,14 @@ public class Resolver {
                     "where b.bcidId = eb.bcidId and b.bcidId = ?";
 
             stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, bcidId);
+            stmt.setInt(1, bcid.getBcidId());
             rs = stmt.executeQuery();
             rs.next();
             expeditionId = rs.getInt("eb.expeditionId");
 
         } catch (SQLException e) {
             // catch the exception and log it
-            logger.warn("Exception retrieving expeditionId for bcid: " + bcidId, e);
+            logger.warn("Exception retrieving expeditionId for bcid: " + bcid.getBcidId(), e);
         } finally {
             BcidDatabase.close(conn, stmt, rs);
         }
@@ -498,5 +318,69 @@ public class Resolver {
 
     public Bcid getBcid() {
         return bcid;
+    }
+
+    private class IdentifierIncludingSuffix {
+        private String naan;
+        private String shoulder;
+        private String suffix;
+        private String identifierIncludingSuffix;
+        private String divider;
+
+        public IdentifierIncludingSuffix(String identifierIncludingSuffix) {
+            this.identifierIncludingSuffix = identifierIncludingSuffix;
+            divider = settingsManager.retrieveValue("divider");
+
+            decode(identifierIncludingSuffix);
+        }
+
+        private void decode(String identifierIncludingSuffix) {
+            // Pull off potential last piece of string which would represent the local Identifier
+            // The piece to decode is ark:/NAAN/bcidIdentifer (anything else after a last trailing "/" not decoded)
+            String bits[] = identifierIncludingSuffix.split("/", 3);
+
+            // the naan is the first chunk between the "/"'s
+            naan = bits[1];
+            // Now decipher the shoulder and suffix in the next bit
+            setShoulderAndSuffix(bits[2]);
+        }
+
+        /**
+         * Set the shoulder and suffix variables for this identifierIncludingSuffix
+         *
+         * @param a
+         */
+        private void setShoulderAndSuffix (String a) {
+            boolean reachedShoulder = false;
+            StringBuilder sbShoulder = new StringBuilder();
+            StringBuilder sbSuffix = new StringBuilder();
+
+            for (int i = 0; i < a.length(); i++) {
+                char c = a.charAt(i);
+                if (!reachedShoulder)
+                    sbShoulder.append(c);
+                else
+                    sbSuffix.append(c);
+                if (Character.isDigit(c))
+                    reachedShoulder = true;
+            }
+            shoulder = sbShoulder.toString();
+            suffix = sbSuffix.toString();
+
+            // String the slash between the shoulder and the suffix
+            if (!divider.equals("")) {
+                if (suffix.startsWith(divider)) {
+                    suffix = suffix.substring(1);
+                }
+            }
+        }
+
+        /**
+         * get the {@link biocode.fims.entities.Bcid} identifier
+         * @return
+         */
+        public String getBcidIdentifier() {
+            return "ark:/" + naan + "/" + shoulder;
+        }
     }
 }

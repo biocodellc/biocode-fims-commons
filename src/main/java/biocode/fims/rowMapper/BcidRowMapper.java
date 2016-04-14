@@ -18,7 +18,6 @@ public class BcidRowMapper implements RowMapper<Bcid> {
                 new Bcid.BcidBuilder(rs.getInt("userId"), rs.getString("resourceType"))
                         .ezidMade(rs.getBoolean("ezidMade"))
                         .ezidRequest(rs.getBoolean("ezidRequest"))
-                        .suffixPassThrough(rs.getBoolean("suffixPassThrough"))
                         .identifier(URI.create(rs.getString("identifier")))
                         .doi(rs.getString("doi"))
                         .title(rs.getString("title"))

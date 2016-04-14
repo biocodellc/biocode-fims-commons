@@ -7,6 +7,7 @@ import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.settings.SettingsManager;
+import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,12 +53,22 @@ public class BcidRepository {
      * @return the {@link Bcid} with the provided identifier
      */
     public Bcid findByIdentifier(String identifier) {
-        Map<String, String> params = new HashMap<>();
-        params.put("identifier", identifier);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("identifier", identifier);
         try {
             return bcidDao.findBcid(params);
         } catch (EmptyResultDataAccessException e) {
             throw new BadRequestException("Invalid Identifier");
+        }
+    }
+
+    public Bcid findById(int id) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("bcidId", id);
+        try {
+            return bcidDao.findBcid(params);
+        } catch (EmptyResultDataAccessException e) {
+            throw new BadRequestException(String.format("Bcid with id: %d not found", id));
         }
     }
 
@@ -92,5 +103,4 @@ public class BcidRepository {
             logger.warn("EZID NOT CREATED FOR BCID = " + bcid.getIdentifier(), e);
         }
     }
-
 }
