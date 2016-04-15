@@ -1,33 +1,23 @@
 package biocode.fims.dao;
 
-import biocode.fims.bcid.BcidEncoder;
 import biocode.fims.entities.Bcid;
 import biocode.fims.rowMapper.BcidRowMapper;
-import biocode.fims.fimsExceptions.ServerErrorException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import javax.sql.DataSource;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  */
 public class BcidDao {
 
-    private String scheme = "ark:";
-
-    private BcidEncoder bcidEncoder = new BcidEncoder();
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private SimpleJdbcInsert insertBcid;
@@ -52,24 +42,13 @@ public class BcidDao {
                 createBcidParameterSource(bcid));
     }
 
-    public void create(Bcid bcid, int naan) {
+    public void create(Bcid bcid) {
 
-        int bcidId = this.insertBcid.executeAndReturnKey(
-                createBcidParameterSource(bcid)).intValue();
-
-        bcid.setBcidId(bcidId);
-
-        try {
-            // generate the identifier
-            bcid.setIdentifier(generateBcidIdentifier(bcidId, naan));
-
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException("Server Error", String.format(
-                    "SQLException while creating a bcid for user: %d, bcidId: %d", bcid.getUserId(), bcid.getBcidId()),
-                    e);
-        }
-
-        update(bcid);
+        bcid.setBcidId(
+                this.insertBcid.executeAndReturnKey(
+                        createBcidParameterSource(bcid)
+                ).intValue()
+        );
     }
 
     public Bcid findBcid(MapSqlParameterSource params) {
@@ -134,16 +113,6 @@ public class BcidDao {
                 params,
                 new BcidRowMapper()
         );
-    }
-
-    private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
-        String bow = scheme + "/" + naan+ "/";
-
-        // Create the shoulder Bcid (String Bcid Bcid)
-        String shoulder = bcidEncoder.encode(new BigInteger(String.valueOf(bcidId)));
-
-        // Create the identifier
-        return new URI(bow + shoulder);
     }
 
     /**

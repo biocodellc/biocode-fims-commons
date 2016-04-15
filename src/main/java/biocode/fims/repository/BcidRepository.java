@@ -1,21 +1,25 @@
 package biocode.fims.repository;
 
+import biocode.fims.bcid.BcidEncoder;
 import biocode.fims.bcid.ManageEZID;
 import biocode.fims.dao.BcidDao;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Array;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 /**
@@ -25,21 +29,30 @@ import java.util.*;
 public class BcidRepository {
     final static Logger logger = LoggerFactory.getLogger(BcidRepository.class);
 
-    private BcidDao bcidDao;
-    private SettingsManager settingsManager;
+    private String scheme = "ark:";
+    private BcidEncoder bcidEncoder = new BcidEncoder();
 
     @Autowired
-    public BcidRepository(BcidDao bcidDao, SettingsManager settingsManager) {
-        this.bcidDao = bcidDao;
-        this.settingsManager = settingsManager;
-    }
+    private BcidDao bcidDao;
+    @Autowired
+    private SettingsManager settingsManager;
 
-    //TODO get @Transactional working
-//    @Transactional
+    @Transactional
     public void save(Bcid bcid) {
         if (bcid.isNew()) {
             int naan = new Integer(settingsManager.retrieveValue("naan"));
-            bcidDao.create(bcid, naan);
+            bcidDao.create(bcid);
+
+            // generate the identifier
+            try {
+                bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), naan));
+            } catch (URISyntaxException e) {
+                throw new ServerErrorException("Server Error", String.format(
+                        "URISyntaxException while generating identifier for bcid: %s", bcid),
+                        e);
+            }
+            bcidDao.update(bcid);
+
             if (bcid.isEzidRequest())
                 createEzid(bcid);
         } else {
@@ -102,5 +115,15 @@ public class BcidRepository {
         } catch (EzidException e) {
             logger.warn("EZID NOT CREATED FOR BCID = " + bcid.getIdentifier(), e);
         }
+    }
+
+    private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
+        String bow = scheme + "/" + naan+ "/";
+
+        // Create the shoulder Bcid (String Bcid Bcid)
+        String shoulder = bcidEncoder.encode(new BigInteger(String.valueOf(bcidId)));
+
+        // Create the identifier
+        return new URI(bow + shoulder);
     }
 }
