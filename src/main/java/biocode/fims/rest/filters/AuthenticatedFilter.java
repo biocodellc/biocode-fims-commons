@@ -10,6 +10,7 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.util.List;
@@ -29,11 +30,23 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
         throws IOException {
         HttpSession session = webRequest.getSession();
         Object user = session.getAttribute("username");
+        String accessToken = null;
         List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
 
-        if (accessTokenList != null && !accessTokenList.isEmpty()) {
+        String authHeader = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (accessTokenList != null && !accessTokenList.isEmpty())
+            accessToken = (String) accessTokenList.get(0);
+
+        // If accessToken is null, check if the HTTP Authorization header is present and formatted correctly
+        if (accessToken == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            // Extract the token from the HTTP Authorization header
+            accessToken = authHeader.substring("Bearer".length()).trim();
+        }
+
+        if (accessToken != null) {
             OAuthProvider provider = new OAuthProvider();
-            if (provider.validateToken((String) accessTokenList.get(0)) == null) {
+            if (provider.validateToken(accessToken) == null) {
                 throw new UnauthorizedRequestException("You must be logged in to access this service",
                         "Invalid/Expired access_token");
             }
