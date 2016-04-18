@@ -5,7 +5,6 @@ import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.repository.BcidRepository;
-import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,18 +19,16 @@ import java.net.URISyntaxException;
 public class Resolver {
 
     private BcidRepository bcidRepository;
-    private ExpeditionRepository expeditionRepository;
     private SettingsManager settingsManager;
 
     @Autowired
-    public Resolver(BcidRepository bcidRepository, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
+    public Resolver(BcidRepository bcidRepository, SettingsManager settingsManager) {
         this.bcidRepository = bcidRepository;
-        this.expeditionRepository = expeditionRepository;
         this.settingsManager = settingsManager;
     }
 
     /**
-     * Attempt to resolve a particular identifierIncludingSuffix.
+     * Attempt to resolve a particular identifier
      *
      * @return URI content location URL
      */
