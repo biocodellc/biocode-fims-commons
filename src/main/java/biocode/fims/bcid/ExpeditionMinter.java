@@ -4,18 +4,21 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.repository.BcidRepository;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Mint new expeditions.  Includes the automatic creation of a core set of entity types
@@ -103,8 +106,8 @@ public class ExpeditionMinter {
      */
     public void attachReferenceToExpedition(String expeditionCode, String identifier, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
-        Resolver r = new Resolver(identifier);
-        biocode.fims.entities.Bcid bcid = r.getBcid();
+        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
+        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
 
         attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
@@ -136,8 +139,8 @@ public class ExpeditionMinter {
      * @param identifier
      */
     public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
-        Resolver r = new Resolver(identifier);
-        biocode.fims.entities.Bcid bcid = r.getBcid();
+        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
+        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
 
         attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }

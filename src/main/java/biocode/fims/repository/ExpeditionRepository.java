@@ -104,9 +104,6 @@ public class ExpeditionRepository {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         ExpeditionRepository expeditionRepository = applicationContext.getBean(ExpeditionRepository.class);
 //        BcidRepository bcidRepository = applicationContext.getBean(BcidRepository.class);
-        Resolver resolver = new Resolver("ark:/21547/R2");
-//        Resolver resolver = applicationContext.getBean(Resolver.class);
-        System.out.println(resolver.getBcid());
 
 //        Expedition expedition = new Expedition.ExpeditionBuilder("DEMOHIT", 8, 1).build();
 //        System.out.println(expedition);

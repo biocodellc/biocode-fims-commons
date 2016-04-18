@@ -8,6 +8,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +19,7 @@ import java.util.Hashtable;
  * REST interface calls for working with bcids.    This includes creating a bcid, looking up
  * bcids by user associated with them, and JSON representation of group metadata.
  */
+@Controller
 @Path("bcids")
 public class BcidRestService extends FimsService {
     @Autowired

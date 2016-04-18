@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 public class JSONRenderer extends Renderer {
     private JSONObject json;
     private Integer userId = null;
-    private Resolver resolver = null;
 
     @Autowired
     private SettingsManager settingsManager;
@@ -26,10 +25,9 @@ public class JSONRenderer extends Renderer {
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Resolver resolver, Bcid bcid) {
+    public JSONRenderer(String username, Bcid bcid) {
         super(bcid);
         userId = BcidDatabase.getUserId(username);
-        this.resolver = resolver;
     }
 
     public JSONRenderer(Bcid bcid) {

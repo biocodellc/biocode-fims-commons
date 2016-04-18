@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,14 +28,17 @@ import java.net.URLDecoder;
 /**
  * REST interface calls for working with expeditions.  This includes creating, updating and deleting expeditions.
  */
+@Controller
 @Path("expeditions")
 public class ExpeditionRestService extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
+    private ExpeditionService expeditionService;
+
     @Autowired
-    BcidRepository bcidRepository;
-    @Autowired
-    ExpeditionRepository expeditionRepository;
+    public ExpeditionRestService(ExpeditionService expeditionService) {
+        this.expeditionService = expeditionService;
+    }
 
     /**
      * Service for a user to mint a new expedition
@@ -114,17 +118,9 @@ public class ExpeditionRestService extends FimsService {
             logger.warn("UnsupportedEncodingException in ExpeditionRestService.fetchAlias method.", e);
         }
 
-        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectId(expeditionCode, projectId);
-
-        ResourceTypes resourceTypes = new ResourceTypes();
-        ResourceType rt = resourceTypes.getByShortName(resourceAlias);
-        String uri = rt.uri;
-
         try {
-            biocode.fims.entities.Bcid bcid = bcidRepository.findByExpeditionAndResourceType(
-                    expedition.getExpeditionId(),
-                    resourceAlias, uri
-            ).iterator().next();
+            biocode.fims.entities.Bcid bcid = expeditionService.getRootBcid(expeditionCode, projectId, resourceAlias);
+
             return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
 
         } catch (EmptyResultDataAccessException e) {
