@@ -3,14 +3,11 @@ package biocode.fims.bcid;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.repository.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.powermock.api.mockito.PowerMockito;
@@ -57,6 +54,38 @@ public class ResolverTest {
         PowerMockito.mockStatic(BcidDatabase.class);
         PowerMockito.when(BcidDatabase.getUserName(8)).thenReturn("demo");
         Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(8, "Resource").build();
+
+        bcid.setIdentifier(new URI(IDENTIFIER));
+        Mockito.when(bcidRepository.findByIdentifier(IDENTIFIER)).thenReturn(bcid);
+
+        URI location = resolver.resolveIdentifier(IDENTIFIER, null);
+
+        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
+    }
+
+    @Test
+    public void should_return_resolverMetadataPrefix_plus_identifier_with_null_webAddress() throws Exception {
+        PowerMockito.mockStatic(BcidDatabase.class);
+        PowerMockito.when(BcidDatabase.getUserName(8)).thenReturn("demo");
+        Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(8, "Resource")
+                .webAddress(null)
+                .build();
+
+        bcid.setIdentifier(new URI(IDENTIFIER));
+        Mockito.when(bcidRepository.findByIdentifier(IDENTIFIER)).thenReturn(bcid);
+
+        URI location = resolver.resolveIdentifier(IDENTIFIER, null);
+
+        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
+    }
+
+    @Test
+    public void should_return_resolverMetadataPrefix_plus_identifier_with_empty_webAddress() throws Exception {
+        PowerMockito.mockStatic(BcidDatabase.class);
+        PowerMockito.when(BcidDatabase.getUserName(8)).thenReturn("demo");
+        Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(8, "Resource")
+                .webAddress(new URI(""))
+                .build();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidRepository.findByIdentifier(IDENTIFIER)).thenReturn(bcid);

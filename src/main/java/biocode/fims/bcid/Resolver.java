@@ -41,7 +41,7 @@ public class Resolver {
         Bcid bcid = bcidRepository.findByIdentifier(identifier.getBcidIdentifier());
 
         try {
-            if (bcid.getWebAddress() != null) {
+            if (bcid.getWebAddress() != null && !String.valueOf(bcid.getWebAddress()).isEmpty()) {
                 resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
             } else if (mapping != null) {
                 switch (bcid.getResourceType()) {

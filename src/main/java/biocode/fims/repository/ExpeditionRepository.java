@@ -72,7 +72,10 @@ public class ExpeditionRepository {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("bcidId", bcid.getBcidId());
 
-        return find(params);
+        Expedition expedition = expeditionDao.findExpeditionByBcid(params);
+        expedition.setBcid(bcid);
+
+        return expedition;
     }
 
     private Bcid createExpeditionBcid(Expedition expedition, URI webAddress) {

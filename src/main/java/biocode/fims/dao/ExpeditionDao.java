@@ -78,7 +78,7 @@ public class ExpeditionDao {
     public Expedition findExpeditionByBcid(MapSqlParameterSource params) throws EmptyResultDataAccessException {
          StringBuilder selectStringBuilder = new StringBuilder(
                 "SELECT expeditions.expeditionId, expeditionCode, expeditionTitle, expeditions.userId, ts, projectId, " +
-                        "public FROM expeditions, expeditionBcids WHERE expedition.expeditionId=expeditionBcids.expeditionId" +
+                        "public FROM expeditions, expeditionBcids WHERE expeditions.expeditionId=expeditionBcids.expeditionId" +
                         " and bcidId=:bcidId"
          );
 
