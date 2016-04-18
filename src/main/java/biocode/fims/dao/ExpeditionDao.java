@@ -54,7 +54,7 @@ public class ExpeditionDao {
         int cnt = 0;
         for (String key: params.getValues().keySet()) {
             if (cnt > 0)
-                selectStringBuilder.append(", ");
+                selectStringBuilder.append(" and ");
 
             selectStringBuilder.append(key);
             selectStringBuilder.append("=:");
