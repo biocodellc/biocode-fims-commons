@@ -56,6 +56,8 @@ public class Resolver {
                         }
                         break;
                     case ResourceTypes.DATASET_RESOURCE_TYPE:
+                        break;
+                    default:
                         String conceptForwardingAddress = mapping.getConceptForwardingAddress();
 
                         if (conceptForwardingAddress!= null && !conceptForwardingAddress.isEmpty()) {
