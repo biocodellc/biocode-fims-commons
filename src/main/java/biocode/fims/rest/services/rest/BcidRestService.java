@@ -19,7 +19,7 @@ import java.util.Hashtable;
  * bcids by user associated with them, and JSON representation of group metadata.
  */
 @Path("bcids")
-public class BcidService extends FimsService {
+public class BcidRestService extends FimsService {
     @Autowired
     BcidRepository bcidRepository;
 
@@ -83,8 +83,8 @@ public class BcidService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
         biocode.fims.entities.Bcid bcid = bcidRepository.findById(bcidId);
-        Resolver resolver = new Resolver(bcid.getIdentifier().toString());
-        JSONRenderer renderer = new JSONRenderer(username, resolver, bcid);
+
+        JSONRenderer renderer = new JSONRenderer(username, bcid);
 
         return Response.ok(renderer.render()).build();
     }
