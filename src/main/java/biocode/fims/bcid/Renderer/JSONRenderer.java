@@ -4,10 +4,10 @@ import biocode.fims.bcid.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Field;
 
@@ -18,20 +18,18 @@ public class JSONRenderer extends Renderer {
     private JSONObject json;
     private Integer userId = null;
 
-    @Autowired
     private SettingsManager settingsManager;
+    private ExpeditionRepository expeditionRepository;
 
     /**
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Bcid bcid) {
+    public JSONRenderer(String username, Bcid bcid, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
         super(bcid);
         userId = BcidDatabase.getUserId(username);
-    }
-
-    public JSONRenderer(Bcid bcid) {
-        super(bcid);
+        this.expeditionRepository = expeditionRepository;
+        this.settingsManager = settingsManager;
     }
 
     public void enter() {
@@ -105,7 +103,7 @@ public class JSONRenderer extends Renderer {
 
     private void appendExpeditionDatasets() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        Expedition expedition = bcid.getExpedition();
+        Expedition expedition = expeditionRepository.findByBcid(bcid);
         if (displayDatasets(expedition)) {
             JSONObject datasets = new JSONObject();
             datasets.put("datasets", expeditionMinter.getDatasets(expedition.getExpeditionId()));
@@ -115,7 +113,7 @@ public class JSONRenderer extends Renderer {
     }
 
     private void appendDataset() {
-        Expedition expedition = bcid.getExpedition();
+        Expedition expedition = expeditionRepository.findByBcid(bcid);
         if (displayDatasets(expedition) && bcid.getGraph() != null) {
             JSONObject download = new JSONObject();
             String appRoot = settingsManager.retrieveValue("appRoot");

@@ -1,6 +1,5 @@
 package biocode.fims.repository;
 
-import biocode.fims.bcid.Resolver;
 import biocode.fims.dao.ExpeditionDao;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
@@ -10,12 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Repository class for {@link Expedition} domain objects
@@ -69,12 +67,19 @@ public class ExpeditionRepository {
     }
 
     public Expedition findByBcid(Bcid bcid) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("bcidId", bcid.getBcidId());
+        Expedition expedition = null;
+        if (!bcid.hasAttemptedToFetchExpedition()) {
+            try {
+                MapSqlParameterSource params = new MapSqlParameterSource()
+                        .addValue("bcidId", bcid.getBcidId());
 
-        Expedition expedition = expeditionDao.findExpeditionByBcid(params);
-        expedition.setBcid(bcid);
-
+                expedition = expeditionDao.findExpeditionByBcid(params);
+                expedition.setBcid(bcid);
+                bcid.setAttemptedToFetchExpedition(true);
+            } catch (EmptyResultDataAccessException e) {
+                // do nothing as not all Bcids belong to an Expedition
+            }
+        }
         return expedition;
     }
 

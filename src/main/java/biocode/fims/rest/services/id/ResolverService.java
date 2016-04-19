@@ -28,14 +28,19 @@ import java.io.File;
 @Path("/")
 public class ResolverService extends FimsService {
 
+    private ExpeditionRepository expeditionRepository;
+    private BcidRepository bcidRepository;
+    private SettingsManager settingsManager;
+    private Resolver resolver;
+
     @Autowired
-    ExpeditionRepository expeditionRepository;
-    @Autowired
-    BcidRepository bcidRepository;
-    @Autowired
-    SettingsManager settingsManager;
-    @Autowired
-    Resolver resolver;
+    ResolverService(ExpeditionRepository expeditionRepository, BcidRepository bcidRepository,
+                    SettingsManager settingsManager, Resolver resolver) {
+        this.expeditionRepository = expeditionRepository;
+        this.bcidRepository = bcidRepository;
+        this.settingsManager = settingsManager;
+        this.resolver = resolver;
+    }
 
     /**
      * User passes in an identifier of the form scheme:/naan/shoulder_suffix
@@ -67,17 +72,15 @@ public class ResolverService extends FimsService {
         } else {
             Mapping mapping = null;
 
-            try {
                 Expedition expedition = expeditionRepository.findByBcid(bcid);
 
+            if (expedition != null) {
                 File configFile = new ConfigurationFileFetcher(
                         expedition.getProjectId(), uploadPath(), false
                 ).getOutputFile();
 
                 mapping = new Mapping();
                 mapping.addMappingRules(new Digester(), configFile);
-            } catch (EmptyResultDataAccessException e) {
-                // do nothing as not every Bcid is associated with an Expedition
             }
 
             return Response.seeOther(resolver.resolveIdentifier(identifierString, mapping)).build();
@@ -99,7 +102,7 @@ public class ResolverService extends FimsService {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid);
+        JSONRenderer renderer = new JSONRenderer(username, bcid, expeditionRepository, settingsManager);
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }

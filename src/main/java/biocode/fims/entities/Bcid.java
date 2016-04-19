@@ -26,9 +26,6 @@ public class Bcid {
 
     //TODO add User object
 
-    @Autowired
-    private ExpeditionRepository expeditionRepository;
-    private Expedition expedition = null;
     private boolean attemptedToFetchExpedition = false;
 
     public static class BcidBuilder {
@@ -116,20 +113,6 @@ public class Bcid {
         webAddress = builder.webAddress;
         graph = builder.graph;
         finalCopy = builder.finalCopy;
-    }
-
-    /**
-     * Get the {@link Expedition} this {@link Bcid} belongs to. Null if this {@link Bcid} doesn't
-     * belong to an {@link Expedition}
-     * @return
-     */
-    public Expedition getExpedition() {
-        if (!attemptedToFetchExpedition && expedition == null) {
-            expedition = expeditionRepository.findByBcid(this);
-            attemptedToFetchExpedition = true;
-        }
-
-        return expedition;
     }
 
     public boolean isNew() {
@@ -230,6 +213,14 @@ public class Bcid {
         return finalCopy;
     }
 
+    public boolean hasAttemptedToFetchExpedition() {
+        return attemptedToFetchExpedition;
+    }
+
+    public void setAttemptedToFetchExpedition(boolean attemptedToFetchExpedition) {
+        this.attemptedToFetchExpedition = attemptedToFetchExpedition;
+    }
+
     @Override
     public String toString() {
         return "Bcid{" +
@@ -245,8 +236,6 @@ public class Bcid {
                 ", ts=" + ts +
                 ", graph='" + graph + '\'' +
                 ", finalCopy=" + finalCopy +
-                ", expeditionRepository=" + expeditionRepository +
-                ", expedition=" + expedition +
                 ", attemptedToFetchExpedition=" + attemptedToFetchExpedition +
                 '}';
     }

@@ -4,8 +4,10 @@ import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.repository.BcidRepository;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,8 +24,17 @@ import java.util.Hashtable;
 @Controller
 @Path("bcids")
 public class BcidRestService extends FimsService {
-    @Autowired
+
     BcidRepository bcidRepository;
+    ExpeditionRepository expeditionRepository;
+    SettingsManager settingsManager;
+
+    @Autowired
+    BcidRestService(BcidRepository bcidRepository, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
+        this.bcidRepository = bcidRepository;
+        this.expeditionRepository = expeditionRepository;
+        this.settingsManager = settingsManager;
+    }
 
     /**
      * Create a data group
@@ -86,7 +97,7 @@ public class BcidRestService extends FimsService {
     public Response run(@PathParam("bcidId") Integer bcidId) {
         biocode.fims.entities.Bcid bcid = bcidRepository.findById(bcidId);
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid);
+        JSONRenderer renderer = new JSONRenderer(username, bcid, expeditionRepository, settingsManager);
 
         return Response.ok(renderer.render()).build();
     }
