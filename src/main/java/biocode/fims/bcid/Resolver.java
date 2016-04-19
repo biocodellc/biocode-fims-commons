@@ -7,6 +7,7 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.repository.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,35 +41,45 @@ public class Resolver {
         Identifier identifier = new Identifier(identifierString, divider);
         Bcid bcid = bcidRepository.findByIdentifier(identifier.getBcidIdentifier());
 
+        boolean hasWebAddress = (bcid.getWebAddress() != null && !String.valueOf(bcid.getWebAddress()).isEmpty());
+
         try {
-            if (bcid.getWebAddress() != null && !String.valueOf(bcid.getWebAddress()).isEmpty()) {
-                resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
-            } else if (mapping != null) {
-                switch (bcid.getResourceType()) {
-                    case Expedition.EXPEDITION_RESOURCE_TYPE:
+            switch (bcid.getResourceType()) {
+                case Expedition.EXPEDITION_RESOURCE_TYPE:
+                    if (hasWebAddress)
+                        resolution = new URI(bcid.getWebAddress() + String.valueOf(bcid.getIdentifier()));
+                    else {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
                         String expeditionForwardingAddress = mapping.getExpeditionForwardingAddress();
 
                         if (expeditionForwardingAddress != null && !expeditionForwardingAddress.isEmpty()) {
-                            expeditionForwardingAddress.replace("{ark}", identifier.getIdentifier());
-                            resolution = new URI(expeditionForwardingAddress);
-
+                            String appendedExpeditionForwardingAddress = expeditionForwardingAddress.replace(
+                                    "{ark}", String.valueOf(bcid.getIdentifier()));
+                            resolution = new URI(appendedExpeditionForwardingAddress);
                         }
-                        break;
-                    case ResourceTypes.DATASET_RESOURCE_TYPE:
-                        break;
-                    default:
-                        String conceptForwardingAddress = mapping.getConceptForwardingAddress();
+                    }
+                    break;
+                case ResourceTypes.DATASET_RESOURCE_TYPE:
+                    if (hasWebAddress)
+                        resolution = bcid.getWebAddress();
+                    break;
+                default:
+                    if (identifier.hasSuffix()) {
+                        if (hasWebAddress)
+                            resolution = new URI(bcid.getWebAddress() + String.valueOf(identifier.getSuffix()));
+                        else {
+                            String conceptForwardingAddress = mapping.getConceptForwardingAddress();
 
-                        if (conceptForwardingAddress!= null && !conceptForwardingAddress.isEmpty()) {
-                            conceptForwardingAddress.replace("{ark}", identifier.getIdentifier());
-                            resolution = new URI(conceptForwardingAddress);
+                            if (conceptForwardingAddress != null && !conceptForwardingAddress.isEmpty()) {
+                                String appendedConceptForwardingAddress = conceptForwardingAddress.replace(
+                                        "{ark}", bcid.getIdentifier() + "/" + identifier.getSuffix());
+                                resolution = new URI(appendedConceptForwardingAddress);
+                            }
                         }
+                    }
 
-                        break;
-                }
+                    break;
             }
-
             // if resolution is still null, then resolve to the default metadata service
             if (resolution == null) {
                 resolution = new URI(resolverMetadataPrefix + bcid.getIdentifier());

@@ -79,4 +79,8 @@ public class Identifier {
             }
         }
     }
+
+    public boolean hasSuffix() {
+        return suffix != null && !suffix.isEmpty();
+    }
 }
