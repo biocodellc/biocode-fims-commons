@@ -24,12 +24,15 @@ public class ExpeditionRepository {
 
     private ExpeditionDao expeditionDao;
     private BcidRepository bcidRepository;
+    private ProjectRepository projectRepository;
     private SettingsManager settingsManager;
 
     @Autowired
-    public ExpeditionRepository(ExpeditionDao expeditionDao, BcidRepository bcidRepository, SettingsManager settingsManager) {
+    public ExpeditionRepository(ExpeditionDao expeditionDao, BcidRepository bcidRepository,
+                                ProjectRepository projectRepository, SettingsManager settingsManager) {
         this.expeditionDao = expeditionDao;
         this.bcidRepository = bcidRepository;
+        this.projectRepository = projectRepository;
         this.settingsManager = settingsManager;
     }
 

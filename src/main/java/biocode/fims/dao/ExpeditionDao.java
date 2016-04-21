@@ -48,19 +48,16 @@ public class ExpeditionDao {
 
     public Expedition findExpedition(MapSqlParameterSource params) throws EmptyResultDataAccessException {
         StringBuilder selectStringBuilder = new StringBuilder(
-                "SELECT expeditionId, expeditionCode, expeditionTitle, userId, ts, projectId, public " +
-                "FROM expeditions WHERE ");
+                "SELECT e.expeditionId, e.expeditionCode, e.expeditionTitle, e.userId, e.ts, e.projectId, e.public, " +
+                    "p.projectId, p.projectCode, p.projectTitle, p.abstract, p.ts, p.validationXml, p.userId, p.public " +
+                "FROM expeditions as e, projects as p WHERE e.projectId=p.projectId");
 
-        int cnt = 0;
         for (String key: params.getValues().keySet()) {
-            if (cnt > 0)
-                selectStringBuilder.append(" and ");
+            selectStringBuilder.append(" and ");
 
             selectStringBuilder.append(key);
             selectStringBuilder.append("=:");
             selectStringBuilder.append(key);
-
-            cnt++;
         }
 
         return this.namedParameterJdbcTemplate.queryForObject(
@@ -77,22 +74,19 @@ public class ExpeditionDao {
      */
     public Expedition findExpeditionByBcid(MapSqlParameterSource params) throws EmptyResultDataAccessException {
          StringBuilder selectStringBuilder = new StringBuilder(
-                "SELECT expeditions.expeditionId, expeditionCode, expeditionTitle, expeditions.userId, ts, projectId, " +
-                        "public FROM expeditions, expeditionBcids WHERE expeditions.expeditionId=expeditionBcids.expeditionId" +
-                        " and bcidId=:bcidId"
+                 "SELECT e.expeditionId, e.expeditionCode, e.expeditionTitle, e.userId, e.ts, e.projectId, e.public, " +
+                         "p.projectId, p.projectCode, p.projectTitle, p.abstract, p.ts, p.validationXml, p.userId, p.public " +
+                         "FROM expeditions as e, expeditionBcids eb, projects as p " +
+                         "WHERE e.projectId=p.projectId and e.expeditionId=eb.expeditionId and bcidId=:bcidId"
          );
 
-        int cnt = 0;
         for (String key: params.getValues().keySet()) {
             if (!key.equals("bcidId")) {
-                if (cnt > 0)
-                    selectStringBuilder.append(" and ");
+                selectStringBuilder.append(" and ");
 
                 selectStringBuilder.append(key);
                 selectStringBuilder.append("=:");
                 selectStringBuilder.append(key);
-
-                cnt++;
             }
         }
 
@@ -125,7 +119,7 @@ public class ExpeditionDao {
                 .addValue("expeditionTitle", expedition.getExpeditionTitle())
                 .addValue("userId", expedition.getUserId())
                 .addValue("ts", new Timestamp(new Date().getTime()))
-                .addValue("projectId", expedition.getProjectId())
+                .addValue("projectId", expedition.getProject().getProjectId())
                 .addValue("public", expedition.isPublic());
     }
 }

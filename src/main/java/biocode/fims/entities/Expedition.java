@@ -13,9 +13,9 @@ public class Expedition {
     private String expeditionTitle;
     private int userId;
     private Timestamp ts;
-    private Integer projectId;
     private boolean isPublic;
 
+    private Project project;
     private Bcid bcid;
 
     public static class ExpeditionBuilder {
@@ -23,15 +23,15 @@ public class Expedition {
         // Required
         private String expeditionCode;
         private int userId;
-        private int projectId;
+        private Project project;
         // Optional
         private String expeditionTitle;
         private boolean isPublic = true;
 
-        public ExpeditionBuilder(String expeditionCode, int userId, int projectId) {
+        public ExpeditionBuilder(String expeditionCode, int userId, Project project) {
             this.expeditionCode = expeditionCode;
             this.userId = userId;
-            this.projectId = projectId;
+            this.project = project;
         }
 
         public ExpeditionBuilder expeditionTitle(String expeditionTitle) {
@@ -55,7 +55,7 @@ public class Expedition {
         expeditionCode = builder.expeditionCode;
         expeditionTitle = builder.expeditionTitle;
         userId = builder.userId;
-        projectId = builder.projectId;
+        project = builder.project;
         isPublic = builder.isPublic;
     }
 
@@ -113,18 +113,8 @@ public class Expedition {
         this.ts = ts;
     }
 
-    public int getProjectId() {
-        return projectId;
-    }
-
-    /**
-     * This will only set the projectId if the current projectId is null. This method is only to be used when
-     * fetching an Expedition from the db
-     * @param projectId
-     */
-    public void setProjectId(int projectId) {
-        if (this.projectId == null)
-            this.projectId = projectId;
+    public Project getProject() {
+        return project;
     }
 
     public Bcid getBcid() {
@@ -149,7 +139,7 @@ public class Expedition {
                 ", expeditionTitle='" + expeditionTitle + '\'' +
                 ", userId=" + userId +
                 ", ts=" + ts +
-                ", projectId=" + projectId +
+                ", project=" + project +
                 ", isPublic=" + isPublic +
                 ", bcid=" + bcid +
                 '}';
