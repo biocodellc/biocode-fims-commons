@@ -26,7 +26,6 @@ public class BcidMetadataSchema {
     public metadataElement dcSource;
     public metadataElement dcMediator;
     public metadataElement dcHasVersion;
-    public metadataElement bscSuffixPassthrough;
     public metadataElement dcPublisher;
     public metadataElement forwardingResolution;
     public metadataElement resolutionTarget;
@@ -80,8 +79,6 @@ public class BcidMetadataSchema {
                     dcIsPartOf.setValue(doi);
                 } else if (bcidKey.equalsIgnoreCase("webAddress")) {
                     dcHasVersion.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("bcidsSuffixPassThrough")) {
-                    bscSuffixPassthrough.setValue(pairs.getValue().toString());
                 } else if (bcidKey.equalsIgnoreCase("forwardingResolution")) {
                     forwardingResolution.setValue(pairs.getValue().toString());
                 } else if (bcidKey.equalsIgnoreCase("resolutionTarget")) {
@@ -117,7 +114,6 @@ public class BcidMetadataSchema {
         dcIsReferencedBy = new metadataElement("dcterms:isReferencedBy", "", "The group level bcid, registered with EZID.");
         dcIsPartOf = new metadataElement("dcterms:isPartOf", "", "A DOI describing the dataset which this bcid belongs to.");
         dcHasVersion = new metadataElement("dcterms:hasVersion", "", "The redirection target for this bcid.");
-        bscSuffixPassthrough = new metadataElement("bsc:suffixPassThrough", "", "Indicates that this bcid supports suffixPassthrough.");
         forwardingResolution = new metadataElement("urn:forwardingResolution", "", "Indicates that this bcid has a suffix and should be forwarded to the fowardingResolutionTarget.");
         resolutionTarget = new metadataElement("urn:resolutionTarget", "", "The target uri for the locally-unique bcid.");
         identifier = new metadataElement("identifier", "", "The identifier this metadata represents.");

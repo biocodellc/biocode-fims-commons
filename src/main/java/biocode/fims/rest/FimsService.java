@@ -9,7 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import java.io.File;
+import java.util.List;
 
 /**
  * An abstract class that sets the necessary information when communicating with Biocode-Fims services
@@ -17,6 +19,8 @@ import java.io.File;
 public abstract class FimsService {
     @Context
     protected ServletContext context;
+    @Context
+    protected HttpHeaders headers;
     protected HttpSession session;
     protected String username;
     protected Integer userId;
@@ -40,6 +44,14 @@ public abstract class FimsService {
     @Context
     public void setSessionVariables(HttpServletRequest request) {
         session = request.getSession();
+        String authHeader = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+        // If accessToken is null, check if the HTTP Authorization header is present and formatted correctly
+        if (accessToken == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            // Extract the token from the HTTP Authorization header
+            accessToken = authHeader.substring("Bearer".length()).trim();
+        }
+
         if (accessToken != null && !accessToken.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
             username = provider.validateToken(accessToken);

@@ -53,6 +53,29 @@ public class Mapping {
     }
 
     /**
+     * The default conceptForwardingAddress is the one referenced by the first entity
+     * TODO: get conceptForwardingAddress in a more formal manner, currently we're basing this on a "single" spreadsheet model
+     *
+     * @return
+     */
+    public String getConceptForwardingAddress() {
+        Iterator it = entities.iterator();
+        while (it.hasNext()) {
+            Entity entity = (Entity) it.next();
+            return entity.getConceptForwardingAddress();
+        }
+        return null;
+    }
+
+    /**
+     * get the expeditionForwardingAddress specified in the config {@link Metadata}
+     * @return
+     */
+    public String getExpeditionForwardingAddress() {
+        return metadata.getExpeditionForwardingAddress();
+    }
+
+    /**
      * The default unique key is the one referenced by the first entity
      *
      * @return

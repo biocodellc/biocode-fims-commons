@@ -1,7 +1,10 @@
 package biocode.fims.bcid.Renderer;
 
 import biocode.fims.bcid.*;
+import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
@@ -14,25 +17,19 @@ import java.lang.reflect.Field;
 public class JSONRenderer extends Renderer {
     private JSONObject json;
     private Integer userId = null;
-    private Resolver resolver = null;
-    static SettingsManager sm;
 
-    static {
-        sm = SettingsManager.getInstance();
-    }
+    private SettingsManager settingsManager;
+    private ExpeditionRepository expeditionRepository;
 
     /**
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Resolver resolver, Bcid bcid) {
+    public JSONRenderer(String username, Bcid bcid, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
         super(bcid);
         userId = BcidDatabase.getUserId(username);
-        this.resolver = resolver;
-    }
-
-    public JSONRenderer(Bcid bcid) {
-        super(bcid);
+        this.expeditionRepository = expeditionRepository;
+        this.settingsManager = settingsManager;
     }
 
     public void enter() {
@@ -106,24 +103,24 @@ public class JSONRenderer extends Renderer {
 
     private void appendExpeditionDatasets() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        if (displayDatasets()) {
+        Expedition expedition = expeditionRepository.findByBcid(bcid);
+        if (displayDatasets(expedition)) {
             JSONObject datasets = new JSONObject();
-            datasets.put("datasets", expeditionMinter.getDatasets(resolver.getExpeditionId()));
-            datasets.put("appRoot", sm.retrieveValue("appRoot"));
+            datasets.put("datasets", expeditionMinter.getDatasets(expedition.getExpeditionId()));
+            datasets.put("appRoot", settingsManager.retrieveValue("appRoot"));
             json.put("datasets", datasets);
         }
     }
 
     private void appendDataset() {
-        if (displayDatasets() && bcid.getGraph() != null) {
+        Expedition expedition = expeditionRepository.findByBcid(bcid);
+        if (displayDatasets(expedition) && bcid.getGraph() != null) {
             JSONObject download = new JSONObject();
-            String appRoot = sm.retrieveValue("appRoot");
-
-            String projectId = resolver.getProjectID(resolver.getBcidId());
+            String appRoot = settingsManager.retrieveValue("appRoot");
 
             // Excel option
             download.put("graph", bcid.getGraph());
-            download.put("projectId", projectId);
+            download.put("projectId", expedition.getProjectId());
             download.put("appRoot", appRoot);
 
             // n3 option
@@ -138,34 +135,28 @@ public class JSONRenderer extends Renderer {
         }
     }
 
-    private Boolean displayDatasets() {
-        Boolean ignoreUser = Boolean.getBoolean(sm.retrieveValue("ignoreUser"));
-        Integer projectId;
-        try {
-            projectId = Integer.parseInt(resolver.getProjectID(resolver.getBcidId()));
-        } catch (Exception e) {
-            // TODO: come up with a cleaner way to detect unassociated data.
-            // if there is an exception here, then return data... unassociated project
-            // data is public
-            return true;
-        }
-        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
+    private Boolean displayDatasets(Expedition expedition) {
+        Boolean ignoreUser = Boolean.getBoolean(settingsManager.retrieveValue("ignoreUser"));
         ProjectMinter projectMinter = new ProjectMinter();
 
-        //if public expedition, return true
-        if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
-            return true;
-        } else if (userId != null) {
-            // if ignore_user and user in project, return true
-            if (ignoreUser && projectMinter.userExistsInProject(userId, projectId)) {
-                return true;
-            }
-            // if !ignore_user and userOwnsExpedition, return true
-            else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
-                return true;
-            }
-        }
+        if (expedition != null) {
 
+            //if public expedition, return true
+            if (expedition.isPublic()) {
+                return true;
+            } else if (userId != null) {
+
+                // if ignore_user and user in project, return true
+                if (ignoreUser && projectMinter.userExistsInProject(userId, expedition.getProjectId())) {
+                    return true;
+                }
+                // if !ignore_user and userOwnsExpedition, return true
+                else if (!ignoreUser && expedition.getUserId() == userId) {
+                    return true;
+                }
+            }
+
+        }
         return false;
     }
 

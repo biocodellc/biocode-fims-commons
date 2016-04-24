@@ -1,11 +1,12 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.ExpeditionMinter;
-import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.bcid.Resolver;
+import biocode.fims.bcid.*;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.repository.BcidRepository;
+import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -13,6 +14,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -24,10 +28,17 @@ import java.net.URLDecoder;
 /**
  * REST interface calls for working with expeditions.  This includes creating, updating and deleting expeditions.
  */
+@Controller
 @Path("expeditions")
-public class ExpeditionService extends FimsService {
+public class ExpeditionRestService extends FimsService {
 
-    private static Logger logger = LoggerFactory.getLogger(ExpeditionService.class);
+    private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
+    private ExpeditionService expeditionService;
+
+    @Autowired
+    public ExpeditionRestService(ExpeditionService expeditionService) {
+        this.expeditionService = expeditionService;
+    }
 
     /**
      * Service for a user to mint a new expedition
@@ -104,15 +115,16 @@ public class ExpeditionService extends FimsService {
         try {
             expeditionCode = URLDecoder.decode(expeditionCode, "utf-8");
         } catch (UnsupportedEncodingException e) {
-            logger.warn("UnsupportedEncodingException in ExpeditionService.fetchAlias method.", e);
+            logger.warn("UnsupportedEncodingException in ExpeditionRestService.fetchAlias method.", e);
         }
 
-        Resolver r = new Resolver(expeditionCode, projectId, resourceAlias);
-        String response = r.getIdentifier();
-        if (response == null) {
+        try {
+            biocode.fims.entities.Bcid bcid = expeditionService.getRootBcid(expeditionCode, projectId, resourceAlias);
+
+            return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
+
+        } catch (EmptyResultDataAccessException e) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();
-        } else {
-            return Response.ok("{\"identifier\": \"" + response + "\"}").build();
         }
     }
 

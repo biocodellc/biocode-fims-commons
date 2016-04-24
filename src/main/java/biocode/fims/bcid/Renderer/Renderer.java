@@ -1,6 +1,6 @@
 package biocode.fims.bcid.Renderer;
 
-import biocode.fims.bcid.Bcid;
+import biocode.fims.entities.Bcid;
 import biocode.fims.bcid.BcidMetadataSchema;
 
 /**
@@ -13,7 +13,7 @@ public abstract class Renderer extends BcidMetadataSchema implements RendererInt
 
     public Renderer(Bcid bcid) {
         this.bcid = bcid;
-        BCIDMetadataInit(bcid);
+        BCIDMetadataInit(new biocode.fims.bcid.Bcid(bcid));
     }
 
     public void setBcid(Bcid bcid) {

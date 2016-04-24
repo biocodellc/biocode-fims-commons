@@ -1,6 +1,6 @@
 package biocode.fims.bcid.Renderer;
 
-import biocode.fims.bcid.Bcid;
+import biocode.fims.entities.Bcid;
 
 /**
  * Renders a BCID as RDF.  This is for machine negotiation of an Bcid
@@ -33,7 +33,6 @@ public class RDFRenderer extends Renderer {
         propertyAppender(dcCreator);
         propertyAppender(dcDate);
         propertyAppender(dcSource);
-        propertyAppender(bscSuffixPassthrough);
     }
 
     public void leave() {

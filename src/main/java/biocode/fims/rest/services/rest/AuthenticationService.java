@@ -2,6 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
+import biocode.fims.auth.BasicAuthDecoder;
 import biocode.fims.auth.oauth2.OAuthProvider;
 import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -216,7 +218,15 @@ public class AuthenticationService extends FimsService {
         JSONObject accessToken;
 
         if (clientId == null) {
-            throw new BadRequestException("invalid_client");
+            // check if the clientId is in the auth header
+            String authHeader = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+            String[] clientIdAndSecret = BasicAuthDecoder.decode(authHeader);
+
+            if (clientIdAndSecret.length == 0)
+                throw new BadRequestException("invalid_client");
+
+            clientId = clientIdAndSecret[0];
+            clientSecret = clientIdAndSecret[1];
         }
 
         if (grantType.equalsIgnoreCase("authorization_code")) {

@@ -4,18 +4,21 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.repository.BcidRepository;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Mint new expeditions.  Includes the automatic creation of a core set of entity types
@@ -81,7 +84,7 @@ public class ExpeditionMinter {
             // upon successful expedition creation, create the expedition Bcid
             BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
             String identifier = bcidMinter.createEntityBcid(new Bcid(userId, "http://purl.org/dc/dcmitype/Collection",
-                    expeditionTitle, webAddress, null, null, false, false));
+                    expeditionTitle, webAddress, null, null, false));
 
             // Associate this Bcid with this expedition
             ExpeditionMinter expedition = new ExpeditionMinter();
@@ -99,14 +102,14 @@ public class ExpeditionMinter {
      * Attach an individual URI reference to a expedition
      *
      * @param expeditionCode
-     * @param bcid
+     * @param identifier
      */
-    public void attachReferenceToExpedition(String expeditionCode, String bcid, Integer projectId) {
+    public void attachReferenceToExpedition(String expeditionCode, String identifier, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
-        Resolver r = new Resolver(bcid);
-        Integer bcidId = r.getBcidId();
+        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
+        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
 
-        attachReferenceToExpedition(expeditionId, bcidId);
+        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
 
     private void attachReferenceToExpedition(Integer expeditionId, Integer bcidId) {
@@ -136,10 +139,10 @@ public class ExpeditionMinter {
      * @param identifier
      */
     public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
-        Resolver r = new Resolver(identifier);
-        Integer bcidId = r.getBcidId();
+        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
+        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
 
-        attachReferenceToExpedition(expeditionId, bcidId);
+        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
 
     /**

@@ -16,6 +16,8 @@ import java.util.Iterator;
  */
 public class ResourceTypes {
 
+    public static final String DATASET_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Dataset";
+
     static ArrayList list = new ArrayList();
 
     // DCMI METADATA

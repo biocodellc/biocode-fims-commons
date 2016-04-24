@@ -62,7 +62,7 @@ public class ExpeditionUpdater {
                 System.out.println("Creating bcid for expedition id: " + expeditionId);
                 BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
                 String identifier = bcidMinter.createEntityBcid(new Bcid((Integer) expeditions.get(expeditionId),
-                        "http://purl.org/dc/dcmitype/Collection", "Expedition", null, null, null, false, false));
+                        "http://purl.org/dc/dcmitype/Collection", "Expedition", null, null, null, false));
 
                 // Associate this Bcid with this expedition
                 ExpeditionMinter expedition = new ExpeditionMinter();
