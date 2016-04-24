@@ -9,9 +9,8 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.repository.BcidRepository;
-import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
+import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +27,14 @@ import java.io.File;
 @Path("/")
 public class ResolverService extends FimsService {
 
-    private ExpeditionRepository expeditionRepository;
-    private BcidRepository bcidRepository;
+    private BcidService bcidService;
     private SettingsManager settingsManager;
     private Resolver resolver;
 
     @Autowired
-    ResolverService(ExpeditionRepository expeditionRepository, BcidRepository bcidRepository,
+    ResolverService(BcidService bcidService,
                     SettingsManager settingsManager, Resolver resolver) {
-        this.expeditionRepository = expeditionRepository;
-        this.bcidRepository = bcidRepository;
+        this.bcidService = bcidService;
         this.settingsManager = settingsManager;
         this.resolver = resolver;
     }
@@ -58,7 +55,7 @@ public class ResolverService extends FimsService {
         String divider = settingsManager.retrieveValue("divider");
         Identifier identifier = new Identifier(identifierString, divider);
         try {
-            bcid = bcidRepository.findByIdentifier(identifier.getBcidIdentifier());
+            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
         } catch (EmptyResultDataAccessException e) {
             // TODO probably want to return Viewable here
             throw new BadRequestException("Invalid Identifier");
@@ -72,7 +69,7 @@ public class ResolverService extends FimsService {
         } else {
             Mapping mapping = null;
 
-                Expedition expedition = expeditionRepository.findByBcid(bcid);
+                Expedition expedition = bcid.getExpedition();
 
             if (expedition != null) {
                 File configFile = new ConfigurationFileFetcher(
@@ -97,12 +94,12 @@ public class ResolverService extends FimsService {
         Identifier identifier = new Identifier(identifierString, divider);
 
         try {
-            bcid = bcidRepository.findByIdentifier(identifier.getBcidIdentifier());
+            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
         } catch (EmptyResultDataAccessException e) {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid, expeditionRepository, settingsManager);
+        JSONRenderer renderer = new JSONRenderer(username, bcid, settingsManager);
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }

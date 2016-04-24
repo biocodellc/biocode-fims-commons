@@ -1,6 +1,6 @@
-package biocode.fims.intelliJEntities;
+package biocode.fims.repositories;
 
-import org.springframework.data.jpa.domain.Specification;
+import biocode.fims.entities.Bcid;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,10 +8,8 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-
 /**
- * This repository provides CRUD operations for {@link Bcid} objects
+ * This repositories provides CRUD operations for {@link Bcid} objects
  */
 @Transactional
 public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificationExecutor {
@@ -39,11 +37,5 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     Bcid findByBcidId(int bcidId);
 
-    /**
-     * @param expeditionId the {@link biocode.fims.entities.Expedition} the bcids are associated with
-     * @param resourceType the resourceType(s) of the Bcids to find
-     * @return the {@link Bcid} Set associated with the provided {@link biocode.fims.entities.Expedition}, containing
-     * the provided resourceType(s)
-     */
-    Set<Bcid> findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
+    Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
 }

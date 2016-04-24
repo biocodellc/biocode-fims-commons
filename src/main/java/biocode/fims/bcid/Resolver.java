@@ -4,10 +4,10 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repository.BcidRepository;
+import biocode.fims.repositories.BcidRepository;
+import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,12 +19,12 @@ import java.net.URISyntaxException;
  */
 public class Resolver {
 
-    private BcidRepository bcidRepository;
+    private BcidService bcidService;
     private SettingsManager settingsManager;
 
     @Autowired
-    public Resolver(BcidRepository bcidRepository, SettingsManager settingsManager) {
-        this.bcidRepository = bcidRepository;
+    public Resolver(BcidService bcidService, SettingsManager settingsManager) {
+        this.bcidService = bcidService;
         this.settingsManager = settingsManager;
     }
 
@@ -39,7 +39,7 @@ public class Resolver {
         String divider = settingsManager.retrieveValue("divider");
 
         Identifier identifier = new Identifier(identifierString, divider);
-        Bcid bcid = bcidRepository.findByIdentifier(identifier.getBcidIdentifier());
+        Bcid bcid = bcidService.getBcid(identifier.getBcidIdentifier());
 
         boolean hasWebAddress = (bcid.getWebAddress() != null && !String.valueOf(bcid.getWebAddress()).isEmpty());
 

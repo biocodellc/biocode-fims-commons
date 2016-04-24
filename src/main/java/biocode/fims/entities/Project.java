@@ -1,37 +1,44 @@
 package biocode.fims.entities;
 
-import java.sql.Timestamp;
+import javax.persistence.*;
+import java.util.Date;
+import java.util.Set;
 
 /**
- * Expedition entity object
+ * Project Entity object
  */
+@Entity
+@Table(name = "projects", schema = "biscicol")
 public class Project {
 
-    private Integer projectId;
+    private int projectId;
     private String projectCode;
     private String projectTitle;
     private String projectAbstract;
-    private int userId;
+    private Date ts;
     private String validationXml;
-    private Timestamp ts;
     private boolean isPublic;
+    private Set<Expedition> expeditions;
+    private User user;
+    private Set<User> projectMembers;
+    private Set<TemplateConfig> templateConfigs;
 
     public static class ProjectBuilder {
 
         // Required
         private String projectCode;
         private String projectTitle;
-        private int userId;
+        private User user;
         private String validationXml;
 
         // Optional
         private String projectAbstract;
         private boolean isPublic = true;
 
-        public ProjectBuilder(String projectCode, String projectTitle,  int userId, String validationXml) {
+        public ProjectBuilder(String projectCode, String projectTitle, User user, String validationXml) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
-            this.userId = userId;
+            this.user = user;
             this.validationXml = validationXml;
         }
 
@@ -50,43 +57,36 @@ public class Project {
         }
 
     }
+
     private Project(ProjectBuilder builder) {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
-        userId = builder.userId;
+        user = builder.user;
         validationXml = builder.validationXml;
         projectAbstract = builder.projectAbstract;
         isPublic = builder.isPublic;
     }
 
-    public boolean isNew() {
-        return this.projectId == null;
+    // needed for hibernate
+    private Project() {
     }
 
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
-    }
-
-    public Integer getProjectId() {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public int getProjectId() {
         return projectId;
     }
 
-    /**
-     * This will only set the projectId if the current projectId is null. This method is only to be used when
-     * fetching a Project from the db
-     * @param projectId
-     */
-    public void setProjectId(int projectId) {
-        if (this.projectId == null)
-            this.projectId = projectId;
+    public void setProjectId(int id) {
+        this.projectId = id;
     }
 
     public String getProjectCode() {
         return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
     }
 
     public String getProjectTitle() {
@@ -97,14 +97,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
+    @Column(name="abstract")
     public String getProjectAbstract() {
         return projectAbstract;
     }
@@ -113,6 +106,16 @@ public class Project {
         this.projectAbstract = projectAbstract;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getTs() {
+        return ts;
+    }
+
+    public void setTs(Date ts) {
+        this.ts = ts;
+    }
+
+    @Column(nullable = false)
     public String getValidationXml() {
         return validationXml;
     }
@@ -121,12 +124,35 @@ public class Project {
         this.validationXml = validationXml;
     }
 
-    public Timestamp getTs() {
-        return ts;
+    @Column(name="public",
+            nullable = false)
+    public boolean isPublic() {
+        return isPublic;
     }
 
-    public void setTs(Timestamp ts) {
-        this.ts = ts;
+    public void setPublic(boolean aPublic) {
+        isPublic = aPublic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Project project = (Project) o;
+
+        if (projectId != project.projectId) return false;
+        if (isPublic != project.isPublic) return false;
+        if (projectCode != null ? !projectCode.equals(project.projectCode) : project.projectCode != null) return false;
+        if (projectTitle != null ? !projectTitle.equals(project.projectTitle) : project.projectTitle != null)
+            return false;
+        if (projectAbstract != null ? !projectAbstract.equals(project.projectAbstract) : project.projectAbstract != null)
+            return false;
+        if (ts != null ? !ts.equals(project.ts) : project.ts != null) return false;
+        if (validationXml != null ? !validationXml.equals(project.validationXml) : project.validationXml != null)
+            return false;
+
+        return true;
     }
 
     @Override
@@ -136,10 +162,69 @@ public class Project {
                 ", projectCode='" + projectCode + '\'' +
                 ", projectTitle='" + projectTitle + '\'' +
                 ", projectAbstract='" + projectAbstract + '\'' +
-                ", userId=" + userId +
-                ", validationXml='" + validationXml + '\'' +
                 ", ts=" + ts +
+                ", validationXml='" + validationXml + '\'' +
                 ", isPublic=" + isPublic +
+                ", user=" + user +
                 '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int result = projectId;
+        result = 31 * result + (projectCode != null ? projectCode.hashCode() : 0);
+        result = 31 * result + (projectTitle != null ? projectTitle.hashCode() : 0);
+        result = 31 * result + (projectAbstract != null ? projectAbstract.hashCode() : 0);
+        result = 31 * result + (ts != null ? ts.hashCode() : 0);
+        result = 31 * result + (validationXml != null ? validationXml.hashCode() : 0);
+        result = 31 * result + (isPublic ? 1 : 0);
+        return result;
+    }
+
+    @OneToMany(mappedBy = "project",
+            fetch = FetchType.LAZY
+    )
+    public Set<Expedition> getExpeditions() {
+        return expeditions;
+    }
+
+    public void setExpeditions(Set<Expedition> expeditions) {
+        this.expeditions = expeditions;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "userId",
+            referencedColumnName = "userId",
+            foreignKey = @ForeignKey(name = "FK_projects_userId"),
+            nullable = false
+    )
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @ManyToMany(mappedBy = "projectsMemberOf",
+            fetch = FetchType.LAZY
+    )
+    public Set<User> getProjectMembers() {
+        return projectMembers;
+    }
+
+    public void setProjectMembers(Set<User> projectMembers) {
+        this.projectMembers = projectMembers;
+    }
+
+    @OneToMany(mappedBy = "project",
+            fetch = FetchType.LAZY
+    )
+    public Set<TemplateConfig> getTemplateConfigs() {
+        return templateConfigs;
+    }
+
+    public void setTemplateConfigs(Set<TemplateConfig> templateConfigs) {
+        this.templateConfigs = templateConfigs;
     }
 }

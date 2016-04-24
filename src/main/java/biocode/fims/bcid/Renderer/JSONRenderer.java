@@ -4,7 +4,7 @@ import biocode.fims.bcid.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repository.ExpeditionRepository;
+import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
@@ -19,16 +19,14 @@ public class JSONRenderer extends Renderer {
     private Integer userId = null;
 
     private SettingsManager settingsManager;
-    private ExpeditionRepository expeditionRepository;
 
     /**
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Bcid bcid, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
+    public JSONRenderer(String username, Bcid bcid, SettingsManager settingsManager) {
         super(bcid);
         userId = BcidDatabase.getUserId(username);
-        this.expeditionRepository = expeditionRepository;
         this.settingsManager = settingsManager;
     }
 
@@ -103,7 +101,7 @@ public class JSONRenderer extends Renderer {
 
     private void appendExpeditionDatasets() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        Expedition expedition = expeditionRepository.findByBcid(bcid);
+        Expedition expedition = bcid.getExpedition();
         if (displayDatasets(expedition)) {
             JSONObject datasets = new JSONObject();
             datasets.put("datasets", expeditionMinter.getDatasets(expedition.getExpeditionId()));
@@ -113,14 +111,14 @@ public class JSONRenderer extends Renderer {
     }
 
     private void appendDataset() {
-        Expedition expedition = expeditionRepository.findByBcid(bcid);
+        Expedition expedition = bcid.getExpedition();
         if (displayDatasets(expedition) && bcid.getGraph() != null) {
             JSONObject download = new JSONObject();
             String appRoot = settingsManager.retrieveValue("appRoot");
 
             // Excel option
             download.put("graph", bcid.getGraph());
-            download.put("projectId", expedition.getProjectId());
+            download.put("projectId", expedition.getProject().getProjectId());
             download.put("appRoot", appRoot);
 
             // n3 option
@@ -147,11 +145,11 @@ public class JSONRenderer extends Renderer {
             } else if (userId != null) {
 
                 // if ignore_user and user in project, return true
-                if (ignoreUser && projectMinter.userExistsInProject(userId, expedition.getProjectId())) {
+                if (ignoreUser && projectMinter.userExistsInProject(userId, expedition.getProject().getProjectId())) {
                     return true;
                 }
                 // if !ignore_user and userOwnsExpedition, return true
-                else if (!ignoreUser && expedition.getUserId() == userId) {
+                else if (!ignoreUser && expedition.getUser().getUserId() == userId) {
                     return true;
                 }
             }

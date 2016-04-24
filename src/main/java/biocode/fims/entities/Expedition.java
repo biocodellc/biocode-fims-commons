@@ -1,36 +1,40 @@
 package biocode.fims.entities;
 
+import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Set;
 
 /**
- * Expedition entity object
+ * Expedition Entity object
  */
+@Entity
+@Table(name = "expeditions", schema = "biscicol")
 public class Expedition {
     public static final String EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection";
 
-    private Integer expeditionId;
+    private int expeditionId;
     private String expeditionCode;
     private String expeditionTitle;
-    private int userId;
-    private Timestamp ts;
+    private Date ts;
     private boolean isPublic;
-
+    private Set<Bcid> bcids;
     private Project project;
-    private Bcid bcid;
+    private User user;
 
     public static class ExpeditionBuilder {
 
         // Required
         private String expeditionCode;
-        private int userId;
+        private User user;
         private Project project;
         // Optional
         private String expeditionTitle;
         private boolean isPublic = true;
 
-        public ExpeditionBuilder(String expeditionCode, int userId, Project project) {
+        public ExpeditionBuilder(String expeditionCode, User user, Project project) {
             this.expeditionCode = expeditionCode;
-            this.userId = userId;
+            this.user = user;
             this.project = project;
         }
 
@@ -54,39 +58,31 @@ public class Expedition {
     private Expedition(ExpeditionBuilder builder) {
         expeditionCode = builder.expeditionCode;
         expeditionTitle = builder.expeditionTitle;
-        userId = builder.userId;
+        user = builder.user;
         project = builder.project;
         isPublic = builder.isPublic;
     }
 
-    public boolean isNew() {
-        return this.expeditionId == null;
-    }
+    // needed for hibernate
+    private Expedition() {}
 
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
-    }
-
-    public Integer getExpeditionId() {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    public int getExpeditionId() {
         return expeditionId;
     }
 
-    /**
-     * This will only set the expeditionId if the current expeditionId is null. This method is only to be used when
-     * fetching an Expedition from the db
-     * @param expeditionId
-     */
-    public void setExpeditionId(Integer expeditionId) {
-        if (this.expeditionId == null)
-            this.expeditionId = expeditionId;
+    private void setExpeditionId(int id) {
+        this.expeditionId = id;
     }
 
+    @Column(nullable = false)
     public String getExpeditionCode() {
         return expeditionCode;
+    }
+
+    public void setExpeditionCode(String expeditionCode) {
+        this.expeditionCode = expeditionCode;
     }
 
     public String getExpeditionTitle() {
@@ -97,38 +93,56 @@ public class Expedition {
         this.expeditionTitle = expeditionTitle;
     }
 
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public Timestamp getTs() {
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getTs() {
         return ts;
     }
 
-    public void setTs(Timestamp ts) {
+    private void setTs(Timestamp ts) {
         this.ts = ts;
     }
 
-    public Project getProject() {
-        return project;
+    @Column(name = "public",
+            nullable = false)
+    public boolean isPublic() {
+        return isPublic;
     }
 
-    public Bcid getBcid() {
-        return bcid;
+    public void setPublic(boolean aPublic) {
+        isPublic = aPublic;
     }
 
-    /**
-     * This will only set the bcid if the current bcid is null. This method is only to be used when
-     * fetching an Expedition from the db
-     * @param bcid
-     */
-    public void setBcid(Bcid bcid) {
-        if (this.bcid == null)
-            this.bcid = bcid;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Expedition that = (Expedition) o;
+
+        if (getExpeditionId() != that.getExpeditionId()) return false;
+        if (isPublic() != that.isPublic()) return false;
+        if (getExpeditionCode() != null ? !getExpeditionCode().equals(that.getExpeditionCode()) : that.getExpeditionCode() != null)
+            return false;
+        if (getExpeditionTitle() != null ? !getExpeditionTitle().equals(that.getExpeditionTitle()) : that.getExpeditionTitle() != null)
+            return false;
+        if (getTs() != null ? !getTs().equals(that.getTs()) : that.getTs() != null) return false;
+        if (getBcids() != null ? !getBcids().equals(that.getBcids()) : that.getBcids() != null) return false;
+        if (getProject() != null ? !getProject().equals(that.getProject()) : that.getProject() != null) return false;
+        return getUser() != null ? getUser().equals(that.getUser()) : that.getUser() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getExpeditionId();
+        result = 31 * result + (getExpeditionCode() != null ? getExpeditionCode().hashCode() : 0);
+        result = 31 * result + (getExpeditionTitle() != null ? getExpeditionTitle().hashCode() : 0);
+        result = 31 * result + (getTs() != null ? getTs().hashCode() : 0);
+        result = 31 * result + (isPublic() ? 1 : 0);
+        result = 31 * result + (getBcids() != null ? getBcids().hashCode() : 0);
+        result = 31 * result + (getProject() != null ? getProject().hashCode() : 0);
+        result = 31 * result + (getUser() != null ? getUser().hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -137,11 +151,50 @@ public class Expedition {
                 "expeditionId=" + expeditionId +
                 ", expeditionCode='" + expeditionCode + '\'' +
                 ", expeditionTitle='" + expeditionTitle + '\'' +
-                ", userId=" + userId +
                 ", ts=" + ts +
-                ", project=" + project +
                 ", isPublic=" + isPublic +
-                ", bcid=" + bcid +
+                ", project=" + project +
+                ", user=" + user +
+                ", public=" + isPublic() +
                 '}';
+    }
+
+    @OneToMany(targetEntity = Bcid.class,
+            mappedBy = "expedition",
+            fetch = FetchType.LAZY
+    )
+    public Set<Bcid> getBcids() {
+        return bcids;
+    }
+
+    private void setBcids(Set<Bcid> bcids) {
+        this.bcids = bcids;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "projectId",
+            referencedColumnName = "projectId",
+            foreignKey = @ForeignKey(name = "FK_expedtions_projectId")
+    )
+    public Project getProject() {
+        return project;
+    }
+
+    private void setProject(Project project) {
+        this.project = project;
+    }
+
+
+    @ManyToOne
+    @JoinColumn(name = "userId",
+            foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
+            referencedColumnName = "userId"
+    )
+    public User getUser() {
+        return user;
+    }
+
+    private void setUser(User user) {
+        this.user = user;
     }
 }

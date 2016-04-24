@@ -5,7 +5,10 @@ import biocode.fims.bcid.ManageEZID;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.intelliJEntities.*;
+import biocode.fims.entities.*;
+import biocode.fims.repositories.BcidRepository;
+import biocode.fims.repositories.ExpeditionRepository;
+import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +24,7 @@ import java.net.URISyntaxException;
 import java.util.Set;
 
 /**
- * Created by rjewing on 4/23/16.
+ * Service class for handling {@link Bcid} persistence
  */
 @Service
 public class BcidService {
@@ -30,7 +33,7 @@ public class BcidService {
 
     private final BcidRepository bcidRepository;
     private final SettingsManager settingsManager;
-    private BcidEncoder bcidEncoder = new BcidEncoder();
+    private final BcidEncoder bcidEncoder = new BcidEncoder();
 
     @Autowired
     public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager) {
@@ -71,7 +74,13 @@ public class BcidService {
         return bcidRepository.findByBcidId(bcidId);
     }
 
-    public Set<Bcid> getBcids(int expeditionId, String... resourceType) {
+    /**
+     * @param expeditionId the {@link biocode.fims.entities.Expedition} the bcids are associated with
+     * @param resourceType the resourceType(s) of the Bcids to find
+     * @return the {@link Bcid} associated with the provided {@link biocode.fims.entities.Expedition}, containing
+     * the provided resourceType(s)
+     */
+    public Bcid getBcid(int expeditionId, String... resourceType) {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 

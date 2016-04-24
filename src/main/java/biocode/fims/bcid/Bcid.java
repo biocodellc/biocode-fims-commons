@@ -104,7 +104,7 @@ public class Bcid {
         title = bcid.getTitle();
         ts = bcid.getTs().toString();
         // TODO this should be a first + last name of the User
-        who = BcidDatabase.getUserName(bcid.getUserId());
+        who = String.format("%s %s", bcid.getUser().getFirstName(), bcid.getUser().getLastName());
         resourceType = bcid.getResourceType();
         graph = bcid.getGraph();
         webAddress = bcid.getWebAddress();

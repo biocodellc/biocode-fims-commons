@@ -28,7 +28,7 @@
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
-        <property name="packagesToScan" value="biocode.fims.intelliJEntities"/>
+        <property name="packagesToScan" value="biocode.fims.entities"/>
         <property name="jpaProperties">
             <props>
                 <!--<prop key="hibernate.hbm2ddl.auto">validate</prop>-->
@@ -50,5 +50,5 @@
 
     <bean id="persistenceExceptionTranslationPostProcessor" class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
 
-    <jpa:repositories base-package="biocode.fims.intelliJEntities" />
+    <jpa:repositories base-package="biocode.fims.repositories" />
 </beans>

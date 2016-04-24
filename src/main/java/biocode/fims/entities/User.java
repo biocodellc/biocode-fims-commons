@@ -1,4 +1,4 @@
-package biocode.fims.intelliJEntities;
+package biocode.fims.entities;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 
