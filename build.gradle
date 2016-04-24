@@ -39,7 +39,6 @@ dependencies {
 
     compile 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     compile 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
-    compile 'org.hibernate:hibernate-validator:5.2.4.Final'
 
     compile 'org.springframework:spring-jdbc:3.2.16.RELEASE'
 

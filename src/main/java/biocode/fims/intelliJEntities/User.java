@@ -3,7 +3,6 @@ package biocode.fims.intelliJEntities;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
@@ -29,7 +28,7 @@ public class User {
     private Set<Bcid> bcids;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
-    private Set<Project> memberProjects;
+    private Set<Project> projectsMemberOf;
     private Set<TemplateConfig> templateConfigs;
 
     public static class UserBuilder {
@@ -138,6 +137,7 @@ public class User {
         this.userId = id;
     }
 
+    @Column(nullable = false)
     public String getUsername() {
         return username;
     }
@@ -146,6 +146,7 @@ public class User {
         this.username = username;
     }
 
+    @Column(nullable = false)
     public String getPassword() {
         return password;
     }
@@ -154,6 +155,7 @@ public class User {
         this.password = password;
     }
 
+    @Column(nullable = false)
     public boolean isEnabled() {
         return enabled;
     }
@@ -162,6 +164,7 @@ public class User {
         this.enabled = enabled;
     }
 
+    @Column(nullable = false)
     public boolean isHasSetPassword() {
         return hasSetPassword;
     }
@@ -170,6 +173,7 @@ public class User {
         this.hasSetPassword = hasSetPassword;
     }
 
+    @Column(nullable = false)
     public String getEmail() {
         return email;
     }
@@ -178,6 +182,7 @@ public class User {
         this.email = email;
     }
 
+    @Column(nullable = false)
     public boolean isAdmin() {
         return admin;
     }
@@ -186,6 +191,7 @@ public class User {
         this.admin = admin;
     }
 
+    @Column(nullable = false)
     public String getInstitution() {
         return institution;
     }
@@ -194,6 +200,7 @@ public class User {
         this.institution = institution;
     }
 
+    @Column(nullable = false)
     public String getFirstName() {
         return firstName;
     }
@@ -202,6 +209,7 @@ public class User {
         this.firstName = firstName;
     }
 
+    @Column(nullable = false)
     public String getLastName() {
         return lastName;
     }
@@ -322,12 +330,13 @@ public class User {
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
             inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
     )
-    public Set<Project> getMemberProjects() {
-        return memberProjects;
+
+    public Set<Project> getProjectsMemberOf() {
+        return projectsMemberOf;
     }
 
-    private void setMemberProjects(Set<Project> memberProjects) {
-        this.memberProjects = memberProjects;
+    private void setProjectsMemberOf(Set<Project> projectsMemberOf) {
+        this.projectsMemberOf = projectsMemberOf;
     }
 
     @OneToMany(mappedBy = "user")

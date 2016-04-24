@@ -1,7 +1,5 @@
 package biocode.fims.intelliJEntities;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -78,6 +76,7 @@ public class Expedition {
         this.expeditionId = id;
     }
 
+    @Column(nullable = false)
     public String getExpeditionCode() {
         return expeditionCode;
     }
@@ -103,6 +102,8 @@ public class Expedition {
         this.ts = ts;
     }
 
+    @Column(name = "public",
+            nullable = false)
     public boolean isPublic() {
         return isPublic;
     }

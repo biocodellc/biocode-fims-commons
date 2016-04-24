@@ -50,5 +50,5 @@
 
     <bean id="persistenceExceptionTranslationPostProcessor" class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
 
-    <jpa:repositories base-package="biocode.fims.repository" />
+    <jpa:repositories base-package="biocode.fims.intelliJEntities" />
 </beans>

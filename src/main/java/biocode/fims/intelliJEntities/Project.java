@@ -1,7 +1,6 @@
 package biocode.fims.intelliJEntities;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
@@ -21,7 +20,7 @@ public class Project {
     private boolean isPublic;
     private Set<Expedition> expeditions;
     private User user;
-    private Set<User> projectUsers;
+    private Set<User> projectMembers;
     private Set<TemplateConfig> templateConfigs;
 
     public static class ProjectBuilder {
@@ -98,6 +97,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
+    @Column(name="abstract")
     public String getProjectAbstract() {
         return projectAbstract;
     }
@@ -115,6 +115,7 @@ public class Project {
         this.ts = ts;
     }
 
+    @Column(nullable = false)
     public String getValidationXml() {
         return validationXml;
     }
@@ -123,6 +124,8 @@ public class Project {
         this.validationXml = validationXml;
     }
 
+    @Column(name="public",
+            nullable = false)
     public boolean isPublic() {
         return isPublic;
     }
@@ -192,7 +195,8 @@ public class Project {
     @ManyToOne
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",
-            foreignKey = @ForeignKey(name = "FK_projects_userId")
+            foreignKey = @ForeignKey(name = "FK_projects_userId"),
+            nullable = false
     )
     public User getUser() {
         return user;
@@ -202,15 +206,15 @@ public class Project {
         this.user = user;
     }
 
-    @ManyToMany(mappedBy = "memberProjects",
+    @ManyToMany(mappedBy = "projectsMemberOf",
             fetch = FetchType.LAZY
     )
-    public Set<User> getProjectUsers() {
-        return projectUsers;
+    public Set<User> getProjectMembers() {
+        return projectMembers;
     }
 
-    public void setProjectUsers(Set<User> projectUsers) {
-        this.projectUsers = projectUsers;
+    public void setProjectMembers(Set<User> projectMembers) {
+        this.projectMembers = projectMembers;
     }
 
     @OneToMany(mappedBy = "project",

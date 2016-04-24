@@ -1,5 +1,8 @@
 package biocode.fims.intelliJEntities;
 
+import biocode.fims.converters.UriPersistenceConverter;
+import org.springframework.util.Assert;
+
 import javax.persistence.*;
 import java.net.URI;
 import java.util.Date;
@@ -33,7 +36,6 @@ public class Bcid {
         private boolean ezidMade = false;
 
         private boolean ezidRequest = true;
-        private URI identifier;
         private String doi;
         private String title;
         private URI webAddress;
@@ -42,6 +44,8 @@ public class Bcid {
         private Expedition expedition;
 
         public BcidBuilder(User user, String resourceType) {
+            Assert.notNull(user, "Bcid user must not be null");
+            Assert.notNull(resourceType, "Bcid resourceType must not be null");
             this.user = user;
             this.resourceType = resourceType;
         }
@@ -53,11 +57,6 @@ public class Bcid {
 
         public BcidBuilder ezidRequest(boolean val) {
             ezidRequest = val;
-            return this;
-        }
-
-        public BcidBuilder identifier(URI val) {
-            identifier = val;
             return this;
         }
 
@@ -109,7 +108,6 @@ public class Bcid {
         user = builder.user;
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
-        identifier = builder.identifier;
         doi = builder.doi;
         title = builder.title;
         webAddress = builder.webAddress;
@@ -139,6 +137,7 @@ public class Bcid {
         this.ezidMade = ezidMade;
     }
 
+    @Column(nullable = false)
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -147,12 +146,14 @@ public class Bcid {
         this.ezidRequest = ezidRequest;
     }
 
+    @Convert(converter = UriPersistenceConverter.class)
     public URI getIdentifier() {
         return identifier;
     }
 
-    private void setIdentifier(URI identifier) {
-        this.identifier = identifier;
+    public void setIdentifier(URI identifier) {
+        if (this.identifier == null)
+            this.identifier = identifier;
     }
 
     public String getDoi() {
@@ -171,6 +172,7 @@ public class Bcid {
         this.title = title;
     }
 
+    @Convert(converter = UriPersistenceConverter.class)
     public URI getWebAddress() {
         return webAddress;
     }
@@ -179,6 +181,7 @@ public class Bcid {
         this.webAddress = webAddress;
     }
 
+    @Column(nullable = false)
     public String getResourceType() {
         return resourceType;
     }
@@ -204,6 +207,7 @@ public class Bcid {
         this.graph = graph;
     }
 
+    @Column(nullable = false)
     public boolean isFinalCopy() {
         return finalCopy;
     }
@@ -288,13 +292,15 @@ public class Bcid {
     @ManyToOne
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",
-            foreignKey = @ForeignKey(name = "FK_bcids_userId")
+            foreignKey = @ForeignKey(name = "FK_bcids_userId"),
+            nullable = false
     )
     public User getUser() {
         return user;
     }
 
     private void setUser(User user) {
+        Assert.notNull(user, "Bcid user must not be null");
         this.user = user;
     }
 }
