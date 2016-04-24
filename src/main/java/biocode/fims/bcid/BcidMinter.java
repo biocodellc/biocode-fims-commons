@@ -142,7 +142,7 @@ public class BcidMinter extends BcidEncoder {
         try {
             // Use auto increment in Database to assign the actual Bcid.. this is threadsafe this way
             String insertString = "INSERT INTO bcids (userId, resourceType, doi, webAddress, graph, title, internalId, ezidRequest, finalCopy) " +
-                    "values (?,?,?,?,?,?,?,?,?,?)";
+                    "values (?,?,?,?,?,?,?,?,?)";
 
             insertStatement = conn.prepareStatement(insertString);
             insertStatement.setInt(1, bcid.userId);
