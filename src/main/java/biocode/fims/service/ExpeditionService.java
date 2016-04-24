@@ -3,7 +3,6 @@ package biocode.fims.service;
 import biocode.fims.bcid.ResourceType;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.*;
-import biocode.fims.repositories.BcidRepository;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class ExpeditionService {
     }
 
     public Expedition getExpedition(String expeditionCode, int projectId) {
-        return expeditionRepository.findByExpeditionCodeAndProjectId(expeditionCode, projectId);
+        return expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
     }
 
     /**

@@ -20,6 +20,6 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
 
     Expedition findByExpeditionId(int expeditionId);
 
-    Expedition findByExpeditionCodeAndProjectId(String expeditionCode, int projectId);
+    Expedition findByExpeditionCodeAndProjectProjectId(String expeditionCode, int projectId);
 
 }
