@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.id;
 
+import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Identifier;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.bcid.Renderer.RDFRenderer;
@@ -64,7 +65,8 @@ public class ResolverService extends FimsService {
         // When the Accept Header = "application/rdf+xml" return Metadata as RDF
         if (accept.equalsIgnoreCase("application/rdf+xml")) {
             // Return RDF when the Accepts header specifies rdf+xml
-            String response = new RDFRenderer(bcid).render();
+            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
+            String response = new RDFRenderer(bcid, bcidMetadataSchema).render();
             return Response.ok(response).build();
         } else {
             Mapping mapping = null;
@@ -99,7 +101,8 @@ public class ResolverService extends FimsService {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid, settingsManager);
+        BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
+        JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }

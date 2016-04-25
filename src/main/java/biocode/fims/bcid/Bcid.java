@@ -103,8 +103,7 @@ public class Bcid {
         doi = bcid.getDoi();
         title = bcid.getTitle();
         ts = bcid.getTs().toString();
-        // TODO this should be a first + last name of the User
-        who = String.format("%s %s", bcid.getUser().getFirstName(), bcid.getUser().getLastName());
+        who = bcid.getUser().getFullName();
         resourceType = bcid.getResourceType();
         graph = bcid.getGraph();
         webAddress = bcid.getWebAddress();

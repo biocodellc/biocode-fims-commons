@@ -11,6 +11,7 @@ import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -94,11 +95,26 @@ public class BcidRestService extends FimsService {
     @Path("/metadata/{bcidId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
-        biocode.fims.entities.Bcid bcid = bcidService.getBcid(bcidId);
+        String response;
+        try {
+            biocode.fims.entities.Bcid bcid = bcidService.getBcid(bcidId);
+            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
+                    bcid,
+                    settingsManager,
+                    new Identifier(
+                            String.valueOf(bcid.getIdentifier()),
+                            settingsManager.retrieveValue("divider")
+                            )
+            );
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid, settingsManager);
+            JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+            response = renderer.render();
 
-        return Response.ok(renderer.render()).build();
+        } catch (EmptyResultDataAccessException e) {
+            response = "{\"Identifier\":{\"status\":\"not found\"}}";
+        }
+
+        return Response.ok(response).build();
     }
 
     /**

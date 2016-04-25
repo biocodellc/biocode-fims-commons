@@ -218,6 +218,11 @@ public class User {
         this.lastName = lastName;
     }
 
+    @Transient
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     public String getPasswordResetToken() {
         return passwordResetToken;
     }

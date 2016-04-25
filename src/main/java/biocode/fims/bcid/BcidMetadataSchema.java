@@ -1,11 +1,9 @@
 package biocode.fims.bcid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.Map;
+import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
+import biocode.fims.settings.SettingsManager;
+import org.springframework.util.StringUtils;
 
 /**
  * Metadata Schema for Describing a Bcid--
@@ -32,78 +30,67 @@ public class BcidMetadataSchema {
     public metadataElement identifier;
     public metadataElement isPublic;
 
-    public Bcid bcid = null;
+    private final Bcid bcid;
+    private final Identifier identifierObject;
+    private final SettingsManager settingsManager;
 
-    private static Logger logger = LoggerFactory.getLogger(BcidMetadataSchema.class);
-
-    public BcidMetadataSchema() {
+    public BcidMetadataSchema(Bcid bcid, SettingsManager settingsManager, Identifier identifier) {
+        this.bcid = bcid;
+        this.identifierObject = identifier;
+        this.settingsManager = settingsManager;
+        registerMetadataElements();
+        setMetadataElements();
     }
 
-    public void BCIDMetadataInit(Bcid bcid) {
-        this.bcid = bcid;
-        init();
-        dcPublisher.setValue(bcid.projectCode);
+    private void setMetadataElements() {
+        Expedition expedition = bcid.getExpedition();
+        if (expedition != null) {
+            dcPublisher.setValue(expedition.getProject().getProjectCode());
+            isPublic.setValue(String.valueOf(expedition.isPublic()));
+        }
 
-        String identifier = null;
-        Iterator iterator = bcid.getMetadata().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry pairs = (Map.Entry) iterator.next();
-            String bcidKey = (String) pairs.getKey();
-            try {
-                if (bcidKey.equalsIgnoreCase("identifier")) {
-                    identifier = pairs.getValue().toString();
-                    this.identifier.setValue(identifier);
-                    about.setValue(bcid.resolverTargetPrefix + identifier);
-                } else if (bcidKey.equalsIgnoreCase("resourceType")) {
-                    resource.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("ts")) {
-                    dcDate.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("who")) {
-                    dcCreator.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("title")) {
-                    dcTitle.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("suffix")) {
-                    dcSource.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("rights")) {
-                    dcRights.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("isPublic")) {
-                    isPublic.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("prefix")) {
-                    //Don't print this line for the Test Account
-                    if (!bcid.getMetadata().get("who").equals("Test Account")) {
-                        dcIsReferencedBy.setValue("http://n2t.net/" + pairs.getValue().toString());
-                    }
-                } else if (bcidKey.equalsIgnoreCase("doi")) {
-                    // Create mapping here for DOI if it only shows the identifier
-                    String doi = pairs.getValue().toString().replace("doi:", "http://dx.doi.org/");
-                    dcIsPartOf.setValue(doi);
-                } else if (bcidKey.equalsIgnoreCase("webAddress")) {
-                    dcHasVersion.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("forwardingResolution")) {
-                    forwardingResolution.setValue(pairs.getValue().toString());
-                } else if (bcidKey.equalsIgnoreCase("resolutionTarget")) {
-                    resolutionTarget.setValue(pairs.getValue().toString());
-                }
-            } catch (NullPointerException e) {
-                //TODO should we silence this exception?
-                logger.warn("NullPointerException thrown for bcid: {}", bcid);
-            }
+        identifier.setValue(String.valueOf(bcid.getIdentifier()));
+        about.setValue(settingsManager.retrieveValue("resolverTargetPrefix") + identifierObject.getIdentifier());
+        resource.setValue(bcid.getResourceType());
+
+        dcDate.setValue(String.valueOf(bcid.getTs()));
+        dcCreator.setValue(bcid.getUser().getFullName());
+        dcTitle.setValue(bcid.getTitle());
+        dcSource.setValue(identifierObject.getSuffix());
+        dcRights.setValue(settingsManager.retrieveValue("rights"));
+        dcHasVersion.setValue(String.valueOf(bcid.getWebAddress()));
+        dcMediator.setValue(settingsManager.retrieveValue("resolverMetadataPrefix"));
+
+        if (!bcid.getUser().getFullName().equals("Test Account")) {
+            dcIsReferencedBy.setValue("http://n2t.net/" + bcid.getIdentifier());
         }
-        if (identifier != null) {
-            try {
-                dcMediator.setValue(bcid.getMetadataTarget().toString());
-            } catch (URISyntaxException e) {
-                //TODO should we silence this exception?
-                logger.warn("URISyntaxException thrown", e);
-            }
+
+        if (bcid.getDoi() != null) {
+            String doi = bcid.getDoi().replace("doi:", "http://dx.doi.org/");
+            dcIsPartOf.setValue(doi);
         }
+
+
+        if (hasForwardingResolution()) {
+            forwardingResolution.setValue(String.valueOf(true));
+            resolutionTarget.setValue(bcid.getWebAddress() + identifierObject.getSuffix());
+        }
+
+    }
+
+    private boolean hasForwardingResolution() {
+        if (!StringUtils.isEmpty(bcid.getWebAddress()) &&
+                !StringUtils.isEmpty(identifierObject.getSuffix())) {
+            return true;
+        }
+        return false;
     }
 
     /**
      * Register all of the bcid metadataElements
      */
-    private void init() {
-        dcPublisher = new metadataElement("dc:publisher", "", "The BCID project to which this resource belongs.");
+    private void registerMetadataElements() {
+        dcPublisher = new metadataElement("dc:publisher", "Unassigned to a project", "The BCID project to which this resource belongs.");
         about = new metadataElement("rdf:Description", "", "The current bcid resolution service.");
         resource = new metadataElement("rdf:type", "", "What is this object.");
         dcDate = new metadataElement("dc:date",  "", "Date that metadata was last updated for this bcid.");
@@ -114,11 +101,11 @@ public class BcidMetadataSchema {
         dcIsReferencedBy = new metadataElement("dcterms:isReferencedBy", "", "The group level bcid, registered with EZID.");
         dcIsPartOf = new metadataElement("dcterms:isPartOf", "", "A DOI describing the dataset which this bcid belongs to.");
         dcHasVersion = new metadataElement("dcterms:hasVersion", "", "The redirection target for this bcid.");
-        forwardingResolution = new metadataElement("urn:forwardingResolution", "", "Indicates that this bcid has a suffix and should be forwarded to the fowardingResolutionTarget.");
+        forwardingResolution = new metadataElement("urn:forwardingResolution", "false", "Indicates that this bcid has a suffix and should be forwarded to the fowardingResolutionTarget.");
         resolutionTarget = new metadataElement("urn:resolutionTarget", "", "The target uri for the locally-unique bcid.");
         identifier = new metadataElement("identifier", "", "The identifier this metadata represents.");
         dcMediator = new metadataElement("dcterms:mediator", "", "Metadata mediator");
-        isPublic = new metadataElement("urn:isPublic", "", "If this bcid is publicly viewable");
+        isPublic = new metadataElement("urn:isPublic", "false", "If this bcid is publicly viewable");
     }
 
     /**
@@ -129,7 +116,7 @@ public class BcidMetadataSchema {
         private String value;
         private String description;
 
-        public metadataElement(String key, String value, String description) {
+        metadataElement(String key, String value, String description) {
             this.key = key;
             this.value = value;
             this.description = description;

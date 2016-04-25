@@ -4,7 +4,7 @@ import biocode.fims.bcid.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repositories.ExpeditionRepository;
+import biocode.fims.bcid.BcidMetadataSchema.metadataElement;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
@@ -24,8 +24,9 @@ public class JSONRenderer extends Renderer {
      * constructor for displaying private dataset information
      * @param username
      */
-    public JSONRenderer(String username, Bcid bcid, SettingsManager settingsManager) {
-        super(bcid);
+    public JSONRenderer(String username, Bcid bcid,
+                        BcidMetadataSchema bcidMetadataSchema, SettingsManager settingsManager) {
+        super(bcid, bcidMetadataSchema);
         userId = BcidDatabase.getUserId(username);
         this.settingsManager = settingsManager;
     }
@@ -56,12 +57,12 @@ public class JSONRenderer extends Renderer {
      */
     public JSONObject getMetadata() {
         json = new JSONObject();
-        Field[] fields = getClass().getFields();
+        Field[] fields = bcidMetadataSchema.getClass().getFields();
         for (Field field: fields) {
             // loop through all Fields of BcidMetadataSchema that are metadataElement
             if (field.getType().equals(metadataElement.class)) {
                 try {
-                    metadataElement element = (metadataElement) field.get(this);
+                    metadataElement element = (metadataElement) field.get(bcidMetadataSchema);
                     JSONObject obj = new JSONObject();
 
                     obj.put("value", element.getValue());
@@ -79,7 +80,7 @@ public class JSONRenderer extends Renderer {
             }
         }
 
-        appendExpeditionOrDatasetData(resource);
+        appendExpeditionOrDatasetData(bcidMetadataSchema.resource);
         return json;
     }
 

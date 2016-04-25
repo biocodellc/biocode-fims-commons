@@ -1,5 +1,6 @@
 package biocode.fims.bcid.Renderer;
 
+import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.entities.Bcid;
 
 /**
@@ -7,8 +8,8 @@ import biocode.fims.entities.Bcid;
  */
 public class RDFRenderer extends Renderer {
 
-    public RDFRenderer(Bcid bcid) {
-        super(bcid);
+    public RDFRenderer(Bcid bcid, BcidMetadataSchema bcidMetadataSchema) {
+        super(bcid, bcidMetadataSchema);
     }
 
     public void enter() {
@@ -22,17 +23,17 @@ public class RDFRenderer extends Renderer {
     }
 
     public void printMetadata() {
-        resourceAppender(resource);
-        resourceAppender(dcMediator);
-        resourceAppender(dcHasVersion);
-        resourceAppender(dcIsPartOf);
-        resourceAppender(dcRights);
-        resourceAppender(dcIsReferencedBy);
-        propertyAppender(dcTitle);
-        propertyAppender(dcPublisher);
-        propertyAppender(dcCreator);
-        propertyAppender(dcDate);
-        propertyAppender(dcSource);
+        resourceAppender(bcidMetadataSchema.resource);
+        resourceAppender(bcidMetadataSchema.dcMediator);
+        resourceAppender(bcidMetadataSchema.dcHasVersion);
+        resourceAppender(bcidMetadataSchema.dcIsPartOf);
+        resourceAppender(bcidMetadataSchema.dcRights);
+        resourceAppender(bcidMetadataSchema.dcIsReferencedBy);
+        propertyAppender(bcidMetadataSchema.dcTitle);
+        propertyAppender(bcidMetadataSchema.dcPublisher);
+        propertyAppender(bcidMetadataSchema.dcCreator);
+        propertyAppender(bcidMetadataSchema.dcDate);
+        propertyAppender(bcidMetadataSchema.dcSource);
     }
 
     public void leave() {
@@ -54,7 +55,7 @@ public class RDFRenderer extends Renderer {
      *
      * @param map
      */
-    private void resourceAppender(metadataElement map) {
+    private void resourceAppender(BcidMetadataSchema.metadataElement map) {
         if (map != null) {
             if (!map.getValue().trim().equals("")) {
                 outputSB.append("\t<" + map.getKey() + " rdf:resource=\"" + map.getValue() + "\" />\n");
@@ -67,7 +68,7 @@ public class RDFRenderer extends Renderer {
      *
      * @param map
      */
-    private void propertyAppender(metadataElement map) {
+    private void propertyAppender(BcidMetadataSchema.metadataElement map) {
         //TODO should we silence this exception?
         try {
         if (map != null) {
