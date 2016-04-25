@@ -84,6 +84,8 @@ public class BcidService {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 
+    public Set<Bcid> getLatestDatasets(int projectId) { return bcidRepository.findLatestDatasets(projectId); }
+
     private void createEzid(Bcid bcid) {
         // Create EZIDs right away for Bcid level Identifiers
         // Initialize ezid account

@@ -1,12 +1,16 @@
 package biocode.fims.repositories;
 
+import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.Bcid;
+
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 /**
  * This repositories provides CRUD operations for {@link Bcid} objects
@@ -32,10 +36,19 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
                     "ON b.bcidId=eb.bcidId " +
             "WHERE BINARY identifier=:identifier",
             nativeQuery = true)
-//     TODO catch EmptyResultDataAccessException an throw bad request with invalid identifier?
     Bcid findByIdentifier(@Param("identifier") String identifier);
 
     Bcid findByBcidId(int bcidId);
 
     Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
+
+    @Query(value =
+            "select b from Bcid b where b.ts in \n" +
+                "(select max(b2.ts) from Bcid b2 where " +
+                    "b2.expedition.project.projectId=:projectId and " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
+                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
+                ")"
+    )
+    Set<Bcid> findLatestDatasets(@Param("projectId") int projectId);
 }
