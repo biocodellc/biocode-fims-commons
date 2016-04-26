@@ -1,6 +1,7 @@
 package biocode.fims.entities;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -146,6 +147,7 @@ public class User {
         this.username = username;
     }
 
+    @JsonIgnore
     @Column(nullable = false)
     public String getPassword() {
         return password;

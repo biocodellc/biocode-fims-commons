@@ -21,9 +21,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * REST interface calls for working with projects.  This includes fetching details associated with projects.
@@ -31,7 +29,8 @@ import java.util.List;
  * manually by an administrator
  */
 @Path("projects")
-public class ProjectService extends FimsService {
+public class ProjectRestService extends FimsService {
+
 
     /**
      * Produce a list of all publically available projects and the private projects the logged in user is a memeber of
@@ -364,7 +363,6 @@ public class ProjectService extends FimsService {
 
         return Response.ok(expeditions.toJSONString()).build();
     }
-
 
     /**
      * Retrieve a list of valid values for a given column

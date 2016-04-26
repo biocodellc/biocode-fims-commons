@@ -15,12 +15,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -84,7 +87,24 @@ public class BcidService {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 
-    public Set<Bcid> getLatestDatasets(int projectId) { return bcidRepository.findLatestDatasets(projectId); }
+    public Set<Bcid> getLatestDatasets(int projectId) {
+        return bcidRepository.findLatestDatasets(projectId);
+    }
+
+    /**
+     * fetch the latest Bcids with resourceType = 'http://purl.org/dc/dcmitype/Dataset' for the provided list of
+     * {@link Expedition}s
+     * @param expeditions
+     * @return
+     */
+    public Set<Bcid> getLatestDatasetsForExpeditions(List<Expedition> expeditions) {
+        List<Integer> expeditionIds = new ArrayList<>();
+
+        for (Expedition expedition: expeditions)
+            expeditionIds.add(expedition.getExpeditionId());
+
+        return bcidRepository.findLatestDatasetsForExpeditions(expeditionIds);
+    }
 
     private void createEzid(Bcid bcid) {
         // Create EZIDs right away for Bcid level Identifiers

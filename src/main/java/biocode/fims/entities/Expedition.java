@@ -1,5 +1,7 @@
 package biocode.fims.entities;
 
+import com.fasterxml.jackson.annotation.*;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -159,6 +161,7 @@ public class Expedition {
                 '}';
     }
 
+    @JsonIgnore
     @OneToMany(targetEntity = Bcid.class,
             mappedBy = "expedition",
             fetch = FetchType.LAZY
@@ -171,6 +174,9 @@ public class Expedition {
         this.bcids = bcids;
     }
 
+    @JsonProperty(value = "projectId")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "projectId")
+    @JsonIdentityReference(alwaysAsId = true)
     @ManyToOne
     @JoinColumn(name = "projectId",
             referencedColumnName = "projectId",
@@ -185,6 +191,10 @@ public class Expedition {
     }
 
 
+//    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "@userId")
+    @JsonProperty(value = "userId")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
+    @JsonIdentityReference(alwaysAsId = true)
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_expeditions_userId"),

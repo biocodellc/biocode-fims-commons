@@ -6,6 +6,9 @@ import biocode.fims.entities.*;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +67,10 @@ public class ExpeditionService {
                 expedition.getExpeditionId(),
                 conceptAlias, uri
         );
+    }
+
+    public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
+        return expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
     }
 
     /**

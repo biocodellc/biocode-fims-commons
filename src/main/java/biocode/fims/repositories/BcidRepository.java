@@ -3,6 +3,8 @@ package biocode.fims.repositories;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.Bcid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +12,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,4 +54,14 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
                 ")"
     )
     Set<Bcid> findLatestDatasets(@Param("projectId") int projectId);
+
+    @Query(value =
+            "select b from Bcid b where b.ts in \n" +
+                    "(select max(b2.ts) from Bcid b2 where " +
+                    "b2.expedition.expeditionId in (:expeditionList) and " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
+                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
+                    ")"
+    )
+    Set<Bcid> findLatestDatasetsForExpeditions(@Param("expeditionList") List<Integer> expeditionList);
 }
