@@ -1,15 +1,13 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
-import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.repository.BcidRepository;
-import biocode.fims.repository.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.ExpeditionService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;

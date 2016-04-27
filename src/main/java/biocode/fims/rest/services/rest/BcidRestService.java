@@ -3,13 +3,15 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.repository.BcidRepository;
-import biocode.fims.repository.ExpeditionRepository;
+import biocode.fims.repositories.BcidRepository;
+import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -25,14 +27,12 @@ import java.util.Hashtable;
 @Path("bcids")
 public class BcidRestService extends FimsService {
 
-    BcidRepository bcidRepository;
-    ExpeditionRepository expeditionRepository;
+    private final BcidService bcidService;
     SettingsManager settingsManager;
 
     @Autowired
-    BcidRestService(BcidRepository bcidRepository, ExpeditionRepository expeditionRepository, SettingsManager settingsManager) {
-        this.bcidRepository = bcidRepository;
-        this.expeditionRepository = expeditionRepository;
+    BcidRestService(BcidService bcidService, SettingsManager settingsManager) {
+        this.bcidService = bcidService;
         this.settingsManager = settingsManager;
     }
 
@@ -95,11 +95,26 @@ public class BcidRestService extends FimsService {
     @Path("/metadata/{bcidId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
-        biocode.fims.entities.Bcid bcid = bcidRepository.findById(bcidId);
+        String response;
+        try {
+            biocode.fims.entities.Bcid bcid = bcidService.getBcid(bcidId);
+            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
+                    bcid,
+                    settingsManager,
+                    new Identifier(
+                            String.valueOf(bcid.getIdentifier()),
+                            settingsManager.retrieveValue("divider")
+                            )
+            );
 
-        JSONRenderer renderer = new JSONRenderer(username, bcid, expeditionRepository, settingsManager);
+            JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+            response = renderer.render();
 
-        return Response.ok(renderer.render()).build();
+        } catch (EmptyResultDataAccessException e) {
+            response = "{\"Identifier\":{\"status\":\"not found\"}}";
+        }
+
+        return Response.ok(response).build();
     }
 
     /**

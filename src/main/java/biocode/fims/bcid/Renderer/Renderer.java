@@ -7,13 +7,14 @@ import biocode.fims.bcid.BcidMetadataSchema;
  * Abstract class Renderer implements the visitor methods
  * and controls all renderer subClasses for rendering bcids
  */
-public abstract class Renderer extends BcidMetadataSchema implements RendererInterface {
+public abstract class Renderer implements RendererInterface {
     protected StringBuilder outputSB;
     protected Bcid bcid;
+    protected BcidMetadataSchema bcidMetadataSchema;
 
-    public Renderer(Bcid bcid) {
+    public Renderer(Bcid bcid, BcidMetadataSchema bcidMetadataSchema) {
         this.bcid = bcid;
-        BCIDMetadataInit(new biocode.fims.bcid.Bcid(bcid));
+        this.bcidMetadataSchema = bcidMetadataSchema;
     }
 
     public void setBcid(Bcid bcid) {

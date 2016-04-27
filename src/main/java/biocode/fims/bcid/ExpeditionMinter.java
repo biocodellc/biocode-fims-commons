@@ -4,14 +4,11 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repository.BcidRepository;
+import biocode.fims.repositories.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;

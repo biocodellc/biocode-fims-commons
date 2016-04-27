@@ -167,8 +167,8 @@ CREATE TABLE `ldapNonces` (
 DROP TABLE IF EXISTS `templateConfigs`;
 
 CREATE TABLE `templateConfigs` (
-  `templateConfigId` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The users id',
+  `templateConfigId` int(11) NOT NULL AUTO_INCREMENT,
+  `userId` int(11) NOT NULL COMMENT 'The users id',
   `projectId` int(11) NOT NULL COMMENT 'The project Id',
   `configName` varchar(100) NOT NULL COMMENT 'The name of the config',
   `public` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Whether or not this is a public template config?',
