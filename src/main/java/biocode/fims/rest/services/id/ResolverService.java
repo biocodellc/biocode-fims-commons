@@ -21,6 +21,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.net.URI;
 
 /**
  * This is the core Resolver Service for BCIDs.  It returns URIs
@@ -47,7 +48,7 @@ public class ResolverService extends FimsService {
      */
     @GET
     @Path("{identifier: .+}")
-    @Produces({MediaType.TEXT_HTML, "application/rdf+xml"})
+    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, "application/rdf+xml"})
     public Response run(
             @PathParam("identifier") String identifierString,
             @HeaderParam("accept") String accept) {
@@ -82,7 +83,12 @@ public class ResolverService extends FimsService {
                 mapping.addMappingRules(new Digester(), configFile);
             }
 
-            return Response.seeOther(resolver.resolveIdentifier(identifierString, mapping)).build();
+            URI resolution = resolver.resolveIdentifier(identifierString, mapping);
+
+            if (accept.equalsIgnoreCase("application/json"))
+                return Response.ok("{\"url\": \"" + resolution + "\"}").build();
+            else
+                return Response.seeOther(resolution).build();
         }
 
     }
