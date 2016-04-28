@@ -18,6 +18,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -98,6 +99,8 @@ public class BcidService {
      * @return
      */
     public Set<Bcid> getLatestDatasetsForExpeditions(List<Expedition> expeditions) {
+        Assert.notEmpty(expeditions);
+
         List<Integer> expeditionIds = new ArrayList<>();
 
         for (Expedition expedition: expeditions)
