@@ -21,7 +21,7 @@ public class FimsDefaultServlet extends DefaultServlet {
         // angular JS router do the work
         String redirectRoute = "/index.html";
 
-        String absoluteFilePath = getServletContext().getRealPath(request.getRequestURI());
+        String absoluteFilePath = getServletContext().getRealPath(request.getPathInfo());
         File file = new File(absoluteFilePath);
 
         if (!file.exists()) {
