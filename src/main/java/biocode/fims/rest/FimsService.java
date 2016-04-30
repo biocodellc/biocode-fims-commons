@@ -1,8 +1,10 @@
 package biocode.fims.rest;
 
 import biocode.fims.auth.oauth2.OAuthProvider;
-import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.entities.User;
+import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +13,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.File;
-import java.util.List;
 
 /**
  * An abstract class that sets the necessary information when communicating with Biocode-Fims services
@@ -22,23 +23,27 @@ public abstract class FimsService {
     @Context
     protected HttpHeaders headers;
     protected HttpSession session;
+    protected User user;
     protected String username;
     protected Integer userId;
     @QueryParam("access_token")
     protected String accessToken;
+    protected final String appRoot;
+    protected final boolean ignoreUser;
 
-    protected static SettingsManager sm;
-    protected static String appRoot;
-    protected static Boolean ignoreUser;
+    private final UserService userService;
+    protected final SettingsManager settingsManager;
 
-    static {
-        sm = SettingsManager.getInstance();
-        appRoot = sm.retrieveValue("appRoot", null);
-        ignoreUser = Boolean.valueOf(sm.retrieveValue("ignoreUser"));
+    public FimsService(UserService userService, SettingsManager settingsManager) {
+        this.userService = userService;
+        this.settingsManager = settingsManager;
+
+        appRoot = settingsManager.retrieveValue("appRoot", null);
+        ignoreUser = Boolean.valueOf(settingsManager.retrieveValue("ignoreUser", "false"));
     }
 
     public String uploadPath() {
-        return context.getRealPath(sm.retrieveValue("uploadDir")) + File.separator;
+        return context.getRealPath(settingsManager.retrieveValue("uploadDir")) + File.separator;
     }
 
     @Context
@@ -54,11 +59,12 @@ public abstract class FimsService {
 
         if (accessToken != null && !accessToken.isEmpty()) {
             OAuthProvider provider = new OAuthProvider();
-            username = provider.validateToken(accessToken);
-            userId = BcidDatabase.getUserId(username);
+            user = userService.getUser(provider.validateToken(accessToken));
         } else {
-            username = (String) session.getAttribute("username");
-            userId = (Integer) session.getAttribute("userId");
+            user = (User) session.getAttribute("user");
         }
+
+        username = (user != null) ? user.getUsername() : null;
+        userId = (user != null) ? user.getUserId() : null;
     }
 }

@@ -8,6 +8,8 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -34,7 +36,9 @@ public class ExpeditionRestService extends FimsService {
     private ExpeditionService expeditionService;
 
     @Autowired
-    public ExpeditionRestService(ExpeditionService expeditionService) {
+    public ExpeditionRestService(ExpeditionService expeditionService, UserService userService,
+                                 SettingsManager settingsManager) {
+        super(userService, settingsManager);
         this.expeditionService = expeditionService;
     }
 

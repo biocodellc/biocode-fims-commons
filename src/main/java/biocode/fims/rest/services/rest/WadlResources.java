@@ -1,11 +1,10 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.rest.FimsService;
+import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.wadl.WadlApplicationContext;
 import org.glassfish.jersey.server.wadl.internal.ApplicationDescription;
 
 import javax.inject.Singleton;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -24,23 +23,22 @@ import java.io.Writer;
 @Produces({"application/vnd.sun.wadl+xml", "application/xml"})
 @Singleton
 @Path("fims.wadl")
-public final class WadlResources extends FimsService {
-
+public final class WadlResources {
 
     private WadlApplicationContext wadlContext;
-
     private com.sun.research.ws.wadl.Application application;
-
     private byte[] wadlXmlRepresentation;
+    private final SettingsManager settingsManager;
 
-    public WadlResources(@Context WadlApplicationContext wadlContext) {
+    public WadlResources(@Context WadlApplicationContext wadlContext, SettingsManager settingsManager) {
         this.wadlContext = wadlContext;
+        this.settingsManager = settingsManager;
     }
 
     @GET
     public synchronized Response getWadl(@Context UriInfo uriInfo) {
 
-        String styleSheetUrl = sm.retrieveValue("wadlPath");
+        String styleSheetUrl = settingsManager.retrieveValue("wadlPath");
         ApplicationDescription ae = wadlContext.getApplication(uriInfo, true);
         this.application = ae.getApplication();
 

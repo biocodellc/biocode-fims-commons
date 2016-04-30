@@ -10,7 +10,10 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -21,7 +24,12 @@ import java.util.Hashtable;
  * The REST Interface for dealing with users. Includes user creation and profile updating.
  */
 @Path("users")
-public class UserService extends FimsService {
+public class UserRestService extends FimsService {
+
+    @Autowired
+    UserRestService(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
 
     /**
      * Service to create a new user.

@@ -12,10 +12,13 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -31,6 +34,10 @@ import java.util.*;
 @Path("projects")
 public class ProjectRestService extends FimsService {
 
+    @Autowired
+    ProjectRestService(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
 
     /**
      * Produce a list of all publically available projects and the private projects the logged in user is a memeber of

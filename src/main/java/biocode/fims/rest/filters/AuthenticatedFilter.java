@@ -1,6 +1,7 @@
 package biocode.fims.rest.filters;
 
 import biocode.fims.auth.oauth2.OAuthProvider;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 
 import javax.annotation.Priority;
@@ -29,7 +30,6 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
         throws IOException {
         HttpSession session = webRequest.getSession();
-        Object user = session.getAttribute("username");
         String accessToken = null;
         List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
 
@@ -50,7 +50,7 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
                 throw new UnauthorizedRequestException("You must be logged in to access this service",
                         "Invalid/Expired access_token");
             }
-        } else if (user == null) {
+        } else if (session.getAttribute("user") != null) {
             throw new UnauthorizedRequestException("You must be logged in to access this service.");
         }
     }

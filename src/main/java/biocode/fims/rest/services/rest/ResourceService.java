@@ -2,6 +2,9 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.rest.FimsService;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,6 +17,11 @@ import javax.ws.rs.core.Response;
  */
 @Path("resourceTypes")
 public class ResourceService extends FimsService {
+
+    @Autowired
+    ResourceService(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
 
     /**
      * get all resourceTypes minus Dataset

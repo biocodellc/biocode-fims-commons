@@ -3,11 +3,9 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.repositories.BcidRepository;
-import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.BcidService;
+import biocode.fims.service.*;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +26,12 @@ import java.util.Hashtable;
 public class BcidRestService extends FimsService {
 
     private final BcidService bcidService;
-    SettingsManager settingsManager;
 
     @Autowired
-    BcidRestService(BcidService bcidService, SettingsManager settingsManager) {
+    BcidRestService(BcidService bcidService, UserService userService,
+                    SettingsManager settingsManager) {
+        super(userService, settingsManager);
         this.bcidService = bcidService;
-        this.settingsManager = settingsManager;
     }
 
     /**
@@ -74,7 +72,7 @@ public class BcidRestService extends FimsService {
 
 
         // Mint the Bcid
-        BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
+        BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(this.settingsManager.retrieveValue("ezidRequests")));
         if (title == null || title.isEmpty()) {
             title = resourceTypeString;
         }

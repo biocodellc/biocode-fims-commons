@@ -19,4 +19,5 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     User findByUserId(int userId);
 
+    User findByUsername(String username);
 }

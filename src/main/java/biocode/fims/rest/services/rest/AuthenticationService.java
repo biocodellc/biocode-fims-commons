@@ -5,15 +5,21 @@ import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.BasicAuthDecoder;
 import biocode.fims.auth.oauth2.OAuthProvider;
 import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.OAuthException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.service.*;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.ErrorInfo;
 import biocode.fims.utils.QueryParams;
+import com.sun.xml.internal.ws.api.config.management.policy.ManagementAssertion;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +40,14 @@ public class AuthenticationService extends FimsService {
     @Context
     private HttpServletRequest request;
     private static Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+
+    private final UserService userService;
+
+    @Autowired
+    public AuthenticationService(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+        this.userService = userService;
+    }
 
     /**
      * Service to log a user into the biocode-fims system
@@ -62,9 +76,9 @@ public class AuthenticationService extends FimsService {
             isAuthenticated = authenticator.login(usr, pass);
 
             if (isAuthenticated) {
+                User user = userService.getUser(usr);
                 // Place the user in the session
-                session.setAttribute("username", usr);
-                session.setAttribute("userId", BcidDatabase.getUserId(usr));
+                session.setAttribute("user", user);
 
                 Authorizer myAuthorizer = new Authorizer();
 

@@ -46,7 +46,7 @@ public class SecureFilter implements Filter {
 
         HttpSession session = request.getSession();
 
-        if (session.getAttribute("username") == null) {
+        if (session.getAttribute("user") == null) {
             response.sendRedirect(loginPageUrl);
         }
         filterchain.doFilter(req, res);

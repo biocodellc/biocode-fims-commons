@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.Set;
 
 /**
- * Created by rjewing on 4/22/16.
+ * User entity object
  */
 @Entity
 @Table(name = "users", schema = "biscicol")
@@ -302,6 +302,7 @@ public class User {
         return result;
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     public Set<Bcid> getBcids() {
         return bcids;
@@ -311,6 +312,7 @@ public class User {
         this.bcids = bcids;
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     public Set<Expedition> getExpeditions() {
         return expeditions;
@@ -320,6 +322,7 @@ public class User {
         this.expeditions = expeditions;
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     public Set<Project> getProjects() {
         return projects;
@@ -329,6 +332,7 @@ public class User {
         this.projects = projects;
     }
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "userProjects",
             schema = "biscicol",
@@ -337,7 +341,6 @@ public class User {
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
             inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
     )
-
     public Set<Project> getProjectsMemberOf() {
         return projectsMemberOf;
     }
@@ -346,6 +349,7 @@ public class User {
         this.projectsMemberOf = projectsMemberOf;
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     public Set<TemplateConfig> getTemplateConfigs() {
         return templateConfigs;
