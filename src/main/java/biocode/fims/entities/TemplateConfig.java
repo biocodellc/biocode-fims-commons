@@ -6,7 +6,7 @@ import javax.persistence.*;
  * TemplateConfig Entity object
  */
 @Entity
-@Table(name = "templateConfigs", schema = "biscicol")
+@Table(name = "templateConfigs")
 public class TemplateConfig {
 
     private int templateConfigId;

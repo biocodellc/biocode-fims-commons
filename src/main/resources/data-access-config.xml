@@ -37,6 +37,7 @@
                 <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
                 <prop key="hibernate.id.new_generator_mappings">true</prop>
                 <prop key="hibernate.max_fetch_depth">3</prop>
+                <prop key="hibernate.default_schema">${schema}</prop>
             </props>
         </property>
     </bean>

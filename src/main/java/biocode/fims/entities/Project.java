@@ -8,7 +8,7 @@ import java.util.Set;
  * Project Entity object
  */
 @Entity
-@Table(name = "projects", schema = "biscicol")
+@Table(name = "projects")
 public class Project {
 
     private int projectId;

@@ -6,9 +6,9 @@ import biocode.fims.entities.*;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +58,10 @@ public class ExpeditionService {
      */
     public Bcid getRootBcid(String expeditionCode, int projectId, String conceptAlias) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
+
+        if (expedition == null) {
+            throw new EmptyResultDataAccessException(1);
+        }
 
         ResourceTypes resourceTypes = new ResourceTypes();
         ResourceType rt = resourceTypes.getByShortName(conceptAlias);

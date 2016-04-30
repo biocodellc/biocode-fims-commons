@@ -11,7 +11,7 @@ import java.util.Date;
  * Bcid Entity object
  */
 @Entity
-@Table(name = "bcids", schema = "biscicol")
+@Table(name = "bcids")
 public class Bcid {
     private int bcidId;
     private boolean ezidMade;
@@ -275,7 +275,6 @@ public class Bcid {
 
     @ManyToOne
     @JoinTable(name = "expeditionBcids",
-            schema = "biscicol",
             joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
             inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
             foreignKey = @ForeignKey(name = "FK_expeditionBcids_bcidId"),

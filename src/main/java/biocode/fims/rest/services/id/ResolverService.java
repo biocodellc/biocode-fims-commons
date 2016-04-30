@@ -30,9 +30,9 @@ import java.net.URI;
 @Path("/")
 public class ResolverService extends FimsService {
 
-    private BcidService bcidService;
-    private SettingsManager settingsManager;
-    private Resolver resolver;
+    private final BcidService bcidService;
+    private final SettingsManager settingsManager;
+    private final Resolver resolver;
 
     @Autowired
     ResolverService(BcidService bcidService, UserService userService,

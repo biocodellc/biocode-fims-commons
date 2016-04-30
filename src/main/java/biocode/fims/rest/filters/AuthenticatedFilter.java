@@ -50,7 +50,7 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
                 throw new UnauthorizedRequestException("You must be logged in to access this service",
                         "Invalid/Expired access_token");
             }
-        } else if (session.getAttribute("user") != null) {
+        } else if (session.getAttribute("user") == null) {
             throw new UnauthorizedRequestException("You must be logged in to access this service.");
         }
     }

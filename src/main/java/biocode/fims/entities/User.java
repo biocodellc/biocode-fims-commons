@@ -11,7 +11,7 @@ import java.util.Set;
  * User entity object
  */
 @Entity
-@Table(name = "users", schema = "biscicol")
+@Table(name = "users")
 public class User {
 
     private int userId;
@@ -335,7 +335,6 @@ public class User {
     @JsonIgnore
     @ManyToMany
     @JoinTable(name = "userProjects",
-            schema = "biscicol",
             joinColumns = @JoinColumn(name = "userId", referencedColumnName = "userId"),
             inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "projectId"),
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),

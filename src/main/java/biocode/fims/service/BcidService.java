@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -143,13 +142,14 @@ public class BcidService {
         UserRepository userService = applicationContext.getBean(UserRepository.class);
         ExpeditionRepository expeditionRepository = applicationContext.getBean(ExpeditionRepository.class);
 
-        User user = userService.findByUserId(8);
-        user.setEmail("test@email.com");
-        Expedition expedition = expeditionRepository.findByExpeditionId(100);
-        Bcid bcid = new Bcid.BcidBuilder(user, "Resource")
+//        User user = userService.findByUserId(8);
+//        user.setEmail("test@email.com");
+//        Expedition expedition = expeditionRepository.findByExpeditionId(100);
+//        Bcid bcid = new Bcid.BcidBuilder(user, "Resource")
 //                .expedition(expedition)
-                .build();
-        bcidService.create(bcid);
+//                .build();
+//        bcidService.create(bcid);
+        System.out.println(bcidService.getBcid(484, "Resource"));
 //        System.out.println(bcidService.getBcid("ark:/21547/r2"));
     }
 }

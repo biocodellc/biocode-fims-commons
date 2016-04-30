@@ -11,7 +11,7 @@ import java.util.Set;
  * Expedition Entity object
  */
 @Entity
-@Table(name = "expeditions", schema = "biscicol")
+@Table(name = "expeditions")
 public class Expedition {
     public static final String EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection";
 
