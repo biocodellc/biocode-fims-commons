@@ -151,9 +151,15 @@ public class Process {
      */
     public void runExpeditionCheck() {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        Boolean checkExpedition = expeditionMinter.expeditionExistsInProject(processController.getExpeditionCode(), projectId);
-        processController.setExpeditionCreateRequired(!checkExpedition);
-        if (!checkExpedition) {
+        Boolean expeditionExistsInProject = expeditionMinter.expeditionExistsInProject(processController.getExpeditionCode(), projectId);
+        processController.setExpeditionCreateRequired(!expeditionExistsInProject);
+        if (!expeditionExistsInProject && (Boolean.valueOf(sm.retrieveValue("ignoreUser")) ||
+                expeditionMinter.userOwnsExpedition(
+                    processController.getUserId(),
+                    processController.getExpeditionCode(),
+                    processController.getProjectId()
+                )
+            )) {
             processController.setExpeditionAssignedToUserAndExists(true);
         }
     }
