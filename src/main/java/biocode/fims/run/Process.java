@@ -217,7 +217,7 @@ public class Process {
                         processController.getUserId(),
                         entity.getConceptURI(),
                         entity.getConceptAlias(),
-                        "",
+                        null,
                         null, null, false));
 
                 // Associate this Bcid with this expedition

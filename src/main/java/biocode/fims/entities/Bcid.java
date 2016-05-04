@@ -1,6 +1,8 @@
 package biocode.fims.entities;
 
 import biocode.fims.converters.UriPersistenceConverter;
+import biocode.fims.fimsExceptions.BadRequestException;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -71,6 +73,7 @@ public class Bcid {
         }
 
         public BcidBuilder webAddress(URI val) {
+            isValidUrl(val);
             webAddress = val;
             return this;
         }
@@ -178,6 +181,7 @@ public class Bcid {
     }
 
     public void setWebAddress(URI webAddress) {
+        isValidUrl(webAddress);
         this.webAddress = webAddress;
     }
 
@@ -301,5 +305,12 @@ public class Bcid {
     private void setUser(User user) {
         Assert.notNull(user, "Bcid user must not be null");
         this.user = user;
+    }
+
+    private static void isValidUrl(URI webAddress) {
+        String[] schemes = {"http", "https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        if (!urlValidator.isValid(String.valueOf(webAddress)))
+            throw new BadRequestException("Invalid URL for bcid webAddress");
     }
 }
