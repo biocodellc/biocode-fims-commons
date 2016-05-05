@@ -181,7 +181,8 @@ public class Bcid {
     }
 
     public void setWebAddress(URI webAddress) {
-        isValidUrl(webAddress);
+        if (webAddress != null)
+            isValidUrl(webAddress);
         this.webAddress = webAddress;
     }
 
