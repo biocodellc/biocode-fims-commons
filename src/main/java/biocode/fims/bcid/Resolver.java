@@ -8,6 +8,9 @@ import biocode.fims.repositories.BcidRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,15 +50,14 @@ public class Resolver {
             switch (bcid.getResourceType()) {
                 case Expedition.EXPEDITION_RESOURCE_TYPE:
                     if (hasWebAddress)
-                        resolution = new URI(bcid.getWebAddress() + String.valueOf(bcid.getIdentifier()));
+                        resolution = bcid.getWebAddress();
                     else {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
                         String expeditionForwardingAddress = mapping.getExpeditionForwardingAddress();
 
                         if (expeditionForwardingAddress != null && !expeditionForwardingAddress.isEmpty()) {
-                            String appendedExpeditionForwardingAddress = expeditionForwardingAddress.replace(
-                                    "{ark}", String.valueOf(bcid.getIdentifier()));
-                            resolution = new URI(appendedExpeditionForwardingAddress);
+                            resolution = UriComponentsBuilder.fromUriString(expeditionForwardingAddress)
+                                    .buildAndExpand(bcid.getIdentifier()).toUri();
                         }
                     }
                     break;
@@ -66,14 +68,13 @@ public class Resolver {
                 default:
                     if (identifier.hasSuffix()) {
                         if (hasWebAddress)
-                            resolution = new URI(bcid.getWebAddress() + String.valueOf(identifier.getSuffix()));
+                            resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
                         else {
                             String conceptForwardingAddress = mapping.getConceptForwardingAddress();
 
                             if (conceptForwardingAddress != null && !conceptForwardingAddress.isEmpty()) {
-                                String appendedConceptForwardingAddress = conceptForwardingAddress.replace(
-                                        "{ark}", bcid.getIdentifier() + "/" + identifier.getSuffix());
-                                resolution = new URI(appendedConceptForwardingAddress);
+                                resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress + identifier.getSuffix())
+                                        .buildAndExpand(bcid.getIdentifier()).toUri();
                             }
                         }
                     }

@@ -63,21 +63,6 @@ public class ResolverTest {
     @Test
     public void should_return_resolverMetadataPrefix_plus_identifier_with_null_webAddress() throws Exception {
         Bcid bcid = new Bcid.BcidBuilder(demoUser, "Resource")
-                .webAddress(null)
-                .build();
-
-        bcid.setIdentifier(new URI(IDENTIFIER));
-        Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
-
-        URI location = resolver.resolveIdentifier(IDENTIFIER, null);
-
-        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
-    }
-
-    @Test
-    public void should_return_resolverMetadataPrefix_plus_identifier_with_empty_webAddress() throws Exception {
-        Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(demoUser, "Resource")
-                .webAddress(new URI(""))
                 .build();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
@@ -123,7 +108,7 @@ public class ResolverTest {
         Bcid bcid = new Bcid.BcidBuilder(demoUser, "Resource").build();
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(WEBADRESS + "{ark}").when(mapping).getConceptForwardingAddress();
+        PowerMockito.doReturn(WEBADRESS + "{ark}/").when(mapping).getConceptForwardingAddress();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
@@ -148,7 +133,7 @@ public class ResolverTest {
     }
 
     @Test
-    public void should_return_webAdress_plus_identifier_for_expedition_with_webAddress_and_suffix() throws Exception {
+    public void should_return_webAddress_for_expedition_with_webAddress_and_suffix() throws Exception {
         Bcid bcid = new Bcid.BcidBuilder(demoUser, Expedition.EXPEDITION_RESOURCE_TYPE)
                 .webAddress(new URI(WEBADRESS))
                 .build();
@@ -158,7 +143,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, null);
 
-        Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER), location);
+        Assert.assertEquals(new URI(WEBADRESS), location);
     }
 
     @Test

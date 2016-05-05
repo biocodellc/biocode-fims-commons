@@ -9,6 +9,8 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
@@ -78,10 +80,12 @@ public class ExpeditionMinter {
             // Get the expeditionId that was assigned
             expeditionId = getExpeditionId(internalId);
 
+            UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
+
             // upon successful expedition creation, create the expedition Bcid
             BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(sm.retrieveValue("ezidRequests")));
             String identifier = bcidMinter.createEntityBcid(new Bcid(userId, "http://purl.org/dc/dcmitype/Collection",
-                    expeditionTitle, webAddress, null, null, false));
+                    expeditionTitle, webAddressComponents.toUriString(), null, null, false));
 
             // Associate this Bcid with this expedition
             ExpeditionMinter expedition = new ExpeditionMinter();

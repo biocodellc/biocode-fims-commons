@@ -11,6 +11,9 @@ import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -76,8 +79,11 @@ public class BcidRestService extends FimsService {
         if (title == null || title.isEmpty()) {
             title = resourceTypeString;
         }
+
+        UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
+
         String identifier = bcidMinter.createEntityBcid(new Bcid(userId, resourceTypeString, title,
-                webAddress, graph, doi, finalCopy));
+                webAddressComponents.toUriString(), graph, doi, finalCopy));
 
         return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
     }

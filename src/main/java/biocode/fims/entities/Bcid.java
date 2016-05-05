@@ -2,11 +2,16 @@ package biocode.fims.entities;
 
 import biocode.fims.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 
 /**
@@ -177,6 +182,17 @@ public class Bcid {
 
     @Convert(converter = UriPersistenceConverter.class)
     public URI getWebAddress() {
+        // TODO move the following to the BcidService.create after all Bcid creation is done via BcidService class
+        if (identifier != null && webAddress != null && webAddress.toString().contains("%7Bark%7D")) {
+            try {
+                webAddress = new URI(StringUtils.replace(
+                        webAddress.toString(),
+                        "%7Bark%7D",
+                        identifier.toString()));
+            } catch (URISyntaxException e) {
+                throw new ServerErrorException(e);
+            }
+        }
         return webAddress;
     }
 
