@@ -133,7 +133,7 @@ public class ExpeditionService {
                     "Expedition code characters must be in one of the these ranges: [a-Z][0-9][-][_]");
         }
 
-        if (expedition.getProject().getExpdition(expeditionCode) != null)
+        if (getExpedition(expeditionCode, expedition.getProject().getProjectId()) != null)
             throw new FimsException("Expedition Code " + expeditionCode + " already exists.");
     }
 }

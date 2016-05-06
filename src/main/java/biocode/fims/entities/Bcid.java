@@ -197,8 +197,7 @@ public class Bcid {
     }
 
     public void setWebAddress(URI webAddress) {
-        if (webAddress != null)
-            isValidUrl(webAddress);
+        isValidUrl(webAddress);
         this.webAddress = webAddress;
     }
 
@@ -325,9 +324,11 @@ public class Bcid {
     }
 
     private static void isValidUrl(URI webAddress) {
-        String[] schemes = {"http", "https"};
-        UrlValidator urlValidator = new UrlValidator(schemes);
-        if (!urlValidator.isValid(String.valueOf(webAddress)))
-            throw new BadRequestException("Invalid URL for bcid webAddress");
-    }
+        if (webAddress != null) {
+            String[] schemes = {"http", "https"};
+            UrlValidator urlValidator = new UrlValidator(schemes);
+            if (!urlValidator.isValid(String.valueOf(webAddress)))
+                throw new BadRequestException("Invalid URL for bcid webAddress");
+            }
+        }
 }

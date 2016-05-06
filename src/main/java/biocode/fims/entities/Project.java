@@ -229,7 +229,7 @@ public class Project {
     }
 
     // TODO move this to projectService?
-    public Expedition getExpdition(String expeditionCode) {
+    public Expedition getExpedition(String expeditionCode) {
         for (Expedition expedition: getExpeditions()) {
             if (expedition.getExpeditionCode().equals(expeditionCode))
                 return expedition;

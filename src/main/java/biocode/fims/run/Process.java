@@ -1,7 +1,5 @@
 package biocode.fims.run;
 
-import biocode.fims.bcid.*;
-import biocode.fims.bcid.Bcid;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
@@ -13,14 +11,10 @@ import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.settings.StandardPrinter;
-import org.apache.commons.cli.*;
 import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.Iterator;
@@ -34,6 +28,7 @@ import java.util.LinkedList;
  * and
  * input
  */
+@Transactional
 public class Process {
 
     public File configFile;
@@ -143,7 +138,7 @@ public class Process {
      * Check the status of this expedition
      */
     public void runExpeditionCheck() {
-        Expedition expedition = project.getExpdition(processController.getExpeditionCode());
+        Expedition expedition = project.getExpedition(processController.getExpeditionCode());
 
         if (expedition == null) {
             processController.setExpeditionCreateRequired(true);
