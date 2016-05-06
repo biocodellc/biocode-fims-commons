@@ -69,7 +69,7 @@ public class Expedition {
     private Expedition() {}
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     public int getExpeditionId() {
         return expeditionId;
     }
