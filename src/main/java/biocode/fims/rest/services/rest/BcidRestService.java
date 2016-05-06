@@ -2,6 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
+import biocode.fims.entities.Bcid;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
@@ -11,7 +12,6 @@ import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -75,17 +75,24 @@ public class BcidRestService extends FimsService {
 
 
         // Mint the Bcid
-        BcidMinter bcidMinter = new BcidMinter(Boolean.valueOf(this.settingsManager.retrieveValue("ezidRequests")));
         if (title == null || title.isEmpty()) {
             title = resourceTypeString;
         }
 
         UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
+        Bcid bcid = new Bcid.BcidBuilder(user, resourceTypeString)
+                .ezidRequest(Boolean.valueOf(settingsManager.retrieveValue("ezidRequests")))
+                .doi(doi)
+                .title(title)
+                .webAddress(webAddressComponents.toUri())
+                .graph(graph)
+                .finalCopy(finalCopy)
+                .build();
 
-        String identifier = bcidMinter.createEntityBcid(new Bcid(userId, resourceTypeString, title,
-                webAddressComponents.toUriString(), graph, doi, finalCopy));
+        bcidService.create(bcid);
 
-        return Response.ok("{\"identifier\": \"" + identifier + "\"}").build();
+        // TODO return the bcid object here
+        return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
     }
 
     /**
@@ -101,7 +108,7 @@ public class BcidRestService extends FimsService {
     public Response run(@PathParam("bcidId") Integer bcidId) {
         String response;
         try {
-            biocode.fims.entities.Bcid bcid = bcidService.getBcid(bcidId);
+            Bcid bcid = bcidService.getBcid(bcidId);
             BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
                     bcid,
                     settingsManager,

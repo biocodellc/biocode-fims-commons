@@ -133,9 +133,9 @@ public abstract class FastaManager {
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, processController.getExpeditionCode());
-            stmt.setInt(2, processController.getProjectId());
+            stmt.setInt(2, processController.getProject().getProjectId());
             stmt.setString(3, processController.getExpeditionCode());
-            stmt.setInt(4, processController.getProjectId());
+            stmt.setInt(4, processController.getProject().getProjectId());
 
             rs = stmt.executeQuery();
 

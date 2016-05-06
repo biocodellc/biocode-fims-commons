@@ -3,6 +3,9 @@ package biocode.fims.service;
 import biocode.fims.bcid.ResourceType;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.*;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsException;
+import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,19 @@ public class ExpeditionService {
 
     @Transactional
     public void create(Expedition expedition, URI webAddress) {
+        boolean userIsProjectMember = false;
+        for (User member: expedition.getProject().getProjectMembers()) {
+            if (member.equals(expedition.getUser()))
+                userIsProjectMember = true;
+        }
+        if (!userIsProjectMember)
+            throw new ForbiddenRequestException("User ID " + expedition.getUser().getUserId() + " is not authorized to create expeditions in this project");
+
+        try {
+            checkExpeditionCodeValidAndAvailable(expedition);
+        } catch (FimsException e) {
+            throw new BadRequestException(e.getMessage());
+        }
 
         expeditionRepository.save(expedition);
         createExpeditionBcid(expedition, webAddress);
@@ -95,5 +111,29 @@ public class ExpeditionService {
 
         bcidService.create(expditionBcid);
         return expditionBcid;
+    }
+
+    /**
+     * Check that expedition code is between 4 and 50 characters and doesn't already exist in the {@link Project}
+     *
+     * @param expedition
+     *
+     * @return
+     */
+    private void checkExpeditionCodeValidAndAvailable(Expedition expedition) throws FimsException {
+        String expeditionCode = expedition.getExpeditionCode();
+        // Check expeditionCode length
+        if (expeditionCode.length() < 4 || expeditionCode.length() > 50) {
+            throw new FimsException("Expedition code " + expeditionCode + " must be between 4 and 50 characters long");
+        }
+
+        // Check to make sure characters are normal!
+        if (!expeditionCode.matches("[a-zA-Z0-9_-]*")) {
+            throw new FimsException("Expedition code " + expeditionCode + " contains one or more invalid characters. " +
+                    "Expedition code characters must be in one of the these ranges: [a-Z][0-9][-][_]");
+        }
+
+        if (expedition.getProject().getExpdition(expeditionCode) != null)
+            throw new FimsException("Expedition Code " + expeditionCode + " already exists.");
     }
 }

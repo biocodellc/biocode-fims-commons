@@ -1,6 +1,8 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
+import biocode.fims.entities.Expedition;
+import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -8,6 +10,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
@@ -17,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,13 +38,15 @@ import java.net.URLDecoder;
 public class ExpeditionRestService extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
-    private ExpeditionService expeditionService;
+    private final ExpeditionService expeditionService;
+    private final ProjectService projectService;
 
     @Autowired
-    public ExpeditionRestService(ExpeditionService expeditionService, UserService userService,
-                                 SettingsManager settingsManager) {
+    public ExpeditionRestService(ExpeditionService expeditionService, ProjectService projectService,
+                                 UserService userService, SettingsManager settingsManager) {
         super(userService, settingsManager);
         this.expeditionService = expeditionService;
+        this.projectService = projectService;
     }
 
     /**
@@ -60,28 +67,19 @@ public class ExpeditionRestService extends FimsService {
                          @FormParam("expeditionTitle") String expeditionTitle,
                          @FormParam("projectId") Integer projectId,
                          @FormParam("webAddress") String webAddress,
-                         @FormParam("public") Boolean isPublic) {
+                         @FormParam("public") @DefaultValue("true") Boolean isPublic) {
 
-        if (isPublic == null) {
-            isPublic = true;
-        }
-        ExpeditionMinter expedition = new ExpeditionMinter();
+        Project project = projectService.getProject(projectId);
 
-        try {
-            // Mint a expedition
-            Integer expeditionId = expedition.mint(
-                    expeditionCode,
-                    expeditionTitle,
-                    userId,
-                    projectId,
-                    webAddress,
-                    isPublic
-            );
+        Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode, user, project)
+                .expeditionTitle(expeditionTitle)
+                .isPublic(isPublic)
+                .build();
 
-            return Response.ok(expedition.getMetadata(expeditionId).toJSONString()).build();
-        } catch (FimsException e) {
-            throw new BadRequestException(e.getMessage());
-        }
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(webAddress).build();
+        expeditionService.create(expedition, uriComponents.toUri());
+
+        return Response.ok(expedition).build();
     }
 
     /**

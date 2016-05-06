@@ -227,4 +227,13 @@ public class Project {
     public void setTemplateConfigs(Set<TemplateConfig> templateConfigs) {
         this.templateConfigs = templateConfigs;
     }
+
+    // TODO move this to projectService?
+    public Expedition getExpdition(String expeditionCode) {
+        for (Expedition expedition: getExpeditions()) {
+            if (expedition.getExpeditionCode().equals(expeditionCode))
+                return expedition;
+        }
+        return null;
+    }
 }

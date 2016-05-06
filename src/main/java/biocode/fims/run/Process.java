@@ -1,14 +1,16 @@
 package biocode.fims.run;
 
 import biocode.fims.bcid.*;
+import biocode.fims.bcid.Bcid;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
-import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsException;
+import biocode.fims.entities.*;
 import biocode.fims.reader.ReaderManager;
 import biocode.fims.reader.plugins.TabularDataReader;
+import biocode.fims.service.BcidService;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
@@ -16,6 +18,9 @@ import org.apache.commons.cli.*;
 import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.io.File;
 import java.util.Iterator;
@@ -32,6 +37,7 @@ import java.util.LinkedList;
 public class Process {
 
     public File configFile;
+    private ExpeditionService expeditionService;
 
     private Mapping mapping;
     private Validation validation;
@@ -40,7 +46,7 @@ public class Process {
     String outputPrefix;
     private ProcessController processController;
     private static Logger logger = LoggerFactory.getLogger(Process.class);
-    protected int projectId;
+    private Project project;
 
     private static SettingsManager sm = SettingsManager.getInstance();
 
@@ -51,10 +57,12 @@ public class Process {
      */
     public Process(
             String outputFolder,
-            ProcessController processController) {
+            ProcessController processController,
+            ExpeditionService expeditionService) {
+        this.expeditionService = expeditionService;
 
         // Read the Configuration File
-        configFile = new ConfigurationFileFetcher(processController.getProjectId(), outputFolder, false).getOutputFile();
+        configFile = new ConfigurationFileFetcher(processController.getProject().getProjectId(), outputFolder, false).getOutputFile();
 
         init(outputFolder, processController);
     }
@@ -67,10 +75,12 @@ public class Process {
     public Process(
             String outputFolder,
             ProcessController processController,
-            File configFile) {
+            File configFile,
+            ExpeditionService expeditionService) {
 
         // Read the Configuration File
         this.configFile = configFile;
+        this.expeditionService = expeditionService;
 
         init(outputFolder, processController);
     }
@@ -79,7 +89,7 @@ public class Process {
         // Update the processController Settings
         this.processController = processController;
 
-        projectId = processController.getProjectId();
+        project = processController.getProject();
 
         this.outputFolder = outputFolder;
 
@@ -108,23 +118,6 @@ public class Process {
     }
 
     /**
-     * A constructor for when we're running queries or reading template files
-     *
-     * @param configFile
-     */
-    public Process(
-            int projectId,
-            File configFile) {
-        this.projectId = projectId;
-        this.configFile = configFile;
-        this.outputPrefix = "output";
-
-        // Parse the Mapping object (this object is used extensively in downstream functions!)
-        mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
-    }
-
-    /**
      * a constructor for DeepRoots lookupPrefix method
      */
     public Process() {}
@@ -142,63 +135,54 @@ public class Process {
         return mapping;
     }
 
-    public int getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
     /**
      * Check the status of this expedition
      */
     public void runExpeditionCheck() {
-        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        Boolean expeditionExistsInProject = expeditionMinter.expeditionExistsInProject(processController.getExpeditionCode(), projectId);
-        processController.setExpeditionCreateRequired(!expeditionExistsInProject);
-        if (!expeditionExistsInProject && (Boolean.valueOf(sm.retrieveValue("ignoreUser")) ||
-                expeditionMinter.userOwnsExpedition(
-                    processController.getUserId(),
-                    processController.getExpeditionCode(),
-                    processController.getProjectId()
-                )
-            )) {
+        Expedition expedition = project.getExpdition(processController.getExpeditionCode());
+
+        if (expedition == null) {
+            processController.setExpeditionCreateRequired(true);
+        } else if (Boolean.valueOf(sm.retrieveValue("ignoreUser")) ||
+                expedition.getUser().equals(processController.getUser()) )
             processController.setExpeditionAssignedToUserAndExists(true);
-        }
     }
 
     /**
      * Create an expedition
      */
-    public void runExpeditionCreate() {
+    public void runExpeditionCreate(BcidService bcidService) {
         runExpeditionCheck();
         if (processController.isExpeditionCreateRequired()) {
             System.out.println("Creating expedition " + processController.getExpeditionCode() + "...");
-            createExpedition(processController);
+            createExpedition(processController, bcidService);
         }
         processController.setExpeditionCreateRequired(false);
         processController.setExpeditionAssignedToUserAndExists(true);
     }
 
-    private boolean createExpedition(ProcessController processController) {
+    private boolean createExpedition(ProcessController processController, BcidService bcidService) {
         String status = "\tCreating expedition " + processController.getExpeditionCode() + " ... this is a one time process " +
                 "before loading each spreadsheet and may take a minute...\n";
         processController.appendStatus(status);
         FimsPrinter.out.println(status);
 
-        ExpeditionMinter expedition = new ExpeditionMinter();
-        try {
-            // Mint a expedition
-            expedition.mint(
-                    processController.getExpeditionCode(),
-                    processController.getExpeditionTitle(),
-                    processController.getUserId(),
-                    projectId,
-                    null,
-                    processController.getPublicStatus()
-            );
-        } catch (FimsException e) {
-            throw new BadRequestException(e.getMessage());
-        }
+        Expedition expedition = new Expedition.ExpeditionBuilder(
+                processController.getExpeditionCode(),
+                processController.getUser(),
+                project)
+                .expeditionTitle(processController.getExpeditionTitle())
+                .isPublic(processController.getPublicStatus())
+                .build();
+
+        expeditionService.create(expedition, null);
 
         // Loop the mapping file and create a BCID for every entity that we specified there!
+        boolean ezidRequest = Boolean.parseBoolean(sm.retrieveValue("ezidRequests"));
         if (mapping != null) {
             LinkedList<Entity> entities = mapping.getEntities();
             Iterator it = entities.iterator();
@@ -208,26 +192,14 @@ public class Process {
                 String s = "\t\tCreating bcid root for " + entity.getConceptAlias() + " and resource type = " + entity.getConceptURI() + "\n";
                 processController.appendStatus(s);
 
-                // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
-                // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
-                boolean ezidRequest = true;
-                String username = BcidDatabase.getUserName(processController.getUserId());
-                if (username.equals("demo") || sm.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
-                    ezidRequest = false;
-                }
+                biocode.fims.entities.Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(
+                        processController.getUser(), entity.getConceptURI())
+                        .expedition(expedition)
+                        .ezidRequest(ezidRequest)
+                        .title(entity.getConceptAlias())
+                        .build();
 
-                // Create the entity BCID
-                BcidMinter bcidMinter = new BcidMinter(ezidRequest);
-
-                String identifier = bcidMinter.createEntityBcid(new Bcid(
-                        processController.getUserId(),
-                        entity.getConceptURI(),
-                        entity.getConceptAlias(),
-                        null,
-                        null, null, false));
-
-                // Associate this Bcid with this expedition
-                expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
+                bcidService.create(bcid);
             }
         }
 

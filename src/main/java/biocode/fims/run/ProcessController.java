@@ -1,12 +1,10 @@
 package biocode.fims.run;
 
-import biocode.fims.bcid.BcidDatabase;
-import biocode.fims.bcid.Database;
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
+import biocode.fims.entities.Project;
+import biocode.fims.entities.User;
 import biocode.fims.fasta.FastaManager;
-import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
 import biocode.fims.utils.StringGenerator;
@@ -37,8 +35,8 @@ public class ProcessController {
     private String inputFilename;
     private String expeditionCode;
     private String expeditionTitle;
-    private Integer projectId;
-    private Integer userId;
+    private Project project;
+    private User user;
     private Validation validation;
     private Mapping mapping;
     private FastaManager fastaManager;
@@ -68,17 +66,17 @@ public class ProcessController {
         statusSB.append(stringToHTMLJSON(s));
     }
 
-    public ProcessController(Integer projectId, String expeditionCode) {
+    public ProcessController(Project project, String expeditionCode) {
         this.expeditionCode = expeditionCode;
-        this.projectId = projectId;
+        this.project = project;
     }
 
     public ProcessController() {
 
     }
-    public Integer getUserId() { return userId; }
+    public User getUser() { return user; }
 
-    public void setUserId(Integer userId) { this.userId = userId; }
+    public void setUser(User user) { this.user = user; }
     public Boolean isExpeditionCreateRequired() {
         return expeditionCreateRequired;
     }
@@ -139,8 +137,8 @@ public class ProcessController {
         this.expeditionTitle = expeditionTitle;
     }
 
-    public Integer getProjectId() {
-        return projectId;
+    public Project getProject() {
+        return project;
     }
 
     public Boolean isExpeditionAssignedToUserAndExists() {
@@ -178,7 +176,7 @@ public class ProcessController {
                 validated &&
                 inputFilename != null &&
                 expeditionCode != null &&
-                projectId > 0)
+                project != null)
             return true;
         else
             return false;
@@ -199,7 +197,7 @@ public class ProcessController {
 
     public String printStatus() {
         String retVal = "";
-        retVal += "\tprojectId = " + projectId + "\n";
+        retVal += "\tproject = " + project.getProjectId()+ "\n";
         retVal += "\texpeditionCode = " + expeditionCode + "\n";
         retVal += "\tinputFilename = " + inputFilename + "\n";
 

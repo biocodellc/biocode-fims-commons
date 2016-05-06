@@ -2,7 +2,9 @@ package biocode.fims.run;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.PathManager;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
@@ -30,7 +32,6 @@ import java.util.List;
  */
 public class TemplateProcessor {
 
-    private Process p;
     private Mapping mapping;
     private Validation validation;
     private String accessionNumber;
@@ -113,9 +114,6 @@ public class TemplateProcessor {
 
         SettingsManager sm = SettingsManager.getInstance();
         naan = Integer.parseInt(sm.retrieveValue("naan"));
-
-        // Instantiate the project output Folder
-        this.p = new Process(projectId, configFile);
 
         mapping = new Mapping();
         mapping.addMappingRules(new Digester(), configFile);

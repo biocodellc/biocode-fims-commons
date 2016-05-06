@@ -2,7 +2,14 @@ package biocode.fims.run;
 
 import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.entities.Project;
+import biocode.fims.entities.User;
+import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
+import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,37 +22,47 @@ import java.io.PrintStream;
  * Created by jdeck on 7/10/15.
  */
 public class BulkLoader {
+    private static Integer PROJECT_ID = 25;
+    private static String USERNAME = "dipnetCurator";
+
     // output directory for processing and temp files
     static String outputDirectory = "/Users/jdeck/IdeaProjects/biscicol-fims/tripleOutput";
-    // Project_id
-    static Integer projectId = 25;
     // Input directory storing all the loaded files
     static String inputDirectory = "/Users/jdeck/Google Drive/!DIPnet_DB/Repository/1-cleaned_QC2_mdfasta_files";
     static String inputFastaDirectory = "/Users/jdeck/Google Drive/!DIPnet_DB/Repository/1_cleaned_nonaligned_fasta_files";
 
-    static String password;
+    private static ExpeditionService expeditionService;
 
     static boolean triplify = false;
     static boolean upload = true;
     static boolean expeditionCheck = true;
     static boolean forceAll = true;  // force loading, no questions
-    private static String username = "dipnetCurator";
+
+    private static User user;
+    private static Project project;
 
     public static void main(String[] args) throws FileNotFoundException {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        ProjectService projectService = applicationContext.getBean(ProjectService.class);
+        UserService userService = applicationContext.getBean(UserService.class);
+        expeditionService = applicationContext.getBean(ExpeditionService.class);
+
+        user = userService.getUser(USERNAME);
+        project = projectService.getProject(PROJECT_ID);
 
         // Redirect output to file
         PrintStream out = new PrintStream(new FileOutputStream(outputDirectory + File.separator + "dipnetloading_output.txt"));
         System.setOut(out);
 
         // only argument is password
-        password = args[0];
+        String password = args[0];
 
         // Call the connection with password as single argument
         Authenticator authenticator = new Authenticator();
         FimsPrinter.out.println("Authenticating ...");
 
-        if (!authenticator.login(username, password)) {
-            FimsPrinter.out.println("Unable to authenticate " + username +
+        if (!authenticator.login(USERNAME, password)) {
+            FimsPrinter.out.println("Unable to authenticate " + USERNAME +
                     " using the supplied credentials!");
 
             return;
@@ -82,15 +99,16 @@ public class BulkLoader {
     public static void loadDataset(String expeditionCode, String inputFile) {
         boolean readyToLoad = false;
         // Create the process controller object
-        ProcessController pc = new ProcessController(projectId, expeditionCode);
-        pc.setUserId(BcidDatabase.getUserId(username));
+        ProcessController pc = new ProcessController(project, expeditionCode);
+        pc.setUser(user);
 
         System.out.println("Initializing ...");
 
         // Build the process object
         Process p = new Process(
                 outputDirectory,
-                pc
+                pc,
+                expeditionService
         );
         pc.setInputFilename(inputFile);
 
