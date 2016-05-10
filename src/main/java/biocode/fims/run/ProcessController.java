@@ -141,6 +141,10 @@ public class ProcessController {
         return project;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     public Boolean isExpeditionAssignedToUserAndExists() {
         return expeditionAssignedToUserAndExists;
     }

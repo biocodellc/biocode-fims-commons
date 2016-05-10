@@ -2,16 +2,19 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sqlite.Function;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -20,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Rule does the heavy lift for the Validation Components.
@@ -1060,6 +1064,43 @@ public class Rule {
     }
 
     /**
+     * Method that uses SQL to check for valid integers. This uses REGEXP function in SQLLite.
+     */
+    private void isInteger() {
+        String groupMessage = "Invalid number";
+        String thisColumn = getColumn();
+        ResultSet resultSet;
+        String msg;
+
+        try {
+            // Create regexp() function to make the REGEXP operator available
+            Function.create(connection, "REGEXP", new Function() {
+                @Override
+                protected void xFunc() throws SQLException {
+                    String expression = value_text(0);
+                    String value = value_text(1);
+                    if (value == null)
+                        value = "";
+
+                    Pattern pattern=Pattern.compile(expression);
+                    result(pattern.matcher(value).find() ? 1 : 0);
+                }
+            });
+
+            Statement statement = connection.createStatement();
+            String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() +
+                    " WHERE `" + thisColumn + "` REGEXP '^-?\\d+$';";
+            resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumnWorksheetName() + "\"";
+                addMessage(msg, groupMessage);
+            }
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
+
+    /**
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
@@ -1570,6 +1611,32 @@ public class Rule {
             if (!definedColumns.contains(colName)) {
                 addMessage("Dataset contains undefined column: " + colName, groupMessge);
             }
+        }
+    }
+
+    /**
+     * isValidUrl checks to see if a string is a valid Url, with the schemes {"http", "https"}
+     */
+    private void isValidUrl() {
+        String[] schemes = {"http", "https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        String groupMessage = "Invalid number";
+        String thisColumn = getColumn();
+        ResultSet resultSet;
+        String msg;
+
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() + ";";
+            resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                if (!urlValidator.isValid(resultSet.getString(thisColumn))) {
+                    msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumnWorksheetName() + "\"";
+                    addMessage(msg, groupMessage);
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServerErrorException(e);
         }
     }
 }

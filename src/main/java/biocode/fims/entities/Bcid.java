@@ -329,6 +329,6 @@ public class Bcid {
             UrlValidator urlValidator = new UrlValidator(schemes);
             if (!urlValidator.isValid(String.valueOf(webAddress)))
                 throw new BadRequestException("Invalid URL for bcid webAddress");
-            }
         }
+    }
 }

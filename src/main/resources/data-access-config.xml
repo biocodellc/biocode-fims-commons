@@ -12,7 +12,7 @@
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd ">
 
-    <context:property-placeholder location="classpath:biocode-fims-database.properties" />
+    <context:property-placeholder location="classpath:biocode-fims-database.properties" ignore-unresolvable="true"/>
 
     <bean id="dataSource"
           class="org.springframework.jdbc.datasource.DriverManagerDataSource">
