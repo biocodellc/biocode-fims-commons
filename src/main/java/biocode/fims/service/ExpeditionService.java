@@ -21,28 +21,25 @@ import java.net.URI;
  * Service class for handling {@link Expedition} persistence
  */
 @Service
+@Transactional
 public class ExpeditionService {
 
     private final ExpeditionRepository expeditionRepository;
+    private final ProjectService projectService;
     private final BcidService bcidService;
     private final SettingsManager settingsManager;
 
     @Autowired
     public ExpeditionService(ExpeditionRepository expeditionRepository, BcidService bcidService,
-                             SettingsManager settingsManager) {
+                             ProjectService projectService, SettingsManager settingsManager) {
         this.expeditionRepository = expeditionRepository;
         this.bcidService = bcidService;
+        this.projectService = projectService;
         this.settingsManager = settingsManager;
     }
 
-    @Transactional
     public void create(Expedition expedition, URI webAddress) {
-        boolean userIsProjectMember = false;
-        for (User member: expedition.getProject().getProjectMembers()) {
-            if (member.equals(expedition.getUser()))
-                userIsProjectMember = true;
-        }
-        if (!userIsProjectMember)
+        if (!projectService.isUserMemberOfProject(expedition.getUser(), expedition.getProject()))
             throw new ForbiddenRequestException("User ID " + expedition.getUser().getUserId() + " is not authorized to create expeditions in this project");
 
         try {
@@ -52,7 +49,8 @@ public class ExpeditionService {
         }
 
         expeditionRepository.save(expedition);
-        createExpeditionBcid(expedition, webAddress);
+        Bcid bcid = createExpeditionBcid(expedition, webAddress);
+        expedition.setExpeditionBcid(bcid);
 
     }
 
@@ -61,7 +59,12 @@ public class ExpeditionService {
     }
 
     public Expedition getExpedition(String expeditionCode, int projectId) {
-        return expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
+        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
+        expedition.setExpeditionBcid(bcidService.getBcid(
+                expedition.getExpeditionId(),
+                Expedition.EXPEDITION_RESOURCE_TYPE
+        ));
+        return expedition;
     }
 
     /**
@@ -90,11 +93,28 @@ public class ExpeditionService {
     }
 
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
-        return expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
+        Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
+
+        for (Expedition expedition: expeditions) {
+            expedition.setExpeditionBcid(bcidService.getBcid(
+                    expedition.getExpeditionId(),
+                    Expedition.EXPEDITION_RESOURCE_TYPE
+            ));
+        }
+        return expeditions;
+    }
+
+    public Expedition getExpedition(int expeditionId) {
+        Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
+        expedition.setExpeditionBcid(bcidService.getBcid(
+                expedition.getExpeditionId(),
+                Expedition.EXPEDITION_RESOURCE_TYPE
+        ));
+        return expedition;
     }
 
     /**
-     * create the Bcid domain object that represets the Expedition
+     * create the Bcid domain object that represents the Expedition
      * @param expedition
      * @param webAddress
      * @return

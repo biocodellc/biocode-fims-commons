@@ -1,5 +1,7 @@
 package biocode.fims.entities;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
@@ -23,6 +25,7 @@ public class Expedition {
     private Set<Bcid> bcids;
     private Project project;
     private User user;
+    private Bcid expeditionBcid;
 
     public static class ExpeditionBuilder {
 
@@ -191,7 +194,6 @@ public class Expedition {
     }
 
 
-//    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "@userId")
     @JsonProperty(value = "userId")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
     @JsonIdentityReference(alwaysAsId = true)
@@ -206,5 +208,14 @@ public class Expedition {
 
     private void setUser(User user) {
         this.user = user;
+    }
+
+    @Transient
+    public Bcid getExpeditionBcid() {
+        return expeditionBcid;
+    }
+
+    public void setExpeditionBcid(Bcid bcid) {
+        expeditionBcid = bcid;
     }
 }

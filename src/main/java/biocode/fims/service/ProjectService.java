@@ -1,6 +1,7 @@
 package biocode.fims.service;
 
 import biocode.fims.entities.Project;
+import biocode.fims.entities.User;
 import biocode.fims.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,4 +35,13 @@ public class ProjectService {
         return projectRepository.findByProjectId(projectId);
     }
 
+
+    public boolean isUserMemberOfProject(User user, Project project) {
+        boolean userIsProjectMember = false;
+        for (Project userProject: user.getProjectsMemberOf()) {
+            if (userProject.equals(project))
+                userIsProjectMember = true;
+        }
+        return userIsProjectMember;
+    }
 }
