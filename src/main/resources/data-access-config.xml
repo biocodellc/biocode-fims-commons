@@ -44,8 +44,8 @@
     <!-- Enables the Hibernate @Transactional programming model -->
     <tx:annotation-driven transaction-manager="transactionManager" />
 
-    <bean id="transactionManager"
-          class="org.springframework.orm.jpa.JpaTransactionManager">
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
     <bean id="persistenceExceptionTranslationPostProcessor" class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
