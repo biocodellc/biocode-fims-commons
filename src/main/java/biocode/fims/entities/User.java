@@ -225,6 +225,7 @@ public class User {
         return firstName + " " + lastName;
     }
 
+    @Column(columnDefinition = "char(20) null")
     public String getPasswordResetToken() {
         return passwordResetToken;
     }

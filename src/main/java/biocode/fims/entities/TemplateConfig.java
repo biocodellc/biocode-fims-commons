@@ -11,7 +11,7 @@ public class TemplateConfig {
 
     private int templateConfigId;
     private String configName;
-    private byte isPublic;
+    private boolean isPublic;
     private String config;
     private Project project;
     private User user;
@@ -26,6 +26,7 @@ public class TemplateConfig {
         this.templateConfigId = id;
     }
 
+    @Column(nullable = false)
     public String getConfigName() {
         return configName;
     }
@@ -34,14 +35,16 @@ public class TemplateConfig {
         this.configName = configName;
     }
 
-    public byte getIsPublic() {
+    @Column(name="public")
+    public boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setIsPublic(byte isPublic) {
+    public void setIsPublic(boolean isPublic) {
         this.isPublic = isPublic;
     }
 
+    @Column(columnDefinition = "mediumtext not null")
     public String getConfig() {
         return config;
     }
@@ -57,23 +60,19 @@ public class TemplateConfig {
 
         TemplateConfig that = (TemplateConfig) o;
 
-        if (templateConfigId != that.templateConfigId) return false;
+        if (getTemplateConfigId() != that.getTemplateConfigId()) return false;
         if (isPublic != that.isPublic) return false;
-        if (configName != null ? !configName.equals(that.configName) : that.configName != null) return false;
-        if (config != null ? !config.equals(that.config) : that.config != null) return false;
-        if (project != null ? !project.equals(that.project) : that.project != null) return false;
-        return user != null ? user.equals(that.user) : that.user == null;
+        if (!getConfigName().equals(that.getConfigName())) return false;
+        return getConfig().equals(that.getConfig());
 
     }
 
     @Override
     public int hashCode() {
-        int result = templateConfigId;
-        result = 31 * result + (configName != null ? configName.hashCode() : 0);
-        result = 31 * result + (int) isPublic;
-        result = 31 * result + (config != null ? config.hashCode() : 0);
-        result = 31 * result + (project != null ? project.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
+        int result = getTemplateConfigId();
+        result = 31 * result + getConfigName().hashCode();
+        result = 31 * result + (isPublic ? 1 : 0);
+        result = 31 * result + getConfig().hashCode();
         return result;
     }
 

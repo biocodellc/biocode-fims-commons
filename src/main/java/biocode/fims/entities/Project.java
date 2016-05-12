@@ -97,7 +97,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    @Column(name="abstract")
+    @Column(name="abstract", columnDefinition = "text null")
     public String getProjectAbstract() {
         return projectAbstract;
     }

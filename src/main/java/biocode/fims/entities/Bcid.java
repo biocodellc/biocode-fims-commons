@@ -172,6 +172,7 @@ public class Bcid {
         this.doi = doi;
     }
 
+    @Column(columnDefinition = "text")
     public String getTitle() {
         return title;
     }
