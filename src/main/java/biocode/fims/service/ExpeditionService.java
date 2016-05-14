@@ -60,10 +60,11 @@ public class ExpeditionService {
 
     public Expedition getExpedition(String expeditionCode, int projectId) {
         Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
-        expedition.setExpeditionBcid(bcidService.getBcid(
-                expedition.getExpeditionId(),
-                Expedition.EXPEDITION_RESOURCE_TYPE
-        ));
+        if (expedition != null)
+            expedition.setExpeditionBcid(bcidService.getBcid(
+                    expedition.getExpeditionId(),
+                    Expedition.EXPEDITION_RESOURCE_TYPE
+            ));
         return expedition;
     }
 
@@ -106,10 +107,11 @@ public class ExpeditionService {
 
     public Expedition getExpedition(int expeditionId) {
         Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
-        expedition.setExpeditionBcid(bcidService.getBcid(
-                expedition.getExpeditionId(),
-                Expedition.EXPEDITION_RESOURCE_TYPE
-        ));
+        if (expedition != null)
+            expedition.setExpeditionBcid(bcidService.getBcid(
+                    expedition.getExpeditionId(),
+                    Expedition.EXPEDITION_RESOURCE_TYPE
+            ));
         return expedition;
     }
 

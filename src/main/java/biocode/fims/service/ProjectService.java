@@ -7,12 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.OneToMany;
+import javax.persistence.PersistenceContext;
+
 
 /**
  * Service class for handling {@link Project} persistence
  */
 @Service
+@Transactional
 public class ProjectService {
+
+    @PersistenceContext(unitName = "entityManagerFactory")
+    private EntityManager em;
 
     private final ProjectRepository projectRepository;
 
@@ -21,7 +29,6 @@ public class ProjectService {
         this.projectRepository = projectRepository;
     }
 
-    @Transactional
     public void create(Project project) {
         projectRepository.save(project);
 
@@ -38,10 +45,15 @@ public class ProjectService {
 
     public boolean isUserMemberOfProject(User user, Project project) {
         boolean userIsProjectMember = false;
+        user = em.merge(user);
         for (Project userProject: user.getProjectsMemberOf()) {
-            if (userProject.equals(project))
+            if (userProject.equals(project)) {
                 userIsProjectMember = true;
+                break;
+            }
         }
         return userIsProjectMember;
     }
 }
+
+
