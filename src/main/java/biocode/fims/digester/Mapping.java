@@ -96,7 +96,9 @@ public class Mapping {
     public LinkedList<String> getColumnNames() {
         LinkedList<String> columnNames = new LinkedList<>();
         for (Entity entity: entities) {
-            columnNames.add(entity.getColumn());
+            for (Attribute attribute: entity.getAttributes()) {
+                columnNames.add(attribute.getColumn());
+            }
         }
         return columnNames;
     }

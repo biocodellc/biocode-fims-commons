@@ -1213,10 +1213,10 @@ public class Rule {
             sql = "SELECT `" + getDecimalLatitude() + "`,`" + getDecimalLongitude() + "`" +
                     " FROM " + digesterWorksheet.getSheetname() +
                     " WHERE " +
-                    " abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode("<=90", "utf-8") +
-                    " AND abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode(">=-90", "utf-8") +
-                    " AND abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode("<=180", "utf-8") +
-                    " AND abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode(">=-180", "utf-8") +
+                    " abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode(">=90", "utf-8") +
+                    " OR abs(`" + getDecimalLatitude() + "`) " + URLDecoder.decode("<=-90", "utf-8") +
+                    " OR abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode(">=180", "utf-8") +
+                    " OR abs(`" + getDecimalLongitude() + "`) " + URLDecoder.decode("<=-180", "utf-8") +
                     " AND `" + getDecimalLatitude() + "` != \"\"" +
                     " AND `" + getDecimalLongitude() + "` != \"\"";
 

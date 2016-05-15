@@ -1,5 +1,6 @@
 package biocode.fims.reader;
 
+import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.settings.PathManager;
@@ -44,18 +45,17 @@ public class CsvTabularDataConverter {
     }
 
     /**
-     * Reads the source data and converts it to a csv file.
-     */
-    public void convert() {
-        convert(source.getColNames());
-    }
-
-    /**
      * Reads the source data and converts it to a csv file. Only the columns
      * specified in the acceptableColumns param will be written to the csv file.
      */
-    public void convert(List<String> acceptableColumns) {
+    public void convert(List<String> acceptableColumns, String sheetName) {
         int colcnt = 0;
+
+        try {
+            source.setTable(sheetName);
+        } catch (FimsException e) {
+            throw new ServerErrorException(e);
+        }
 
         // keep track of any columns with missing colNames to skip data later on
         List<Integer> skipColumns = new ArrayList<>();
