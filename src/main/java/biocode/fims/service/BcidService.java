@@ -42,16 +42,14 @@ public class BcidService {
     private final BcidRepository bcidRepository;
     private final SettingsManager settingsManager;
     private final UserService userService;
-    private final ExpeditionService expeditionService;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
 
     @Autowired
     public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
-                       UserService userService, ExpeditionService expeditionService) {
+                       UserService userService) {
         this.bcidRepository = bcidRepository;
         this.settingsManager = settingsManager;
         this.userService = userService;
-        this.expeditionService = expeditionService;
     }
 
     @Transactional
@@ -80,11 +78,6 @@ public class BcidService {
             createEzid(bcid);
 
         return bcid;
-    }
-
-    public Bcid attachBcidToExpedition(Bcid bcid, String expeditionCode, int projectId) {
-        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
-        return attachBcidToExpedition(bcid, expedition.getExpeditionId());
     }
 
     public Bcid attachBcidToExpedition(Bcid bcid, int expeditionId) {
