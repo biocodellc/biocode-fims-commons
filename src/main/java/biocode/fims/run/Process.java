@@ -137,7 +137,7 @@ public class Process {
     /**
      * Check the status of this expedition
      */
-    public void runExpeditionCheck() {
+    public Expedition runExpeditionCheck() {
         Expedition expedition = project.getExpedition(processController.getExpeditionCode());
 
         if (expedition == null) {
@@ -145,6 +145,7 @@ public class Process {
         } else if (Boolean.valueOf(sm.retrieveValue("ignoreUser")) ||
                 expedition.getUser().equals(processController.getUser()) )
             processController.setExpeditionAssignedToUserAndExists(true);
+        return expedition;
     }
 
     /**

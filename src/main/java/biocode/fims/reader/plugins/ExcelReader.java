@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -417,9 +418,13 @@ public class ExcelReader implements TabularDataReader {
                     if (DateUtil.isCellDateFormatted(cell)) {
                         // Convert the value to a Java date object, then to
                         // ISO 8601 format using Joda-Time.
-                        DateTime date;
-                        date = new DateTime(cell.getDateCellValue());
-                        ret[cnt] = date.toString();
+                        // 5/16/16 - changing this to a formatted Date for now as mysql doesn't support insert of
+                        // ISO 8601 formated dates. This is causing problems in ARMS with converting data to csv
+                        // and doing a bulk csv load into mysql
+//                        DateTime date;
+//                        date = new DateTime(cell.getDateCellValue());
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        ret[cnt] = sdf.format(cell.getDateCellValue());
                     } else {
                         // TODO: Fix this rendering.  They both are bad!!!
 

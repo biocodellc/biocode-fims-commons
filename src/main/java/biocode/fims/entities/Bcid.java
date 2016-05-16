@@ -125,7 +125,7 @@ public class Bcid {
     }
 
     // needed for hibernate
-    private Bcid() {}
+    public Bcid() {}
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -137,6 +137,7 @@ public class Bcid {
         this.bcidId = id;
     }
 
+    @Column(columnDefinition = "bit")
     public boolean isEzidMade() {
         return ezidMade;
     }
@@ -145,7 +146,7 @@ public class Bcid {
         this.ezidMade = ezidMade;
     }
 
-    @Column(nullable = false)
+    @Column(columnDefinition ="bit not null")
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -228,7 +229,7 @@ public class Bcid {
         this.graph = graph;
     }
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "bit not null")
     public boolean isFinalCopy() {
         return finalCopy;
     }

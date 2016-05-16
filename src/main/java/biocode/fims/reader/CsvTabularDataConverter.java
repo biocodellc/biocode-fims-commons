@@ -46,26 +46,22 @@ public class CsvTabularDataConverter {
 
     /**
      * Reads the source data and converts it to a csv file. Only the columns
-     * specified in the acceptableColumns param will be written to the csv file.
+     * specified in the acceptableColumns param will be written to the csv file. The data will be
+     * written in the same order as the acceptableColumns list.
      */
     public void convert(List<String> acceptableColumns, String sheetName) {
-        int colcnt = 0;
-
         try {
             source.setTable(sheetName);
         } catch (FimsException e) {
             throw new ServerErrorException(e);
         }
 
-        // keep track of any columns with missing colNames to skip data later on
-        List<Integer> skipColumns = new ArrayList<>();
+        // get the columns in the order they appear in the dataset so we can refer to the columns by index later.
+        // this is necessary in order to insert the column into the db in the order we expect
+        List<String> datasetColumns = new ArrayList<>();
 
         for (String colname : source.tableGetNextRow()) {
-            // keep track of undefined columns
-            if (!acceptableColumns.contains(colname)) {
-                skipColumns.add(colcnt);
-            }
-            colcnt++;
+            datasetColumns.add(colname);
         }
 
         // For storing data into CSV files
@@ -77,10 +73,10 @@ public class CsvTabularDataConverter {
             for (int rowNum=0; rowNum < source.getNumRows(); rowNum++) {
                 String[] row = source.tableGetNextRow();
 
-                for (int col=0; col < colcnt; col++) {
-                    if (!skipColumns.contains(col)) {
-                        data.append(row[col] + ",");
-                    }
+                // reorder the columns to match the same order of acceptableColumns list
+                for (String col: acceptableColumns) {
+                    if (datasetColumns.contains(col))
+                        data.append(row[datasetColumns.indexOf(col)] + ",");
                 }
 
                 data.append('\n');
