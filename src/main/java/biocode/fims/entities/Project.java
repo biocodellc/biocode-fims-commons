@@ -28,17 +28,15 @@ public class Project {
         // Required
         private String projectCode;
         private String projectTitle;
-        private User user;
         private String validationXml;
 
         // Optional
         private String projectAbstract;
         private boolean isPublic = true;
 
-        public ProjectBuilder(String projectCode, String projectTitle, User user, String validationXml) {
+        public ProjectBuilder(String projectCode, String projectTitle, String validationXml) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
-            this.user = user;
             this.validationXml = validationXml;
         }
 
@@ -61,7 +59,6 @@ public class Project {
     private Project(ProjectBuilder builder) {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
-        user = builder.user;
         validationXml = builder.validationXml;
         projectAbstract = builder.projectAbstract;
         isPublic = builder.isPublic;

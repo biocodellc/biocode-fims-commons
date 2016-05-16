@@ -80,7 +80,7 @@ public class BcidRestService extends FimsService {
         }
 
         UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
-        Bcid bcid = new Bcid.BcidBuilder(user, resourceTypeString)
+        Bcid bcid = new Bcid.BcidBuilder(resourceTypeString)
                 .ezidRequest(Boolean.valueOf(settingsManager.retrieveValue("ezidRequests")))
                 .doi(doi)
                 .title(title)
@@ -89,7 +89,7 @@ public class BcidRestService extends FimsService {
                 .finalCopy(finalCopy)
                 .build();
 
-        bcidService.create(bcid);
+        bcidService.create(bcid, userId);
 
         // TODO return the bcid object here
         return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();

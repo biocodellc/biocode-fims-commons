@@ -2,15 +2,12 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
 import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
@@ -39,14 +36,12 @@ public class ExpeditionRestService extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
     private final ExpeditionService expeditionService;
-    private final ProjectService projectService;
 
     @Autowired
-    public ExpeditionRestService(ExpeditionService expeditionService, ProjectService projectService,
+    public ExpeditionRestService(ExpeditionService expeditionService,
                                  UserService userService, SettingsManager settingsManager) {
         super(userService, settingsManager);
         this.expeditionService = expeditionService;
-        this.projectService = projectService;
     }
 
     /**
@@ -69,15 +64,13 @@ public class ExpeditionRestService extends FimsService {
                          @FormParam("webAddress") String webAddress,
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
 
-        Project project = projectService.getProject(projectId);
-
-        Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode, user, project)
+        Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode)
                 .expeditionTitle(expeditionTitle)
                 .isPublic(isPublic)
                 .build();
 
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(webAddress).build();
-        expeditionService.create(expedition, uriComponents.toUri());
+        expeditionService.create(expedition, user.getUserId(), projectId, uriComponents.toUri());
 
         return Response.ok(expedition).build();
     }

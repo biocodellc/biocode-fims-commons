@@ -1,11 +1,8 @@
 package biocode.fims.run;
 
 import biocode.fims.auth.Authenticator;
-import biocode.fims.bcid.BcidDatabase;
-import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import org.springframework.context.ApplicationContext;
@@ -39,16 +36,13 @@ public class BulkLoader {
     static boolean forceAll = true;  // force loading, no questions
 
     private static User user;
-    private static Project project;
 
     public static void main(String[] args) throws FileNotFoundException {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
-        ProjectService projectService = applicationContext.getBean(ProjectService.class);
         UserService userService = applicationContext.getBean(UserService.class);
         expeditionService = applicationContext.getBean(ExpeditionService.class);
 
         user = userService.getUser(USERNAME);
-        project = projectService.getProject(PROJECT_ID);
 
         // Redirect output to file
         PrintStream out = new PrintStream(new FileOutputStream(outputDirectory + File.separator + "dipnetloading_output.txt"));
@@ -99,8 +93,8 @@ public class BulkLoader {
     public static void loadDataset(String expeditionCode, String inputFile) {
         boolean readyToLoad = false;
         // Create the process controller object
-        ProcessController pc = new ProcessController(project, expeditionCode);
-        pc.setUser(user);
+        ProcessController pc = new ProcessController(PROJECT_ID, expeditionCode);
+        pc.setUserId(user.getUserId());
 
         System.out.println("Initializing ...");
 

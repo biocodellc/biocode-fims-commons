@@ -29,14 +29,14 @@ public class ProcessController {
     private Boolean hasWarnings = false;
     private StringBuilder commandLineWarningsSB;
     private Boolean clearedOfWarnings = false;
-    private Boolean expeditionAssignedToUserAndExists = false;   // checks that the user is authenticated against the supplied expedition
+    private Boolean expeditionAssignedToUserAndExists = false;   // checks that the userId is authenticated against the supplied expedition
     private Boolean expeditionCreateRequired = false;
     private Boolean validated = false;
     private String inputFilename;
     private String expeditionCode;
     private String expeditionTitle;
-    private Project project;
-    private User user;
+    private int projectId;
+    private int userId;
     private Validation validation;
     private Mapping mapping;
     private FastaManager fastaManager;
@@ -66,17 +66,17 @@ public class ProcessController {
         statusSB.append(stringToHTMLJSON(s));
     }
 
-    public ProcessController(Project project, String expeditionCode) {
+    public ProcessController(int projectId, String expeditionCode) {
         this.expeditionCode = expeditionCode;
-        this.project = project;
+        this.projectId = projectId;
     }
 
     public ProcessController() {
 
     }
-    public User getUser() { return user; }
+    public int getUserId() { return userId; }
 
-    public void setUser(User user) { this.user = user; }
+    public void setUserId(int userId) { this.userId = userId; }
     public Boolean isExpeditionCreateRequired() {
         return expeditionCreateRequired;
     }
@@ -137,12 +137,8 @@ public class ProcessController {
         this.expeditionTitle = expeditionTitle;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
+    public int getProjectId() {
+        return projectId;
     }
 
     public Boolean isExpeditionAssignedToUserAndExists() {
@@ -180,7 +176,7 @@ public class ProcessController {
                 validated &&
                 inputFilename != null &&
                 expeditionCode != null &&
-                project != null)
+                projectId > 0)
             return true;
         else
             return false;
@@ -201,7 +197,7 @@ public class ProcessController {
 
     public String printStatus() {
         String retVal = "";
-        retVal += "\tproject = " + project.getProjectId()+ "\n";
+        retVal += "\tprojectId = " + projectId + "\n";
         retVal += "\texpeditionCode = " + expeditionCode + "\n";
         retVal += "\tinputFilename = " + inputFilename + "\n";
 

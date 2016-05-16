@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
 import javax.persistence.PersistenceContext;
 
 
@@ -20,7 +19,7 @@ import javax.persistence.PersistenceContext;
 public class ProjectService {
 
     @PersistenceContext(unitName = "entityManagerFactory")
-    private EntityManager em;
+    private EntityManager entityManager;
 
     private final ProjectRepository projectRepository;
 
@@ -29,7 +28,9 @@ public class ProjectService {
         this.projectRepository = projectRepository;
     }
 
-    public void create(Project project) {
+    public void create(Project project, int userId) {
+        User user = entityManager.getReference(User.class, userId);
+        project.setUser(user);
         projectRepository.save(project);
 
     }
@@ -45,7 +46,7 @@ public class ProjectService {
 
     public boolean isUserMemberOfProject(User user, Project project) {
         boolean userIsProjectMember = false;
-        user = em.merge(user);
+        user = entityManager.merge(user);
         for (Project userProject: user.getProjectsMemberOf()) {
             if (userProject.equals(project)) {
                 userIsProjectMember = true;

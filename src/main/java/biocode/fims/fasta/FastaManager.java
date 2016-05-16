@@ -1,7 +1,6 @@
 package biocode.fims.fasta;
 
 import biocode.fims.bcid.BcidDatabase;
-import biocode.fims.digester.Worksheet;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.ReaderManager;
@@ -133,9 +132,9 @@ public abstract class FastaManager {
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, processController.getExpeditionCode());
-            stmt.setInt(2, processController.getProject().getProjectId());
+            stmt.setInt(2, processController.getProjectId());
             stmt.setString(3, processController.getExpeditionCode());
-            stmt.setInt(4, processController.getProject().getProjectId());
+            stmt.setInt(4, processController.getProjectId());
 
             rs = stmt.executeQuery();
 

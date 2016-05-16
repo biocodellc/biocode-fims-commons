@@ -1,7 +1,5 @@
 package biocode.fims.entities;
 
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
@@ -31,16 +29,12 @@ public class Expedition {
 
         // Required
         private String expeditionCode;
-        private User user;
-        private Project project;
         // Optional
         private String expeditionTitle;
         private boolean isPublic = true;
 
-        public ExpeditionBuilder(String expeditionCode, User user, Project project) {
+        public ExpeditionBuilder(String expeditionCode) {
             this.expeditionCode = expeditionCode;
-            this.user = user;
-            this.project = project;
         }
 
         public ExpeditionBuilder expeditionTitle(String expeditionTitle) {
@@ -63,8 +57,6 @@ public class Expedition {
     private Expedition(ExpeditionBuilder builder) {
         expeditionCode = builder.expeditionCode;
         expeditionTitle = builder.expeditionTitle;
-        user = builder.user;
-        project = builder.project;
         isPublic = builder.isPublic;
     }
 
@@ -189,7 +181,7 @@ public class Expedition {
         return project;
     }
 
-    private void setProject(Project project) {
+    public void setProject(Project project) {
         this.project = project;
     }
 
@@ -206,7 +198,7 @@ public class Expedition {
         return user;
     }
 
-    private void setUser(User user) {
+    public void setUser(User user) {
         this.user = user;
     }
 

@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.net.URI;
 
 /**
@@ -23,6 +25,9 @@ import java.net.URI;
 @Service
 @Transactional
 public class ExpeditionService {
+
+    @PersistenceContext(unitName = "entityManagerFactory")
+    private EntityManager entityManager;
 
     private final ExpeditionRepository expeditionRepository;
     private final ProjectService projectService;
@@ -38,12 +43,18 @@ public class ExpeditionService {
         this.settingsManager = settingsManager;
     }
 
-    public void create(Expedition expedition, URI webAddress) {
-        if (!projectService.isUserMemberOfProject(expedition.getUser(), expedition.getProject()))
-            throw new ForbiddenRequestException("User ID " + expedition.getUser().getUserId() + " is not authorized to create expeditions in this project");
+    public void create(Expedition expedition, int userId, int projectId, URI webAddress) {
+        Project project = entityManager.getReference(Project.class, projectId);
+        User user = entityManager.getReference(User.class, userId);
+
+        expedition.setProject(project);
+        expedition.setUser(user);
+
+        if (!projectService.isUserMemberOfProject(user, project))
+            throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
 
         try {
-            checkExpeditionCodeValidAndAvailable(expedition);
+            checkExpeditionCodeValidAndAvailable(expedition.getExpeditionCode(), projectId);
         } catch (FimsException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -58,6 +69,7 @@ public class ExpeditionService {
         expeditionRepository.save(expedition);
     }
 
+    @Transactional(readOnly = true)
     public Expedition getExpedition(String expeditionCode, int projectId) {
         Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
         if (expedition != null)
@@ -76,6 +88,7 @@ public class ExpeditionService {
      *
      * @return returns the BCID for this expedition and conceptURI combination
      */
+    @Transactional(readOnly = true)
     public Bcid getRootBcid(String expeditionCode, int projectId, String conceptAlias) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
 
@@ -93,6 +106,7 @@ public class ExpeditionService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
         Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
 
@@ -105,6 +119,7 @@ public class ExpeditionService {
         return expeditions;
     }
 
+    @Transactional(readOnly = true)
     public Expedition getExpedition(int expeditionId) {
         Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
         if (expedition != null)
@@ -124,26 +139,23 @@ public class ExpeditionService {
     private Bcid createExpeditionBcid(Expedition expedition, URI webAddress) {
         boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequest"));
 
-        Bcid expditionBcid = new Bcid.BcidBuilder(expedition.getUser(), Expedition.EXPEDITION_RESOURCE_TYPE)
+        Bcid expditionBcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
                 .webAddress(webAddress)
                 .title("Expedition: " + expedition.getExpeditionTitle())
                 .ezidRequest(ezidRequest)
-                .expedition(expedition)
                 .build();
 
-        bcidService.create(expditionBcid);
+        bcidService.create(expditionBcid, expedition.getUser().getUserId());
+        bcidService.attachBcidToExpedition(expditionBcid, expedition.getExpeditionId());
         return expditionBcid;
     }
 
     /**
      * Check that expedition code is between 4 and 50 characters and doesn't already exist in the {@link Project}
      *
-     * @param expedition
-     *
      * @return
      */
-    private void checkExpeditionCodeValidAndAvailable(Expedition expedition) throws FimsException {
-        String expeditionCode = expedition.getExpeditionCode();
+    private void checkExpeditionCodeValidAndAvailable(String expeditionCode, int projectId) throws FimsException {
         // Check expeditionCode length
         if (expeditionCode.length() < 4 || expeditionCode.length() > 50) {
             throw new FimsException("Expedition code " + expeditionCode + " must be between 4 and 50 characters long");
@@ -155,7 +167,7 @@ public class ExpeditionService {
                     "Expedition code characters must be in one of the these ranges: [a-Z][0-9][-][_]");
         }
 
-        if (getExpedition(expeditionCode, expedition.getProject().getProjectId()) != null)
+        if (getExpedition(expeditionCode, projectId) != null)
             throw new FimsException("Expedition Code " + expeditionCode + " already exists.");
     }
 }

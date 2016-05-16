@@ -38,7 +38,6 @@ public class Bcid {
 
         // Required parameters
         private String resourceType;
-        private User user;
         //Optional parameters
         private boolean ezidMade = false;
 
@@ -48,18 +47,10 @@ public class Bcid {
         private URI webAddress;
         private String graph;
         private boolean finalCopy = false;
-        private Expedition expedition;
 
-        public BcidBuilder(User user, String resourceType) {
-            Assert.notNull(user, "Bcid user must not be null");
+        public BcidBuilder(String resourceType) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
-            this.user = user;
             this.resourceType = resourceType;
-        }
-
-        public BcidBuilder ezidMade(boolean val) {
-            ezidMade = val;
-            return this;
         }
 
         public BcidBuilder ezidRequest(boolean val) {
@@ -93,19 +84,7 @@ public class Bcid {
             return this;
         }
 
-        public BcidBuilder expedition(Expedition expedition) {
-            this.expedition = expedition;
-            return this;
-        }
-
-        private void checkEzidRequest() {
-            // Never request EZID for user=demo
-            if (ezidRequest && user.getUsername().equalsIgnoreCase("demo"))
-                ezidRequest = false;
-        }
-
         public Bcid build() {
-            checkEzidRequest();
             return new Bcid(this);
         }
 
@@ -113,7 +92,6 @@ public class Bcid {
 
     private Bcid(BcidBuilder builder) {
         resourceType = builder.resourceType;
-        user = builder.user;
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
         doi = builder.doi;
@@ -121,7 +99,6 @@ public class Bcid {
         webAddress = builder.webAddress;
         graph = builder.graph;
         finalCopy = builder.finalCopy;
-        expedition = builder.expedition;
     }
 
     // needed for hibernate
@@ -306,7 +283,7 @@ public class Bcid {
         return expedition;
     }
 
-    private void setExpedition(Expedition expedition) {
+    public void setExpedition(Expedition expedition) {
         this.expedition = expedition;
     }
 
@@ -320,7 +297,7 @@ public class Bcid {
         return user;
     }
 
-    private void setUser(User user) {
+    public void setUser(User user) {
         Assert.notNull(user, "Bcid user must not be null");
         this.user = user;
     }

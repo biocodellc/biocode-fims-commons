@@ -14,7 +14,6 @@ import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.Iterator;
@@ -28,7 +27,6 @@ import java.util.LinkedList;
  * and
  * input
  */
-@Transactional
 public class Process {
 
     public File configFile;
@@ -41,7 +39,6 @@ public class Process {
     String outputPrefix;
     private ProcessController processController;
     private static Logger logger = LoggerFactory.getLogger(Process.class);
-    private Project project;
 
     private static SettingsManager sm = SettingsManager.getInstance();
 
@@ -57,7 +54,7 @@ public class Process {
         this.expeditionService = expeditionService;
 
         // Read the Configuration File
-        configFile = new ConfigurationFileFetcher(processController.getProject().getProjectId(), outputFolder, false).getOutputFile();
+        configFile = new ConfigurationFileFetcher(processController.getProjectId(), outputFolder, false).getOutputFile();
 
         init(outputFolder, processController);
     }
@@ -83,8 +80,6 @@ public class Process {
     private void init(String outputFolder, ProcessController processController) {
         // Update the processController Settings
         this.processController = processController;
-
-        project = processController.getProject();
 
         this.outputFolder = outputFolder;
 
@@ -130,20 +125,19 @@ public class Process {
         return mapping;
     }
 
-    public Project getProject() {
-        return project;
-    }
-
     /**
      * Check the status of this expedition
      */
     public Expedition runExpeditionCheck() {
-        Expedition expedition = project.getExpedition(processController.getExpeditionCode());
+        Expedition expedition = expeditionService.getExpedition(
+                processController.getExpeditionCode(),
+                processController.getProjectId()
+        );
 
         if (expedition == null) {
             processController.setExpeditionCreateRequired(true);
         } else if (Boolean.valueOf(sm.retrieveValue("ignoreUser")) ||
-                expedition.getUser().equals(processController.getUser()) )
+                expedition.getUser().getUserId() == processController.getUserId() )
             processController.setExpeditionAssignedToUserAndExists(true);
         return expedition;
     }
@@ -168,14 +162,12 @@ public class Process {
         FimsPrinter.out.println(status);
 
         Expedition expedition = new Expedition.ExpeditionBuilder(
-                processController.getExpeditionCode(),
-                processController.getUser(),
-                project)
+                processController.getExpeditionCode())
                 .expeditionTitle(processController.getExpeditionTitle())
                 .isPublic(processController.getPublicStatus())
                 .build();
 
-        expeditionService.create(expedition, null);
+        expeditionService.create(expedition, processController.getUserId(), processController.getUserId(), null);
 
         // Loop the mapping file and create a BCID for every entity that we specified there!
         boolean ezidRequest = Boolean.parseBoolean(sm.retrieveValue("ezidRequests"));
@@ -188,14 +180,13 @@ public class Process {
                 String s = "\t\tCreating bcid root for " + entity.getConceptAlias() + " and resource type = " + entity.getConceptURI() + "\n";
                 processController.appendStatus(s);
 
-                biocode.fims.entities.Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(
-                        processController.getUser(), entity.getConceptURI())
-                        .expedition(expedition)
+                biocode.fims.entities.Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(entity.getConceptURI())
                         .ezidRequest(ezidRequest)
                         .title(entity.getConceptAlias())
                         .build();
 
-                bcidService.create(bcid);
+                bcidService.create(bcid, processController.getUserId());
+                bcidService.attachBcidToExpedition(bcid, expedition.getExpeditionId());
             }
         }
 

@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,19 +36,34 @@ public class BcidService {
     private static final String scheme = "ark:";
     private static final Logger logger = LoggerFactory.getLogger(BcidService.class);
 
+    @PersistenceContext(unitName = "entityManagerFactory")
+    EntityManager entityManager;
+
     private final BcidRepository bcidRepository;
     private final SettingsManager settingsManager;
+    private final UserService userService;
+    private final ExpeditionService expeditionService;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
 
     @Autowired
-    public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager) {
+    public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
+                       UserService userService, ExpeditionService expeditionService) {
         this.bcidRepository = bcidRepository;
         this.settingsManager = settingsManager;
+        this.userService = userService;
+        this.expeditionService = expeditionService;
     }
 
     @Transactional
-    public Bcid create(Bcid bcid) {
+    public Bcid create(Bcid bcid, int userId) {
         int naan = new Integer(settingsManager.retrieveValue("naan"));
+
+        User user = userService.getUser(userId);
+        bcid.setUser(user);
+
+        // if the user is demo, never create ezid's
+        if (bcid.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
+            bcid.setEzidRequest(false);
         bcidRepository.save(bcid);
 
         // generate the identifier
@@ -65,14 +82,30 @@ public class BcidService {
         return bcid;
     }
 
+    public Bcid attachBcidToExpedition(Bcid bcid, String expeditionCode, int projectId) {
+        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+        return attachBcidToExpedition(bcid, expedition.getExpeditionId());
+    }
+
+    public Bcid attachBcidToExpedition(Bcid bcid, int expeditionId) {
+        Expedition expedition = entityManager.getReference(Expedition.class, expeditionId);
+        bcid.setExpedition(expedition);
+
+        update(bcid);
+
+        return bcid;
+    }
+
     public void update(Bcid bcid) {
         bcidRepository.save(bcid);
     }
 
+    @Transactional(readOnly = true)
     public Bcid getBcid(String identifier) {
         return bcidRepository.findByIdentifier(identifier);
     }
 
+    @Transactional(readOnly = true)
     public Bcid getBcid(int bcidId) {
         return bcidRepository.findByBcidId(bcidId);
     }
@@ -83,10 +116,12 @@ public class BcidService {
      * @return the {@link Bcid} associated with the provided {@link biocode.fims.entities.Expedition}, containing
      * the provided resourceType(s)
      */
+    @Transactional(readOnly = true)
     public Bcid getBcid(int expeditionId, String... resourceType) {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 
+    @Transactional(readOnly = true)
     public Set<Bcid> getLatestDatasets(int projectId) {
         return bcidRepository.findLatestDatasets(projectId);
     }
@@ -97,6 +132,7 @@ public class BcidService {
      * @param expeditions
      * @return
      */
+    @Transactional(readOnly = true)
     public Set<Bcid> getLatestDatasetsForExpeditions(List<Expedition> expeditions) {
         Assert.notEmpty(expeditions);
 
