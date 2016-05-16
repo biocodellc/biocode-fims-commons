@@ -85,7 +85,7 @@ public class UserRestService extends FimsService {
             throw new BadRequestException("username already exists");
         }
         // check if the user is this project's admin
-        if (!p.isProjectAdmin(username, projectId)) {
+        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
         }
         u.createUser(userInfo, projectId);
@@ -118,12 +118,12 @@ public class UserRestService extends FimsService {
                                   @QueryParam("return_to") String returnTo) {
         Authorizer authorizer = new Authorizer();
 
-        if (!username.equals(updateUser.trim()) && !authorizer.userProjectAdmin(username)) {
+        if (!user.getUsername().equals(updateUser.trim()) && !authorizer.userProjectAdmin(user.getUsername())) {
             throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
         }
 
         Boolean adminAccess = false;
-        if (!username.equals(updateUser.trim()) && authorizer.userProjectAdmin(username))
+        if (!user.getUsername().equals(updateUser.trim()) && authorizer.userProjectAdmin(user.getUsername()))
             adminAccess = true;
 
         Hashtable<String, String> update = new Hashtable<String, String>();

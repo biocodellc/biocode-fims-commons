@@ -110,7 +110,7 @@ public class ResolverService extends FimsService {
         }
 
         BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
-        JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+        JSONRenderer renderer = new JSONRenderer(user.getUsername(), bcid, bcidMetadataSchema, settingsManager);
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }

@@ -4,7 +4,6 @@ import biocode.fims.auth.oauth2.OAuthProvider;
 import biocode.fims.entities.User;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -24,8 +23,6 @@ public abstract class FimsService {
     protected HttpHeaders headers;
     protected HttpSession session;
     protected User user;
-    protected String username;
-    protected Integer userId;
     @QueryParam("access_token")
     protected String accessToken;
     protected final String appRoot;
@@ -63,8 +60,5 @@ public abstract class FimsService {
         } else {
             user = (User) session.getAttribute("user");
         }
-
-        username = (user != null) ? user.getUsername() : null;
-        userId = (user != null) ? user.getUserId() : null;
     }
 }

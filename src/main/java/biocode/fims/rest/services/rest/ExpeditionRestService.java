@@ -135,12 +135,12 @@ public class ExpeditionRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExpeditions(@PathParam("projectId") Integer projectId) {
         ProjectMinter projectMinter = new ProjectMinter();
-        if (!projectMinter.isProjectAdmin(username, projectId)) {
+        if (!projectMinter.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 
         ExpeditionMinter e = new ExpeditionMinter();
-        JSONArray expeditions = e.getExpeditions(projectId, username);
+        JSONArray expeditions = e.getExpeditions(projectId, user.getUsername());
         return Response.ok(expeditions.toJSONString()).build();
     }
 
@@ -163,7 +163,7 @@ public class ExpeditionRestService extends FimsService {
         Integer projectId = new Integer(data.remove("projectId").get(0));
 
         ProjectMinter p = new ProjectMinter();
-        Boolean projectAdmin = p.isProjectAdmin(username, projectId);
+        Boolean projectAdmin = p.isProjectAdmin(user.getUsername(), projectId);
 
         if (!projectAdmin) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update a project expedition's public status.");
@@ -197,7 +197,7 @@ public class ExpeditionRestService extends FimsService {
 
         // Update the expedition public status for what was just passed in
 
-        if (e.updateExpeditionPublicStatus(userId, expeditionCode, projectId, publicStatus)) {
+        if (e.updateExpeditionPublicStatus(user.getUserId(), expeditionCode, projectId, publicStatus)) {
             return Response.ok("{\"success\": \"successfully updated.\"}").build();
         } else {
             return Response.ok("{\"success\": \"nothing to update.\"}").build();
@@ -243,7 +243,7 @@ public class ExpeditionRestService extends FimsService {
         ProjectMinter projectMinter = new ProjectMinter();
 
         //Check that the user exists in this project
-        if (!projectMinter.userExistsInProject(userId, projectId)) {
+        if (!projectMinter.userExistsInProject(user.getUserId(), projectId)) {
             // If the user isn't in the project, then we can't update or create a new expedition
             throw new ForbiddenRequestException("User is not authorized to update/create expeditions in this project.");
         }
@@ -259,7 +259,7 @@ public class ExpeditionRestService extends FimsService {
 
         // Else, pay attention to what user owns the initial project
         else {
-            if (expeditionMinter.userOwnsExpedition(userId, expeditionCode, projectId)) {
+            if (expeditionMinter.userOwnsExpedition(user.getUserId(), expeditionCode, projectId)) {
                 // If the user already owns the expedition, then great--- this is an update
                 return Response.ok("{\"update\": \"user owns this expedition\"}").build();
                 // If the expedition exists in the project but the user does not own the expedition then this means we can't

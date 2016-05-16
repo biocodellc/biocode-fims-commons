@@ -51,11 +51,11 @@ public class ProjectRestService extends FimsService {
 
         ProjectMinter project = new ProjectMinter();
 
-        if (userId == null && !includePublic) {
+        if (user == null && !includePublic) {
             throw new BadRequestException("You must be logged in if you don't want to include public projects");
         }
 
-        JSONArray response = project.listProjects(userId, includePublic);
+        JSONArray response = project.listProjects(user.getUserId(), includePublic);
 
         return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -72,7 +72,7 @@ public class ProjectRestService extends FimsService {
     public Response getLatestGraphsByExpedition(@PathParam("projectId") Integer projectId) {
         ProjectMinter project= new ProjectMinter();
 
-        JSONArray graphs = project.getLatestGraphs(projectId, username);
+        JSONArray graphs = project.getLatestGraphs(projectId, user.getUsername());
 
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -102,7 +102,7 @@ public class ProjectRestService extends FimsService {
     public Response getMyLatestGraphs() {
         ProjectMinter project= new ProjectMinter();
 
-        String response = project.getMyLatestGraphs(username);
+        String response = project.getMyLatestGraphs(user.getUsername());
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -119,7 +119,7 @@ public class ProjectRestService extends FimsService {
     public Response getDatasets() {
         ProjectMinter project= new ProjectMinter();
 
-        String response = project.getMyTemplatesAndDatasets(username);
+        String response = project.getMyTemplatesAndDatasets(user.getUsername());
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -135,7 +135,7 @@ public class ProjectRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserAdminProjects() {
         ProjectMinter project= new ProjectMinter();
-        JSONArray projects = project.getAdminProjects(username);
+        JSONArray projects = project.getAdminProjects(user.getUsername());
 
         return Response.ok(projects.toJSONString()).build();
     }
@@ -161,11 +161,11 @@ public class ProjectRestService extends FimsService {
                                  @FormParam("public") String publicProject) {
         ProjectMinter p = new ProjectMinter();
 
-        if (!p.isProjectAdmin(userId, projectID)) {
+        if (!p.isProjectAdmin(user.getUserId(), projectID)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
 
-        JSONObject metadata = p.getMetadata(projectID, username);
+        JSONObject metadata = p.getMetadata(projectID, user.getUsername());
         Hashtable<String, String> update = new Hashtable<String, String>();
 
         if (title != null &&
@@ -209,7 +209,7 @@ public class ProjectRestService extends FimsService {
     public Response removeUser(@PathParam("projectId") Integer projectId,
                                @PathParam("userId") Integer userId) {
         ProjectMinter p = new ProjectMinter();
-        if (!p.isProjectAdmin(username, projectId)) {
+        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You are not this project's admin.");
         }
 
@@ -239,7 +239,7 @@ public class ProjectRestService extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (!p.isProjectAdmin(username, projectId)) {
+        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You are not this project's admin");
         }
         p.addUserToProject(userId, projectId);
@@ -257,7 +257,7 @@ public class ProjectRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserProjects() {
         ProjectMinter p = new ProjectMinter();
-        JSONArray projects = p.listUsersProjects(username);
+        JSONArray projects = p.listUsersProjects(user.getUsername());
         return Response.ok(projects.toJSONString()).build();
     }
 
@@ -284,13 +284,13 @@ public class ProjectRestService extends FimsService {
         ProjectMinter projectMinter = new ProjectMinter();
 
         if (projectMinter.templateConfigExists(configName, projectId)) {
-            if (projectMinter.usersTemplateConfig(configName, projectId, userId)) {
-                projectMinter.updateTemplateConfig(configName, projectId, userId, checkedOptions);
+            if (projectMinter.usersTemplateConfig(configName, projectId, user.getUserId())) {
+                projectMinter.updateTemplateConfig(configName, projectId, user.getUserId(), checkedOptions);
             } else {
                 return Response.ok("{\"error\": \"A configuration with that name already exists, and you are not the owner.\"}").build();
             }
         } else {
-            projectMinter.saveTemplateConfig(configName, projectId, userId, checkedOptions);
+            projectMinter.saveTemplateConfig(configName, projectId, user.getUserId(), checkedOptions);
         }
 
         return Response.ok("{\"success\": \"Successfully saved template configuration.\"}").build();
@@ -344,7 +344,7 @@ public class ProjectRestService extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, userId)) {
+        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, user.getUserId())) {
             p.removeTemplateConfig(configName, projectId);
         } else {
             return Response.ok("{\"error\": \"Only the owners of a configuration can remove the configuration.\"}").build();
@@ -366,7 +366,7 @@ public class ProjectRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response listExpeditions(@PathParam("projectId") Integer projectId) {
         ExpeditionMinter e = new ExpeditionMinter();
-        JSONArray expeditions = e.listExpeditions(projectId, username);
+        JSONArray expeditions = e.listExpeditions(projectId, user.getUsername());
 
         return Response.ok(expeditions.toJSONString()).build();
     }

@@ -170,7 +170,7 @@ public class AuthenticationService extends FimsService {
             }
         }
 
-        if (username == null || !oAuthLogin) {
+        if (user == null || !oAuthLogin) {
             session.setAttribute("oAuthLogin", "false");
             // need the user to login
             try {
@@ -183,7 +183,7 @@ public class AuthenticationService extends FimsService {
             }
         }
         //TODO ask user if they want to share profile information with requesting party
-        String code = p.generateCode(clientId, redirectURL, username.toString());
+        String code = p.generateCode(clientId, redirectURL, user.getUsername());
 
         // no longer need oAuthLogin session attribute
         session.removeAttribute("oAuthLogin");

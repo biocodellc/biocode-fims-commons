@@ -89,7 +89,7 @@ public class BcidRestService extends FimsService {
                 .finalCopy(finalCopy)
                 .build();
 
-        bcidService.create(bcid, userId);
+        bcidService.create(bcid, user.getUserId());
 
         // TODO return the bcid object here
         return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
@@ -118,7 +118,7 @@ public class BcidRestService extends FimsService {
                             )
             );
 
-            JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+            JSONRenderer renderer = new JSONRenderer(user.getUsername(), bcid, bcidMetadataSchema, settingsManager);
             response = renderer.render();
 
         } catch (EmptyResultDataAccessException e) {
@@ -139,7 +139,7 @@ public class BcidRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response bcidList() {
         BcidMinter bcidMinter = new BcidMinter();
-        JSONArray response = bcidMinter.bcidList(username);
+        JSONArray response = bcidMinter.bcidList(user.getUsername());
 
         return Response.ok(response.toJSONString()).build();
     }
@@ -174,7 +174,7 @@ public class BcidRestService extends FimsService {
         if (identifier == null || identifier.isEmpty()) {
             throw new BadRequestException("You must include an identifier.");
         }
-        if (!bcidMinter.userOwnsBcid(identifier, userId)) {
+        if (!bcidMinter.userOwnsBcid(identifier, user.getUserId())) {
             throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
         }
 
