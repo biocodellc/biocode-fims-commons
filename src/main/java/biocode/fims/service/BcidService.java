@@ -137,6 +137,10 @@ public class BcidService {
         return bcidRepository.findLatestDatasetsForExpeditions(expeditionIds);
     }
 
+    public void delete(int bcidId) {
+        bcidRepository.deleteByBcidId(bcidId);
+    }
+
     private void createEzid(Bcid bcid) {
         // Create EZIDs right away for Bcid level Identifiers
         // Initialize ezid account

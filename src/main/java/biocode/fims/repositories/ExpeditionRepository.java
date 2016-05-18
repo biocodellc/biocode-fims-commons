@@ -20,6 +20,9 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     @Modifying
     void delete(Expedition expedition);
 
+    @Modifying
+    void deleteByExpeditionId(int expeditionId);
+
     void save(Expedition expedition);
 
     Expedition findByExpeditionId(int expeditionId);

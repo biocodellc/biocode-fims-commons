@@ -46,7 +46,6 @@ public class ProjectService {
 
     public boolean isUserMemberOfProject(User user, Project project) {
         boolean userIsProjectMember = false;
-        user = entityManager.merge(user);
         for (Project userProject: user.getProjectsMemberOf()) {
             if (userProject.equals(project)) {
                 userIsProjectMember = true;

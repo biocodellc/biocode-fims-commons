@@ -125,7 +125,7 @@ public class User {
     }
 
     // needed for hibernate
-    private User() {
+    User() {
     }
 
     @Id
@@ -243,66 +243,6 @@ public class User {
         this.passwordResetExpiration = passwordResetExpiration;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        User user = (User) o;
-
-        if (userId != user.userId) return false;
-        if (enabled != user.enabled) return false;
-        if (hasSetPassword != user.hasSetPassword) return false;
-        if (admin != user.admin) return false;
-        if (username != null ? !username.equals(user.username) : user.username != null) return false;
-        if (password != null ? !password.equals(user.password) : user.password != null) return false;
-        if (email != null ? !email.equals(user.email) : user.email != null) return false;
-        if (institution != null ? !institution.equals(user.institution) : user.institution != null) return false;
-        if (firstName != null ? !firstName.equals(user.firstName) : user.firstName != null) return false;
-        if (lastName != null ? !lastName.equals(user.lastName) : user.lastName != null) return false;
-        if (passwordResetToken != null ? !passwordResetToken.equals(user.passwordResetToken) : user.passwordResetToken != null)
-            return false;
-        if (passwordResetExpiration != null ? !passwordResetExpiration.equals(user.passwordResetExpiration) : user.passwordResetExpiration != null)
-            return false;
-
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", enabled=" + enabled +
-                ", hasSetPassword=" + hasSetPassword +
-                ", email='" + email + '\'' +
-                ", admin=" + admin +
-                ", institution='" + institution + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", passwordResetToken='" + passwordResetToken + '\'' +
-                ", passwordResetExpiration=" + passwordResetExpiration +
-                '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userId;
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (enabled ? 1 : 0);
-        result = 31 * result + (hasSetPassword ? 1 : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (admin ? 1 : 0);
-        result = 31 * result + (institution != null ? institution.hashCode() : 0);
-        result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
-        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
-        result = 31 * result + (passwordResetToken != null ? passwordResetToken.hashCode() : 0);
-        result = 31 * result + (passwordResetExpiration != null ? passwordResetExpiration.hashCode() : 0);
-        return result;
-    }
-
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     public Set<Bcid> getBcids() {
@@ -357,5 +297,67 @@ public class User {
 
     private void setTemplateConfigs(Set<TemplateConfig> templateConfigs) {
         this.templateConfigs = templateConfigs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+
+        User user = (User) o;
+
+        if (this.getUserId() != 0 && user.getUserId() != 0)
+            return this.getUserId() == user.getUserId();
+
+        if (isEnabled() != user.isEnabled()) return false;
+        if (isHasSetPassword() != user.isHasSetPassword()) return false;
+        if (isAdmin() != user.isAdmin()) return false;
+        if (!getUsername().equals(user.getUsername())) return false;
+        if (!getPassword().equals(user.getPassword())) return false;
+        if (getEmail() != null ? !getEmail().equals(user.getEmail()) : user.getEmail() != null) return false;
+        if (getInstitution() != null ? !getInstitution().equals(user.getInstitution()) : user.getInstitution() != null)
+            return false;
+        if (getFirstName() != null ? !getFirstName().equals(user.getFirstName()) : user.getFirstName() != null)
+            return false;
+        if (getLastName() != null ? !getLastName().equals(user.getLastName()) : user.getLastName() != null)
+            return false;
+        if (getPasswordResetToken() != null ? !getPasswordResetToken().equals(user.getPasswordResetToken()) : user.getPasswordResetToken() != null)
+            return false;
+        return getPasswordResetExpiration() != null ? getPasswordResetExpiration().equals(user.getPasswordResetExpiration()) : user.getPasswordResetExpiration() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getUsername().hashCode();
+        result = 31 * result + getPassword().hashCode();
+        result = 31 * result + (isEnabled() ? 1 : 0);
+        result = 31 * result + (isHasSetPassword() ? 1 : 0);
+        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
+        result = 31 * result + (isAdmin() ? 1 : 0);
+        result = 31 * result + (getInstitution() != null ? getInstitution().hashCode() : 0);
+        result = 31 * result + (getFirstName() != null ? getFirstName().hashCode() : 0);
+        result = 31 * result + (getLastName() != null ? getLastName().hashCode() : 0);
+        result = 31 * result + (getPasswordResetToken() != null ? getPasswordResetToken().hashCode() : 0);
+        result = 31 * result + (getPasswordResetExpiration() != null ? getPasswordResetExpiration().hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", hasSetPassword=" + hasSetPassword +
+                ", email='" + email + '\'' +
+                ", admin=" + admin +
+                ", institution='" + institution + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", passwordResetToken='" + passwordResetToken + '\'' +
+                ", passwordResetExpiration=" + passwordResetExpiration +
+                '}';
     }
 }

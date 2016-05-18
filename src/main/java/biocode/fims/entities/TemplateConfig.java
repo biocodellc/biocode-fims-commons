@@ -16,6 +16,8 @@ public class TemplateConfig {
     private Project project;
     private User user;
 
+    TemplateConfig() {}
+
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     public int getTemplateConfigId() {
@@ -56,23 +58,27 @@ public class TemplateConfig {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof TemplateConfig)) return false;
 
         TemplateConfig that = (TemplateConfig) o;
 
-        if (getTemplateConfigId() != that.getTemplateConfigId()) return false;
+        if (this.getTemplateConfigId() != 0 && that.getTemplateConfigId() != 0)
+            return this.getTemplateConfigId() == that.getTemplateConfigId();
+
         if (isPublic != that.isPublic) return false;
-        if (!getConfigName().equals(that.getConfigName())) return false;
-        return getConfig().equals(that.getConfig());
+        if (getConfigName() != null ? !getConfigName().equals(that.getConfigName()) : that.getConfigName() != null)
+            return false;
+        if (getConfig() != null ? !getConfig().equals(that.getConfig()) : that.getConfig() != null) return false;
+        return getProject().equals(that.getProject());
 
     }
 
     @Override
     public int hashCode() {
-        int result = getTemplateConfigId();
-        result = 31 * result + getConfigName().hashCode();
+        int result = getConfigName() != null ? getConfigName().hashCode() : 0;
         result = 31 * result + (isPublic ? 1 : 0);
-        result = 31 * result + getConfig().hashCode();
+        result = 31 * result + (getConfig() != null ? getConfig().hashCode() : 0);
+        result = 31 * result + getProject().hashCode();
         return result;
     }
 

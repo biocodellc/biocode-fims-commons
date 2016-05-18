@@ -61,7 +61,7 @@ public class Expedition {
     }
 
     // needed for hibernate
-    private Expedition() {}
+    Expedition() {}
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -112,18 +112,17 @@ public class Expedition {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Expedition)) return false;
 
         Expedition that = (Expedition) o;
 
-        if (getExpeditionId() != that.getExpeditionId()) return false;
+        if (this.getExpeditionId() != 0 && that.getExpeditionId() != 0)
+            return this.getExpeditionId() == that.getExpeditionId();
+
         if (isPublic() != that.isPublic()) return false;
-        if (getExpeditionCode() != null ? !getExpeditionCode().equals(that.getExpeditionCode()) : that.getExpeditionCode() != null)
-            return false;
+        if (!getExpeditionCode().equals(that.getExpeditionCode())) return false;
         if (getExpeditionTitle() != null ? !getExpeditionTitle().equals(that.getExpeditionTitle()) : that.getExpeditionTitle() != null)
             return false;
-        if (getTs() != null ? !getTs().equals(that.getTs()) : that.getTs() != null) return false;
-        if (getBcids() != null ? !getBcids().equals(that.getBcids()) : that.getBcids() != null) return false;
         if (getProject() != null ? !getProject().equals(that.getProject()) : that.getProject() != null) return false;
         return getUser() != null ? getUser().equals(that.getUser()) : that.getUser() == null;
 
@@ -131,12 +130,9 @@ public class Expedition {
 
     @Override
     public int hashCode() {
-        int result = getExpeditionId();
-        result = 31 * result + (getExpeditionCode() != null ? getExpeditionCode().hashCode() : 0);
+        int result = getExpeditionCode().hashCode();
         result = 31 * result + (getExpeditionTitle() != null ? getExpeditionTitle().hashCode() : 0);
-        result = 31 * result + (getTs() != null ? getTs().hashCode() : 0);
         result = 31 * result + (isPublic() ? 1 : 0);
-        result = 31 * result + (getBcids() != null ? getBcids().hashCode() : 0);
         result = 31 * result + (getProject() != null ? getProject().hashCode() : 0);
         result = 31 * result + (getUser() != null ? getUser().hashCode() : 0);
         return result;
@@ -203,6 +199,8 @@ public class Expedition {
     }
 
     @Transient
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="identifier")
+    @JsonIdentityReference(alwaysAsId = true)
     public Bcid getExpeditionBcid() {
         return expeditionBcid;
     }

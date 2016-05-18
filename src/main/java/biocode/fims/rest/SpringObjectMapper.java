@@ -15,7 +15,9 @@ import java.text.SimpleDateFormat;
 public class SpringObjectMapper extends ObjectMapper {
 
     public SpringObjectMapper() {
-        this.registerModule(new Hibernate5Module());
+        Hibernate5Module hm = new Hibernate5Module();
+        hm.configure(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION, false);
+        this.registerModule(hm);
         this.enable(SerializationFeature.INDENT_OUTPUT);
         this.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }

@@ -130,6 +130,12 @@ public class ExpeditionService {
         return expedition;
     }
 
+    public void delete(int expeditionId) {
+        Expedition expedition = getExpedition(expeditionId);
+        bcidService.delete(expedition.getExpeditionBcid().getBcidId());
+        expeditionRepository.deleteByExpeditionId(expeditionId);
+    }
+
     /**
      * create the Bcid domain object that represents the Expedition
      * @param expedition

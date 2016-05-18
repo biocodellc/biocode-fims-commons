@@ -102,7 +102,7 @@ public class Bcid {
     }
 
     // needed for hibernate
-    public Bcid() {}
+    Bcid() {}
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -175,6 +175,46 @@ public class Bcid {
         return webAddress;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bcid)) return false;
+
+        Bcid bcid = (Bcid) o;
+
+        if (this.getBcidId() != 0 && bcid.getBcidId() != 0)
+            return this.getBcidId() == bcid.getBcidId();
+
+        if (isEzidMade() != bcid.isEzidMade()) return false;
+        if (isEzidRequest() != bcid.isEzidRequest()) return false;
+        if (isFinalCopy() != bcid.isFinalCopy()) return false;
+        if (getIdentifier() != null ? !getIdentifier().equals(bcid.getIdentifier()) : bcid.getIdentifier() != null)
+            return false;
+        if (getDoi() != null ? !getDoi().equals(bcid.getDoi()) : bcid.getDoi() != null) return false;
+        if (getTitle() != null ? !getTitle().equals(bcid.getTitle()) : bcid.getTitle() != null) return false;
+        if (getWebAddress() != null ? !getWebAddress().equals(bcid.getWebAddress()) : bcid.getWebAddress() != null)
+            return false;
+        if (!getResourceType().equals(bcid.getResourceType())) return false;
+        if (getGraph() != null ? !getGraph().equals(bcid.getGraph()) : bcid.getGraph() != null) return false;
+        return getUser().equals(bcid.getUser());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (isEzidMade() ? 1 : 0);
+        result = 31 * result + (isEzidRequest() ? 1 : 0);
+        result = 31 * result + (getIdentifier() != null ? getIdentifier().hashCode() : 0);
+        result = 31 * result + (getDoi() != null ? getDoi().hashCode() : 0);
+        result = 31 * result + (getTitle() != null ? getTitle().hashCode() : 0);
+        result = 31 * result + (getWebAddress() != null ? getWebAddress().hashCode() : 0);
+        result = 31 * result + getResourceType().hashCode();
+        result = 31 * result + (getGraph() != null ? getGraph().hashCode() : 0);
+        result = 31 * result + (isFinalCopy() ? 1 : 0);
+        result = 31 * result + getUser().hashCode();
+        return result;
+    }
+
     public void setWebAddress(URI webAddress) {
         isValidUrl(webAddress);
         this.webAddress = webAddress;
@@ -216,28 +256,6 @@ public class Bcid {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Bcid bcid = (Bcid) o;
-
-        if (bcidId != bcid.bcidId) return false;
-        if (ezidMade != bcid.ezidMade) return false;
-        if (ezidRequest != bcid.ezidRequest) return false;
-        if (finalCopy != bcid.finalCopy) return false;
-        if (identifier != null ? !identifier.equals(bcid.identifier) : bcid.identifier != null) return false;
-        if (doi != null ? !doi.equals(bcid.doi) : bcid.doi != null) return false;
-        if (title != null ? !title.equals(bcid.title) : bcid.title != null) return false;
-        if (webAddress != null ? !webAddress.equals(bcid.webAddress) : bcid.webAddress != null) return false;
-        if (resourceType != null ? !resourceType.equals(bcid.resourceType) : bcid.resourceType != null) return false;
-        if (ts != null ? !ts.equals(bcid.ts) : bcid.ts != null) return false;
-        if (graph != null ? !graph.equals(bcid.graph) : bcid.graph != null) return false;
-
-        return true;
-    }
-
-    @Override
     public String toString() {
         return "Bcid{" +
                 "bcidId=" + bcidId +
@@ -254,22 +272,6 @@ public class Bcid {
                 ", expedition=" + expedition +
                 ", user=" + user +
                 '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int result = bcidId;
-        result = 31 * result + (ezidMade ? 1 : 0);
-        result = 31 * result + (ezidRequest ? 1 : 0);
-        result = 31 * result + (identifier != null ? identifier.hashCode() : 0);
-        result = 31 * result + (doi != null ? doi.hashCode() : 0);
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (webAddress != null ? webAddress.hashCode() : 0);
-        result = 31 * result + (resourceType != null ? resourceType.hashCode() : 0);
-        result = 31 * result + (ts != null ? ts.hashCode() : 0);
-        result = 31 * result + (graph != null ? graph.hashCode() : 0);
-        result = 31 * result + (finalCopy ? 1 : 0);
-        return result;
     }
 
     @ManyToOne

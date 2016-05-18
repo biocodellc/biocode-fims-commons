@@ -1,5 +1,7 @@
 package biocode.fims.entities;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
@@ -65,7 +67,7 @@ public class Project {
     }
 
     // needed for hibernate
-    private Project() {
+    Project() {
     }
 
     @Id
@@ -134,22 +136,31 @@ public class Project {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Project)) return false;
 
         Project project = (Project) o;
 
-        if (projectId != project.projectId) return false;
-        if (isPublic != project.isPublic) return false;
-        if (projectCode != null ? !projectCode.equals(project.projectCode) : project.projectCode != null) return false;
-        if (projectTitle != null ? !projectTitle.equals(project.projectTitle) : project.projectTitle != null)
-            return false;
-        if (projectAbstract != null ? !projectAbstract.equals(project.projectAbstract) : project.projectAbstract != null)
-            return false;
-        if (ts != null ? !ts.equals(project.ts) : project.ts != null) return false;
-        if (validationXml != null ? !validationXml.equals(project.validationXml) : project.validationXml != null)
-            return false;
+        if (this.getProjectId() != 0 && project.getProjectId() != 0)
+            return this.getProjectId() == project.getProjectId();
 
-        return true;
+        if (isPublic() != project.isPublic()) return false;
+        if (!getProjectCode().equals(project.getProjectCode())) return false;
+        if (getProjectTitle() != null ? !getProjectTitle().equals(project.getProjectTitle()) : project.getProjectTitle() != null)
+            return false;
+        if (getProjectAbstract() != null ? !getProjectAbstract().equals(project.getProjectAbstract()) : project.getProjectAbstract() != null)
+            return false;
+        return getValidationXml().equals(project.getValidationXml());
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getProjectCode().hashCode();
+        result = 31 * result + (getProjectTitle() != null ? getProjectTitle().hashCode() : 0);
+        result = 31 * result + (getProjectAbstract() != null ? getProjectAbstract().hashCode() : 0);
+        result = 31 * result + getValidationXml().hashCode();
+        result = 31 * result + (isPublic() ? 1 : 0);
+        return result;
     }
 
     @Override
@@ -164,18 +175,6 @@ public class Project {
                 ", isPublic=" + isPublic +
                 ", user=" + user +
                 '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int result = projectId;
-        result = 31 * result + (projectCode != null ? projectCode.hashCode() : 0);
-        result = 31 * result + (projectTitle != null ? projectTitle.hashCode() : 0);
-        result = 31 * result + (projectAbstract != null ? projectAbstract.hashCode() : 0);
-        result = 31 * result + (ts != null ? ts.hashCode() : 0);
-        result = 31 * result + (validationXml != null ? validationXml.hashCode() : 0);
-        result = 31 * result + (isPublic ? 1 : 0);
-        return result;
     }
 
     @OneToMany(mappedBy = "project",
