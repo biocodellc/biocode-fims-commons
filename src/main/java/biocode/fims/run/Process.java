@@ -167,7 +167,7 @@ public class Process {
                 .isPublic(processController.getPublicStatus())
                 .build();
 
-        expeditionService.create(expedition, processController.getUserId(), processController.getUserId(), null);
+        expeditionService.create(expedition, processController.getUserId(), processController.getProjectId(), null);
 
         // Loop the mapping file and create a BCID for every entity that we specified there!
         boolean ezidRequest = Boolean.parseBoolean(sm.retrieveValue("ezidRequests"));

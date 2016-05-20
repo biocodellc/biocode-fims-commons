@@ -8,6 +8,7 @@ buildscript {
 }
 
 apply plugin: "java"
+apply plugin: "idea"
 apply plugin: "org.ajoberstar.github-pages"
 
 targetCompatibility = 1.7
@@ -20,6 +21,12 @@ repositories {
 configurations {
     compile.exclude module: 'bean-validator'
     provided
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
 }
 
 dependencies {
