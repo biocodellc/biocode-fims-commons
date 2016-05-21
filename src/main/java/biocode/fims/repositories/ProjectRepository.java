@@ -17,5 +17,4 @@ public interface ProjectRepository extends Repository<Project, Integer> {
     void save(Project project);
 
     Project findByProjectId(int projectId);
-
 }

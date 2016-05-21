@@ -43,36 +43,4 @@ public class Authorizer {
             BcidDatabase.close(conn, stmt, rs);
         }
     }
-
-    /**
-     * determine if the password reset token is still valid
-     * @param token
-     * @return
-     */
-    public Boolean validResetToken(String token) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String sql = "SELECT passwordResetExpiration as ts FROM users WHERE passwordResetToken = ?";
-
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, token);
-
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                Timestamp expirationTs = rs.getTimestamp("ts");
-                Timestamp ts = new Timestamp(Calendar.getInstance().getTime().getTime());
-                if (expirationTs != null && expirationTs.after(ts)) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException("Server Error while validating reset token",
-                    "db error retrieving reset token expiration", e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return false;
-    }
 }

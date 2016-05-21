@@ -1,9 +1,14 @@
 package biocode.fims.entities;
 
+import biocode.fims.auth.PasswordHash;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Set;
 
@@ -45,8 +50,6 @@ public class User {
         private boolean hasSetPassword = false;
         private boolean enabled = true;
         private boolean admin = false;
-        private String passwordResetToken;
-        private Date passwordResetExpiration;
 
         public UserBuilder(String username, String password) {
             this.username = username;
@@ -84,18 +87,8 @@ public class User {
             return this;
         }
 
-        public UserBuilder passwordResetToken(String passwordResetToken) {
-            this.passwordResetToken = passwordResetToken;
-            return this;
-        }
-
-        public UserBuilder passwordResetExpiration(Date passwordResetExpiration) {
-            this.passwordResetExpiration = passwordResetExpiration;
-            return this;
-        }
-
         private boolean validUser() {
-            if (email == null || institution == null || firstName == null || lastName == null)
+            if (StringUtils.isEmpty(email) || StringUtils.isEmpty(institution) || StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName))
                 return false;
 
             return true;
@@ -120,8 +113,6 @@ public class User {
         hasSetPassword = builder.hasSetPassword;
         enabled = builder.enabled;
         admin = builder.admin;
-        passwordResetToken = builder.passwordResetToken;
-        passwordResetExpiration = builder.passwordResetExpiration;
     }
 
     // needed for hibernate
@@ -138,7 +129,7 @@ public class User {
         this.userId = id;
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     public String getUsername() {
         return username;
     }
@@ -167,7 +158,7 @@ public class User {
     }
 
     @Column(nullable = false)
-    public boolean isHasSetPassword() {
+    public boolean hasSetPassword() {
         return hasSetPassword;
     }
 
@@ -310,7 +301,7 @@ public class User {
             return this.getUserId() == user.getUserId();
 
         if (isEnabled() != user.isEnabled()) return false;
-        if (isHasSetPassword() != user.isHasSetPassword()) return false;
+        if (hasSetPassword() != user.hasSetPassword()) return false;
         if (isAdmin() != user.isAdmin()) return false;
         if (!getUsername().equals(user.getUsername())) return false;
         if (!getPassword().equals(user.getPassword())) return false;
@@ -332,7 +323,7 @@ public class User {
         int result = getUsername().hashCode();
         result = 31 * result + getPassword().hashCode();
         result = 31 * result + (isEnabled() ? 1 : 0);
-        result = 31 * result + (isHasSetPassword() ? 1 : 0);
+        result = 31 * result + (hasSetPassword() ? 1 : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (isAdmin() ? 1 : 0);
         result = 31 * result + (getInstitution() != null ? getInstitution().hashCode() : 0);

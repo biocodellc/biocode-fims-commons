@@ -20,6 +20,7 @@ public class Project {
     private Date ts;
     private String validationXml;
     private boolean isPublic;
+    private String projectUrl;
     private Set<Expedition> expeditions;
     private User user;
     private Set<User> projectMembers;
@@ -31,15 +32,17 @@ public class Project {
         private String projectCode;
         private String projectTitle;
         private String validationXml;
+        private String projectUrl;
 
         // Optional
         private String projectAbstract;
         private boolean isPublic = true;
 
-        public ProjectBuilder(String projectCode, String projectTitle, String validationXml) {
+        public ProjectBuilder(String projectCode, String projectTitle, String validationXml, String projectUrl) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
             this.validationXml = validationXml;
+            this.projectUrl = projectUrl;
         }
 
         public ProjectBuilder isPublic(boolean isPublic) {
@@ -62,6 +65,7 @@ public class Project {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
         validationXml = builder.validationXml;
+        projectUrl = builder.projectUrl;
         projectAbstract = builder.projectAbstract;
         isPublic = builder.isPublic;
     }
@@ -121,6 +125,15 @@ public class Project {
 
     public void setValidationXml(String validationXml) {
         this.validationXml = validationXml;
+    }
+
+    @Column(nullable = false)
+    public String getProjectUrl() {
+        return projectUrl;
+    }
+
+    public void setProjectUrl(String projectUrl) {
+        this.projectUrl = projectUrl;
     }
 
     @Column(name="public",
@@ -193,6 +206,7 @@ public class Project {
             referencedColumnName = "userId",
             foreignKey = @ForeignKey(name = "FK_projects_userId"),
             nullable = false
+
     )
     public User getUser() {
         return user;

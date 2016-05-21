@@ -1,6 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.BasicAuthDecoder;
 import biocode.fims.auth.oauth2.OAuthProvider;
@@ -66,14 +65,9 @@ public class AuthenticationService extends FimsService {
                           @Context HttpServletResponse res) {
 
         if (!usr.isEmpty() && !pass.isEmpty()) {
-            Authenticator authenticator = new Authenticator();
-            Boolean isAuthenticated;
+            User user = userService.getUser(usr, pass);
 
-            // Verify that the entered and stored passwords match
-            isAuthenticated = authenticator.login(usr, pass);
-
-            if (isAuthenticated) {
-                User user = userService.getUser(usr);
+            if (user != null) {
                 // Place the user in the session
                 session.setAttribute("user", user);
 
@@ -85,9 +79,7 @@ public class AuthenticationService extends FimsService {
                 }
 
                 // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
-                if (!authenticator.userSetPass(usr)) {
-                    // don't need authenticator anymore
-
+                if (!user.hasSetPassword()) {
                     return Response.ok("{\"url\": \"" + appRoot + "secure/profile.jsp?error=Update Your Password" +
                             new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
                             .build();
@@ -260,8 +252,8 @@ public class AuthenticationService extends FimsService {
                 throw new BadRequestException("invalid_client");
             }
 
-            Authenticator authenticator = new Authenticator();
-            if (username == null || password == null || !authenticator.login(username, password)) {
+            User user = userService.getUser(username, password);
+            if (user == null) {
                 throw new BadRequestException("the supplied username and/or password are incorrect", "invalid_request");
             }
 

@@ -1,11 +1,12 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
+import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.bcid.UserMinter;
+import biocode.fims.entities.User;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
@@ -14,11 +15,14 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Hashtable;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  * The REST Interface for dealing with users. Includes user creation and profile updating.
@@ -26,13 +30,17 @@ import java.util.Hashtable;
 @Path("users")
 public class UserRestService extends FimsService {
 
+    private final UserService userService;
+
     @Autowired
     UserRestService(UserService userService, SettingsManager settingsManager) {
         super(userService, settingsManager);
+        this.userService = userService;
     }
 
     /**
      * Service to create a new user.
+     *
      * @param createUser
      * @param password
      * @param firstName
@@ -56,44 +64,42 @@ public class UserRestService extends FimsService {
                                @FormParam("institution") String institution,
                                @FormParam("projectId") Integer projectId) {
 
-        if ((createUser == null || createUser.isEmpty()) ||
-                (password == null || password.isEmpty()) ||
-                (firstName == null || firstName.isEmpty()) ||
-                (lastName == null || lastName.isEmpty()) ||
-                (email == null || email.isEmpty()) ||
-                (institution == null) || institution.isEmpty()) {
+        if (StringUtils.isEmpty(createUser) ||
+                StringUtils.isEmpty(password) ||
+                StringUtils.isEmpty(firstName) ||
+                StringUtils.isEmpty(lastName) ||
+                StringUtils.isEmpty(email) ||
+                StringUtils.isEmpty(institution))
             throw new BadRequestException("all fields are required");
-        }
 
         // check that a valid email is given
         if (!email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
             throw new BadRequestException("please enter a valid email");
         }
 
-        Hashtable<String, String> userInfo = new Hashtable<String, String>();
-        userInfo.put("username", createUser);
-        userInfo.put("firstName", firstName);
-        userInfo.put("lastName", lastName);
-        userInfo.put("email", email);
-        userInfo.put("institution", institution);
-        userInfo.put("password", password);
-
-        UserMinter u = new UserMinter();
-        ProjectMinter p = new ProjectMinter();
-
-        if (u.checkUsernameExists(createUser)) {
+        if (userService.getUser(createUser) != null)
             throw new BadRequestException("username already exists");
-        }
+
+        ProjectMinter p = new ProjectMinter();
         // check if the user is this project's admin
         if (!p.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
         }
-        u.createUser(userInfo, projectId);
+
+        User newUser = new User.UserBuilder(createUser, PasswordHash.createHash(password))
+                .name(firstName, lastName)
+                .email(email)
+                .institution(institution)
+                .build();
+
+        userService.create(newUser, projectId);
+
         return Response.ok("{\"success\": \"successfully created new user\"}").build();
     }
 
     /**
      * Service for a user to update their profile.
+     *
      * @param firstName
      * @param lastName
      * @param email
@@ -114,84 +120,53 @@ public class UserRestService extends FimsService {
                                   @FormParam("institution") String institution,
                                   @FormParam("oldPassword") String oldPassword,
                                   @FormParam("newPassword") String newPassword,
-                                  @FormParam("username") String updateUser,
+                                  @FormParam("username") String updateUsername,
                                   @QueryParam("return_to") String returnTo) {
         Authorizer authorizer = new Authorizer();
-
-        if (!user.getUsername().equals(updateUser.trim()) && !authorizer.userProjectAdmin(user.getUsername())) {
-            throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
-        }
-
         Boolean adminAccess = false;
-        if (!user.getUsername().equals(updateUser.trim()) && authorizer.userProjectAdmin(user.getUsername()))
-            adminAccess = true;
+        User userToUpdate = this.user;
 
-        Hashtable<String, String> update = new Hashtable<String, String>();
+        if (!user.getUsername().equals(updateUsername.trim())) {
+            if (!authorizer.userProjectAdmin(user.getUsername()))
+                throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
+            else {
+                adminAccess = true;
+                userToUpdate = userService.getUser(updateUsername);
+            }
+        }
+        if (userToUpdate == null)
+            throw new BadRequestException("user: " + updateUsername + "not found");
 
         // Only update user's password if both old_password and new_password fields contain values and the user is updating
         // their own profile
-        if (!adminAccess) {
-            if (!oldPassword.isEmpty() && !newPassword.isEmpty()) {
-                Authenticator myAuth = new Authenticator();
-                // Call the login function to verify the user's old_password
-                Boolean valid_pass = myAuth.login(updateUser, oldPassword);
-
+        if (!newPassword.isEmpty()) {
+            if (adminAccess) {
+                userToUpdate.setPassword(PasswordHash.createHash(newPassword));
+                // Make the user change their password next time they login
+                user.setHasSetPassword(false);
+            } else if (!oldPassword.isEmpty()) {
                 // If user's old_password matches stored pass, then update the user's password to the new value
-                if (valid_pass) {
-                    Boolean success = myAuth.setHashedPass(updateUser, newPassword);
-                    if (!success) {
-                        throw new ServerErrorException("Server Error", "User not found");
-                    }
-                    // Make sure that the hasSetPassword field is 1 (true) so they aren't asked to change their password after login
-                    else {
-                        update.put("hasSetPassword", "1");
-                    }
-                } else {
+                if (userService.getUser(updateUsername, oldPassword) == null)
                     throw new BadRequestException("Wrong Password");
-                }
 
+                userToUpdate.setPassword(PasswordHash.createHash(newPassword));
+                // Make sure that the hasSetPassword field is 1 (true) so they aren't asked to change their password after login
+                userToUpdate.setHasSetPassword(true);
             }
+        }
+
+        userToUpdate.setFirstName(firstName);
+        userToUpdate.setLastName(lastName);
+
+        // check that a valid email is given
+        if (email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
+            userToUpdate.setEmail(email);
         } else {
-            // set new password if given
-            if (!newPassword.isEmpty()) {
-                Authenticator authenticator = new Authenticator();
-                Boolean success = authenticator.setHashedPass(updateUser, newPassword);
-                if (!success) {
-                    throw new BadRequestException("user: " + updateUser + "not found");
-                } else {
-                    // Make the user change their password next time they login
-                    update.put("hasSetPassword", "0");
-                }
-            }
+            throw new BadRequestException("please enter a valid email");
         }
 
-        // Check if any other fields should be updated
-        UserMinter u = new UserMinter();
-
-        if (!firstName.equals(u.getFirstName(updateUser))) {
-            update.put("firstName", firstName);
-        }
-        if (!lastName.equals(u.getLastName(updateUser))) {
-            update.put("lastName", lastName);
-        }
-        if (!email.equals(u.getEmail(updateUser))) {
-            // check that a valid email is given
-            if (email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
-                update.put("email", email);
-            } else {
-                throw new BadRequestException("please enter a valid email");
-            }
-        }
-        if (!institution.equals(u.getInstitution(updateUser))) {
-            update.put("institution", institution);
-        }
-
-        if (!update.isEmpty()) {
-            Boolean success = u.updateProfile(update, updateUser);
-            if (!success) {
-                throw new ServerErrorException("Server Error", "User not found");
-            }
-        }
+        userToUpdate.setInstitution(institution);
+        userService.update(userToUpdate);
 
         JSONObject response = new JSONObject();
         response.put("adminAccess", adminAccess);
@@ -203,6 +178,7 @@ public class UserRestService extends FimsService {
 
     /**
      * Service for oAuth client apps to retrieve a user's profile information.
+     *
      * @return
      */
     @GET
@@ -229,26 +205,20 @@ public class UserRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response resetPassword(@FormParam("password") String password,
                                   @FormParam("resetToken") String resetToken) {
-        if (resetToken == null || resetToken.isEmpty()) {
-            throw new BadRequestException("Invalid Reset Token");
-        }
-
         if (password.isEmpty()) {
             throw new BadRequestException("Password must not be empty");
         }
 
-        Authorizer authorizer = new Authorizer();
-        Authenticator authenticator = new Authenticator();
+        User user = userService.getUserByResetToken(resetToken);
 
-        if (!authorizer.validResetToken(resetToken)) {
-            throw new BadRequestException("Expired Reset Token");
-        }
+        if (user == null)
+            throw new BadRequestException("Expired/Invalid Reset Token");
 
-        Boolean resetPass = authenticator.resetPass(resetToken, password);
+        user.setPassword(PasswordHash.createHash(password));
+        user.setPasswordResetExpiration(null);
+        user.setPasswordResetToken(null);
+        userService.update(user);
 
-        if (!resetPass) {
-            throw new ServerErrorException("Server Error", "Error while updating user's password");
-        }
         return Response.ok("{\"success\":\"Successfully updated your password\"}").build();
     }
 

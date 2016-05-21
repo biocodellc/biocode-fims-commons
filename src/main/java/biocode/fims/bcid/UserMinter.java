@@ -1,6 +1,5 @@
 package biocode.fims.bcid;
 
-import biocode.fims.auth.Authenticator;
 import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.oauth2.OAuthProvider;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -12,8 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 /**
  * Class to manage user creation and profile information.
@@ -21,22 +18,6 @@ import java.util.Hashtable;
 public class UserMinter {
 
     public UserMinter() {
-    }
-
-    /**
-     * create a new user given their profile information and add them to a project
-     * @param userInfo
-     * @param projectId
-     * @return
-     */
-    public void createUser(Hashtable<String, String> userInfo, Integer projectId) {
-        Authenticator auth = new Authenticator();
-        auth.createUser(userInfo);
-        // add user to project
-        Integer userId = BcidDatabase.getUserId(userInfo.get("username"));
-        ProjectMinter p = new ProjectMinter();
-
-        p.addUserToProject(userId, projectId);
     }
 
     /**
@@ -72,117 +53,6 @@ public class UserMinter {
         }
 
     }
-
-    /**
-     * lookup the user's institution
-     * @param username
-     * @return
-     */
-    public String getInstitution(String username) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String selectStatement = "Select institution from users where username = ?";
-            stmt = conn.prepareStatement(selectStatement);
-
-            stmt.setString(1, username);
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("institution");
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return null;
-    }
-
-    /**
-     * lookup the user's email
-     * @param username
-     * @return
-     */
-    public String getEmail(String username) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String selectStatement = "Select email from users where username = ?";
-            stmt = conn.prepareStatement(selectStatement);
-
-            stmt.setString(1, username);
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("email");
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return null;
-    }
-
-    /**
-     * lookup the user's first name
-     * @param username
-     * @return
-     */
-    public String getFirstName(String username) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String selectStatement = "Select firstName from users where username = ?";
-            stmt = conn.prepareStatement(selectStatement);
-
-            stmt.setString(1, username);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("firstName");
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return null;
-    }
-
-    /**
-     * lookup the user's first name
-     * @param username
-     * @return
-     */
-    public String getLastName(String username) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String selectStatement = "Select lastName from users where username = ?";
-            stmt = conn.prepareStatement(selectStatement);
-
-            stmt.setString(1, username);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getString("lastName");
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return null;
-    }
-
     /**
      * return a JSON representation of a user's profile for oAuth client apps
      * @param token
@@ -227,85 +97,6 @@ public class UserMinter {
         }
 
         throw new BadRequestException("invalid_grant", "access token is not valid");
-    }
-
-    /**
-     * check if a username already exists
-     * @param username
-     * @return
-     */
-    public Boolean checkUsernameExists(String username) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String sql = "SELECT count(*) as count FROM users WHERE username = ?";
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setString(1, username);
-
-            rs = stmt.executeQuery();
-            rs.next();
-            return rs.getInt("count") >= 1;
-
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-    }
-
-    /**
-     * update a users profile
-     * @param info
-     * @param username
-     * @return
-     */
-    public Boolean updateProfile(Hashtable<String, String> info, String username) {
-        String updateString = "UPDATE users SET ";
-
-        // Dynamically create our UPDATE statement depending on which fields the user wants to update
-        for (Enumeration e = info.keys(); e.hasMoreElements();){
-            String key = e.nextElement().toString();
-            updateString += key + " = ?";
-
-            if (e.hasMoreElements()) {
-                updateString += ", ";
-            }
-            else {
-                updateString += " WHERE username = ?;";
-            }
-        }
-
-        PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
-
-        try {
-            stmt = conn.prepareStatement(updateString);
-
-            // place the parametrized values into the SQL statement
-            {
-                int i = 1;
-                for (Enumeration e = info.keys(); e.hasMoreElements();) {
-                    String key = e.nextElement().toString();
-                    stmt.setString(i, info.get(key));
-                    i++;
-
-                    if (!e.hasMoreElements()) {
-                        stmt.setString(i, username);
-                    }
-                }
-            }
-
-            Integer result = stmt.executeUpdate();
-
-            // result should be '1', if not, an error occurred during the UPDATE statement
-            return result == 1;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, null);
-        }
     }
 
     /**
