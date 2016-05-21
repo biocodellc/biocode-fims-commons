@@ -64,7 +64,8 @@ public class UserService {
         User user = getUser(username);
 
         if (user != null && !user.getPassword().isEmpty()) {
-            if (PasswordHash.validatePassword(password, user.getPassword())) {
+            if (PasswordHash.validatePassword(password, user.getPassword())
+                    && userBelongsToInstanceProject(user)) {
                 return user;
             }
         }
@@ -76,6 +77,23 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    /**
+     * checks to see if the user is a member of a Project that exists for this biocode-fims instance
+     * @param user
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public boolean userBelongsToInstanceProject(User user) {
+        String appRoot = settingsManager.retrieveValue("appRoot");
+
+        for (Project project: user.getProjectsMemberOf()) {
+            if (project.getProjectUrl().equals(appRoot))
+                return true;
+        }
+
+        logger.warn("user exists, but is not a member of a project at this biocode-fims instance");
+        return false;
+    }
 
     /**
      * add a {@link} to a {@link Project}

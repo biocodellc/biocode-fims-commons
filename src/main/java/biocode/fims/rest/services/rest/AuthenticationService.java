@@ -80,7 +80,7 @@ public class AuthenticationService extends FimsService {
 
                 // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
                 if (!user.getHasSetPassword()) {
-                    return Response.ok("{\"url\": \"" + appRoot + "secure/profile.jsp?error=Update Your Password" +
+                    return Response.ok("{\"url\": \"" + appRoot + "secure/profile?error=Update Your Password" +
                             new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
                             .build();
                 }
@@ -98,7 +98,7 @@ public class AuthenticationService extends FimsService {
                             new QueryParams().getQueryParams(request.getParameterMap(), true) + "\"}")
                             .build();
                 } else {
-                    return Response.ok("{\"url\": \"" + appRoot + "index.jsp\"}").build();
+                    return Response.ok("{\"url\": \"" + appRoot + "\"}").build();
                 }
             }
             // stored and entered passwords don't match, invalidate the session to be sure that a user is not in the session
@@ -167,7 +167,7 @@ public class AuthenticationService extends FimsService {
             // need the user to login
             try {
                 return Response.status(Response.Status.TEMPORARY_REDIRECT)
-                        .location(new URI(appRoot + "login.jsp?return_to=/id/authenticationService/oauth/authorize?"
+                        .location(new URI(appRoot + "login?return_to=/id/authenticationService/oauth/authorize?"
                                     + request.getQueryString()))
                         .build();
             } catch (URISyntaxException e) {
@@ -313,7 +313,7 @@ public class AuthenticationService extends FimsService {
         // Invalidate the session
         session.invalidate();
         try {
-            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
+            return Response.seeOther(new URI(appRoot)).build();
         } catch (URISyntaxException e) {
             throw new ServerErrorException(e);
         }
