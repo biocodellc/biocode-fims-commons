@@ -79,7 +79,7 @@ public class AuthenticationService extends FimsService {
                 }
 
                 // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
-                if (!user.hasSetPassword()) {
+                if (!user.getHasSetPassword()) {
                     return Response.ok("{\"url\": \"" + appRoot + "secure/profile.jsp?error=Update Your Password" +
                             new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
                             .build();

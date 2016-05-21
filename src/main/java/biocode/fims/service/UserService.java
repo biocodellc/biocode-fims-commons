@@ -3,7 +3,6 @@ package biocode.fims.service;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.StringGenerator;
@@ -14,10 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Set;
 
 
 /**
@@ -32,14 +30,11 @@ public class UserService {
     private EntityManager entityManager;
 
     private final UserRepository userRepository;
-    private final ProjectService projectService;
     private final SettingsManager settingsManager;
 
     @Autowired
-    public UserService(UserRepository userRepository, ProjectService projectService,
-                       SettingsManager settingsManager) {
+    public UserService(UserRepository userRepository, SettingsManager settingsManager) {
         this.userRepository = userRepository;
-        this.projectService = projectService;
         this.settingsManager = settingsManager;
     }
 
@@ -76,6 +71,12 @@ public class UserService {
         return null;
     }
 
+    @Transactional(readOnly = true)
+    public Set<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+
     /**
      * add a {@link} to a {@link Project}
      * @param user
@@ -111,5 +112,10 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public boolean isProjectAdmin(User user) {
+        user = entityManager.merge(user);
+        return user.getProjects().size() > 0;
     }
 }

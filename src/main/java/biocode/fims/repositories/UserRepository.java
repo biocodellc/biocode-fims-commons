@@ -8,6 +8,8 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 /**
  * This repositories provides CRUD operations for {@link User} objects
  */
@@ -25,4 +27,6 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     @Query("select u from User u where u.passwordResetToken = :resetToken and u.passwordResetExpiration > current_timestamp")
     User findOneByResetToken(@Param("resetToken") String resetToken);
+
+    Set<User> findAll();
 }

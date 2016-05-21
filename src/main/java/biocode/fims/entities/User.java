@@ -1,14 +1,11 @@
 package biocode.fims.entities;
 
-import biocode.fims.auth.PasswordHash;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Set;
 
@@ -158,7 +155,7 @@ public class User {
     }
 
     @Column(nullable = false)
-    public boolean hasSetPassword() {
+    public boolean getHasSetPassword() {
         return hasSetPassword;
     }
 
@@ -175,6 +172,7 @@ public class User {
         this.email = email;
     }
 
+    @JsonProperty("projectAdmin")
     @Column(nullable = false)
     public boolean isAdmin() {
         return admin;
@@ -216,6 +214,7 @@ public class User {
         return firstName + " " + lastName;
     }
 
+    @JsonIgnore
     @Column(columnDefinition = "char(20) null")
     public String getPasswordResetToken() {
         return passwordResetToken;
@@ -225,6 +224,7 @@ public class User {
         this.passwordResetToken = passwordResetToken;
     }
 
+    @JsonIgnore
     @Temporal(TemporalType.TIMESTAMP)
     public Date getPasswordResetExpiration() {
         return passwordResetExpiration;
@@ -301,7 +301,7 @@ public class User {
             return this.getUserId() == user.getUserId();
 
         if (isEnabled() != user.isEnabled()) return false;
-        if (hasSetPassword() != user.hasSetPassword()) return false;
+        if (getHasSetPassword() != user.getHasSetPassword()) return false;
         if (isAdmin() != user.isAdmin()) return false;
         if (!getUsername().equals(user.getUsername())) return false;
         if (!getPassword().equals(user.getPassword())) return false;
@@ -323,7 +323,7 @@ public class User {
         int result = getUsername().hashCode();
         result = 31 * result + getPassword().hashCode();
         result = 31 * result + (isEnabled() ? 1 : 0);
-        result = 31 * result + (hasSetPassword() ? 1 : 0);
+        result = 31 * result + (getHasSetPassword() ? 1 : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (isAdmin() ? 1 : 0);
         result = 31 * result + (getInstitution() != null ? getInstitution().hashCode() : 0);
@@ -341,7 +341,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", enabled=" + enabled +
-                ", hasSetPassword=" + hasSetPassword +
+                ", getHasSetPassword=" + hasSetPassword +
                 ", email='" + email + '\'' +
                 ", admin=" + admin +
                 ", institution='" + institution + '\'' +

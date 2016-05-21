@@ -3,11 +3,9 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.bcid.UserMinter;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -15,14 +13,11 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 /**
  * The REST Interface for dealing with users. Includes user creation and profile updating.
@@ -150,7 +145,7 @@ public class UserRestService extends FimsService {
                     throw new BadRequestException("Wrong Password");
 
                 userToUpdate.setPassword(PasswordHash.createHash(newPassword));
-                // Make sure that the hasSetPassword field is 1 (true) so they aren't asked to change their password after login
+                // Make sure that the getHasSetPassword field is 1 (true) so they aren't asked to change their password after login
                 userToUpdate.setHasSetPassword(true);
             }
         }
@@ -185,10 +180,9 @@ public class UserRestService extends FimsService {
     @Path("/profile")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserData() {
-        if (accessToken != null) {
-            UserMinter u = new UserMinter();
-            JSONObject response = u.getOauthProfile(accessToken);
-            return Response.ok(response.toJSONString()).build();
+        if (user != null) {
+            user.setAdmin(userService.isProjectAdmin(user));
+            return Response.ok(user).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");
     }

@@ -11,6 +11,8 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "projects")
+@NamedEntityGraph(name = "withMembers",
+        attributeNodes = @NamedAttributeNode("projectMembers"))
 public class Project {
 
     private int projectId;
