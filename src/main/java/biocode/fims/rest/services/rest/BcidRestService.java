@@ -107,6 +107,10 @@ public class BcidRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
         String response;
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
         try {
             Bcid bcid = bcidService.getBcid(bcidId);
             BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
@@ -118,7 +122,7 @@ public class BcidRestService extends FimsService {
                             )
             );
 
-            JSONRenderer renderer = new JSONRenderer(user.getUsername(), bcid, bcidMetadataSchema, settingsManager);
+            JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
             response = renderer.render();
 
         } catch (EmptyResultDataAccessException e) {
@@ -139,7 +143,11 @@ public class BcidRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response bcidList() {
         BcidMinter bcidMinter = new BcidMinter();
-        JSONArray response = bcidMinter.bcidList(user.getUsername());
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
+        JSONArray response = bcidMinter.bcidList(username);
 
         return Response.ok(response.toJSONString()).build();
     }

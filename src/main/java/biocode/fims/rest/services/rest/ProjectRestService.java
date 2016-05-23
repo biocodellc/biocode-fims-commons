@@ -50,12 +50,16 @@ public class ProjectRestService extends FimsService {
     public Response fetchList(@QueryParam("includePublic") @DefaultValue("false") boolean includePublic) {
 
         ProjectMinter project = new ProjectMinter();
+        Integer userId = null;
 
         if (user == null && !includePublic) {
             throw new BadRequestException("You must be logged in if you don't want to include public projects");
         }
+        if (user != null) {
+            userId = user.getUserId();
+        }
 
-        JSONArray response = project.listProjects(user.getUserId(), includePublic);
+        JSONArray response = project.listProjects(userId, includePublic);
 
         return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -71,8 +75,12 @@ public class ProjectRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getLatestGraphsByExpedition(@PathParam("projectId") Integer projectId) {
         ProjectMinter project= new ProjectMinter();
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
 
-        JSONArray graphs = project.getLatestGraphs(projectId, user.getUsername());
+        JSONArray graphs = project.getLatestGraphs(projectId, username);
 
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }

@@ -102,6 +102,10 @@ public class ResolverService extends FimsService {
         Bcid bcid;
         String divider = settingsManager.retrieveValue("divider");
         Identifier identifier = new Identifier(identifierString, divider);
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
 
         try {
             bcid = bcidService.getBcid(identifier.getBcidIdentifier());
@@ -110,7 +114,7 @@ public class ResolverService extends FimsService {
         }
 
         BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
-        JSONRenderer renderer = new JSONRenderer(user.getUsername(), bcid, bcidMetadataSchema, settingsManager);
+        JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }
