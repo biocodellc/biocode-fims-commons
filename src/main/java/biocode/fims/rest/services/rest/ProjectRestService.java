@@ -12,7 +12,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
@@ -35,8 +35,8 @@ import java.util.*;
 public class ProjectRestService extends FimsService {
 
     @Autowired
-    ProjectRestService(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    ProjectRestService(OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
     }
 
     /**

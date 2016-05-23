@@ -12,7 +12,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +35,9 @@ public class ResolverService extends FimsService {
     private final Resolver resolver;
 
     @Autowired
-    ResolverService(BcidService bcidService, UserService userService,
+    ResolverService(BcidService bcidService, OAuthProviderService providerService,
                     SettingsManager settingsManager, Resolver resolver) {
-        super(userService, settingsManager);
+        super(providerService, settingsManager);
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
         this.resolver = resolver;

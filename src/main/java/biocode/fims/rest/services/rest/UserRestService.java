@@ -9,6 +9,7 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
@@ -28,8 +29,9 @@ public class UserRestService extends FimsService {
     private final UserService userService;
 
     @Autowired
-    UserRestService(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    UserRestService(UserService userService,
+                    OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
         this.userService = userService;
     }
 

@@ -2,17 +2,18 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.BasicAuthDecoder;
-import biocode.fims.auth.oauth2.OAuthProvider;
+import biocode.fims.entities.OAuthClient;
+import biocode.fims.entities.OAuthNonce;
+import biocode.fims.entities.OAuthToken;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.OAuthException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.ErrorInfo;
 import biocode.fims.utils.QueryParams;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +39,13 @@ public class AuthenticationService extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     private final UserService userService;
+    private final OAuthProviderService oAuthProviderService;
 
     @Autowired
-    public AuthenticationService(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    public AuthenticationService(OAuthProviderService oAuthProviderService,
+                                 UserService userService, SettingsManager settingsManager) {
+        super(oAuthProviderService, settingsManager);
+        this.oAuthProviderService = oAuthProviderService;
         this.userService = userService;
     }
 
@@ -51,7 +55,6 @@ public class AuthenticationService extends FimsService {
      * @param usr
      * @param pass
      * @param return_to the url to return to after login
-     *
      * @throws IOException
      */
 
@@ -133,33 +136,25 @@ public class AuthenticationService extends FimsService {
             oAuthLogin = true;
         }
 
-        OAuthProvider p = new OAuthProvider();
-
-        if (redirectURL == null) {
-            String callback = null;
-            try {
-                callback = p.getCallback(clientId);
-            } catch (OAuthException e) {
-                logger.warn("OAuthException retrieving callback for OAUTH clientID {}", clientId, e);
-            }
-
-            if (callback != null) {
+        OAuthClient oAuthClient = oAuthProviderService.getOAuthClient(clientId, null);
+        if (oAuthClient == null) {
+            if (redirectURL != null) {
+                redirectURL += "?error=unauthorized_client";
                 try {
-                    return Response.status(302).location(new URI(callback + "?error=invalid_request")).build();
-                } catch (URISyntaxException e) {
-                    logger.warn("Malformed callback URI for oAuth client {} and callback {}", clientId, callback);
+                    return Response.status(302).location(new URI(redirectURL)).build();
+                } catch (URISyntaxException ignored) {
                 }
             }
-            throw new BadRequestException("invalid_request");
+            throw new BadRequestException("invalid_request", "invalid redirect_uri provided");
         }
 
-        if (clientId == null || !p.validClientId(clientId)) {
-            redirectURL += "?error=unauthorized_client";
+        if (redirectURL == null) {
             try {
-                return Response.status(302).location(new URI(redirectURL)).build();
+                return Response.status(302).location(new URI(oAuthClient.getCallback() + "?error=invalid_request")).build();
             } catch (URISyntaxException e) {
-                throw new BadRequestException("invalid_request", "invalid redirect_uri provided");
+                logger.warn("Malformed callback URI for oAuth client {} and callback {}", clientId, oAuthClient.getCallback());
             }
+            throw new BadRequestException("invalid_request");
         }
 
         if (user == null || !oAuthLogin) {
@@ -168,19 +163,19 @@ public class AuthenticationService extends FimsService {
             try {
                 return Response.status(Response.Status.TEMPORARY_REDIRECT)
                         .location(new URI(appRoot + "login?return_to=/id/authenticationService/oauth/authorize?"
-                                    + request.getQueryString()))
+                                + request.getQueryString()))
                         .build();
             } catch (URISyntaxException e) {
                 throw new ServerErrorException(e);
             }
         }
         //TODO ask user if they want to share profile information with requesting party
-        String code = p.generateCode(clientId, redirectURL, user.getUsername());
+        OAuthNonce oAuthNonce = oAuthProviderService.generateNonce(oAuthClient, user, redirectURL);
 
         // no longer need oAuthLogin session attribute
         session.removeAttribute("oAuthLogin");
 
-        redirectURL += "?code=" + code;
+        redirectURL += "?code=" + oAuthNonce.getCode();
 
         if (state != null) {
             redirectURL += "&state=" + state;
@@ -200,9 +195,8 @@ public class AuthenticationService extends FimsService {
      * @param code
      * @param clientId
      * @param clientSecret
-     * @param redirectURL
+     * @param redirectUri
      * @param state
-     *
      * @return
      */
     @POST
@@ -212,13 +206,12 @@ public class AuthenticationService extends FimsService {
     public Response access_token(@FormParam("code") String code,
                                  @FormParam("client_id") String clientId,
                                  @FormParam("client_secret") String clientSecret,
-                                 @FormParam("redirect_uri") String redirectURL,
+                                 @FormParam("redirect_uri") String redirectUri,
                                  @FormParam("grant_type") @DefaultValue("authorization_code") String grantType,
                                  @FormParam("username") String username,
                                  @FormParam("password") String password,
                                  @FormParam("state") String state) {
-        OAuthProvider p = new OAuthProvider();
-        JSONObject accessToken;
+        OAuthToken accessToken;
 
         if (clientId == null) {
             // check if the clientId is in the auth header
@@ -231,38 +224,36 @@ public class AuthenticationService extends FimsService {
             clientId = clientIdAndSecret[0];
             clientSecret = clientIdAndSecret[1];
         }
+        OAuthClient oAuthClient = oAuthProviderService.getOAuthClient(clientId, clientSecret);
+
+        if (oAuthClient == null) {
+            throw new BadRequestException("invalid_client");
+        }
 
         if (grantType.equalsIgnoreCase("authorization_code")) {
 
-            if (clientSecret == null || !p.validateClient(clientId, clientSecret)) {
-                throw new BadRequestException("invalid_client");
-            }
-
-            if (redirectURL == null) {
+            if (redirectUri == null) {
                 throw new BadRequestException("invalid_request", "redirect_uri is null");
             }
 
-            if (code == null || !p.validateCode(clientId, code, redirectURL)) {
+            if (code == null || !oAuthProviderService.validNonce(clientId, code, redirectUri)) {
                 throw new BadRequestException("invalid_grant", "Either code was null or the code doesn't match the " +
                         "clientId or the redirect_uri didn't match the redirect_uri sent with the authorization_code request");
             }
-            accessToken = p.generateToken(clientId, state, code);
+            accessToken = oAuthProviderService.generateToken(oAuthClient, state, code);
         } else if (grantType.equalsIgnoreCase("password")) {
-            if (!p.validClientId(clientId)) {
-                throw new BadRequestException("invalid_client");
-            }
-
             User user = userService.getUser(username, password);
+
             if (user == null) {
                 throw new BadRequestException("the supplied username and/or password are incorrect", "invalid_request");
             }
 
-            accessToken = p.generateToken(clientId, username);
+            accessToken = oAuthProviderService.generateToken(oAuthClient, user, null);
         } else {
             throw new BadRequestException("unsupported_grant_type", "invalid grant_type was requested");
         }
 
-        return Response.ok(accessToken.toJSONString())
+        return Response.ok(accessToken)
                 .header("Cache-Control", "no-store")
                 .header("Pragma", "no-cache")
                 .build();
@@ -273,7 +264,6 @@ public class AuthenticationService extends FimsService {
      *
      * @param clientId
      * @param refreshToken
-     *
      * @return
      */
     @POST
@@ -282,22 +272,21 @@ public class AuthenticationService extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response refresh(@FormParam("client_id") String clientId,
                             @FormParam("refresh_token") String refreshToken) {
-        OAuthProvider p = new OAuthProvider();
+        OAuthClient oAuthClient = oAuthProviderService.getOAuthClient(clientId, null);
 
-        if (clientId == null || !p.validClientId(clientId)) {
+        if (oAuthClient == null) {
             throw new BadRequestException("invalid_client");
         }
 
-        if (refreshToken == null || !p.validateRefreshToken(refreshToken)) {
+        OAuthToken expiredOAuthToken = oAuthProviderService.getOAuthToken(refreshToken);
+
+        if (expiredOAuthToken == null) {
             throw new BadRequestException("invalid_grant", "refresh_token is invalid");
         }
 
-        JSONObject accessToken = p.generateToken(refreshToken);
+        OAuthToken newOAuthToken = oAuthProviderService.generateToken(expiredOAuthToken);
 
-        // refresh tokens are only good once, so delete the old access token so the refresh token can no longer be used
-        p.deleteAccessToken(refreshToken);
-
-        return Response.ok(accessToken.toJSONString())
+        return Response.ok(newOAuthToken)
                 .header("Cache-Control", "no-store")
                 .header("Pragma", "no-cache")
                 .build();

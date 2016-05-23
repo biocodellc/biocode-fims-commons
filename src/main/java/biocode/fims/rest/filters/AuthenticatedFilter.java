@@ -1,8 +1,8 @@
 package biocode.fims.rest.filters;
 
-import biocode.fims.auth.oauth2.OAuthProvider;
-import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
+import biocode.fims.service.OAuthProviderService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +25,8 @@ import java.util.List;
 public class AuthenticatedFilter implements ContainerRequestFilter {
     @Context
     HttpServletRequest webRequest;
+    @Autowired
+    private OAuthProviderService oAuthProviderService;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
@@ -45,8 +47,7 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
         }
 
         if (accessToken != null) {
-            OAuthProvider provider = new OAuthProvider();
-            if (provider.validateToken(accessToken) == null) {
+            if (oAuthProviderService.getUser(accessToken) == null) {
                 throw new UnauthorizedRequestException("You must be logged in to access this service",
                         "Invalid/Expired access_token");
             }
