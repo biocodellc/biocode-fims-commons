@@ -1,8 +1,7 @@
 package biocode.fims.rest;
 
-import biocode.fims.auth.oauth2.OAuthProvider;
 import biocode.fims.entities.User;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 
 import javax.servlet.ServletContext;
@@ -28,11 +27,11 @@ public abstract class FimsService {
     protected final String appRoot;
     protected final boolean ignoreUser;
 
-    private final UserService userService;
+    private final OAuthProviderService providerService;
     protected final SettingsManager settingsManager;
 
-    public FimsService(UserService userService, SettingsManager settingsManager) {
-        this.userService = userService;
+    public FimsService(OAuthProviderService providerService, SettingsManager settingsManager) {
+        this.providerService = providerService;
         this.settingsManager = settingsManager;
 
         appRoot = settingsManager.retrieveValue("appRoot", null);
@@ -55,8 +54,7 @@ public abstract class FimsService {
         }
 
         if (accessToken != null && !accessToken.isEmpty()) {
-            OAuthProvider provider = new OAuthProvider();
-            user = userService.getUser(provider.validateToken(accessToken));
+            user = providerService.getUser(accessToken);
         } else {
             user = (User) session.getAttribute("user");
         }

@@ -1,8 +1,10 @@
 package biocode.fims.rest.filters;
 
-import biocode.fims.auth.Authorizer;
-import biocode.fims.auth.oauth2.OAuthProvider;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.service.OAuthProviderService;
+import biocode.fims.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +26,10 @@ import java.util.List;
 public class AdminFilter implements ContainerRequestFilter {
     @Context
     HttpServletRequest webRequest;
+    @Autowired
+    private OAuthProviderService oAuthProviderService;
+    @Autowired
+    private UserService userService;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
@@ -33,10 +39,10 @@ public class AdminFilter implements ContainerRequestFilter {
         List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
 
         if (accessTokenList != null && !accessTokenList.isEmpty()) {
-            OAuthProvider provider = new OAuthProvider();
-            String username = provider.validateToken((String) accessTokenList.get(0));
-            Authorizer authorizer = new Authorizer();
-            projectAdmin = authorizer.userProjectAdmin(username);
+            User user = oAuthProviderService.getUser((String) accessTokenList.get(0));
+            if (user != null) {
+                projectAdmin = userService.isProjectAdmin(user);
+            }
         }
 
         if (projectAdmin == null) {

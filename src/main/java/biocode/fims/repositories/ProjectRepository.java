@@ -1,8 +1,10 @@
 package biocode.fims.repositories;
 
 import biocode.fims.entities.Project;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -18,4 +20,6 @@ public interface ProjectRepository extends Repository<Project, Integer> {
 
     Project findByProjectId(int projectId);
 
+    @EntityGraph(value = "withMembers", type = EntityGraph.EntityGraphType.FETCH)
+    Project readByProjectId(@Param("projectId") int projectId);
 }

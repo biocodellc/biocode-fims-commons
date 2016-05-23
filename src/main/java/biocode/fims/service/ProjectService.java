@@ -54,6 +54,10 @@ public class ProjectService {
         }
         return userIsProjectMember;
     }
+
+    public Project getProjectWithMembers(int projectId) {
+        return projectRepository.readByProjectId(projectId);
+    }
 }
 
 

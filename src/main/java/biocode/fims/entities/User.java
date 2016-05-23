@@ -2,6 +2,8 @@ package biocode.fims.entities;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -45,8 +47,6 @@ public class User {
         private boolean hasSetPassword = false;
         private boolean enabled = true;
         private boolean admin = false;
-        private String passwordResetToken;
-        private Date passwordResetExpiration;
 
         public UserBuilder(String username, String password) {
             this.username = username;
@@ -84,18 +84,8 @@ public class User {
             return this;
         }
 
-        public UserBuilder passwordResetToken(String passwordResetToken) {
-            this.passwordResetToken = passwordResetToken;
-            return this;
-        }
-
-        public UserBuilder passwordResetExpiration(Date passwordResetExpiration) {
-            this.passwordResetExpiration = passwordResetExpiration;
-            return this;
-        }
-
         private boolean validUser() {
-            if (email == null || institution == null || firstName == null || lastName == null)
+            if (StringUtils.isEmpty(email) || StringUtils.isEmpty(institution) || StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName))
                 return false;
 
             return true;
@@ -120,8 +110,6 @@ public class User {
         hasSetPassword = builder.hasSetPassword;
         enabled = builder.enabled;
         admin = builder.admin;
-        passwordResetToken = builder.passwordResetToken;
-        passwordResetExpiration = builder.passwordResetExpiration;
     }
 
     // needed for hibernate
@@ -138,7 +126,7 @@ public class User {
         this.userId = id;
     }
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     public String getUsername() {
         return username;
     }
@@ -167,7 +155,7 @@ public class User {
     }
 
     @Column(nullable = false)
-    public boolean isHasSetPassword() {
+    public boolean getHasSetPassword() {
         return hasSetPassword;
     }
 
@@ -184,6 +172,7 @@ public class User {
         this.email = email;
     }
 
+    @JsonProperty("projectAdmin")
     @Column(nullable = false)
     public boolean isAdmin() {
         return admin;
@@ -225,6 +214,7 @@ public class User {
         return firstName + " " + lastName;
     }
 
+    @JsonIgnore
     @Column(columnDefinition = "char(20) null")
     public String getPasswordResetToken() {
         return passwordResetToken;
@@ -234,6 +224,7 @@ public class User {
         this.passwordResetToken = passwordResetToken;
     }
 
+    @JsonIgnore
     @Temporal(TemporalType.TIMESTAMP)
     public Date getPasswordResetExpiration() {
         return passwordResetExpiration;
@@ -310,7 +301,7 @@ public class User {
             return this.getUserId() == user.getUserId();
 
         if (isEnabled() != user.isEnabled()) return false;
-        if (isHasSetPassword() != user.isHasSetPassword()) return false;
+        if (getHasSetPassword() != user.getHasSetPassword()) return false;
         if (isAdmin() != user.isAdmin()) return false;
         if (!getUsername().equals(user.getUsername())) return false;
         if (!getPassword().equals(user.getPassword())) return false;
@@ -332,7 +323,7 @@ public class User {
         int result = getUsername().hashCode();
         result = 31 * result + getPassword().hashCode();
         result = 31 * result + (isEnabled() ? 1 : 0);
-        result = 31 * result + (isHasSetPassword() ? 1 : 0);
+        result = 31 * result + (getHasSetPassword() ? 1 : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (isAdmin() ? 1 : 0);
         result = 31 * result + (getInstitution() != null ? getInstitution().hashCode() : 0);
@@ -350,7 +341,7 @@ public class User {
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", enabled=" + enabled +
-                ", hasSetPassword=" + hasSetPassword +
+                ", getHasSetPassword=" + hasSetPassword +
                 ", email='" + email + '\'' +
                 ", admin=" + admin +
                 ", institution='" + institution + '\'' +

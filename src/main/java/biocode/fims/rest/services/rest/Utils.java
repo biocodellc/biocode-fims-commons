@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.rest.FimsService;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,8 +16,8 @@ import javax.ws.rs.core.Response;
 public class Utils extends FimsService {
 
     @Autowired
-    Utils(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    Utils(OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
     }
 
     @GET

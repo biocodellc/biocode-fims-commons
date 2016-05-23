@@ -1,6 +1,5 @@
 package biocode.fims.run;
 
-import biocode.fims.auth.Authenticator;
 import biocode.fims.entities.User;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.UserService;
@@ -42,8 +41,6 @@ public class BulkLoader {
         UserService userService = applicationContext.getBean(UserService.class);
         expeditionService = applicationContext.getBean(ExpeditionService.class);
 
-        user = userService.getUser(USERNAME);
-
         // Redirect output to file
         PrintStream out = new PrintStream(new FileOutputStream(outputDirectory + File.separator + "dipnetloading_output.txt"));
         System.setOut(out);
@@ -52,10 +49,10 @@ public class BulkLoader {
         String password = args[0];
 
         // Call the connection with password as single argument
-        Authenticator authenticator = new Authenticator();
         FimsPrinter.out.println("Authenticating ...");
+        user = userService.getUser(USERNAME, password);
 
-        if (!authenticator.login(USERNAME, password)) {
+        if (user == null) {
             FimsPrinter.out.println("Unable to authenticate " + USERNAME +
                     " using the supplied credentials!");
 

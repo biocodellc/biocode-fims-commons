@@ -31,9 +31,9 @@ public class BcidRestService extends FimsService {
     private final BcidService bcidService;
 
     @Autowired
-    BcidRestService(BcidService bcidService, UserService userService,
+    BcidRestService(BcidService bcidService, OAuthProviderService providerService,
                     SettingsManager settingsManager) {
-        super(userService, settingsManager);
+        super(providerService, settingsManager);
         this.bcidService = bcidService;
     }
 
