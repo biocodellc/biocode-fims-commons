@@ -68,7 +68,8 @@ public class OAuthProviderService {
 
         if (oAuthToken != null) {
             long nonceAge = currentTs.getDate().getTime() - oAuthToken.getTs().getTime();
-            if (nonceAge < ACCESS_TOKEN_EXPIRATION_INTEVAL) {
+            if (nonceAge < ACCESS_TOKEN_EXPIRATION_INTEVAL &&
+                    userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
                 return oAuthToken.getUser();
             }
         }
@@ -82,7 +83,8 @@ public class OAuthProviderService {
 
         if (oAuthToken != null) {
             long nonceAge = currentTs.getDate().getTime() - oAuthToken.getTs().getTime();
-            if (nonceAge < REFRESH_TOKEN_EXPIRATION_INTEVAL) {
+            if (nonceAge < REFRESH_TOKEN_EXPIRATION_INTEVAL &&
+                    userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
                 return oAuthToken;
             }
         }
@@ -117,6 +119,7 @@ public class OAuthProviderService {
         return oAuthToken;
     }
 
+    @Transactional(readOnly = true)
     public OAuthClient getOAuthClient(String clientId, String clientSecret) {
         if (StringUtils.isEmpty(clientSecret)) {
             return oAuthClientRepository.findOneByClientId(clientId);
