@@ -119,79 +119,6 @@ public class BcidMinter extends BcidEncoder {
     }
 
     /**
-     * Mint a Bcid, providing a Bcid to insert into Database
-     *
-     * @param NAAN
-     */
-    private String mint(Integer NAAN, Bcid bcid) {
-
-        URI identifier;
-        // Never request EZID for user=demo
-        if (BcidDatabase.getUserName(bcid.userId).equalsIgnoreCase("demo")) {
-            ezidRequest = false;
-        }
-        this.bow = scheme + "/" + NAAN + "/";
-
-        // Generate an internal ID to track this submission
-        UUID internalId = UUID.randomUUID();
-
-        // Insert the values into the Database
-        PreparedStatement insertStatement = null;
-        PreparedStatement updateStatement = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            // Use auto increment in Database to assign the actual Bcid.. this is threadsafe this way
-            String insertString = "INSERT INTO bcids (userId, resourceType, doi, webAddress, graph, title, internalId, ezidRequest, finalCopy) " +
-                    "values (?,?,?,?,?,?,?,?,?)";
-
-            insertStatement = conn.prepareStatement(insertString);
-            insertStatement.setInt(1, bcid.userId);
-            insertStatement.setString(2, bcid.resourceType);
-            insertStatement.setString(3, bcid.doi);
-            if (bcid.webAddress != null)
-                insertStatement.setString(4, bcid.webAddress.toString());
-             else
-                insertStatement.setString(4, null);
-            insertStatement.setString(5, bcid.graph);
-            insertStatement.setString(6, bcid.title);
-            insertStatement.setString(7, internalId.toString());
-            insertStatement.setBoolean(8, ezidRequest);
-            insertStatement.setBoolean(9, bcid.finalCopy);
-            insertStatement.execute();
-
-            // Get the bcidId that was assigned
-            Integer bcidId = checkBcidExists(internalId);
-
-            // Create the shoulder Bcid (String Bcid Bcid)
-            shoulder = encode(new BigInteger(bcidId.toString()));
-
-            // Create the identifier
-            identifier = new URI(bow + shoulder);
-
-            // Update the shoulder, and hence identifier, now that we know the bcidId
-            String updateString = "UPDATE bcids" +
-                    " SET identifier = ?" +
-                    " WHERE bcidId = ?";
-            updateStatement = conn.prepareStatement(updateString);
-
-            updateStatement.setString(1, identifier.toString());
-            updateStatement.setInt(2, bcidId);
-
-            updateStatement.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new ServerErrorException("Server Error", "SQLException while creating a bcid for user: " + bcid.userId, e);
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException("Server Error", bow + shoulder + " is not a valid URI", e);
-        } finally {
-            BcidDatabase.close(null, insertStatement, null);
-            BcidDatabase.close(conn, updateStatement, null);
-        }
-
-        return identifier.toString();
-    }
-
-    /**
      * Return the bcidId given the internalId
      *
      * @param bcidUUID
@@ -501,37 +428,6 @@ public class BcidMinter extends BcidEncoder {
         } finally {
             BcidDatabase.close(conn, stmt, null);
         }
-    }
-
-    /**
-     * create Bcid's corresponding to expeditions
-     */
-    public String createEntityBcid(Bcid bcid) {
-
-        String identifier = mint(
-                new Integer(sm.retrieveValue("naan")),
-                bcid
-        );
-
-        // Create EZIDs right away for Bcid level Identifiers
-        // Initialize ezid account
-        // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
-        // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
-        // in the Database.
-
-        if (ezidRequest) {
-            ManageEZID creator = new ManageEZID();
-            try {
-                EzidService ezidAccount = new EzidService();
-                // Setup EZID account/login information
-                ezidAccount.login(sm.retrieveValue("eziduser"), sm.retrieveValue("ezidpass"));
-                creator.createBcidsEZIDs(ezidAccount);
-            } catch (EzidException e) {
-                logger.warn("EZID NOT CREATED FOR BCID = " + identifier, e);
-            } finally {
-            }
-        }
-        return identifier;
     }
 
     /**
