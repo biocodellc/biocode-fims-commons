@@ -66,4 +66,6 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
     Set<Bcid> findLatestDatasetsForExpeditions(@Param("expeditionList") List<Integer> expeditionList);
 
     void deleteByBcidId(int bcidId);
+
+    Set<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
 }

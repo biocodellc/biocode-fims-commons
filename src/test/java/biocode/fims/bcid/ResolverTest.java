@@ -3,8 +3,9 @@ package biocode.fims.bcid;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
-import biocode.fims.entities.User;
+import biocode.fims.entities.Project;
 import biocode.fims.service.BcidService;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +42,8 @@ public class ResolverTest {
     private BcidService bcidService;
     @Mock
     private SettingsManager settingsManager;
+    @Mock
+    private ExpeditionService expeditionService;
 
     @Before
     public void initMocks() {
@@ -96,13 +99,20 @@ public class ResolverTest {
 
     @Test
     public void should_return_default_conceptForwardingAddress_plus_suffix_for_concept_no_webAddress() throws Exception {
+        Project project = new Project.ProjectBuilder("DEMO", "DEMO Project", "http://example.com", "http://example.com/").build();
+        project.setProjectId(1);
+        Expedition expedition = new Expedition.ExpeditionBuilder("DEMO").build();
+        expedition.setProject(project);
         Bcid bcid = new Bcid.BcidBuilder("Resource").build();
+        bcid.setExpedition(expedition);
+
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(WEBADRESS + "{ark}/").when(mapping).getConceptForwardingAddress();
+        PowerMockito.doReturn(WEBADRESS + "{ark}/").when(mapping).getConceptForwardingAddress(IDENTIFIER);
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
+        Mockito.doNothing().when(expeditionService).setEntityIdentifiers(mapping, expedition.getExpeditionCode(), project.getProjectId());
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 

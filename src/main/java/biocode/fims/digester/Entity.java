@@ -2,6 +2,7 @@ package biocode.fims.digester;
 
 import biocode.fims.settings.FimsPrinter;
 
+import java.net.URI;
 import java.util.LinkedList;
 
 /**
@@ -15,6 +16,7 @@ public class Entity {
     private String conceptURI;
     private String entityId;
     private String conceptForwardingAddress;
+    private URI identifier;
 
     private final LinkedList<Attribute> attributes = new LinkedList<Attribute>();
 
@@ -85,6 +87,14 @@ public class Entity {
 
     public void setConceptForwardingAddress(String conceptForwardingAddress) {
         this.conceptForwardingAddress = conceptForwardingAddress;
+    }
+
+    public URI getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(URI identifier) {
+        this.identifier = identifier;
     }
 
     /**

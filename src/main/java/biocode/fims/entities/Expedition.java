@@ -95,7 +95,7 @@ public class Expedition {
         return ts;
     }
 
-    private void setTs(Timestamp ts) {
+    private void setTs(Date ts) {
         this.ts = ts;
     }
 

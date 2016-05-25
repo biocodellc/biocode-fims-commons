@@ -1,11 +1,14 @@
 package biocode.fims.service;
 
-import biocode.fims.bcid.ResourceType;
-import biocode.fims.bcid.ResourceTypes;
+import biocode.fims.bcid.*;
+import biocode.fims.digester.Entity;
+import biocode.fims.digester.Mapping;
 import biocode.fims.entities.*;
+import biocode.fims.entities.Bcid;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
+import java.util.Set;
 
 /**
  * Service class for handling {@link Expedition} persistence
@@ -43,7 +47,7 @@ public class ExpeditionService {
         this.settingsManager = settingsManager;
     }
 
-    public void create(Expedition expedition, int userId, int projectId, URI webAddress) {
+    public void create(Expedition expedition, int userId, int projectId, URI webAddress, Mapping mapping) {
         Project project = entityManager.getReference(Project.class, projectId);
         User user = entityManager.getReference(User.class, userId);
 
@@ -62,7 +66,7 @@ public class ExpeditionService {
         expeditionRepository.save(expedition);
         Bcid bcid = createExpeditionBcid(expedition, webAddress);
         expedition.setExpeditionBcid(bcid);
-
+        createEntityBcids(mapping, expedition.getExpeditionId(), userId);
     }
 
     public void update(Expedition expedition) {
@@ -137,6 +141,27 @@ public class ExpeditionService {
     }
 
     /**
+     * set the {@link Bcid} identifier for each {@link Entity} in the {@link Mapping}
+     * @param mapping
+     * @param expeditionCode
+     * @param projectId
+     */
+    @Transactional(readOnly = true)
+    public void setEntityIdentifiers(Mapping mapping, String expeditionCode, int projectId) {
+        Expedition expedition = getExpedition(expeditionCode, projectId);
+        Set<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
+
+        for (Bcid bcid: expeditionEntityBcids) {
+            for (Entity entity: mapping.getEntities()) {
+                if (bcid.getTitle().equals(entity.getConceptAlias())) {
+                    entity.setIdentifier(bcid.getIdentifier());
+                }
+            }
+        }
+
+    }
+
+    /**
      * create the Bcid domain object that represents the Expedition
      * @param expedition
      * @param webAddress
@@ -154,6 +179,18 @@ public class ExpeditionService {
         bcidService.create(expditionBcid, expedition.getUser().getUserId());
         bcidService.attachBcidToExpedition(expditionBcid, expedition.getExpeditionId());
         return expditionBcid;
+    }
+
+    private void createEntityBcids(Mapping mapping, int expeditionId, int userId) {
+        EntityToBcidMapper mapper = new EntityToBcidMapper();
+
+        for (Entity entity: mapping.getEntities()) {
+            Bcid bcid = mapper.map(entity);
+            bcidService.create(bcid, userId);
+            bcidService.attachBcidToExpedition(bcid, expeditionId);
+
+            entity.setIdentifier(bcid.getIdentifier());
+        }
     }
 
     /**

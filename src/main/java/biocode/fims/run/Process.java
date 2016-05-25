@@ -167,28 +167,7 @@ public class Process {
                 .isPublic(processController.getPublicStatus())
                 .build();
 
-        expeditionService.create(expedition, processController.getUserId(), processController.getProjectId(), null);
-
-        // Loop the mapping file and create a BCID for every entity that we specified there!
-        boolean ezidRequest = Boolean.parseBoolean(sm.retrieveValue("ezidRequests"));
-        if (mapping != null) {
-            LinkedList<Entity> entities = mapping.getEntities();
-            Iterator it = entities.iterator();
-            while (it.hasNext()) {
-                Entity entity = (Entity) it.next();
-
-                String s = "\t\tCreating bcid root for " + entity.getConceptAlias() + " and resource type = " + entity.getConceptURI() + "\n";
-                processController.appendStatus(s);
-
-                biocode.fims.entities.Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(entity.getConceptURI())
-                        .ezidRequest(ezidRequest)
-                        .title(entity.getConceptAlias())
-                        .build();
-
-                bcidService.create(bcid, processController.getUserId());
-                bcidService.attachBcidToExpedition(bcid, expedition.getExpeditionId());
-            }
-        }
+        expeditionService.create(expedition, processController.getUserId(), processController.getProjectId(), null, mapping);
 
         return true;
 

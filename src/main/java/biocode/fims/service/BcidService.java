@@ -1,7 +1,7 @@
 package biocode.fims.service;
 
-import biocode.fims.bcid.BcidEncoder;
-import biocode.fims.bcid.ManageEZID;
+import biocode.fims.bcid.*;
+import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.fimsExceptions.ServerErrorException;
@@ -139,6 +139,17 @@ public class BcidService {
 
     public void delete(int bcidId) {
         bcidRepository.deleteByBcidId(bcidId);
+    }
+
+    /**
+     * Entity Bcids are all Bcids with resourceType != Dataset or Expedition resourceType
+     * @param expeditionId
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public Set<Bcid> getEntityBcids(int expeditionId) {
+        return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeNotIn(expeditionId,
+                ResourceTypes.DATASET_RESOURCE_TYPE, Expedition.EXPEDITION_RESOURCE_TYPE);
     }
 
     private void createEzid(Bcid bcid) {

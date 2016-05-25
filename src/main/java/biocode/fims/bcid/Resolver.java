@@ -4,12 +4,11 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repositories.BcidRepository;
 import biocode.fims.service.BcidService;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -24,11 +23,13 @@ public class Resolver {
 
     private BcidService bcidService;
     private SettingsManager settingsManager;
+    private ExpeditionService expeditionService;
 
     @Autowired
-    public Resolver(BcidService bcidService, SettingsManager settingsManager) {
+    public Resolver(BcidService bcidService, SettingsManager settingsManager, ExpeditionService expeditionService) {
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
+        this.expeditionService = expeditionService;
     }
 
     /**
@@ -55,7 +56,7 @@ public class Resolver {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
                         String expeditionForwardingAddress = mapping.getExpeditionForwardingAddress();
 
-                        if (expeditionForwardingAddress != null && !expeditionForwardingAddress.isEmpty()) {
+                        if (!StringUtils.isEmpty(expeditionForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(expeditionForwardingAddress)
                                     .buildAndExpand(bcid.getIdentifier()).toUri();
                         }
@@ -70,11 +71,15 @@ public class Resolver {
                         if (hasWebAddress)
                             resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
                         else {
-                            String conceptForwardingAddress = mapping.getConceptForwardingAddress();
+                            if (bcid.getExpedition() != null) {
+                                expeditionService.setEntityIdentifiers(mapping, bcid.getExpedition().getExpeditionCode(),
+                                        bcid.getExpedition().getProject().getProjectId());
+                                String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcid.getIdentifier()));
 
-                            if (conceptForwardingAddress != null && !conceptForwardingAddress.isEmpty()) {
-                                resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress + identifier.getSuffix())
-                                        .buildAndExpand(bcid.getIdentifier()).toUri();
+                                if (!StringUtils.isEmpty(conceptForwardingAddress)) {
+                                    resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress + identifier.getSuffix())
+                                            .buildAndExpand(bcid.getIdentifier()).toUri();
+                                }
                             }
                         }
                     }
@@ -82,7 +87,7 @@ public class Resolver {
                     break;
             }
             // if resolution is still null, then resolve to the default metadata service
-            if (resolution == null) {
+            if (StringUtils.isEmpty(resolution)) {
                 resolution = new URI(resolverMetadataPrefix + bcid.getIdentifier());
             }
         } catch(URISyntaxException e) {

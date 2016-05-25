@@ -23,7 +23,6 @@ public class Mapping {
     private final LinkedList<Entity> entities = new LinkedList<Entity>();
     private final LinkedList<Relation> relations = new LinkedList<Relation>();
     private Metadata metadata;
-    private String expeditionCode;
 
     public Mapping() {
 
@@ -54,17 +53,18 @@ public class Mapping {
 
     /**
      * The default conceptForwardingAddress is the one referenced by the first entity
-     * TODO: get conceptForwardingAddress in a more formal manner, currently we're basing this on a "single" spreadsheet model
      *
      * @return
      */
-    public String getConceptForwardingAddress() {
-        Iterator it = entities.iterator();
-        while (it.hasNext()) {
-            Entity entity = (Entity) it.next();
-            return entity.getConceptForwardingAddress();
+    public String getConceptForwardingAddress(String identifier) {
+        String forwardingAddress = null;
+        for (Entity entity: entities) {
+            if (entity.getIdentifier().equals(identifier)) {
+                forwardingAddress = entity.getConceptForwardingAddress();
+                break;
+            }
         }
-        return null;
+        return forwardingAddress;
     }
 
     /**

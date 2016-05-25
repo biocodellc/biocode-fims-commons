@@ -1,6 +1,8 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.*;
+import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -10,6 +12,7 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
+import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -24,6 +27,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
@@ -64,13 +68,18 @@ public class ExpeditionRestService extends FimsService {
                          @FormParam("webAddress") String webAddress,
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
 
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+
         Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode)
                 .expeditionTitle(expeditionTitle)
                 .isPublic(isPublic)
                 .build();
 
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(webAddress).build();
-        expeditionService.create(expedition, user.getUserId(), projectId, uriComponents.toUri());
+        expeditionService.create(expedition, user.getUserId(), projectId, uriComponents.toUri(), mapping);
 
         return Response.ok(expedition).build();
     }
