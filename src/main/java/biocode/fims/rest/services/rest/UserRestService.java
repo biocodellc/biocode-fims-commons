@@ -1,6 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.entities.User;
@@ -119,14 +118,13 @@ public class UserRestService extends FimsService {
                                   @FormParam("newPassword") String newPassword,
                                   @FormParam("username") String updateUsername,
                                   @QueryParam("return_to") String returnTo) {
-        Authorizer authorizer = new Authorizer();
         Boolean adminAccess = false;
         User userToUpdate = this.user;
 
         if (!user.getUsername().equals(updateUsername.trim())) {
-            if (!authorizer.userProjectAdmin(user.getUsername()))
+            if (!userService.isProjectAdmin(user)) {
                 throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
-            else {
+            } else {
                 adminAccess = true;
                 userToUpdate = userService.getUser(updateUsername);
             }

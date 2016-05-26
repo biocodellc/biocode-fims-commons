@@ -68,8 +68,7 @@ public class OAuthProviderService {
 
         if (oAuthToken != null) {
             long nonceAge = currentTs.getDate().getTime() - oAuthToken.getTs().getTime();
-            if (nonceAge < ACCESS_TOKEN_EXPIRATION_INTEVAL &&
-                    userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
+            if (nonceAge < ACCESS_TOKEN_EXPIRATION_INTEVAL) {
                 return oAuthToken.getUser();
             }
         }

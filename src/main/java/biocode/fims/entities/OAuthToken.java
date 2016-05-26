@@ -1,7 +1,7 @@
 package biocode.fims.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import biocode.fims.serializers.OAuthTokenSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,12 +9,13 @@ import java.util.Date;
 /**
  * OAuthToken entity object
  */
+@JsonSerialize(using = OAuthTokenSerializer.class)
 @Entity
 @Table(name = "oAuthTokens")
 public class OAuthToken {
-    private static String TOKEN_TYPE = "bearer";
+    public final static String TOKEN_TYPE = "bearer";
+    public final static int EXPIRES_IN = 3600;
 
-    private static int EXPIRES_IN = 3600;
     private int oAuthTokenId;
     private String token;
     private String refreshToken;
@@ -23,6 +24,7 @@ public class OAuthToken {
     private OAuthClient oAuthClient;
 
     private User user;
+
     public OAuthToken(String token, String refreshToken, OAuthClient oAuthClient, User user) {
         this.token = token;
         this.refreshToken = refreshToken;
@@ -30,9 +32,8 @@ public class OAuthToken {
         this.user = user;
     }
 
-    OAuthToken() {};
+    OAuthToken() {}
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getoAuthTokenId() {
@@ -43,7 +44,6 @@ public class OAuthToken {
         this.oAuthTokenId = oAuthTokenId;
     }
 
-    @JsonProperty(value = "access_token")
     public String getToken() {
         return token;
     }
@@ -52,7 +52,6 @@ public class OAuthToken {
         this.token = token;
     }
 
-    @JsonProperty(value = "refresh_token")
     public String getRefreshToken() {
         return refreshToken;
     }
@@ -61,7 +60,6 @@ public class OAuthToken {
         this.refreshToken = refreshToken;
     }
 
-    @JsonIgnore
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTs() {
         return ts;
@@ -95,7 +93,6 @@ public class OAuthToken {
         return result;
     }
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
@@ -109,7 +106,6 @@ public class OAuthToken {
         this.user = user;
     }
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "clientId",
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
@@ -120,18 +116,6 @@ public class OAuthToken {
 
     public void setoAuthClient(OAuthClient oAuthClient) {
         this.oAuthClient = oAuthClient;
-    }
-
-    @JsonProperty("token_type")
-    @Transient
-    public static String getTokenType() {
-        return TOKEN_TYPE;
-    }
-
-    @JsonProperty("expires_in")
-    @Transient
-    public static int getExpiresIn() {
-        return EXPIRES_IN;
     }
 
     @Transient

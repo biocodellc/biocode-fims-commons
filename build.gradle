@@ -68,7 +68,7 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:1.5.6'
 }
 
-sourceSets.main.compileClasspath += [configurations.provided]
+sourceSets.main.compileClasspath += configurations.provided
 
 idea {
     module{

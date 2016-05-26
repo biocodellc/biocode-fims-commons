@@ -1,6 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.auth.Authorizer;
 import biocode.fims.auth.BasicAuthDecoder;
 import biocode.fims.entities.OAuthClient;
 import biocode.fims.entities.OAuthNonce;
@@ -74,10 +73,8 @@ public class AuthenticationService extends FimsService {
                 // Place the user in the session
                 session.setAttribute("user", user);
 
-                Authorizer myAuthorizer = new Authorizer();
-
                 // Check if the user is an admin for any projects
-                if (myAuthorizer.userProjectAdmin(usr)) {
+                if (userService.isProjectAdmin(user)) {
                     session.setAttribute("projectAdmin", true);
                 }
 
