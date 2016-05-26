@@ -69,5 +69,5 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     Set<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
 
-    Bcid findOneByTitleAndExpeditionExpeditionId(int expeditionId, String title);
+    Bcid findOneByTitleAndExpeditionExpeditionId(String title, int expeditionId);
 }
