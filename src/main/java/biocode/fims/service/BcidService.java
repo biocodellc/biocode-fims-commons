@@ -103,6 +103,10 @@ public class BcidService {
         return bcidRepository.findByBcidId(bcidId);
     }
 
+    @Transactional(readOnly = true)
+    public Bcid getBcidByTitle(int expeditionId, String title) {
+        return bcidRepository.findOneByTitleAndExpeditionExpeditionId(expeditionId, title);
+    }
     /**
      * @param expeditionId the {@link biocode.fims.entities.Expedition} the bcids are associated with
      * @param resourceType the resourceType(s) of the Bcids to find

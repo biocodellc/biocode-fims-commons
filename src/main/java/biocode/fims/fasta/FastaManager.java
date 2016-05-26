@@ -1,6 +1,7 @@
 package biocode.fims.fasta;
 
 import biocode.fims.bcid.BcidDatabase;
+import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.ReaderManager;
@@ -16,20 +17,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 
 /**
  * FastaManager handles uploading of FASTA files and attaching the sequences to a dataset
  */
 public abstract class FastaManager {
-    // Store all messages related to this Worksheet
-    private LinkedList<RowMessage> messages = new LinkedList<RowMessage>();
-    protected ProcessController processController;
-    protected HashMap<String, String> fastaData = null;
+    protected final static String SEQUENCE_URI = "urn:sequence";
 
+    protected ProcessController processController;
+    protected List<FastaSequence> fastaSequences = null;
     private String fastaFilename;
 
     public FastaManager(ProcessController processController, String fastaFilename) {
@@ -44,6 +41,8 @@ public abstract class FastaManager {
      */
     public void validate(String outputFolder) {
         ArrayList<String> datasetIds;
+        // Store all messages related to this Worksheet
+        LinkedList<RowMessage> messages = new LinkedList<>();
 
         try {
             if (processController.getInputFilename() != null) {
@@ -73,10 +72,9 @@ public abstract class FastaManager {
             }
 
             // parse the FASTA file to get an array of sequence identifiers
-            parseFasta();
-            Set<String> fastaIds = fastaData.keySet();
+            fastaSequences = parseFasta();
 
-            if (fastaData.isEmpty()) {
+            if (fastaSequences.isEmpty()) {
                 messages.addLast(new RowMessage("No data found", "FASTA check", RowMessage.ERROR));
                 processController.setHasErrors(true);
                 return;
@@ -84,15 +82,15 @@ public abstract class FastaManager {
 
             // verify that all fastaIds exist in the dataset
             ArrayList<String> invalidIds = new ArrayList<>();
-            for (String fastaId: fastaIds) {
-                if (!datasetIds.contains(fastaId)) {
-                    invalidIds.add(fastaId);
+            for (FastaSequence sequence: fastaSequences) {
+                if (!datasetIds.contains(sequence.getLocalIdentifier())) {
+                    invalidIds.add(sequence.getLocalIdentifier());
                 }
             }
             if (!invalidIds.isEmpty()) {
                 int level;
                 // this is an error if no ids exist in the dataset
-                if (invalidIds.size() == fastaIds.size()) {
+                if (invalidIds.size() == fastaSequences.size()) {
                     level = RowMessage.ERROR;
                     processController.setHasErrors(true);
                 } else {
@@ -125,10 +123,10 @@ public abstract class FastaManager {
         try {
             String query = "SELECT b.graph FROM bcids b, expeditionBcids eb, expeditions e, " +
                     "(SELECT b1.graph, e.expeditionCode, max(b1.ts) as maxts FROM bcids b1, expeditionBcids eb, expeditions e " +
-                    "   WHERE eb.bcidId=b1.bcidId AND eb.expeditionId=e.expeditionId AND b1.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" " +
+                    "   WHERE eb.bcidId=b1.bcidId AND eb.expeditionId=e.expeditionId AND b1.resourceType = \"" + ResourceTypes.DATASET_RESOURCE_TYPE + "\" " +
                     "   AND e.expeditionCode = ? AND e.projectId = ? GROUP BY e.expeditionCode) as b2 " +
                     "WHERE b.bcidId = eb.bcidId AND eb.expeditionId = e.expeditionId AND e.expeditionCode = ? AND " +
-                    "e.projectId = ? AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" AND b.ts = b2.maxts";
+                    "e.projectId = ? AND b.resourceType = \"" + ResourceTypes.DATASET_RESOURCE_TYPE + "\" AND b.ts = b2.maxts";
 
             stmt = conn.prepareStatement(query);
             stmt.setString(1, processController.getExpeditionCode());
@@ -201,10 +199,10 @@ public abstract class FastaManager {
 
     /**
      * parse the fasta file identifier-sequence pairs
-     * @return HashMap<String, String> with (identifier, sequence) pairs
+     * @return list of {@link FastaSequence} objects
      */
-    private HashMap<String, String> parseFasta() {
-        fastaData = new HashMap<>();
+    private List<FastaSequence> parseFasta() {
+        List<FastaSequence> sequences = new ArrayList<>();
         try {
             FileReader input = new FileReader(fastaFilename);
             BufferedReader bufRead = new BufferedReader(input);
@@ -216,7 +214,7 @@ public abstract class FastaManager {
                 // > deliminates the next identifier, sequence block in the fasta file
                 if (line.startsWith(">")) {
                     if (!sequence.isEmpty()|| identifier != null) {
-                        fastaData.put(identifier, sequence);
+                        sequences.add(new FastaSequence(identifier, sequence));
                         // after putting the sequence into the hashmap, reset the sequence
                         sequence = "";
                     }
@@ -229,11 +227,11 @@ public abstract class FastaManager {
             }
 
             // need to put the last sequence data into the hashmap
-            fastaData.put(identifier, sequence);
+            sequences.add(new FastaSequence(identifier, sequence));
         } catch (IOException e) {
             throw new ServerErrorException(e);
         }
-        return fastaData;
+        return sequences;
     }
 
 }

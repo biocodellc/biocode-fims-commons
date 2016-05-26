@@ -85,28 +85,25 @@ public class ExpeditionService {
     }
 
     /**
-     * Find the appropriate root BCID for this expedition given an conceptAlias.
+     * Find the appropriate entity Bcid for this expedition given an conceptAlias.
      *
      * @param expeditionCode defines the BCID expeditionCode to lookup
-     * @param conceptAlias    defines the alias to narrow this,  a one-word reference denoting a BCID
+     * @param conceptAlias the Expedition entity conceptAlias
      *
      * @return returns the BCID for this expedition and conceptURI combination
      */
     @Transactional(readOnly = true)
-    public Bcid getRootBcid(String expeditionCode, int projectId, String conceptAlias) {
+    public Bcid getEntityBcid(String expeditionCode, int projectId, String conceptAlias) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
 
         if (expedition == null) {
             throw new EmptyResultDataAccessException(1);
         }
 
-        ResourceTypes resourceTypes = new ResourceTypes();
-        ResourceType rt = resourceTypes.getByShortName(conceptAlias);
-        String uri = rt.uri;
-
-        return bcidService.getBcid(
+        // conceptAlias is the Bcid title
+        return bcidService.getBcidByTitle(
                 expedition.getExpeditionId(),
-                conceptAlias, uri
+                conceptAlias
         );
     }
 

@@ -13,7 +13,7 @@ uploadDir = tripleOutput
 appRoot = http://localhost:8080/
 
 # the naan to use for the bcid identifier
-naan = 21547
+naan = 99999
 
 # ignoreUser defaults to false. If set to true then application does not run check to see if user is unique
 # for a particular dataset.  That is, it allows users besides the dataset creator to load data to this dataset

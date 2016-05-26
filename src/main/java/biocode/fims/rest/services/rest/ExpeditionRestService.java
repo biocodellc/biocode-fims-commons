@@ -1,8 +1,10 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.*;
+import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
+import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -104,16 +106,16 @@ public class ExpeditionRestService extends FimsService {
      * Given a expedition code and a resource alias, return a BCID
      *
      * @param expeditionCode
-     * @param resourceAlias
+     * @param conceptAlias
      *
      * @return
      */
     @GET
-    @Path("/{projectId}/{expeditionCode}/{resourceAlias}")
+    @Path("/{projectId}/{expeditionCode}/{conceptAlias}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response fetchAlias(@PathParam("expeditionCode") String expeditionCode,
                                @PathParam("projectId") Integer projectId,
-                               @PathParam("resourceAlias") String resourceAlias) {
+                               @PathParam("conceptAlias") String conceptAlias) {
         try {
             expeditionCode = URLDecoder.decode(expeditionCode, "utf-8");
         } catch (UnsupportedEncodingException e) {
@@ -121,7 +123,7 @@ public class ExpeditionRestService extends FimsService {
         }
 
         try {
-            biocode.fims.entities.Bcid bcid = expeditionService.getRootBcid(expeditionCode, projectId, resourceAlias);
+            Bcid bcid = expeditionService.getEntityBcid(expeditionCode, projectId, conceptAlias);
 
             return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
 

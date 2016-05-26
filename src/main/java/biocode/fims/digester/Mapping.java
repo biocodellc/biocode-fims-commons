@@ -5,15 +5,14 @@ import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Mapping builds the D2RQ structure for converting between relational format to RDF.
@@ -195,6 +194,24 @@ public class Mapping {
                 }
         }
         return attributes;
+    }
+
+    /**
+     * return all {@link Entity} objects that have the given {@Attribute}.uri
+     * @param uri
+     * @return
+     */
+    public ArrayList<Entity> getEntititesWithAttributeUri(String uri) {
+        ArrayList<Entity> entities = new ArrayList<>();
+
+        for (Entity entity: entities) {
+            for (Attribute attribute: entity.getAttributes()) {
+                if (attribute.getUri().equals(uri)) {
+                    entities.add(entity);
+                }
+            }
+        }
+        return entities;
     }
 
     /**
