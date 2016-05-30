@@ -18,47 +18,64 @@ repositories {
     mavenCentral()
 }
 
+//noinspection GroovyAssignabilityCheck
 configurations {
     compile.exclude module: 'bean-validator'
     provided
+    server
 }
 
 idea {
     module {
         scopes.PROVIDED.plus += [configurations.provided]
+        scopes.PROVIDED.plus += [configurations.server]
+    }
+}
+
+//noinspection GroovyAssignabilityCheck
+sourceSets {
+    main {
+        compileClasspath += [configurations.provided]
+        compileClasspath += [configurations.server]
+    }
+    test {
+        compileClasspath += [configurations.provided]
+        compileClasspath += [configurations.server]
+        runtimeClasspath += [configurations.server]
     }
 }
 
 dependencies {
-    compile 'jstl:jstl:1.2'
-    compile 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
-    compile 'org.glassfish.jersey.ext:jersey-bean-validation:2.22.2'
-    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.2'
-    compile 'javax.servlet:servlet-api:2.4'
-    compile 'org.apache.poi:poi:3.10.1'
-    compile 'org.apache.poi:poi-ooxml:3.10.1'
-    compile 'org.apache.commons:commons-digester3:3.2'
-    compile 'commons-validator:commons-validator:1.5.0'
-    compile 'commons-cli:commons-cli:1.2'
-    compile 'org.apache.commons:commons-dbcp2:2.1.1'
-    compile 'commons-lang:commons-lang:2.6'
-    compile 'com.sun.mail:javax.mail:1.5.5'
-    compile 'joda-time:joda-time:2.1'
-    compile 'com.googlecode.lambdaj:lambdaj:2.3.3' //need 2.4, but not hosted in maven. trying this
-    compile 'org.apache.httpcomponents:httpcore:4.2.1'
-    compile 'org.apache.httpcomponents:httpclient:4.2.1'
-    compile 'com.ibm.icu:icu4j:3.4.4'
-    compile 'com.googlecode.json-simple:json-simple:1.1.1'
-    compile 'mysql:mysql-connector-java:5.1.38'
+    server 'jstl:jstl:1.2'
+    server 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
+    server 'org.glassfish.jersey.ext:jersey-bean-validation:2.22.2'
+    server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.2'
+    server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.22.2'
+    server 'javax.servlet:servlet-api:2.4'
+    server 'org.apache.poi:poi:3.10.1'
+    server 'org.apache.poi:poi-ooxml:3.10.1'
+    server 'org.apache.commons:commons-digester3:3.2'
+    server 'commons-validator:commons-validator:1.5.0'
+    server 'commons-cli:commons-cli:1.2'
+    server 'org.apache.commons:commons-dbcp2:2.1.1'
+    server 'commons-lang:commons-lang:2.6'
+    server 'com.sun.mail:javax.mail:1.5.5'
+    server 'joda-time:joda-time:2.1'
+    server 'com.googlecode.lambdaj:lambdaj:2.3.3' //need 2.4, but not hosted in maven. trying this
+    server 'org.apache.httpcomponents:httpcore:4.2.1'
+    server 'org.apache.httpcomponents:httpclient:4.2.1'
+    server 'com.ibm.icu:icu4j:3.4.4'
+    server 'com.googlecode.json-simple:json-simple:1.1.1'
+    server 'mysql:mysql-connector-java:5.1.38'
 
-    compile 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
-    compile 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.0'
+    server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
+    server 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
+    server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.0'
 
-    compile 'org.springframework:spring-jdbc:3.2.16.RELEASE'
+    server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
 
-    compile 'org.xerial:sqlite-jdbc:3.7.2'
-    compile 'org.slf4j:slf4j-log4j12:1.7.19'
+    server 'org.xerial:sqlite-jdbc:3.7.2'
+    server 'org.slf4j:slf4j-log4j12:1.7.19'
 
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
 
@@ -68,20 +85,15 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:1.5.6'
 }
 
-sourceSets.main.compileClasspath += configurations.provided
-
-idea {
-    module{
-        scopes.PROVIDED.plus += [configurations.provided]
-    }
-}
 
 libsDirName = "../dist"
 
+//noinspection GroovyAssignabilityCheck
 clean {
     delete libsDir
 }
 
+//noinspection GroovyAssignabilityCheck
 javadoc {
     failOnError = false
 }

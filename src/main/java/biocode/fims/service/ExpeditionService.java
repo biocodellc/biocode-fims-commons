@@ -1,6 +1,5 @@
 package biocode.fims.service;
 
-import biocode.fims.bcid.*;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.*;

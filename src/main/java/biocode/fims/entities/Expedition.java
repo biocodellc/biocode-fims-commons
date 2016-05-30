@@ -3,7 +3,6 @@ package biocode.fims.entities;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
 
