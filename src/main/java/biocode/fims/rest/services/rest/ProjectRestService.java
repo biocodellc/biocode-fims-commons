@@ -93,7 +93,8 @@ public class ProjectRestService extends FimsService {
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
 
         // Write the all of the checkbox definitions to a String Variable
-        obj.put("abstract", JSONValue.escape(t.printAbstract()));
+        //obj.put("abstract", JSONValue.escape(t.printAbstract()));
+        obj.put("abstract", t.printAbstract());
 
         return Response.ok(obj.toJSONString()).build();
     }
