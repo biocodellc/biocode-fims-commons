@@ -26,8 +26,8 @@ public class CsvTabularDataConverter {
      * Constructs a new CsvTabularDataConverter for the specified source and
      * destination Database connection.
      *
-     * @param source A TabularDataReader with an open data source.
-     * @param outputDir   A valid filepath for the new csv file
+     * @param source    A TabularDataReader with an open data source.
+     * @param outputDir A valid filepath for the new csv file
      */
     public CsvTabularDataConverter(TabularDataReader source, String outputDir, String filenamePrefix) {
         this.source = source;
@@ -70,13 +70,21 @@ public class CsvTabularDataConverter {
 
         try {
             FileOutputStream fos = new FileOutputStream(csvFile);
-            for (int rowNum=0; rowNum < source.getNumRows(); rowNum++) {
+            for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
                 String[] row = source.tableGetNextRow();
 
                 // reorder the columns to match the same order of acceptableColumns list
-                for (String col: acceptableColumns) {
-                    if (datasetColumns.contains(col))
+                for (String col : acceptableColumns) {
+                    if (datasetColumns.contains(col)) {
                         data.append(row[datasetColumns.indexOf(col)] + ",");
+                    } else {
+                        // if the column doesn't exist in the dataset, add a placeholder in the csv file.
+                        // This is required because we later use the acceptableColumns list to insert the csv data
+                        // into the db. If a column in missing from the dataset and a placeholder isn't entered in the
+                        // csv, then the csv data becomes mis-aligned with acceptableColumns list, causing invalid data
+                        // to be persisted
+                        data.append(",");
+                    }
                 }
 
                 data.append('\n');
