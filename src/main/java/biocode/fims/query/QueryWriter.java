@@ -231,7 +231,7 @@ public class QueryWriter {
 
 
         try {
-            System.out.println("file output : " + queryWriter.writeTAB(new File("tripleOutput/output.tab")));
+            System.out.println("file output : " + queryWriter.writeTAB(new File("tripleOutput/output.tab"), true));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -836,9 +836,11 @@ public class QueryWriter {
      *
      * @return
      */
-    public String writeTAB(File file) {
+    public String writeTAB(File file, Boolean writeHeader) {
         // Header Row
-        createHeaderRow(sheet);
+        if (writeHeader) {
+            createHeaderRow(sheet);
+        }
         // Write the output to a file
         FileOutputStream fileOut = null;
         try {
