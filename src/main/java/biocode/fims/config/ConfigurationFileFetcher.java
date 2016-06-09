@@ -81,7 +81,7 @@ public class ConfigurationFileFetcher {
                 // Initialize the connection
                 init(new URL(url), defaultOutputDirectory);
             } catch (MalformedURLException e) {
-                throw new FimsRuntimeException("configuration file url: " + url + " returned from bcid system for project id: " +
+                throw new FimsRuntimeException("Error fetching configuration file.", "configuration file url: " + url + " returned from bcid system for project id: " +
                         projectId + " is malformed.", 500, e);
             }
         }
