@@ -29,6 +29,7 @@ public class FimsDefaultServlet extends DefaultServlet {
             response.reset();
 
             dispatcher.forward(request, response);
+            return;
         }
 
         super.service(request, response);
