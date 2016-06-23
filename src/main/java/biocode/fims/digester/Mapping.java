@@ -204,7 +204,7 @@ public class Mapping {
     public ArrayList<Entity> getEntititesWithAttributeUri(String uri) {
         ArrayList<Entity> entities = new ArrayList<>();
 
-        for (Entity entity: entities) {
+        for (Entity entity: this.entities) {
             for (Attribute attribute: entity.getAttributes()) {
                 if (attribute.getUri().equals(uri)) {
                     entities.add(entity);
