@@ -23,8 +23,6 @@ import java.util.*;
  * FastaManager handles uploading of FASTA files and attaching the sequences to a dataset
  */
 public abstract class FastaManager {
-    protected final static String SEQUENCE_URI = "urn:sequence";
-
     protected ProcessController processController;
     protected List<FastaSequence> fastaSequences = null;
     private String fastaFilename;
