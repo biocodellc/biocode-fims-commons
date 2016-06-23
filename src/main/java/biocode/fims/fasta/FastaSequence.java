@@ -7,7 +7,7 @@ public class FastaSequence {
     public final static String SEQUENCE_URI = "urn:sequence";
     private final String localIdentifier;
     private final String sequence;
-    private String identifier;
+    private String rootIdentifier;
     private String organism;
 
     public FastaSequence(String localIdentifier, String sequence) {
@@ -23,12 +23,12 @@ public class FastaSequence {
         return sequence;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getRootIdentifier() {
+        return rootIdentifier;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setRootIdentifier(String rootIdentifier) {
+        this.rootIdentifier = rootIdentifier;
     }
 
     public String getOrganism() {
