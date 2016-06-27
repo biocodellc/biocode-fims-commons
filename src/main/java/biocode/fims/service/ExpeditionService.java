@@ -164,7 +164,7 @@ public class ExpeditionService {
      * @return
      */
     private Bcid createExpeditionBcid(Expedition expedition, URI webAddress) {
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequest"));
+        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
 
         Bcid expditionBcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
                 .webAddress(webAddress)
