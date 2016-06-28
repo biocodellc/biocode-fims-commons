@@ -8,6 +8,8 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.*;
 import biocode.fims.settings.SettingsManager;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -79,16 +81,19 @@ public class BcidRestService extends FimsService {
             title = resourceTypeString;
         }
 
-        UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
-        Bcid bcid = new Bcid.BcidBuilder(resourceTypeString)
+        Bcid.BcidBuilder builder = new Bcid.BcidBuilder(resourceTypeString)
                 .ezidRequest(Boolean.valueOf(settingsManager.retrieveValue("ezidRequests")))
                 .doi(doi)
                 .title(title)
-                .webAddress(webAddressComponents.toUri())
                 .graph(graph)
-                .finalCopy(finalCopy)
-                .build();
+                .finalCopy(finalCopy);
 
+        if (!StringUtils.isEmpty(webAddress)) {
+            UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();
+            builder.webAddress(webAddressComponents.toUri());
+        }
+
+        Bcid bcid = builder.build();
         bcidService.create(bcid, user.getUserId());
 
         // TODO return the bcid object here

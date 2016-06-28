@@ -15,6 +15,7 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 
 /**
@@ -69,6 +71,7 @@ public class ExpeditionRestService extends FimsService {
                          @FormParam("projectId") Integer projectId,
                          @FormParam("webAddress") String webAddress,
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
+        URI uri;
 
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
 
@@ -80,8 +83,12 @@ public class ExpeditionRestService extends FimsService {
                 .isPublic(isPublic)
                 .build();
 
-        UriComponents uriComponents = UriComponentsBuilder.fromUriString(webAddress).build();
-        expeditionService.create(expedition, user.getUserId(), projectId, uriComponents.toUri(), mapping);
+        if (!StringUtils.isEmpty(webAddress)) {
+            uri = UriComponentsBuilder.fromUriString(webAddress).build().toUri();
+        } else {
+            uri = null;
+        }
+        expeditionService.create(expedition, user.getUserId(), projectId, uri, mapping);
 
         return Response.ok(expedition).build();
     }
