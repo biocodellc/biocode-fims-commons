@@ -13,7 +13,7 @@ public class FastaUtils {
     public static Entity getEntityRoot(Mapping mapping, String uri) {
         ArrayList<Entity> entitiesWithAttribute = mapping.getEntititesWithAttributeUri(uri);
         if (entitiesWithAttribute.size() == 0) {
-            throw new ServerErrorException("Server Error", "No entity was found containing a urn:sequence attribute");
+            return null;
         }
 
         // assuming that there is only 1 entity with a sequence attribute
