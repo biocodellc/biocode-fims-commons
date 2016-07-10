@@ -136,7 +136,11 @@ public class Validation implements RendererInterface {
         try {
             tdc.convert(mapping);
         } catch (Exception e) {
-            throw new FimsException(e);
+            if (e instanceof FimsRuntimeException) {
+                throw new FimsException(((FimsRuntimeException) e).getUsrMessage(), e);
+            } else {
+                throw new FimsException(e);
+            }
         }
 
         // Create the SQLLite connection
@@ -222,10 +226,17 @@ public class Validation implements RendererInterface {
             connection = createSqlLite(filenamePrefix, outputFolder, mapping);
 
         } catch (FimsException e) {
+            logger.error("Fims Exception Thrown: ", e);
+            String msg;
+            if (e.getMessage().length() > 0) {
+                msg = e.getMessage();
+            } else {
+                msg = "Unable to parse spreadsheet.  This may be caused by having two columns with the same " +
+                        "name.  " +
+                        "Please add columns to pass validation.";
+            }
             sheet.getMessages().addLast(new RowMessage(
-                    "Unable to parse spreadsheet.  This may be caused by having two columns with the same " +
-                            "name.  " +
-                            "Please add columns to pass validation.",
+                    msg,
                     "Initial Spreadsheet check",
                     RowMessage.ERROR));
 
