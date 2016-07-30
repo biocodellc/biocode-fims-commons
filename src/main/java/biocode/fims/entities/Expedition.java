@@ -48,7 +48,7 @@ public class Expedition {
 
         public Expedition build() {
             if (expeditionTitle == null)
-                expeditionTitle = expeditionCode + " dataset";
+                expeditionTitle = expeditionCode;
             return new Expedition(this);
         }
 
