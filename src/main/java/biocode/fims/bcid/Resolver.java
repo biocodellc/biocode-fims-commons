@@ -13,6 +13,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Resolves any incoming Bcid to the BCID and/or EZID systems.
@@ -77,8 +79,11 @@ public class Resolver {
                                 String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcid.getIdentifier()));
 
                                 if (!StringUtils.isEmpty(conceptForwardingAddress)) {
-                                    resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress + identifier.getSuffix())
-                                            .buildAndExpand(bcid.getIdentifier()).toUri();
+                                    Map<String, String> urlMap = new HashMap();
+                                    urlMap.put("ark", String.valueOf(bcid.getIdentifier()));
+                                    urlMap.put("suffix", String.valueOf(identifier.getSuffix()));
+                                    resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress)
+                                            .buildAndExpand(urlMap).toUri();
                                 }
                             }
                         }

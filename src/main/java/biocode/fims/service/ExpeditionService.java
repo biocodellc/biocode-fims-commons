@@ -83,6 +83,17 @@ public class ExpeditionService {
         return expedition;
     }
 
+    @Transactional(readOnly = true)
+    public Expedition getExpedition(String identifier) {
+        Expedition expedition = null;
+        Bcid bcid = bcidService.getBcid(identifier);
+        if (bcid != null) {
+            expedition = bcid.getExpedition();
+            expedition.setExpeditionBcid(bcid);
+        }
+        return expedition;
+    }
+
     /**
      * Find the appropriate entity Bcid for this expedition given an conceptAlias.
      *

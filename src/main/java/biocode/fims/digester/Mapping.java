@@ -58,7 +58,7 @@ public class Mapping {
     public String getConceptForwardingAddress(String identifier) {
         String forwardingAddress = null;
         for (Entity entity: entities) {
-            if (entity.getIdentifier().equals(identifier)) {
+            if (entity.getIdentifier().toString().equals(identifier)) {
                 forwardingAddress = entity.getConceptForwardingAddress();
                 break;
             }
