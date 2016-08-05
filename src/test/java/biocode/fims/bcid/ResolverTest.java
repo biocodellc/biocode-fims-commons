@@ -108,7 +108,7 @@ public class ResolverTest {
 
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(WEBADRESS + "{ark}/").when(mapping).getConceptForwardingAddress(IDENTIFIER);
+        PowerMockito.doReturn(WEBADRESS + "{ark}/test/{suffix}").when(mapping).getConceptForwardingAddress(IDENTIFIER);
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
@@ -116,7 +116,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 
-        Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER + "/" + SUFFIX), location);
+        Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER + "/test/test/" + SUFFIX), location);
     }
 
     @Test
