@@ -116,7 +116,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 
-        Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER + "/test/test/" + SUFFIX), location);
+        Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER + "/test/" + SUFFIX), location);
     }
 
     @Test
