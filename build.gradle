@@ -26,7 +26,8 @@ configurations {
 
 idea {
     module {
-        scopes.PROVIDED.plus += [configurations.provided, configurations.server]
+        scopes.PROVIDED.plus += [configurations.provided]
+        scopes.COMPILE.plus += [configurations.server]
     }
 }
 
