@@ -122,7 +122,7 @@ public class UserRestService extends FimsService {
         User userToUpdate = this.user;
 
         if (!user.getUsername().equals(updateUsername.trim())) {
-            if (!userService.isProjectAdmin(user)) {
+            if (!userService.isAProjectAdmin(user)) {
                 throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
             } else {
                 adminAccess = true;
@@ -181,7 +181,7 @@ public class UserRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserData() {
         if (user != null) {
-            user.setAdmin(userService.isProjectAdmin(user));
+            user.setAdmin(userService.isAProjectAdmin(user));
             return Response.ok(user).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");

@@ -1,7 +1,5 @@
 package biocode.fims.entities;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
@@ -11,8 +9,12 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "projects")
-@NamedEntityGraph(name = "withMembers",
-        attributeNodes = @NamedAttributeNode("projectMembers"))
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "Project.withMembers",
+                attributeNodes = @NamedAttributeNode("projectMembers")),
+        @NamedEntityGraph(name = "Project.withExpeditions",
+                attributeNodes = @NamedAttributeNode("expeditions"))
+})
 public class Project {
 
     private int projectId;
@@ -102,7 +104,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    @Column(name="abstract", columnDefinition = "text null")
+    @Column(name = "abstract", columnDefinition = "text null")
     public String getProjectAbstract() {
         return projectAbstract;
     }
@@ -138,7 +140,7 @@ public class Project {
         this.projectUrl = projectUrl;
     }
 
-    @Column(name="public",
+    @Column(name = "public",
             nullable = false)
     public boolean isPublic() {
         return isPublic;
@@ -242,7 +244,7 @@ public class Project {
 
     // TODO move this to projectService?
     public Expedition getExpedition(String expeditionCode) {
-        for (Expedition expedition: getExpeditions()) {
+        for (Expedition expedition : getExpeditions()) {
             if (expedition.getExpeditionCode().equals(expeditionCode))
                 return expedition;
         }

@@ -132,7 +132,12 @@ public class UserService {
         return user;
     }
 
-    public boolean isProjectAdmin(User user) {
+    /**
+     * checks to see if the user is an admin of any project
+     * @param user
+     * @return
+     */
+    public boolean isAProjectAdmin(User user) {
         user = entityManager.merge(user);
         return user.getProjects().size() > 0;
     }

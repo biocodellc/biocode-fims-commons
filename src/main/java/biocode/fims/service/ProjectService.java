@@ -56,7 +56,28 @@ public class ProjectService {
     }
 
     public Project getProjectWithMembers(int projectId) {
-        return projectRepository.readByProjectId(projectId);
+        return projectRepository.readByProjectId(projectId, "Project.withMembers");
+    }
+
+    public Project getProjectWithExpeditions(int projectId) {
+        return projectRepository.readByProjectId(projectId, "Project.withExpeditions");
+    }
+
+    /**
+     * checks if a user is the admin of a specific project
+     * @param user
+     * @param projectId
+     * @return
+     */
+    public boolean isProjectAdmin(User user, int projectId) {
+        user = entityManager.merge(user);
+        for (Project p: user.getProjects()) {
+            if (p.getProjectId() == projectId) {
+                return true;
+            }
+        }
+        return false;
+
     }
 }
 

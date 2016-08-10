@@ -8,6 +8,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.*;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.json.simple.JSONArray;

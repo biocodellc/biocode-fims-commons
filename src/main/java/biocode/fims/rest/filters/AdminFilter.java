@@ -41,7 +41,7 @@ public class AdminFilter implements ContainerRequestFilter {
         if (accessTokenList != null && !accessTokenList.isEmpty()) {
             User user = oAuthProviderService.getUser((String) accessTokenList.get(0));
             if (user != null) {
-                projectAdmin = userService.isProjectAdmin(user);
+                projectAdmin = userService.isAProjectAdmin(user);
             }
         }
 
