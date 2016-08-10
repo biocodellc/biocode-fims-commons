@@ -23,6 +23,7 @@ public class Expedition {
     private Project project;
     private User user;
     private Bcid expeditionBcid;
+    private Set<Bcid> entityBcids;
 
     public static class ExpeditionBuilder {
 
@@ -206,5 +207,15 @@ public class Expedition {
 
     public void setExpeditionBcid(Bcid bcid) {
         expeditionBcid = bcid;
+    }
+
+    @Transient
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="identifier")
+    public Set<Bcid> getEntityBcids() {
+        return entityBcids;
+    }
+
+    public void setEntityBcids(Set<Bcid> entityBcids) {
+        this.entityBcids = entityBcids;
     }
 }

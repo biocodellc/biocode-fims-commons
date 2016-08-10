@@ -3,11 +3,12 @@ package biocode.fims.entities;
 import biocode.fims.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.*;
 import java.net.URI;
@@ -275,6 +276,8 @@ public class Bcid {
     }
 
     @ManyToOne
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="expeditionId")
+    @JsonIdentityReference(alwaysAsId = true)
     @JoinTable(name = "expeditionBcids",
             joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
             inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
@@ -290,6 +293,8 @@ public class Bcid {
     }
 
     @ManyToOne
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="userId")
+    @JsonIdentityReference(alwaysAsId = true)
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",
             foreignKey = @ForeignKey(name = "FK_bcids_userId"),
