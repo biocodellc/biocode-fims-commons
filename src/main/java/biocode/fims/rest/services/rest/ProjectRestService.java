@@ -6,18 +6,19 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
@@ -33,10 +34,13 @@ import java.util.*;
  */
 @Path("projects")
 public class ProjectRestService extends FimsService {
+    private ExpeditionService expeditionService;
 
     @Autowired
-    ProjectRestService(OAuthProviderService providerService, SettingsManager settingsManager) {
+    ProjectRestService(ExpeditionService expeditionService,
+                       OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
+        this.expeditionService = expeditionService;
     }
 
     /**
@@ -373,11 +377,8 @@ public class ProjectRestService extends FimsService {
     @Authenticated
     @Path("/{projectId}/expeditions")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listExpeditions(@PathParam("projectId") Integer projectId) {
-        ExpeditionMinter e = new ExpeditionMinter();
-        JSONArray expeditions = e.listExpeditions(projectId, user.getUsername());
-
-        return Response.ok(expeditions.toJSONString()).build();
+    public Set<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
+        return expeditionService.getExpeditions(projectId, user.getUserId());
     }
 
     /**

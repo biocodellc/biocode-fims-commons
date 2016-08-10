@@ -407,49 +407,6 @@ public class ExpeditionMinter {
     }
 
     /**
-     * Return a JSON response of the user's expeditions in a project
-     *
-     * @param projectId
-     * @param username
-     *
-     * @return
-     */
-    public JSONArray listExpeditions(Integer projectId, String username) {
-        JSONArray expeditions = new JSONArray();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-
-        Integer userId = BcidDatabase.getUserId(username);
-
-        try {
-            String sql = "SELECT expeditionId, expeditionTitle, expeditionCode, public " +
-                    "FROM expeditions " +
-                    "WHERE projectId = ? && userId = ? " +
-                    "ORDER BY expeditionTitle";
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setInt(1, projectId);
-            stmt.setInt(2, userId);
-
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                JSONObject expedition = new JSONObject();
-                expedition.put("expeditionId", rs.getString("expeditionId"));
-                expedition.put("expeditionCode", rs.getString("expeditionCode"));
-                expedition.put("expeditionTitle", (rs.getString("expeditionTitle") != null) ? rs.getString("expeditionTitle") : "null title");
-                expedition.put("public", rs.getString("public"));
-                expeditions.add(expedition);
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-        return expeditions;
-    }
-
-    /**
      * return the expedition metadata given the projectId and expeditionCode
      *
      * @param projectId

@@ -125,6 +125,17 @@ public class ExpeditionService {
     }
 
     @Transactional(readOnly = true)
+    public Set<Expedition> getExpeditions(int projectId, int userId) {
+        Set<Expedition> expeditions = expeditionRepository.findAllByProjectProjectIdAndUserUserId(projectId, userId);
+
+        for (Expedition expedition: expeditions) {
+            attachExpeditionBcids(expedition);
+        }
+
+        return expeditions;
+    }
+
+    @Transactional(readOnly = true)
     public Expedition getExpedition(int expeditionId) {
         Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
         if (expedition != null) {

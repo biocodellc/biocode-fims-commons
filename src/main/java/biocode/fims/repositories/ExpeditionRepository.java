@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 /**
  * This repositories provides CRUD operations for {@link User} objects
  */
@@ -38,4 +40,5 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     Page<Expedition> findByProjectProjectIdAndProjectUserUserId(int projectId, int userId, Pageable pageRequest);
 
+    Set<Expedition> findAllByProjectProjectIdAndUserUserId(int projectId, int userId);
 }
