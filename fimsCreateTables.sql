@@ -36,6 +36,7 @@ CREATE TABLE `bcids` (
   `title` text COMMENT 'title for this dataset',
   `webAddress` varchar(2083) COLLATE utf8_bin COMMENT 'the target URL for this dataset',
   `graph` varchar(2083) COMMENT 'A reference to a graph, used by the biocode-fims expedition for storing graph references for a particular dataset',
+  `sourceFile` varchar(255) COMMENT 'The name of the source file for this bcid. This is useful for dataset backups.',
   `resourceType` varchar(2083) NOT NULL COMMENT 'default resource type for this dataset, stored as a URI',
   `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp of insertion',
   PRIMARY KEY `bcids_bcidId` (`bcidId`),

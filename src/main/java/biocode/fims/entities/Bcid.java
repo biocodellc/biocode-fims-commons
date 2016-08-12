@@ -31,6 +31,7 @@ public class Bcid {
     private String resourceType;
     private Date ts;
     private String graph;
+    private String sourceFile;
     private boolean finalCopy;
     private Expedition expedition;
     private User user;
@@ -47,6 +48,7 @@ public class Bcid {
         private String title;
         private URI webAddress;
         private String graph;
+        private String sourceFile;
         private boolean finalCopy = false;
 
         public BcidBuilder(String resourceType) {
@@ -80,6 +82,11 @@ public class Bcid {
             return this;
         }
 
+        public BcidBuilder sourceFile(String sourceFile) {
+            this.sourceFile = sourceFile;
+            return this;
+        }
+
         public BcidBuilder finalCopy(boolean finalCopy) {
             this.finalCopy = finalCopy;
             return this;
@@ -99,6 +106,7 @@ public class Bcid {
         title = builder.title;
         webAddress = builder.webAddress;
         graph = builder.graph;
+        sourceFile = builder.sourceFile;
         finalCopy = builder.finalCopy;
     }
 
@@ -245,6 +253,14 @@ public class Bcid {
 
     public void setGraph(String graph) {
         this.graph = graph;
+    }
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     @Column(columnDefinition = "bit not null")
