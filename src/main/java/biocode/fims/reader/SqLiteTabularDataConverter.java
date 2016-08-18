@@ -373,7 +373,10 @@ public final class SqLiteTabularDataConverter {
             // end the transaction
             stmt.execute("COMMIT");
         } catch (SQLException e) {
-            throw new FimsRuntimeException(500, e);
+            String msg = "Unable to parse spreadsheet.  This may be caused by having two columns with the same name.  " +
+                    "Please fix columns to pass validation.";
+
+            throw new FimsRuntimeException(msg, 500, e);
         } finally {
             try {
                 stmt.close();
