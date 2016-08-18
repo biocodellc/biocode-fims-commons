@@ -376,7 +376,7 @@ public final class SqLiteTabularDataConverter {
             String msg = "Unable to parse spreadsheet.  This may be caused by having two columns with the same name.  " +
                     "Please fix columns to pass validation.";
 
-            throw new FimsRuntimeException(msg, 500, e);
+            throw new FimsRuntimeException(msg, null, 500, e);
         } finally {
             try {
                 stmt.close();
