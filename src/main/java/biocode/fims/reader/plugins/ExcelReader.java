@@ -396,7 +396,7 @@ public class ExcelReader implements TabularDataReader {
         // columns this sheet has.  This is necessary to make sure that all rows
         // have the same number of cells for SQLite.
         if (numCols < 0)
-            numCols = row.getLastCellNum();
+            numCols = getNumCols(row);
 
         String[] ret = new String[numCols];
 
@@ -484,6 +484,35 @@ public class ExcelReader implements TabularDataReader {
         testNext();
 
         return ret;
+    }
+
+    /**
+     * This method returns the number of cells in the given {@link Row}. After 10 blank columns, this function assumes
+     * that there are no more columns in the {@link Row}. If there is a possibility that there are more then 10 blank
+     * cells in a {@link Row}, DO NOT USE THIS METHOD. Try {@link Row}'s .getLastCellNum
+     * @param headerRow
+     * @return The number of columns in the {@link Row}
+     */
+    private int getNumCols(Row headerRow) {
+        int consecutiveBlankCells = 0;
+        int cellCount = 0;
+        Cell cell;
+        for (int col = 0; col < headerRow.getLastCellNum(); col++) {
+            cell = headerRow.getCell(col, Row.RETURN_BLANK_AS_NULL);
+            if (cell == null) {
+                consecutiveBlankCells++;
+            } else {
+                consecutiveBlankCells = 0;
+            }
+
+            cellCount++;
+
+            if (consecutiveBlankCells == 10) {
+                cellCount = cellCount - 10;
+                break;
+            }
+        }
+        return cellCount;
     }
 
     public void closeFile() {
