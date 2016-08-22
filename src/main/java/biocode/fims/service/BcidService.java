@@ -161,6 +161,18 @@ public class BcidService {
                 ResourceTypes.DATASET_RESOURCE_TYPE
         );
     }
+//    /**
+//     * fetch the latest Bcid with resourceType = 'http://purl.org/dc/dcmitype/Dataset' for the provided
+//     * {@link Expedition}s
+//     * @param expedition
+//     * @return
+//     */
+//    @Transactional(readOnly = true)
+//    public Bcid getLatestDatasetForExpedition(Expedition expedition) {
+//        Assert.notNull(expedition);
+//
+//        return bcidRepository.findOneLatestDatasetForExpedition(expedition.getExpeditionId());
+//    }
 
     public void delete(int bcidId) {
         bcidRepository.deleteByBcidId(bcidId);

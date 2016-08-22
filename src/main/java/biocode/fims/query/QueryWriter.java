@@ -871,4 +871,55 @@ public class QueryWriter {
         }
 
     }
+
+    /**
+     * This returns the query results as a JSONArray of JSONObject where each JSONObject contains "field":"value" pairs
+     *
+     * @return
+     */
+    public String getJSON() {
+        JSONArray dataset = new JSONArray();
+        ArrayList<String> columns = new ArrayList<>();
+
+        for (Attribute attribute : attributes) {
+            columns.add(attribute.getColumn());
+        }
+
+        // Iterate through the rows.
+        for (Row row : sheet) {
+            JSONObject sample = new JSONObject();
+
+            for (int index = 0; index < columns.size(); index++) {
+                Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
+                Object value;
+
+                switch (cell.getCellType()) {
+                    case Cell.CELL_TYPE_STRING:
+                        value = cell.getRichStringCellValue().getString();
+                        break;
+                    case Cell.CELL_TYPE_NUMERIC:
+                        if (DateUtil.isCellDateFormatted(cell)) {
+                            value = cell.getDateCellValue();
+                        } else {
+                            value = cell.getNumericCellValue();
+                        }
+                        break;
+                    case Cell.CELL_TYPE_BOOLEAN:
+                        value = cell.getBooleanCellValue();
+                        break;
+                    case Cell.CELL_TYPE_FORMULA:
+                        value = cell.getCellFormula();
+                        break;
+                    case Cell.CELL_TYPE_BLANK:
+                        value = "";
+                        break;
+                    default:
+                        value = cell.toString();
+                }
+                sample.put(columns.get(index), String.valueOf(value));
+            }
+            dataset.add(sample);
+        }
+        return dataset.toJSONString();
+    }
 }

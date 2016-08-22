@@ -95,4 +95,14 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
     Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
 
     List<Bcid> findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(int projectId, String expeditionCode, String resourceType);
+
+    @Query(value =
+            "select b from Bcid b where b.ts in \n" +
+                    "(select max(b2.ts) from Bcid b2 where " +
+                    "b2.expedition.expeditionId = (:expeditionId) and " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
+                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
+                    ")"
+    )
+    Bcid findOneLatestDatasetForExpedition(@Param("expeditionId") int expeditionId);
 }
