@@ -1,6 +1,11 @@
 package biocode.fims.config;
 
+import biocode.fims.digester.DataType;
+import biocode.fims.utils.EnumUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -10,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +28,7 @@ import java.util.regex.Pattern;
  * tests pass then no messages are written to the ConfigurationFileErrorMessager
  */
 public class ConfigurationFileTester {
+    private final static Logger logger = LoggerFactory.getLogger(ConfigurationFileTester.class);
     DocumentBuilder builder = null;
     Document document = null;
     public File fileToTest = null;
@@ -55,6 +62,7 @@ public class ConfigurationFileTester {
             builder.setErrorHandler(new ConfigurationFileErrorHandler());
 
         } catch (ParserConfigurationException e) {
+            logger.warn("", e);
             return false;
         }
         return true;
@@ -71,11 +79,8 @@ public class ConfigurationFileTester {
         // A simple first check that the document is valid
         try {
             document = builder.parse(new InputSource(fileToTest.getAbsoluteFile().toString()));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        } catch (SAXException e) {
-            e.printStackTrace();
+        } catch (IOException|SAXException e) {
+            logger.warn("", e);
             return false;
         }
         return true;
@@ -138,15 +143,64 @@ public class ConfigurationFileTester {
     }
 
     /**
+     * Run all configuration checks
+     * @return
+     */
+    public boolean isValidConfig() {
+        return (parse() && checkUniqueKeys() && checkDatatypes());
+    }
+
+    /**
+     * verify that attribute datatype is a valid value
+     * @return
+     */
+    private boolean checkDatatypes() {
+        boolean validDataTypes = true;
+        NodeList attributes = document.getElementsByTagName("attribute");
+
+        ArrayList<String> invalidDataTypes = new ArrayList<>();
+        ArrayList<String> invalidDataFormat = new ArrayList<>();
+
+        for (int i=0; i < attributes.getLength(); i++) {
+            Element attribute = (Element) attributes.item(i);
+            String dataTypeString = attribute.getAttribute("datatype");
+
+            if (dataTypeString != null) {
+                DataType dataType = EnumUtils.lookup(DataType.class, dataTypeString);
+                if (dataType == null) {
+                    invalidDataTypes.add(attribute.getAttribute("column"));
+                } else {
+                    // if DATETIME DataType, then we need a dataformat as well
+                    if (dataType == DataType.DATETIME) {
+                        if (attribute.getAttribute("dataformat").trim().isEmpty()) {
+                            invalidDataFormat.add(attribute.getAttribute("column"));
+                        }
+                    }
+                }
+            }
+
+        }
+
+        if (invalidDataTypes.size() > 0) {
+            messages.add(this, "The attributes with the columns [" + StringUtils.join(invalidDataTypes, ",") + "] have invalid datatypes", "checkDatatypes");
+            validDataTypes = false;
+
+        }
+        if (invalidDataFormat.size() > 0) {
+            messages.add(this, "The attributes with the columns [" + StringUtils.join(invalidDataTypes, ",") + "] have invalid dataformats", "checkDatatypes");
+            validDataTypes = false;
+        }
+
+        return validDataTypes;
+    }
+
+    /**
      * Test that the configuration file is OK!
      *
      * @return
      */
     public boolean checkUniqueKeys() {
         String worksheetUniqueKey = "";
-        if (!parse()) {
-            return false;
-        }
         boolean passedTest = true;
 
         // Loop Rules

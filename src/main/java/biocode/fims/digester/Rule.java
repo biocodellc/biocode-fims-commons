@@ -327,10 +327,7 @@ public class Rule {
      */
     public void validDataTypeFormat() {
         for (Attribute a : mapping.getAllAttributes(digesterWorksheet.getSheetname())) {
-            if (a.getDatatype() == null) {
-                // this means that there was an invalid datatype specified in the config file.
-                // should this be handled in the configurationFileFetcher?
-            }
+            // we don't need to check if a.getDatatype == null, as this should be checked in the ConfigurationFileTester
             switch (a.getDatatype()) {
                 case INTEGER:
                     isIntegerDataFormat(a);
@@ -338,10 +335,7 @@ public class Rule {
                 case FLOAT:
                     break;
                 case DATETIME:
-                    if (a.getDataformat() == null) {
-                        // we need a dataformat to check if a date is valid
-                        // should this be handled in th configurationFileFetcher?
-                    }
+                    // we don't need to check if a.dataformt == null, as this should be checked in the ConfigurationFileTester
                     isDateDataFormat(a);
                     break;
                 default:
