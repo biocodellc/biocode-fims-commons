@@ -141,14 +141,14 @@ public class ConfigurationFileTester {
             Element attribute = (Element) attributes.item(i);
             String dataTypeString = attribute.getAttribute("datatype");
 
-            if (!StringUtils.isEmpty(dataTypeString.trim())) {
+            if (!StringUtils.isBlank(dataTypeString)) {
                 DataType dataType = EnumUtils.lookup(DataType.class, dataTypeString);
                 if (dataType == null) {
                     invalidDataTypes.add(attribute.getAttribute("column"));
                 } else {
                     // if DATETIME DataType, then we need a dataformat as well
                     if (dataType == DataType.DATETIME) {
-                        if (StringUtils.isEmpty(attribute.getAttribute("dataformat").trim())) {
+                        if (StringUtils.isBlank(attribute.getAttribute("dataformat"))) {
                             invalidDataFormat.add(attribute.getAttribute("column"));
                         }
                     }
@@ -185,7 +185,7 @@ public class ConfigurationFileTester {
             Element entity = (Element) entities.item(i);
             String conceptAlias = entity.getAttribute("conceptAlias");
 
-            if (StringUtils.isEmpty(conceptAlias.trim())) {
+            if (StringUtils.isBlank(conceptAlias)) {
                 entityMissingConceptAlias = true;
             }
 
