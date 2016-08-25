@@ -41,7 +41,7 @@ public class ConfigurationFileErrorMessager extends ArrayList {
         }
 
         public String getFile() {
-            return tester.fileToTest.getName();
+            return tester.getFileToTest().getName();
         }
         public String getValidationName() {
              return validationName;
@@ -50,7 +50,7 @@ public class ConfigurationFileErrorMessager extends ArrayList {
             return message;
         }
         public String getFullMessage() {
-            return getFile() + ";" + getValidationName() + ";message = " + getMessage() + "\n";
+            return getFile() + "; " + getValidationName() + "; message = " + getMessage() + "\n";
         }
     }
 }
