@@ -340,6 +340,14 @@ public class Validation implements RendererInterface {
 
         try {
             d.parse(configFile);
+            // add default rules here
+            for (Worksheet ws: worksheets) {
+                // run the "validDataTypeFormat" Rule for every worksheet
+                Rule validDataTypeFormatRule = new Rule(mapping);
+                validDataTypeFormatRule.setLevel("error");
+                validDataTypeFormatRule.setType("validDataTypeFormat");
+                ws.addRule(validDataTypeFormatRule);
+            }
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);
         } catch (SAXException e) {

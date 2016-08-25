@@ -4,5 +4,5 @@ package biocode.fims.digester;
  * Specifies the valid dataformat values for an {@link Attribute}
  */
 public enum DataType {
-    INTEGER, STRING, DATE, DATETIME
+    INTEGER, STRING, DATETIME, FLOAT
 }

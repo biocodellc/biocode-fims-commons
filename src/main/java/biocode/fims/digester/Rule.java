@@ -9,6 +9,7 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -47,7 +48,7 @@ public class Rule {
 
     private Mapping mapping;
 
-    public Rule(Mapping mapping){
+    public Rule(Mapping mapping) {
         this.mapping = mapping;
     }
 
@@ -321,6 +322,132 @@ public class Rule {
 
 
     /**
+     * If a dataformat other then "string" is specified for an {@link Attribute}, we check that the data is of the
+     * correct type ("integer", "date", etc)
+     */
+    public void validDataTypeFormat() {
+        for (Attribute a : mapping.getAllAttributes(digesterWorksheet.getSheetname())) {
+            if (a.getDatatype() == null) {
+                // this means that there was an invalid datatype specified in the config file.
+                // should this be handled in the configurationFileFetcher?
+            }
+            switch (a.getDatatype()) {
+                case INTEGER:
+                    isIntegerDataFormat(a);
+                    break;
+                case FLOAT:
+                    break;
+                case DATETIME:
+                    if (a.getDataformat() == null) {
+                        // we need a dataformat to check if a date is valid
+                        // should this be handled in th configurationFileFetcher?
+                    }
+                    isDateDataFormat(a);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void isIntegerDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+
+        try {
+            addSqliteRegExp();
+            String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+            String sql = "SELECT * FROM `" + sqlColumn + "` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // Loop results
+            while (rs.next()) {
+                inValidValues.add(rs.getString(sqlColumn));
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains non Integer values: " +
+                                StringUtils.join(inValidValues, ","),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            throw new FimsRuntimeException("SQL exception processing isIntegerDataFormat rule", 500, e);
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    private void isFloatDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+
+        try {
+            addSqliteRegExp();
+            String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+            String sql = "SELECT * FROM `" + sqlColumn + "` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // Loop results
+            while (rs.next()) {
+                inValidValues.add(rs.getString(sqlColumn));
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains non Float values: " +
+                                StringUtils.join(inValidValues, ","),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            throw new FimsRuntimeException("SQL exception processing isFloatDataFormat rule", 500, e);
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    private void isDateDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+
+        try {
+            String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+            String sql = "SELECT * FROM `" + sqlColumn + "`";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // Loop results
+            while (rs.next()) {
+                String value = rs.getString(sqlColumn);
+                if (!biocode.fims.utils.DateUtils.isValidDateFormat(value, a.getDataformat().split(",")))
+                inValidValues.add(rs.getString(sqlColumn));
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains invalid date values. Must in one of (" + a.getDataformat() + ") format(s): " +
+                                StringUtils.join(inValidValues, ","),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            throw new FimsRuntimeException("SQL exception processing isDateDataFormat rule", 500, e);
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    /**
      * Checks that characters in a string can become a portion of a valid URI
      * This is necessary for cases where data is being triplified and constructed as a URI
      * One approach is to encode all characters, however, this creates a mis-leading Bcid
@@ -370,14 +497,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn(null, e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -428,14 +548,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn(null, e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -588,7 +701,6 @@ public class Rule {
      * Return the index of particular columns
      *
      * @param columns
-     *
      * @return
      */
     protected int[] getColumnIndices(String[] columns) {
@@ -663,7 +775,6 @@ public class Rule {
      * Smithsonian created rule to check Voucher heading
      *
      * @param worksheet
-     *
      * @throws Exception
      */
     @Deprecated
@@ -1036,7 +1147,6 @@ public class Rule {
      * However, the following are recognized as numeric values ("15%", "100$", "1.02E10")
      *
      * @param thisColumn
-     *
      * @return
      */
     private boolean checkValidNumberSQL(String thisColumn) {
@@ -1073,19 +1183,7 @@ public class Rule {
         String msg;
 
         try {
-            // Create regexp() function to make the REGEXP operator available
-            Function.create(connection, "REGEXP", new Function() {
-                @Override
-                protected void xFunc() throws SQLException {
-                    String expression = value_text(0);
-                    String value = value_text(1);
-                    if (value == null)
-                        value = "";
-
-                    Pattern pattern=Pattern.compile(expression);
-                    result(pattern.matcher(value).find() ? 1 : 0);
-                }
-            });
+            addSqliteRegExp();
 
             Statement statement = connection.createStatement();
             String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() +
@@ -1104,7 +1202,6 @@ public class Rule {
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
-     *
      * @return
      */
     private boolean checkValidNumber(String rowValue) {
@@ -1344,14 +1441,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing checkInXMLFields rule", 500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (resultSet != null)
-                    resultSet.close();
-            } catch (SQLException e) {
-                logger.warn("SQLException", e);
-            }
+            closeDb(statement, resultSet);
         }
     }
 
@@ -1426,14 +1516,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException(500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn("SQLException", e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -1441,7 +1524,6 @@ public class Rule {
      * Convert an ArrayList to a string
      *
      * @param list
-     *
      * @return
      */
     private static String listToString(List<?> list) {
@@ -1530,7 +1612,6 @@ public class Rule {
      * A simple check to see if a column exists in the SQLLite Database
      *
      * @param column
-     *
      * @return
      */
     private boolean checkColumnExists(String column) {
@@ -1559,7 +1640,6 @@ public class Rule {
      * get ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
-     *
      * @return
      */
     public JSONObject getRuleMetadata(biocode.fims.digester.List sList) {
@@ -1607,7 +1687,7 @@ public class Rule {
         List<String> datasetColumns = worksheet.getColNames();
         List<String> definedColumns = mapping.getColumnNames();
 
-        for (String colName: datasetColumns) {
+        for (String colName : datasetColumns) {
             if (!definedColumns.contains(colName)) {
                 addMessage("Dataset contains undefined column: " + colName, groupMessge);
             }
@@ -1638,5 +1718,35 @@ public class Rule {
         } catch (SQLException e) {
             throw new ServerErrorException(e);
         }
+    }
+
+    private void closeDb(Statement statement, ResultSet rs) {
+        try {
+            if (statement != null)
+                statement.close();
+            if (rs != null)
+                rs.close();
+        } catch (SQLException e) {
+            logger.warn(null, e);
+        }
+    }
+
+    /**
+     * adds a REGEXP function to sqlite
+     * @throws SQLException
+     */
+    private void addSqliteRegExp() throws SQLException {
+        Function.create(connection, "REGEXP", new Function() {
+            @Override
+            protected void xFunc() throws SQLException {
+                String expression = value_text(0);
+                String value = value_text(1);
+                if (value == null)
+                    value = "";
+
+                Pattern pattern = Pattern.compile(expression);
+                result(pattern.matcher(value).find() ? 1 : 0);
+            }
+        });
     }
 }
