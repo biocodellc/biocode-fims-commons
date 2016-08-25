@@ -14,7 +14,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.*;
@@ -76,7 +74,7 @@ public class ExpeditionRestService extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode)
                 .expeditionTitle(expeditionTitle)

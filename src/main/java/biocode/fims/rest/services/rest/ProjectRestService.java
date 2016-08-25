@@ -1,6 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
@@ -16,7 +15,6 @@ import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -397,10 +395,10 @@ public class ProjectRestService extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         Validation validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile, mapping);
+        validation.addValidationRules(configFile, mapping);
 
         biocode.fims.digester.List results = validation.findList(listName);
         JSONArray list = new JSONArray();

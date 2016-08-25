@@ -9,6 +9,7 @@ import biocode.fims.renderers.RowMessage;
 import biocode.fims.run.ProcessController;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.slf4j.Logger;
@@ -299,10 +300,10 @@ public class Validation implements RendererInterface {
     /**
      * Process validation component rules
      *
-     * @param d
      * @param mapping
      */
-    public synchronized void addValidationRules(Digester d, File configFile, Mapping mapping) {
+    public synchronized void addValidationRules(File configFile, Mapping mapping) {
+        Digester d = new Digester();
         d.push(this);
 
         // Create worksheet objects

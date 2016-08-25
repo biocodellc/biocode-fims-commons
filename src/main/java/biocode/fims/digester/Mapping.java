@@ -2,10 +2,10 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -263,9 +263,10 @@ public class Mapping {
     /**
      * Process mapping component rules
      *
-     * @param d
      */
-    public synchronized void addMappingRules(Digester d, File configFile) {
+    public synchronized void addMappingRules(File configFile) {
+        ConvertUtils.register(new EnumConverter(), DataType.class);
+        Digester d = new Digester();
         d.push(this);
 
         // Create entity objects

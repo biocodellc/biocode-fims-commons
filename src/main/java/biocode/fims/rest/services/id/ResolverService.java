@@ -14,7 +14,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 
@@ -82,7 +81,7 @@ public class ResolverService extends FimsService {
                 ).getOutputFile();
 
                 mapping = new Mapping();
-                mapping.addMappingRules(new Digester(), configFile);
+                mapping.addMappingRules(configFile);
             }
 
             URI resolution = resolver.resolveIdentifier(identifierString, mapping);

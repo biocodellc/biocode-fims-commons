@@ -1,9 +1,7 @@
 package biocode.fims.run;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Validation;
+import biocode.fims.digester.*;
 import biocode.fims.entities.*;
 import biocode.fims.reader.ReaderManager;
 import biocode.fims.reader.plugins.TabularDataReader;
@@ -11,13 +9,10 @@ import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * Core class for running fims processes.  Here you specify the input file, configuration file, output folder, and
@@ -89,7 +84,7 @@ public class Process {
         if (processController.getMapping() == null) {
             // Parse the Mapping object (this object is used extensively in downstream functions!)
             mapping = new Mapping();
-            mapping.addMappingRules(new Digester(), configFile);
+            mapping.addMappingRules(configFile);
             processController.setMapping(mapping);
         } else {
             mapping = processController.getMapping();
@@ -99,7 +94,7 @@ public class Process {
         if (processController.getValidation() == null) {
             // Load validation object as this is used in downstream functions
             validation = new Validation();
-            validation.addValidationRules(new Digester(), configFile, mapping);
+            validation.addValidationRules(configFile, mapping);
 
             processController.setValidation(validation);
         } else {
