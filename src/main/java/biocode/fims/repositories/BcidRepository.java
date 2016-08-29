@@ -33,7 +33,7 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
      */
     @Query(value =
             "SELECT b.bcidId, b.ezidMade, b.ezidRequest, b.identifier, b.userId, b.doi, b.title, " +
-                    "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId " +
+                    "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId, b.sourceFile " +
             "FROM bcids AS b " +
             "LEFT OUTER JOIN expeditionBcids AS eb " +
                     "ON b.bcidId=eb.bcidId " +
