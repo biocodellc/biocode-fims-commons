@@ -24,7 +24,7 @@ import java.util.Iterator;
 public class ManageEZID {
 
     private String publisher;
-    private String creator;
+    private String systemEzidCreator;
     private static SettingsManager sm;
     private static String resolverTargetPrefix;
     private static Logger logger = LoggerFactory.getLogger(ManageEZID.class);
@@ -40,9 +40,9 @@ public class ManageEZID {
             publisher = "Biocode FIMS System";
         }
 
-        creator = sm.retrieveValue("creator");
-        if (creator.trim().equalsIgnoreCase("")) {
-            creator = null;
+        systemEzidCreator = sm.retrieveValue("creator");
+        if (systemEzidCreator.trim().equalsIgnoreCase("")) {
+            systemEzidCreator = null;
         }
     }
 
@@ -101,15 +101,11 @@ public class ManageEZID {
 
             rs.next();
 
-            // Get creator, using any system defined creator to override the default which is based on user data
-            if (creator == null) {
-                creator = rs.getString("creator");
-            }
-
             // Build the hashmap to pass to ezid
+            // Get creator, using any system defined creator to override the default which is based on user data
             HashMap<String, String> map = dcMap(
                     resolverTargetPrefix + rs.getString("identifier"),
-                    creator,
+                    (systemEzidCreator != null) ? systemEzidCreator : rs.getString("creator"),
                     rs.getString("title"),
                     publisher,
                     rs.getString("ts"),
@@ -170,15 +166,11 @@ public class ManageEZID {
             while (rs.next()) {
                 URI identifier = null;
 
-                // Get creator, using any system defined creator to override the default which is based on user data
-                if (creator == null) {
-                    creator = rs.getString("creator");
-                }
-
                 // Dublin Core metadata profile element
+                // Get creator, using any system defined creator to override the default which is based on user data
                 HashMap<String, String> map = dcMap(
                         resolverTargetPrefix + rs.getString("identifier"),
-                        creator,
+                        (systemEzidCreator != null) ? systemEzidCreator : rs.getString("creator"),
                         rs.getString("title"),
                         publisher,
                         rs.getString("ts"),
