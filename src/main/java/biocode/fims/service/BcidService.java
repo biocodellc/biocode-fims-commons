@@ -156,6 +156,11 @@ public class BcidService {
                 ResourceTypes.DATASET_RESOURCE_TYPE, Expedition.EXPEDITION_RESOURCE_TYPE);
     }
 
+    @Transactional(readOnly = true)
+    public Set<Bcid> getBcidsWithEzidRequest() {
+        return bcidRepository.findAllByEzidRequestTrue();
+    }
+
     private void createEzid(Bcid bcid) {
         // Create EZIDs right away for Bcid level Identifiers
         // Initialize ezid account

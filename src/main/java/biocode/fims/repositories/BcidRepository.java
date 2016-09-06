@@ -43,6 +43,8 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     Bcid findByBcidId(int bcidId);
 
+    Set<Bcid> findAllByEzidRequestTrue();
+
     Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
 
     @Query(value =
