@@ -1,7 +1,9 @@
 package biocode.fims.tools;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.*;
 
@@ -9,13 +11,13 @@ import java.io.*;
  * Class for saving and modifying upload spreadsheets on the server
  */
 public class ServerSideSpreadsheetTools {
-    XSSFWorkbook workbook;
+    Workbook workbook;
 
     public ServerSideSpreadsheetTools(File sourceFile) {
         try {
             FileInputStream fis = new FileInputStream(sourceFile);
-            this.workbook = new XSSFWorkbook(fis);
-        } catch (IOException e) {
+            this.workbook = WorkbookFactory.create(fis);
+        } catch (IOException|InvalidFormatException e) {
             throw new FimsRuntimeException(500, e);
         }
     }
