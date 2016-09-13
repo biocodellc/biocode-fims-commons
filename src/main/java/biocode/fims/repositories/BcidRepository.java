@@ -63,7 +63,8 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
                     "b2.expedition.expeditionId in (:expeditionList) and " +
                     "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
                     "and b.expedition.expeditionId=b2.expedition.expeditionId" +
-                    ")"
+                    ") " +
+                    "and b.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "'"
     )
     Set<Bcid> findLatestDatasetsForExpeditions(@Param("expeditionList") List<Integer> expeditionList);
 
