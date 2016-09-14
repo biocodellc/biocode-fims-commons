@@ -52,8 +52,24 @@ public class BcidService {
         this.userService = userService;
     }
 
-    @Transactional
     public Bcid create(Bcid bcid, int userId) {
+        transactionalCreate(bcid, userId);
+
+        if (bcid.isEzidRequest()) {
+            createEzid(bcid);
+        }
+
+        return bcid;
+
+    }
+
+    /**
+     * This method wraps the process of creating a Bcid, minus the corresponding Ezid in a {@link Transactional}.
+     * If we include the call to createEzid in a {@link Transactional}, the Ezid will not be created for the current
+     * Bcid as the changes are flushed to the db after the {@link Transactional} method is complete
+     */
+    @Transactional
+    private void transactionalCreate(Bcid bcid, int userId) {
         int naan = new Integer(settingsManager.retrieveValue("naan"));
 
         User user = userService.getUser(userId);
@@ -73,11 +89,7 @@ public class BcidService {
                     e);
         }
         bcidRepository.save(bcid);
-
-        if (bcid.isEzidRequest())
-            createEzid(bcid);
-
-        return bcid;
+        return;
     }
 
     public Bcid attachBcidToExpedition(Bcid bcid, int expeditionId) {
