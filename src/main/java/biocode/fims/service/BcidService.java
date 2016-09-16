@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -68,7 +69,7 @@ public class BcidService {
      * If we include the call to createEzid in a {@link Transactional}, the Ezid will not be created for the current
      * Bcid as the changes are flushed to the db after the {@link Transactional} method is complete
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     private void transactionalCreate(Bcid bcid, int userId) {
         int naan = new Integer(settingsManager.retrieveValue("naan"));
 
