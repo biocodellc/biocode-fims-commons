@@ -1194,31 +1194,6 @@ public class Rule {
     }
 
     /**
-     * Method that uses SQL to check for valid integers. This uses REGEXP function in SQLLite.
-     */
-    private void isInteger() {
-        String groupMessage = "Invalid number";
-        String thisColumn = getColumn();
-        ResultSet resultSet;
-        String msg;
-
-        try {
-            addSqliteRegExp();
-
-            Statement statement = connection.createStatement();
-            String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() +
-                    " WHERE `" + thisColumn + "` REGEXP '^-?\\d+$';";
-            resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
-                msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumnWorksheetName() + "\"";
-                addMessage(msg, groupMessage);
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        }
-    }
-
-    /**
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
@@ -1717,7 +1692,7 @@ public class Rule {
     /**
      * isValidUrl checks to see if a string is a valid Url, with the schemes {"http", "https"}
      */
-    private void isValidUrl() {
+    public void isValidUrl() {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         String groupMessage = "Invalid number";
