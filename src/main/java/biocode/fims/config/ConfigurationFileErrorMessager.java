@@ -1,5 +1,8 @@
 package biocode.fims.config;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -26,6 +29,25 @@ public class ConfigurationFileErrorMessager extends ArrayList {
         }
         return sb.toString();
     }
+
+    /**
+     * returns messages in a format for the web interface parseResults
+     * @return
+     */
+    public JSONObject getMessages() {
+        JSONObject messagesObject = new JSONObject();
+        JSONObject groupMessage = new JSONObject();
+        JSONArray messages = new JSONArray();
+
+        for (message message : this.messages) {
+            messages.add(message.getValidationName() + ": " + message.getMessage());
+        }
+
+        groupMessage.put("Configuration File", messages);
+        messagesObject.put("errors", groupMessage);
+        return messagesObject;
+    }
+
     /**
      * Hold message contents
       */

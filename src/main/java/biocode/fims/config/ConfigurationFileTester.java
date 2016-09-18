@@ -4,6 +4,7 @@ import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.FimsConfigException;
 import biocode.fims.utils.EnumUtils;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
@@ -36,8 +37,8 @@ public class ConfigurationFileTester {
     /**
      * Return all the messages from this Configuration File Test
      */
-    public String getMessages() {
-        return messages.printMessages();
+    public JSONObject getMessages() {
+        return messages.getMessages();
     }
 
     public ConfigurationFileTester(File fileToTest) {
