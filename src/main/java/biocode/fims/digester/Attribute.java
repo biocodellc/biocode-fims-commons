@@ -121,7 +121,7 @@ public class Attribute implements Comparable {
         return dataformat;
     }
 
-    public void addDataFormat(String dataFormat) {
+    public void setDataformat(String dataFormat) {
         this.dataformat = dataFormat;
     }
 

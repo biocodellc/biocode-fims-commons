@@ -148,7 +148,7 @@ public class ConfigurationFileTester {
                     invalidDataTypes.add(attribute.getAttribute("column"));
                 } else {
                     // if DATETIME DataType, then we need a dataformat as well
-                    if (dataType == DataType.DATETIME) {
+                    if (dataType == DataType.DATETIME || dataType == DataType.DATE || dataType == DataType.TIME) {
                         if (StringUtils.isBlank(attribute.getAttribute("dataformat"))) {
                             invalidDataFormat.add(attribute.getAttribute("column"));
                         }

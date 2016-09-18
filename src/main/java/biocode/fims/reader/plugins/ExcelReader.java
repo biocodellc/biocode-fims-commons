@@ -6,6 +6,9 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -416,15 +419,22 @@ public class ExcelReader implements TabularDataReader {
                     // if this cell contains a date-formatted value.
                     //if (HSSFDateUtil.isCellDateFormatted(cell)) {
                     if (DateUtil.isCellDateFormatted(cell)) {
-                        // Convert the value to a Java date object, then to
-                        // ISO 8601 format using Joda-Time.
-                        // 5/16/16 - changing this to a formatted Date for now as mysql doesn't support insert of
-                        // ISO 8601 formated dates. This is causing problems in ARMS with converting data to csv
-                        // and doing a bulk csv load into mysql
-//                        DateTime date;
-//                        date = new DateTime(cell.getDateCellValue());
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        ret[cnt] = sdf.format(cell.getDateCellValue());
+                        // Convert the value to ISO 8601 format using Joda-Time.
+                        // Since excel stores date, time, and datetime as a numeric cell, we need to do our best
+                        // to determine what the value should be.
+                        String value;
+                        LocalDateTime date = new LocalDateTime(cell.getDateCellValue());
+                        if (date.toLocalDate().equals(new LocalDate("1899-12-31")) && !date.toLocalTime().equals(new LocalTime("00:00:00.000"))) {
+                            // for a time cell, getDateCellValue will return the datetime object with the date
+                            // "1899-12-31" and the correct time. Therefore if we encounter this we assume this is a time cell
+                            value = date.toLocalTime().toString();
+                        } else if (date.toLocalTime().equals(new LocalTime("00:00:00.000"))) {
+                            value = date.toLocalDate().toString();
+                        } else {
+                            value = date.toString();
+                        }
+
+                        ret[cnt] = value;
                     } else {
                         // TODO: Fix this rendering.  They both are bad!!!
 

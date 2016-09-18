@@ -6,9 +6,11 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
+import biocode.fims.utils.DateUtils;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONArray;
@@ -326,6 +328,7 @@ public class Rule {
      * correct type ("integer", "date", etc)
      */
     public void validDataTypeFormat() {
+        addSqliteRegExp();
         for (Attribute a : mapping.getAllAttributes(digesterWorksheet.getSheetname())) {
             // we don't need to check if a.getDatatype == null, as this should be checked in the ConfigurationFileTester
             switch (a.getDatatype()) {
@@ -334,6 +337,8 @@ public class Rule {
                     break;
                 case FLOAT:
                     break;
+                case DATE:
+                case TIME:
                 case DATETIME:
                     // we don't need to check if a.dataformt == null, as this should be checked in the ConfigurationFileTester
                     isDateDataFormat(a);
@@ -350,9 +355,8 @@ public class Rule {
         String groupMessage = "Invalid DataFormat";
 
         try {
-            addSqliteRegExp();
             String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
-            String sql = "SELECT * FROM `" + sqlColumn + "` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
+            String sql = "SELECT `" + sqlColumn + "` FROM `" + digesterWorksheet.getSheetname() + "` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -366,10 +370,12 @@ public class Rule {
 
             if (inValidValues.size() > 0) {
                 addMessage("\"" + a.getColumn() + "\" contains non Integer values: " +
-                                StringUtils.join(inValidValues, ","),
+                                StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
             throw new FimsRuntimeException("SQL exception processing isIntegerDataFormat rule", 500, e);
         } finally {
             closeDb(statement, rs);
@@ -384,7 +390,7 @@ public class Rule {
         try {
             addSqliteRegExp();
             String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
-            String sql = "SELECT * FROM `" + sqlColumn + "` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
+            String sql = "SELECT `" + sqlColumn + "` FROM `" + digesterWorksheet.getSheetname() +"` WHERE `" + sqlColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -398,10 +404,12 @@ public class Rule {
 
             if (inValidValues.size() > 0) {
                 addMessage("\"" + a.getColumn() + "\" contains non Float values: " +
-                                StringUtils.join(inValidValues, ","),
+                                StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
             throw new FimsRuntimeException("SQL exception processing isFloatDataFormat rule", 500, e);
         } finally {
             closeDb(statement, rs);
@@ -415,26 +423,44 @@ public class Rule {
 
         try {
             String sqlColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
-            String sql = "SELECT * FROM `" + sqlColumn + "`";
+            String sql = "SELECT `" + sqlColumn + "` FROM `" + digesterWorksheet.getSheetname() + "`";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
 
             // Hold values that are not good
             ArrayList<String> inValidValues = new ArrayList<>();
-            // Loop results
+            // if the Excel cell is a DateCell, then ExcelReader will parse it as joda-time value.
+            // therefore we need to add this format
+            String jodaFormat;
+            switch (a.getDatatype()) {
+                case DATE:
+                    jodaFormat = DateUtils.ISO_8061_DATE;
+                    break;
+                case TIME:
+                    jodaFormat = DateUtils.ISO_8061_TIME;
+                    break;
+                default:
+                    jodaFormat = DateUtils.ISO_8061_DATETIME;
+                    break;
+            }
+            String[] formats = (String[]) ArrayUtils.add(a.getDataformat().split(","), jodaFormat);
+
             while (rs.next()) {
                 String value = rs.getString(sqlColumn);
-                if (!biocode.fims.utils.DateUtils.isValidDateFormat(value, a.getDataformat().split(",")))
-                inValidValues.add(rs.getString(sqlColumn));
+                if (!StringUtils.isBlank(value) && !biocode.fims.utils.DateUtils.isValidDateFormat(value, formats)){
+                    inValidValues.add(rs.getString(sqlColumn));
+                }
             }
 
             if (inValidValues.size() > 0) {
-                addMessage("\"" + a.getColumn() + "\" contains invalid date values. Must in one of (" + a.getDataformat() + ") format(s): " +
-                                StringUtils.join(inValidValues, ","),
+                addMessage("\"" + a.getColumn() + "\" contains invalid date values. Format must be an Excel " + a.getDatatype().name() + " or one of [" + a.getDataformat() + "]: " +
+                                StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
             throw new FimsRuntimeException("SQL exception processing isDateDataFormat rule", 500, e);
         } finally {
             closeDb(statement, rs);
@@ -1729,18 +1755,22 @@ public class Rule {
      * adds a REGEXP function to sqlite
      * @throws SQLException
      */
-    private void addSqliteRegExp() throws SQLException {
-        Function.create(connection, "REGEXP", new Function() {
-            @Override
-            protected void xFunc() throws SQLException {
-                String expression = value_text(0);
-                String value = value_text(1);
-                if (value == null)
-                    value = "";
+    private void addSqliteRegExp() {
+        try {
+            Function.create(connection, "REGEXP", new Function() {
+                @Override
+                protected void xFunc() throws SQLException {
+                    String expression = value_text(0);
+                    String value = value_text(1);
+                    if (value == null)
+                        value = "";
 
-                Pattern pattern = Pattern.compile(expression);
-                result(pattern.matcher(value).find() ? 1 : 0);
-            }
-        });
+                    Pattern pattern = Pattern.compile(expression);
+                    result(pattern.matcher(value).find() ? 1 : 0);
+                }
+            });
+        } catch (SQLException e) {
+            // do nothing. Most likely the function was already created
+        }
     }
 }
