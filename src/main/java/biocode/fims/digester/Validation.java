@@ -12,6 +12,7 @@ import biocode.fims.settings.PathManager;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -106,6 +107,36 @@ public class Validation implements RendererInterface {
             if (l.getAlias().equals(alias))
                 return l;
         }
+        return null;
+    }
+
+    /**
+     * Lookup a list for a given column and worksheet
+     * @param column
+     * @param sheetname
+     * @return
+     */
+    public List findListForColumn(String column, String sheetname) {
+        Worksheet sheet = null;
+        // Get a list of rules for the first digester.Worksheet instance
+        for (Worksheet s: worksheets) {
+            if (s.getSheetname().equals(sheetname)) {
+                sheet = s;
+            }
+        }
+
+        if (sheet != null) {
+            java.util.List<Rule> rules = sheet.getRules();
+            Iterator it = rules.iterator();
+
+            while (it.hasNext()) {
+                Rule rule = (Rule) it.next();
+                if (rule.getList() != null && StringUtils.equals(rule.getColumn(), column)) {
+                    return findList(rule.getList());
+                }
+            }
+        }
+
         return null;
     }
 
