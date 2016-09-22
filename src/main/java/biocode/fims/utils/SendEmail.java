@@ -83,7 +83,7 @@ public class SendEmail extends Thread {
 
             message.setRecipient(Message.RecipientType.TO,
                     new InternetAddress(to));
-            message.setSubject("[Biocode-Fims Application]" + subject);
+            message.setSubject("[Biocode-Fims Application] " + subject);
             message.setText(text);
 
             //

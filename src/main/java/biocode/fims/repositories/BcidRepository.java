@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -74,4 +75,6 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
     Set<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
 
     Bcid findOneByTitleAndExpeditionExpeditionId(String title, int expeditionId);
+
+    Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
 }
