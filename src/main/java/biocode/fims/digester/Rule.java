@@ -353,9 +353,10 @@ public class Rule {
         Statement statement = null;
         ResultSet rs = null;
         String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
 
         try {
-            String sql = "SELECT `" + getCleanedColumn() + "` FROM `" + digesterWorksheet.getSheetname() + "` WHERE `" + getCleanedColumn() + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() + "` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -364,18 +365,19 @@ public class Rule {
             ArrayList<String> inValidValues = new ArrayList<>();
             // Loop results
             while (rs.next()) {
-                inValidValues.add(rs.getString(getCleanedColumn()));
+                inValidValues.add(rs.getString(cleanedColumn));
             }
 
             if (inValidValues.size() > 0) {
-                addMessage("\"" + getColumn() + "\" contains non Integer values: " +
+                addMessage("\"" + a.getColumn() + "\" contains non Integer values: " +
                                 StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            throw new FimsRuntimeException("SQL exception processing isIntegerDataFormat rule", 500, e);
+            logger.error("SQL exception processing isIntegerDataFormat rule");
+            e.printStackTrace();
         } finally {
             closeDb(statement, rs);
         }
@@ -385,10 +387,11 @@ public class Rule {
         Statement statement = null;
         ResultSet rs = null;
         String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
 
         try {
             addSqliteRegExp();
-            String sql = "SELECT `" + getCleanedColumn() + "` FROM `" + digesterWorksheet.getSheetname() +"` WHERE `" + getCleanedColumn() + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() +"` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -397,18 +400,19 @@ public class Rule {
             ArrayList<String> inValidValues = new ArrayList<>();
             // Loop results
             while (rs.next()) {
-                inValidValues.add(rs.getString(getCleanedColumn()));
+                inValidValues.add(rs.getString(cleanedColumn));
             }
 
             if (inValidValues.size() > 0) {
-                addMessage("\"" + getColumn() + "\" contains non Float values: " +
+                addMessage("\"" + a.getColumn() + "\" contains non Float values: " +
                                 StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            throw new FimsRuntimeException("SQL exception processing isFloatDataFormat rule", 500, e);
+            logger.error("SQL exception processing isFloatDataFormat rule");
+            e.printStackTrace();
         } finally {
             closeDb(statement, rs);
         }
@@ -418,9 +422,10 @@ public class Rule {
         Statement statement = null;
         ResultSet rs = null;
         String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
 
         try {
-            String sql = "SELECT `" + getCleanedColumn() + "` FROM `" + digesterWorksheet.getSheetname() + "`";
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() + "`";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -444,21 +449,22 @@ public class Rule {
             String[] formats = (String[]) ArrayUtils.add(a.getDataformat().split(","), jodaFormat);
 
             while (rs.next()) {
-                String value = rs.getString(getCleanedColumn());
+                String value = rs.getString(cleanedColumn);
                 if (!StringUtils.isBlank(value) && !biocode.fims.utils.DateUtils.isValidDateFormat(value, formats)){
                     inValidValues.add(value);
                 }
             }
 
             if (inValidValues.size() > 0) {
-                addMessage("\"" + getColumn() + "\" contains invalid date values. Format must be an Excel " + a.getDatatype().name() + " or one of [" + a.getDataformat() + "]: " +
+                addMessage("\"" + a.getColumn() + "\" contains invalid date values. Format must be an Excel " + a.getDatatype().name() + " or one of [" + a.getDataformat() + "]: " +
                                 StringUtils.join(inValidValues, ", "),
                         groupMessage);
             }
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            throw new FimsRuntimeException("SQL exception processing isDateDataFormat rule", 500, e);
+            logger.error("SQL exception processing isDateDataFormat rule \n");
+            e.printStackTrace();
         } finally {
             closeDb(statement, rs);
         }
@@ -512,7 +518,8 @@ public class Rule {
 
 
         } catch (SQLException e) {
-            throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
+            logger.error("SQL exception processing uniqueValue rule");
+            e.printStackTrace();
         } finally {
             closeDb(statement, rs);
         }
@@ -1692,7 +1699,7 @@ public class Rule {
     public void isValidUrl() {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
-        String groupMessage = "Invalid number";
+        String groupMessage = "Invalid URL";
         String thisColumn = getCleanedColumn();
         ResultSet resultSet;
         String msg;
@@ -1702,8 +1709,9 @@ public class Rule {
             String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() + ";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                if (!urlValidator.isValid(resultSet.getString(thisColumn))) {
-                    msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumn() + "\"";
+                String value = resultSet.getString(thisColumn);
+                if (!StringUtils.isBlank(value) && !urlValidator.isValid(value)) {
+                    msg = resultSet.getString(thisColumn) + " is not a valid URL for \"" + getColumn() + "\"";
                     addMessage(msg, groupMessage);
                 }
             }

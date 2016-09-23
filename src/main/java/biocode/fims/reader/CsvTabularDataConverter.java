@@ -7,7 +7,6 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.settings.PathManager;
 import biocode.fims.utils.DateUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -79,13 +78,14 @@ public class CsvTabularDataConverter {
                 String[] row = source.tableGetNextRow();
 
                 // reorder the columns to match the same order of acceptableColumns list
-                for (Attribute a: attributes) {
+                for (Attribute a : attributes) {
                     if (datasetColumns.contains(a.getColumn())) {
                         String value = row[datasetColumns.indexOf(a.getColumn())];
                         // convert dates to ISO 8601 format
                         if (!StringUtils.isBlank(value) && (a.getDatatype() == DataType.DATETIME || a.getDatatype() == DataType.DATE ||
                                 a.getDatatype() == DataType.TIME)) {
-                            value = DateUtils.convertToISO8601(value, a.getDataformat().split(","), a.getDatatype());
+                            value = DateUtils.convertDateToFormat(value, a.getDataformat().split(",")[0], a.getDataformat().split(","));
+
                         }
 
                         data.append(value + ",");

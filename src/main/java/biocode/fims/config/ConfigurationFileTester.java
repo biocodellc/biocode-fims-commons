@@ -2,6 +2,7 @@ package biocode.fims.config;
 
 import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.FimsConfigException;
+import biocode.fims.utils.DateUtils;
 import biocode.fims.utils.EnumUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
@@ -149,7 +150,7 @@ public class ConfigurationFileTester {
                 } else {
                     // if DATETIME DataType, then we need a dataformat as well
                     if (dataType == DataType.DATETIME || dataType == DataType.DATE || dataType == DataType.TIME) {
-                        if (StringUtils.isBlank(attribute.getAttribute("dataformat"))) {
+                        if (!DateUtils.isValidISO8601DateFormat(attribute.getAttribute("dataformat"), dataType)) {
                             invalidDataFormat.add(attribute.getAttribute("column"));
                         }
                     }

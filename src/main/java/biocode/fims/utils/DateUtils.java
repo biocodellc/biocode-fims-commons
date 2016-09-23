@@ -2,13 +2,19 @@ package biocode.fims.utils;
 
 import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.springframework.util.Assert;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Utils class for working with dates
@@ -18,8 +24,66 @@ public class DateUtils {
     public static String ISO_8061_DATE = "yyyy-MM-dd";
     public static String ISO_8061_TIME = "HH:mm:ss.SSS";
 
+    private static String[] ISO8601_DATE_FORMATS = {
+            "YYYY",
+            "YYYY-MM",
+            "YYYY-MM-DD",
+            "YYYYMMDD"
+    };
+    private static String[] ISO8601_TIME_FORMATS = {
+            "hh:mm:ss.sss",
+            "hhmmss.sss",
+            "hh:mm:ss",
+            "hhmmss",
+            "hh:mm",
+            "hhmm",
+            "hh"
+    };
+
     /**
-     * Checks to see if a string is a valid date
+     * Check to see if a format is a valid ISO8601 format
+     *
+     * @param format
+     * @param dataType
+     * @return
+     */
+    public static boolean isValidISO8601DateFormat(String format, DataType dataType) {
+        switch (dataType) {
+            case DATE:
+                for (String f : ISO8601_DATE_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
+                    }
+                }
+                break;
+            case TIME:
+                for (String f : ISO8601_TIME_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
+                    }
+                }
+                break;
+            case DATETIME:
+                String dateFormat = format.split("T")[0];
+                String timeFormat = format.split("T")[1];
+
+                for (String f : ISO8601_DATE_FORMATS) {
+                    if (StringUtils.equals(f, dateFormat)) {
+                        for (String tf : ISO8601_TIME_FORMATS) {
+                            if (StringUtils.equals(tf, timeFormat)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks to see if a date string matches one of the given formats
      *
      * @param s
      * @return
@@ -35,63 +99,36 @@ public class DateUtils {
     }
 
     /**
-     * convert dateString into a valid ISO8601 value
+     * convert dateString to a given format
+     *
      * @param dateString the string to convert
-     * @param formats possible formats for the dateString
-     * @param dataType {@link DataType} to use for the conversion. Either DATE, TIME, or DATETIME
+     * @param newFormat  the format you would like to convert the date to
+     * @param formats    possible formats for the dateString
      * @return
      */
-    public static String convertToISO8601(String dateString, String[] formats, DataType dataType) {
+    public static String convertDateToFormat(String dateString, String newFormat, String[] formats) {
         DateTimeFormatter formatter;
+        formats = (String[]) ArrayUtils.add(formats, ISO_8061_DATE);
+        formats = (String[]) ArrayUtils.add(formats, ISO_8061_DATETIME);
+        formats = (String[]) ArrayUtils.add(formats, ISO_8061_TIME);
 
-        switch (dataType) {
-            case DATE:
-                formats = (String[]) ArrayUtils.add(formats, ISO_8061_DATE);
-                for (String format : formats) {
-                    if (dateStringMatchesFormat(dateString, format)) {
-                        formatter = DateTimeFormat.forPattern(format);
-                        return formatter.parseLocalDate(dateString.trim()).toString();
-                    }
-                }
-                break;
-            case DATETIME:
-                formats = (String[]) ArrayUtils.add(formats, ISO_8061_DATETIME);
-                for (String format : formats) {
-                    if (dateStringMatchesFormat(dateString, format)) {
-                        formatter = DateTimeFormat.forPattern(format);
-                        return formatter.parseLocalDateTime(dateString.trim()).toString();
-                    }
-                }
-                break;
-            case TIME:
-                formats = (String[]) ArrayUtils.add(formats, ISO_8061_TIME);
-                for (String format : formats) {
-                    if (dateStringMatchesFormat(dateString, format)) {
-                        formatter = DateTimeFormat.forPattern(format);
-                        return formatter.parseLocalTime(dateString.trim()).toString();
-                    }
-                }
-                break;
-            default:
-                throw new FimsRuntimeException("Couldn't detect date format for value: " + dateString, 500);
-
+        for (String format : formats) {
+            if (dateStringMatchesFormat(dateString, format)) {
+                formatter = DateTimeFormat.forPattern(format);
+                return formatter.parseDateTime(dateString.trim()).toString(newFormat);
+            }
         }
 
-        throw new FimsRuntimeException("", "Invalid Datatype", 500);
+        throw new FimsRuntimeException("Couldn't detect date format for value: " + dateString, 500);
     }
 
     private static boolean dateStringMatchesFormat(String dateString, String format) {
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        sdf.setLenient(false);
-
         try {
-            sdf.applyPattern(format);
-            Date date = sdf.parse(dateString.trim());
-            if (dateString.trim().equals(sdf.format(date))) {
-                return true;
-            }
-        } catch (ParseException e) {
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(format);
+            formatter.parseDateTime(dateString);
+        } catch (IllegalArgumentException|UnsupportedOperationException e) {
+            return false;
         }
-        return false;
+        return true;
     }
 }
