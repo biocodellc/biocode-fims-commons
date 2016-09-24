@@ -3,7 +3,6 @@ package biocode.fims.digester;
 import biocode.fims.renderers.Message;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
-import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -263,22 +262,22 @@ public class Worksheet {
                     if (method != null) {
                         method.invoke(r);
                     } else {
-                        FimsPrinter.out.println("\tNo method " + r.getType() + " (" + r.getColumnWorksheetName() + ")");
+                        FimsPrinter.out.println("\tNo method " + r.getType() + " (" + r.getColumn() + ")");
                     }
 
                     // Close the connection
                 } catch (NoSuchMethodException e) {
                     logger.warn(null, e);
                     // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
-                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumnWorksheetName() + "\" column.");
+                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
                 } catch(IllegalAccessException e) {
                     logger.warn(null, e);
                     // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
-                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumnWorksheetName() + "\" column.");
+                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
                 } catch (InvocationTargetException e) {
                     logger.warn(null, e);
                     // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
-                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumnWorksheetName() + "\" column.");
+                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
                 }
 
                 // Display warnings/etc...

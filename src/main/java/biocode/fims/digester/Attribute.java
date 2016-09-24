@@ -2,6 +2,8 @@ package biocode.fims.digester;
 
 import biocode.fims.settings.FimsPrinter;
 
+import javax.xml.crypto.Data;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +18,7 @@ public class Attribute implements Comparable {
     private String column_internal;
     private String uri;
     private String defined_by;
-    private String datatype = "string";  // string is default type
+    private DataType datatype = DataType.STRING;  // string is default type
     private String definition;
     private String synonyms;
     private String dataformat;
@@ -83,11 +85,11 @@ public class Attribute implements Comparable {
         this.defined_by = defined_by;
     }
 
-    public String getDatatype() {
+    public DataType getDatatype() {
         return datatype;
     }
 
-    public void setDatatype(String datatype) {
+    public void setDatatype(DataType datatype) {
         this.datatype = datatype;
     }
 
@@ -119,7 +121,7 @@ public class Attribute implements Comparable {
         return dataformat;
     }
 
-    public void addDataFormat(String dataFormat) {
+    public void setDataformat(String dataFormat) {
         this.dataformat = dataFormat;
     }
 

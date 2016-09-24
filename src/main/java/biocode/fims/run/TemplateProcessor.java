@@ -2,12 +2,9 @@ package biocode.fims.run;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
-import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.PathManager;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -72,10 +69,10 @@ public class TemplateProcessor {
         naan = Integer.parseInt(sm.retrieveValue("naan"));
 
         mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile.getOutputFile());
+        mapping.addMappingRules(configFile.getOutputFile());
 
         validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile.getOutputFile(), mapping);
+        validation.addValidationRules(configFile.getOutputFile(), mapping);
 
         this.workbook = (XSSFWorkbook) workbook;
         // Set the default heading style
@@ -116,10 +113,10 @@ public class TemplateProcessor {
         naan = Integer.parseInt(sm.retrieveValue("naan"));
 
         mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         validation = new Validation();
-        validation.addValidationRules(new Digester(), configFile, mapping);
+        validation.addValidationRules(configFile, mapping);
 
         // Create the workbook
         workbook = new XSSFWorkbook();

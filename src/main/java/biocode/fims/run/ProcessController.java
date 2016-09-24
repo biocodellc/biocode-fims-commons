@@ -335,7 +335,7 @@ public class ProcessController {
      * get messages as JSON
      * @return
      */
-    public JSONArray getMessages() {
+    public JSONObject getMessages() {
         JSONArray messageArray = new JSONArray();
 
         // iterate through each sheet in messages and append associated messages
@@ -379,7 +379,9 @@ public class ProcessController {
             messageArray.add(sheet);
         }
 
-        return messageArray;
+        JSONObject messages = new JSONObject();
+        messages.put("worksheets", messageArray);
+        return messages;
     }
 
     public void addMessage(String sheetName, RowMessage rowMessage) {

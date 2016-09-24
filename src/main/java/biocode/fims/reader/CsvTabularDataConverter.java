@@ -1,9 +1,13 @@
 package biocode.fims.reader;
 
+import biocode.fims.digester.Attribute;
+import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.settings.PathManager;
+import biocode.fims.utils.DateUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,7 +53,7 @@ public class CsvTabularDataConverter {
      * specified in the acceptableColumns param will be written to the csv file. The data will be
      * written in the same order as the acceptableColumns list.
      */
-    public void convert(List<String> acceptableColumns, String sheetName) {
+    public void convert(List<Attribute> attributes, String sheetName) {
         try {
             source.setTable(sheetName);
         } catch (FimsException e) {
@@ -74,9 +78,17 @@ public class CsvTabularDataConverter {
                 String[] row = source.tableGetNextRow();
 
                 // reorder the columns to match the same order of acceptableColumns list
-                for (String col : acceptableColumns) {
-                    if (datasetColumns.contains(col)) {
-                        data.append(row[datasetColumns.indexOf(col)] + ",");
+                for (Attribute a : attributes) {
+                    if (datasetColumns.contains(a.getColumn())) {
+                        String value = row[datasetColumns.indexOf(a.getColumn())];
+                        // convert dates to ISO 8601 format
+                        if (!StringUtils.isBlank(value) && (a.getDatatype() == DataType.DATETIME || a.getDatatype() == DataType.DATE ||
+                                a.getDatatype() == DataType.TIME)) {
+                            value = DateUtils.convertDateToFormat(value, a.getDataformat().split(",")[0], a.getDataformat().split(","));
+
+                        }
+
+                        data.append(value + ",");
                     } else {
                         // if the column doesn't exist in the dataset, add a placeholder in the csv file.
                         // This is required because we later use the acceptableColumns list to insert the csv data

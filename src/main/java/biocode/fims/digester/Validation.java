@@ -9,8 +9,10 @@ import biocode.fims.renderers.RowMessage;
 import biocode.fims.run.ProcessController;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -105,6 +107,36 @@ public class Validation implements RendererInterface {
             if (l.getAlias().equals(alias))
                 return l;
         }
+        return null;
+    }
+
+    /**
+     * Lookup a list for a given column and worksheet
+     * @param column
+     * @param sheetname
+     * @return
+     */
+    public List findListForColumn(String column, String sheetname) {
+        Worksheet sheet = null;
+        // Get a list of rules for the first digester.Worksheet instance
+        for (Worksheet s: worksheets) {
+            if (s.getSheetname().equals(sheetname)) {
+                sheet = s;
+            }
+        }
+
+        if (sheet != null) {
+            java.util.List<Rule> rules = sheet.getRules();
+            Iterator it = rules.iterator();
+
+            while (it.hasNext()) {
+                Rule rule = (Rule) it.next();
+                if (rule.getList() != null && StringUtils.equals(rule.getColumn(), column)) {
+                    return findList(rule.getList());
+                }
+            }
+        }
+
         return null;
     }
 
@@ -299,10 +331,10 @@ public class Validation implements RendererInterface {
     /**
      * Process validation component rules
      *
-     * @param d
      * @param mapping
      */
-    public synchronized void addValidationRules(Digester d, File configFile, Mapping mapping) {
+    public synchronized void addValidationRules(File configFile, Mapping mapping) {
+        Digester d = new Digester();
         d.push(this);
 
         // Create worksheet objects
@@ -339,6 +371,14 @@ public class Validation implements RendererInterface {
 
         try {
             d.parse(configFile);
+            // add default rules here
+            for (Worksheet ws: worksheets) {
+                // run the "validDataTypeFormat" Rule for every worksheet
+                Rule validDataTypeFormatRule = new Rule(mapping);
+                validDataTypeFormatRule.setLevel("error");
+                validDataTypeFormatRule.setType("validDataTypeFormat");
+                ws.addRule(validDataTypeFormatRule);
+            }
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);
         } catch (SAXException e) {

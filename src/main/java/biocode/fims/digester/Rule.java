@@ -6,9 +6,12 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
+import biocode.fims.utils.DateUtils;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -47,7 +50,7 @@ public class Rule {
 
     private Mapping mapping;
 
-    public Rule(Mapping mapping){
+    public Rule(Mapping mapping) {
         this.mapping = mapping;
     }
 
@@ -190,11 +193,20 @@ public class Rule {
     }
 
     /**
-     * Returns the name of the column as it appears to SQLLite
+     * Returns the name of the columnn as it appears to the worksheet
      *
      * @return
      */
     public String getColumn() {
+        return column;
+    }
+
+    /**
+     * Returns the name of the column as it appears to SQLLite
+     *
+     * @return
+     */
+    public String getCleanedColumn() {
         // replace spaces with underscores....
         if (column == null) {
             return null;
@@ -217,15 +229,6 @@ public class Rule {
             return new SqlLiteNameCleaner().fixNames(otherColumn);
             //return column.replace(" ", "_");
         }
-    }
-
-    /**
-     * Returns the name of the columnn as it appears to the worksheet
-     *
-     * @return
-     */
-    public String getColumnWorksheetName() {
-        return column;
     }
 
     public String getOtherColumnWorksheetName() {
@@ -321,6 +324,153 @@ public class Rule {
 
 
     /**
+     * If a dataformat other then "string" is specified for an {@link Attribute}, we check that the data is of the
+     * correct type ("integer", "date", etc)
+     */
+    public void validDataTypeFormat() {
+        addSqliteRegExp();
+        for (Attribute a : mapping.getAllAttributes(digesterWorksheet.getSheetname())) {
+            // we don't need to check if a.getDatatype == null, as this should be checked in the ConfigurationFileTester
+            switch (a.getDatatype()) {
+                case INTEGER:
+                    isIntegerDataFormat(a);
+                    break;
+                case FLOAT:
+                    break;
+                case DATE:
+                case TIME:
+                case DATETIME:
+                    // we don't need to check if a.dataformt == null, as this should be checked in the ConfigurationFileTester
+                    isDateDataFormat(a);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void isIntegerDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+
+        try {
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() + "` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\s*$'";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // Loop results
+            while (rs.next()) {
+                inValidValues.add(rs.getString(cleanedColumn));
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains non Integer values: " +
+                                StringUtils.join(inValidValues, ", "),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
+            logger.error("SQL exception processing isIntegerDataFormat rule");
+            e.printStackTrace();
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    private void isFloatDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+
+        try {
+            addSqliteRegExp();
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() +"` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // Loop results
+            while (rs.next()) {
+                inValidValues.add(rs.getString(cleanedColumn));
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains non Float values: " +
+                                StringUtils.join(inValidValues, ", "),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
+            logger.error("SQL exception processing isFloatDataFormat rule");
+            e.printStackTrace();
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    private void isDateDataFormat(Attribute a) {
+        Statement statement = null;
+        ResultSet rs = null;
+        String groupMessage = "Invalid DataFormat";
+        String cleanedColumn = new SqlLiteNameCleaner().fixNames(a.getColumn());
+
+        try {
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() + "`";
+            statement = connection.createStatement();
+
+            rs = statement.executeQuery(sql);
+
+            // Hold values that are not good
+            ArrayList<String> inValidValues = new ArrayList<>();
+            // if the Excel cell is a DateCell, then ExcelReader will parse it as joda-time value.
+            // therefore we need to add this format
+            String jodaFormat;
+            switch (a.getDatatype()) {
+                case DATE:
+                    jodaFormat = DateUtils.ISO_8061_DATE;
+                    break;
+                case TIME:
+                    jodaFormat = DateUtils.ISO_8061_TIME;
+                    break;
+                default:
+                    jodaFormat = DateUtils.ISO_8061_DATETIME;
+                    break;
+            }
+            String[] formats = (String[]) ArrayUtils.add(a.getDataformat().split(","), jodaFormat);
+
+            while (rs.next()) {
+                String value = rs.getString(cleanedColumn);
+                if (!StringUtils.isBlank(value) && !biocode.fims.utils.DateUtils.isValidDateFormat(value, formats)){
+                    inValidValues.add(value);
+                }
+            }
+
+            if (inValidValues.size() > 0) {
+                addMessage("\"" + a.getColumn() + "\" contains invalid date values. Format must be an Excel " + a.getDatatype().name() + " or one of [" + a.getDataformat() + "]: " +
+                                StringUtils.join(inValidValues, ", "),
+                        groupMessage);
+            }
+        } catch (SQLException e) {
+            // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
+            // complaining about the table not existing
+            logger.error("SQL exception processing isDateDataFormat rule \n");
+            e.printStackTrace();
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    /**
      * Checks that characters in a string can become a portion of a valid URI
      * This is necessary for cases where data is being triplified and constructed as a URI
      * One approach is to encode all characters, however, this creates a mis-leading Bcid
@@ -343,9 +493,9 @@ public class Rule {
             statement = connection.createStatement();
             rs = null;
             // Search for non-unique values in resultSet
-            sql = "select `" + getColumn() + "` from " + digesterWorksheet.getSheetname() +
-                    " WHERE ifnull(`" + getColumn() + "`,'') != '' " +
-                    " group by `" + getColumn() + "`";
+            sql = "select `" + getCleanedColumn() + "` from " + digesterWorksheet.getSheetname() +
+                    " WHERE ifnull(`" + getCleanedColumn() + "`,'') != '' " +
+                    " group by `" + getCleanedColumn() + "`";
 
             rs = statement.executeQuery(sql);
 
@@ -353,31 +503,25 @@ public class Rule {
             StringBuilder values = new StringBuilder();
             // Loop results
             while (rs.next()) {
-                String value = rs.getString(getColumn());
+                String value = rs.getString(getCleanedColumn());
                 // Compare the list of values of against their encoded counterparts...
                 if (!value.equals(encodeURIcomponent.encode(value))) {
                     if (!values.toString().trim().equals("")) {
                         values.append(", ");
                     }
-                    values.append(rs.getString(getColumn()));
+                    values.append(rs.getString(getCleanedColumn()));
                 }
             }
             if (!values.toString().trim().equals("")) {
-                addMessage("\"" + getColumnWorksheetName() + "\" contains some bad characters: " + values.toString(), groupMessage);
+                addMessage("\"" + getColumn() + "\" contains some bad characters: " + values.toString(), groupMessage);
             }
 
 
         } catch (SQLException e) {
-            throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
+            logger.error("SQL exception processing uniqueValue rule");
+            e.printStackTrace();
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn(null, e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -405,9 +549,9 @@ public class Rule {
             statement = connection.createStatement();
             rs = null;
             // Search for non-unique values in resultSet
-            sql = "select `" + getColumn() + "`,count(*) from " + digesterWorksheet.getSheetname() +
-                    " WHERE ifnull(`" + getColumn() + "`,'') != '' " +
-                    " group by `" + getColumn() + "`" +
+            sql = "select `" + getCleanedColumn() + "`,count(*) from " + digesterWorksheet.getSheetname() +
+                    " WHERE ifnull(`" + getCleanedColumn() + "`,'') != '' " +
+                    " group by `" + getCleanedColumn() + "`" +
                     " having count(*) > 1";
 
             rs = statement.executeQuery(sql);
@@ -418,24 +562,17 @@ public class Rule {
                 if (!values.toString().trim().equals("")) {
                     values.append(", ");
                 }
-                values.append(rs.getString(getColumn()));
+                values.append(rs.getString(getCleanedColumn()));
 
             }
             if (!values.toString().trim().equals("")) {
-                addMessage("\"" + getColumnWorksheetName() + "\" column is defined as unique but some values used more than once: " + values.toString(), groupMessage);
+                addMessage("\"" + getColumn() + "\" column is defined as unique but some values used more than once: " + values.toString(), groupMessage);
             }
 
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn(null, e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -483,11 +620,11 @@ public class Rule {
                 longValue = worksheet.getDoubleValue(getDecimalLongitude(), j);
 
                 if (latValue != null && latValue != 0.0 && (latValue < minLat || latValue > maxLat)) {
-                    msg = getDecimalLatitude() + " " + latValue + " outside of \"" + getColumnWorksheetName() + "\" bounding box.";
+                    msg = getDecimalLatitude() + " " + latValue + " outside of \"" + getColumn() + "\" bounding box.";
                     addMessage(msg, groupMessage, j);
                 }
                 if (longValue != null && longValue != 0.0 && (longValue < minLng || longValue > maxLng)) {
-                    msg = getDecimalLongitude() + " " + longValue + " outside of \"" + getColumnWorksheetName() + "\" bounding box.";
+                    msg = getDecimalLongitude() + " " + longValue + " outside of \"" + getColumn() + "\" bounding box.";
                     addMessage(msg, groupMessage, j);
                 }
             }
@@ -508,8 +645,8 @@ public class Rule {
      */
     public void minimumMaximumNumberCheck() {
         String groupMessage = "Number outside of range";
-        String minimum = getColumn().split(",")[0];
-        String maximum = getColumn().split(",")[1];
+        String minimum = getCleanedColumn().split(",")[0];
+        String maximum = getCleanedColumn().split(",")[1];
         String minMaxArray[] = new String[]{minimum, maximum};
 
         // Don't run this method if one of these columns doesn't exist
@@ -588,7 +725,6 @@ public class Rule {
      * Return the index of particular columns
      *
      * @param columns
-     *
      * @return
      */
     protected int[] getColumnIndices(String[] columns) {
@@ -663,7 +799,6 @@ public class Rule {
      * Smithsonian created rule to check Voucher heading
      *
      * @param worksheet
-     *
      * @throws Exception
      */
     @Deprecated
@@ -742,7 +877,7 @@ public class Rule {
         }
 
         // First check that this column exists before running this rule
-        Boolean columnExists = checkColumnExists(getColumn());
+        Boolean columnExists = checkColumnExists(getCleanedColumn());
         if (!columnExists) {
             // No need to return a message here if column does not exist
             //messages.addLast(new RowMessage("Column name " + getColumn() + " does not exist", RowMessage.WARNING));
@@ -780,8 +915,8 @@ public class Rule {
         try {
             statement = connection.createStatement();
             // Do the select on values based on other column values
-            String sql = "SELECT rowid,`" + getColumn() + "`,`" + getOtherColumn() + "` FROM " + digesterWorksheet.getSheetname();
-            sql += " WHERE ifnull(`" + getColumn() + "`,'') == '' ";
+            String sql = "SELECT rowid,`" + getCleanedColumn() + "`,`" + getOtherColumn() + "` FROM " + digesterWorksheet.getSheetname();
+            sql += " WHERE ifnull(`" + getCleanedColumn() + "`,'') == '' ";
 
             // if null lookup look that we just have SOME value
             if (fieldListSB.toString().equals("")) {
@@ -794,20 +929,20 @@ public class Rule {
             //System.out.println(sql);
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                String column = resultSet.getString(getColumn()).trim();
+                String column = resultSet.getString(getCleanedColumn()).trim();
                 String otherColumn = resultSet.getString(getOtherColumn()).trim();
                 int rowNum = resultSet.getInt("rowid");
 
                 // Only display messages for items that exist, that is empty cell contents are an approved value
                 if (column.equals("")) {
-                    //msg = "\"" + resultSet.getString(getColumn()) + "\" not an approved " + getColumn() + ", see list";
+                    //msg = "\"" + resultSet.getString(getCleanedColumn()) + "\" not an approved " + getColumn() + ", see list";
 
-                    //msg = "\"" + getColumnWorksheetName() + "\" column contains a value, but associated column \"" +
+                    //msg = "\"" + getColumn() + "\" column contains a value, but associated column \"" +
                     //        getOtherColumnWorksheetName() + "\" must be one of: " + listToString(fieldListArrayList);
 
                     //msg = "\"" + getOtherColumnWorksheetName() + "\" is declared as " + listToString(fieldListArrayList) +
                     msg = "\"" + getOtherColumnWorksheetName() + "\" has value " + "\"" + otherColumn + "\"" +
-                            ", but associated column \"" + getColumnWorksheetName() + "\" has no value";
+                            ", but associated column \"" + getColumn() + "\" has no value";
                     //kind of object is declared as 'VALUE' and required Column is empty
 
                     /* msg += " without an approved value in \"" + getOtherColumnWorksheetName() + "\"";
@@ -983,7 +1118,7 @@ public class Rule {
         String groupMessage = "Invalid number format";
         boolean validNumber = true;
         ResultSet resultSet;
-        String thisColumn = getColumn();
+        String thisColumn = getCleanedColumn();
         String msg = null;
         String sql = "";
         try {
@@ -1006,7 +1141,7 @@ public class Rule {
             sql += ")) AND `" + thisColumn + "` != \"\";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                msg = "Value out of range " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\" using range validation = " + URLDecoder.decode(value, "utf-8");
+                msg = "Value out of range " + resultSet.getString(thisColumn) + " for \"" + getColumn() + "\" using range validation = " + URLDecoder.decode(value, "utf-8");
                 addMessage(msg, groupMessage);
                 validNumber = false;
             }
@@ -1027,7 +1162,7 @@ public class Rule {
      * }
      */
     public void isNumber() {
-        boolean validNumber = checkValidNumberSQL(getColumn());
+        boolean validNumber = checkValidNumberSQL(getCleanedColumn());
     }
 
     /**
@@ -1036,7 +1171,6 @@ public class Rule {
      * However, the following are recognized as numeric values ("15%", "100$", "1.02E10")
      *
      * @param thisColumn
-     *
      * @return
      */
     private boolean checkValidNumberSQL(String thisColumn) {
@@ -1053,7 +1187,7 @@ public class Rule {
                     "`" + thisColumn + "` != \"\";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                msg = "Non-numeric value " + resultSet.getString(thisColumn) + " for \"" + getColumnWorksheetName() + "\"";
+                msg = "Non-numeric value " + resultSet.getString(thisColumn) + " for \"" + getColumn() + "\"";
                 addMessage(msg, groupMessage);
                 validNumber = false;
             }
@@ -1064,47 +1198,9 @@ public class Rule {
     }
 
     /**
-     * Method that uses SQL to check for valid integers. This uses REGEXP function in SQLLite.
-     */
-    private void isInteger() {
-        String groupMessage = "Invalid number";
-        String thisColumn = getColumn();
-        ResultSet resultSet;
-        String msg;
-
-        try {
-            // Create regexp() function to make the REGEXP operator available
-            Function.create(connection, "REGEXP", new Function() {
-                @Override
-                protected void xFunc() throws SQLException {
-                    String expression = value_text(0);
-                    String value = value_text(1);
-                    if (value == null)
-                        value = "";
-
-                    Pattern pattern=Pattern.compile(expression);
-                    result(pattern.matcher(value).find() ? 1 : 0);
-                }
-            });
-
-            Statement statement = connection.createStatement();
-            String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() +
-                    " WHERE `" + thisColumn + "` REGEXP '^-?\\d+$';";
-            resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
-                msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumnWorksheetName() + "\"";
-                addMessage(msg, groupMessage);
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        }
-    }
-
-    /**
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
-     *
      * @return
      */
     private boolean checkValidNumber(String rowValue) {
@@ -1284,7 +1380,7 @@ public class Rule {
         }
 
         // First check that this column exists before running this rule
-        Boolean columnExists = checkColumnExists(getColumn());
+        Boolean columnExists = checkColumnExists(getCleanedColumn());
         if (!columnExists) {
             // No need to return a message here if column does not exist
             //messages.addLast(new RowMessage("Column name " + getColumn() + " does not exist", RowMessage.WARNING));
@@ -1318,23 +1414,23 @@ public class Rule {
 
         try {
             statement = connection.createStatement();
-            String sql = "select rowid,`" + getColumn() + "` from " + digesterWorksheet.getSheetname() +
-                    " where (`" + getColumn() + "` NOT NULL AND `" + getColumn() + "` != \"\") AND ";
+            String sql = "select rowid,`" + getCleanedColumn() + "` from " + digesterWorksheet.getSheetname() +
+                    " where (`" + getCleanedColumn() + "` NOT NULL AND `" + getCleanedColumn() + "` != \"\") AND ";
             if (caseInsensitiveSearch)
-                sql += "UPPER(`" + getColumn() + "`)";
+                sql += "UPPER(`" + getCleanedColumn() + "`)";
             else
-                sql += "`" + getColumn() + "`";
+                sql += "`" + getCleanedColumn() + "`";
             sql += " not in (" + lookupSB.toString() + ")";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                String value = resultSet.getString(getColumn()).trim();
+                String value = resultSet.getString(getCleanedColumn()).trim();
                 int rowNum = resultSet.getInt("rowid");
                 // Only display messages for items that exist or na, that is empty cell contents are an approved value
                 if (!value.equals("")) {
 
-                    msg = "\"" + resultSet.getString(getColumn()) + "\" not an approved \"" + getColumnWorksheetName() + "\"";
+                    msg = "\"" + resultSet.getString(getCleanedColumn()) + "\" not an approved \"" + getColumn() + "\"";
 
-                    String groupMessage = "\"" + getColumnWorksheetName() + "\" contains invalid value <a  href=\"#\" onclick=\"list('" + getList() +
+                    String groupMessage = "\"" + getColumn() + "\" contains invalid value <a  href=\"#\" onclick=\"list('" + getList() +
                             "','" + column + "');\">see list</a>";
 
                     addMessage(msg, groupMessage, rowNum);
@@ -1344,14 +1440,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException("SQL exception processing checkInXMLFields rule", 500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (resultSet != null)
-                    resultSet.close();
-            } catch (SQLException e) {
-                logger.warn("SQLException", e);
-            }
+            closeDb(statement, resultSet);
         }
     }
 
@@ -1426,14 +1515,7 @@ public class Rule {
         } catch (SQLException e) {
             throw new FimsRuntimeException(500, e);
         } finally {
-            try {
-                if (statement != null)
-                    statement.close();
-                if (rs != null)
-                    rs.close();
-            } catch (SQLException e) {
-                logger.warn("SQLException", e);
-            }
+            closeDb(statement, rs);
         }
     }
 
@@ -1441,7 +1523,6 @@ public class Rule {
      * Convert an ArrayList to a string
      *
      * @param list
-     *
      * @return
      */
     private static String listToString(List<?> list) {
@@ -1530,7 +1611,6 @@ public class Rule {
      * A simple check to see if a column exists in the SQLLite Database
      *
      * @param column
-     *
      * @return
      */
     private boolean checkColumnExists(String column) {
@@ -1559,7 +1639,6 @@ public class Rule {
      * get ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
-     *
      * @return
      */
     public JSONObject getRuleMetadata(biocode.fims.digester.List sList) {
@@ -1607,7 +1686,7 @@ public class Rule {
         List<String> datasetColumns = worksheet.getColNames();
         List<String> definedColumns = mapping.getColumnNames();
 
-        for (String colName: datasetColumns) {
+        for (String colName : datasetColumns) {
             if (!definedColumns.contains(colName)) {
                 addMessage("Dataset contains undefined column: " + colName, groupMessge);
             }
@@ -1617,11 +1696,11 @@ public class Rule {
     /**
      * isValidUrl checks to see if a string is a valid Url, with the schemes {"http", "https"}
      */
-    private void isValidUrl() {
+    public void isValidUrl() {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
-        String groupMessage = "Invalid number";
-        String thisColumn = getColumn();
+        String groupMessage = "Invalid URL";
+        String thisColumn = getCleanedColumn();
         ResultSet resultSet;
         String msg;
 
@@ -1630,13 +1709,48 @@ public class Rule {
             String sql = "SELECT `" + thisColumn + "` FROM " + digesterWorksheet.getSheetname() + ";";
             resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                if (!urlValidator.isValid(resultSet.getString(thisColumn))) {
-                    msg = resultSet.getString(thisColumn) + " is not an integer for \"" + getColumnWorksheetName() + "\"";
+                String value = resultSet.getString(thisColumn);
+                if (!StringUtils.isBlank(value) && !urlValidator.isValid(value)) {
+                    msg = resultSet.getString(thisColumn) + " is not a valid URL for \"" + getColumn() + "\"";
                     addMessage(msg, groupMessage);
                 }
             }
         } catch (SQLException e) {
             throw new ServerErrorException(e);
+        }
+    }
+
+    private void closeDb(Statement statement, ResultSet rs) {
+        try {
+            if (statement != null)
+                statement.close();
+            if (rs != null)
+                rs.close();
+        } catch (SQLException e) {
+            logger.warn(null, e);
+        }
+    }
+
+    /**
+     * adds a REGEXP function to sqlite
+     * @throws SQLException
+     */
+    private void addSqliteRegExp() {
+        try {
+            Function.create(connection, "REGEXP", new Function() {
+                @Override
+                protected void xFunc() throws SQLException {
+                    String expression = value_text(0);
+                    String value = value_text(1);
+                    if (value == null)
+                        value = "";
+
+                    Pattern pattern = Pattern.compile(expression);
+                    result(pattern.matcher(value).find() ? 1 : 0);
+                }
+            });
+        } catch (SQLException e) {
+            // do nothing. Most likely the function was already created
         }
     }
 }

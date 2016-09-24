@@ -1,6 +1,7 @@
 package biocode.fims.query;
 
 import biocode.fims.digester.Attribute;
+import biocode.fims.digester.DataType;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -164,7 +165,7 @@ public class QueryWriter {
     public void createCell(Row row, String predicate, String value) {
         String colName = predicate;
         //System.out.println(colName);
-        String datatype = null;
+        DataType datatype = null;
         // Loop attributes and use column names instead of URI value in column position lookups
         Iterator it = attributes.iterator();
         while (it.hasNext()) {
@@ -189,7 +190,7 @@ public class QueryWriter {
 
         // Set the value conditionally, we can specify datatypes in the configuration file so interpret them
         // as appropriate here.
-        if (datatype != null && datatype.equals("integer")) {
+        if (datatype != null && datatype.equals(DataType.INTEGER)) {
             //fimsPrinter.out.println("value = " + value);
             //Its a number(int or float).. Excel treats both as numeric
             XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
