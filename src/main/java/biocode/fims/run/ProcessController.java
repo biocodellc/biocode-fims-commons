@@ -336,15 +336,15 @@ public class ProcessController {
      * @return
      */
     public JSONObject getMessages() {
-        JSONArray messageArray = new JSONArray();
+        JSONObject worksheets = new JSONObject();
 
         // iterate through each sheet in messages and append associated messages
         Iterator it = messages.keySet().iterator();
         while (it.hasNext()) {
             String sheetName = (String) it.next();
             JSONObject sheetMessages = new JSONObject();
-            JSONArray warningMessages = new JSONArray();
-            JSONArray errorMessages = new JSONArray();
+            JSONObject warningMessages = new JSONObject();
+            JSONObject errorMessages = new JSONObject();
 
             // Group all Messages using lambdaj jar library
             Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessage()));
@@ -361,26 +361,20 @@ public class ProcessController {
                     }
                 }
                 if (errorGroupArray.size() > 0) {
-                    JSONObject group = new JSONObject();
-                    group.put(key, errorGroupArray);
-                    errorMessages.add(group);
+                    errorMessages.put(key, errorGroupArray);
                 }
                 if (warningGroupArray.size() > 0) {
-                    JSONObject group = new JSONObject();
-                    group.put(key, warningGroupArray);
-                    warningMessages.add(group);
+                    warningMessages.put(key, warningGroupArray);
                 }
             }
 
             sheetMessages.put("warnings", warningMessages);
             sheetMessages.put("errors", errorMessages);
-            JSONObject sheet = new JSONObject();
-            sheet.put(sheetName, sheetMessages);
-            messageArray.add(sheet);
+            worksheets.put(sheetName, sheetMessages);
         }
 
         JSONObject messages = new JSONObject();
-        messages.put("worksheets", messageArray);
+        messages.put("worksheets", worksheets);
         return messages;
     }
 

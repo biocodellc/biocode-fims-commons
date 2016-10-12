@@ -217,7 +217,7 @@ public abstract class FastaManager {
                         sequence = "";
                     }
                     // parse the identifier - minus the deliminator
-                    identifier = line.substring(1);
+                    identifier = line.substring(1, line.indexOf(" "));
                 } else {
                     // if we are here, we are inbetween 2 identifiers. This means this is all sequence data
                     sequence += line;
