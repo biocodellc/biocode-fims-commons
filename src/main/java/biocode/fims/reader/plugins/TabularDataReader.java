@@ -19,7 +19,7 @@ public interface TabularDataReader {
 
     public Sheet getSheet();
 
-    public Integer getNumRows();
+    public int getNumRows();
 
     public File getInputFile();
 
