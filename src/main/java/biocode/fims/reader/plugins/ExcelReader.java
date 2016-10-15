@@ -46,6 +46,9 @@ public class ExcelReader implements TabularDataReader {
     // The number of columns in the active worksheet (set by the first row).
     protected int numCols;
 
+    // The number of rows in the active worksheet
+    private int numRows;
+
     // The index for the active worksheet.
     protected int currSheet;
 
@@ -163,6 +166,7 @@ public class ExcelReader implements TabularDataReader {
         currSheet = excelWb.getSheetIndex(worksheet) + 1;
         rowIterator = exsheet.rowIterator();
         numCols = -1;
+        numRows = -1;
         testNext();
     }
 
@@ -171,6 +175,7 @@ public class ExcelReader implements TabularDataReader {
             Sheet exsheet = excelWb.getSheetAt(currSheet++);
             rowIterator = exsheet.rowIterator();
             numCols = -1;
+            numRows = -1;
             testNext();
         } else
             throw new NoSuchElementException();
@@ -253,10 +258,13 @@ public class ExcelReader implements TabularDataReader {
      *
      * @return a count of number of rows
      */
-    public Integer getNumRows() {
+    public int getNumRows() {
+
+        if (numRows > 0) {
+            return numRows;
+        }
 
         Sheet wsh = excelWb.getSheet(getCurrentTableName());
-        Integer numRows;
 
         Iterator it = wsh.rowIterator();
         int count = 0;
