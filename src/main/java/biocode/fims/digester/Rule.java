@@ -391,7 +391,7 @@ public class Rule {
 
         try {
             addSqliteRegExp();
-            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() +"` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
+            String sql = "SELECT `" + cleanedColumn + "` FROM `" + digesterWorksheet.getSheetname() + "` WHERE `" + cleanedColumn + "` NOT REGEXP '^\\s*[+-]?\\d*\\.*\\d*\\s*$'";
             statement = connection.createStatement();
 
             rs = statement.executeQuery(sql);
@@ -450,7 +450,7 @@ public class Rule {
 
             while (rs.next()) {
                 String value = rs.getString(cleanedColumn);
-                if (!StringUtils.isBlank(value) && !biocode.fims.utils.DateUtils.isValidDateFormat(value, formats)){
+                if (!StringUtils.isBlank(value) && !biocode.fims.utils.DateUtils.isValidDateFormat(value, formats)) {
                     inValidValues.add(value);
                 }
             }
@@ -725,6 +725,7 @@ public class Rule {
      * Return the index of particular columns
      *
      * @param columns
+     *
      * @return
      */
     protected int[] getColumnIndices(String[] columns) {
@@ -799,6 +800,7 @@ public class Rule {
      * Smithsonian created rule to check Voucher heading
      *
      * @param worksheet
+     *
      * @throws Exception
      */
     @Deprecated
@@ -1171,6 +1173,7 @@ public class Rule {
      * However, the following are recognized as numeric values ("15%", "100$", "1.02E10")
      *
      * @param thisColumn
+     *
      * @return
      */
     private boolean checkValidNumberSQL(String thisColumn) {
@@ -1201,6 +1204,7 @@ public class Rule {
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
+     *
      * @return
      */
     private boolean checkValidNumber(String rowValue) {
@@ -1445,6 +1449,74 @@ public class Rule {
     }
 
     /**
+     * RequiredColumn looks for a single required columns in spreadsheet
+     * <p></p>
+     * Example:
+     * <br></br>
+     * {@code
+     * <rule type="RequiredColumn" name="fieldName" level="error">
+     * </rule>
+     * }
+     */
+    public void RequiredColumn() {
+        String groupMessage = "Missing column(s)";
+        Statement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.createStatement();
+
+            // Set text for this warning values
+            String levelValue = "mandatory";
+            if (getMessageLevel() == RowMessage.WARNING) {
+                levelValue = "desirable";
+            }
+
+            String fieldNameSQLLite = "", msg = "", fieldNameWorksheet = "";
+            ArrayList<String> notFoundArray = new ArrayList<String>();
+            SqlLiteNameCleaner cleaner = new SqlLiteNameCleaner();
+
+            boolean booFound = false;
+            // Create a hashset of column names for easy lookup
+            Set<String> hashset = new HashSet<String>(worksheet.getColNames());
+
+            booFound = false;
+
+            // fieldNameWorksheet has spaces
+            fieldNameWorksheet = getCleanedColumn();
+            // fieldNameSQLLite has underscores instead of spaces
+            fieldNameSQLLite = cleaner.fixNames(fieldNameWorksheet);
+
+            // Simple search in hashset for required field name
+            if (hashset.contains(fieldNameWorksheet)) {
+                booFound = true;
+            }
+
+            // Error message if column not found
+            if (!booFound) {
+                notFoundArray.add(fieldNameWorksheet);
+                // Examine column contents -- required columns need some content
+            } else {
+                String sql = "";
+
+                sql = "select count(*) from " + digesterWorksheet.getSheetname() + " where `" + fieldNameSQLLite + "`='' or `" + fieldNameSQLLite + "` is null";
+                rs = statement.executeQuery(sql);
+                if (rs.getInt(1) > 0) {
+                    addMessage("\"" + fieldNameWorksheet + "\" has a missing cell value", groupMessage);
+                }
+            }
+
+            if (notFoundArray.size() > 0) {
+                msg = "Did not find " + levelValue + " columns: " + listToString(notFoundArray);
+                addMessage(msg, groupMessage);
+            }
+        } catch (SQLException e) {
+            throw new FimsRuntimeException(500, e);
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    /**
      * RequiredColumns looks for required columns in spreadsheet by looking for them in the <field> tags
      * <p></p>
      * Example:
@@ -1523,6 +1595,7 @@ public class Rule {
      * Convert an ArrayList to a string
      *
      * @param list
+     *
      * @return
      */
     private static String listToString(List<?> list) {
@@ -1611,6 +1684,7 @@ public class Rule {
      * A simple check to see if a column exists in the SQLLite Database
      *
      * @param column
+     *
      * @return
      */
     private boolean checkColumnExists(String column) {
@@ -1639,6 +1713,7 @@ public class Rule {
      * get ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
+     *
      * @return
      */
     public JSONObject getRuleMetadata(biocode.fims.digester.List sList) {
@@ -1733,6 +1808,7 @@ public class Rule {
 
     /**
      * adds a REGEXP function to sqlite
+     *
      * @throws SQLException
      */
     private void addSqliteRegExp() {

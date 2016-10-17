@@ -13,6 +13,7 @@ public class Metadata {
     private String queryTarget;
     private String expeditionForwardingAddress;
     private String nmnh;
+    private String owlRestrictionFile;
 
     private String textAbstract;
 
@@ -23,6 +24,10 @@ public class Metadata {
     public void setTarget(String target) {
         this.target = target;
     }
+
+    public String getOwlRestrictionFile() { return owlRestrictionFile;}
+
+    public void setOwlRestrictionFile(String owlRestrictionFile) {this.owlRestrictionFile = owlRestrictionFile;};
 
     public String getQueryTarget() {
         return queryTarget;
