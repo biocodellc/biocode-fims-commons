@@ -438,6 +438,11 @@ public class TemplateProcessor {
                 while (columnNamesIt.hasNext()) {
                     String thisColumnName = (String) columnNamesIt.next();
                     column = fields.indexOf(thisColumnName.replace("_", " "));
+                    // HACK: column sanitization above breaks cases where there actually is
+                    // an underscore in name.... re-check if no match found
+                    if (column <0) {
+                        column = fields.indexOf(thisColumnName);
+                    }
                     if (column >= 0) {
                         ///   CellRangeAddressList addressList = new CellRangeAddressList(1, 100000, 2, 2);
 
@@ -463,7 +468,6 @@ public class TemplateProcessor {
                         // Data validation styling
                         dataValidation.setSuppressDropDownArrow(true);
                         dataValidation.setShowErrorBox(true);
-
                         // Give the user the appropriate data validation error msg, depending upon the rules error level
                         if (errorLevel) {
                             dataValidation.createErrorBox("Data Validation Error", errorMsg);
@@ -472,7 +476,6 @@ public class TemplateProcessor {
                             dataValidation.createErrorBox("Data Validation Warning", warningMsg);
                             dataValidation.setErrorStyle(DataValidation.ErrorStyle.INFO);
                         }
-
                         // Add the validation to the defaultsheet
                         defaultSheet.addValidationData(dataValidation);
                     }
@@ -500,6 +503,10 @@ public class TemplateProcessor {
                 if (r.getType().equals("RequiredColumns") &&
                         r.getLevel().equals(level)) {
                     columnSet.addAll(r.getFields());
+                }
+                if (r.getType().equals("RequiredColumn") &&
+                        r.getLevel().equals(level)) {
+                    columnSet.add(r.getColumn());
                 }
             }
         }
@@ -598,7 +605,8 @@ public class TemplateProcessor {
                             Rule r = (Rule) rulesIt.next();
                             if (r.getColumn() != null &&
                                     r.getList() != null &&
-                                    r.getColumn().replace("_", " ").equals(columnName) &&
+                                    (r.getColumn().replace("_", " ").equals(columnName) ||
+                                            r.getColumn().equals(columnName)) &&
                                     (r.getType().equals("controlledVocabulary") || r.getType().equals("checkInXMLFields"))) {
                                 Cell controlledVocabCell = row.createCell(CONTROLLED_VOCABULARY);
                                 controlledVocabCell.setCellValue(r.getList());
