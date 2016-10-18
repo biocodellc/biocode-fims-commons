@@ -27,19 +27,12 @@ public class FimsRuntimeException extends FimsAbstractException {
         super(developerMessage, httpStatusCode, cause);
     }
 
+    public FimsRuntimeException(ErrorCode errorCode, int httpStatusCode, String... messageArgs) {
+        super(errorCode, httpStatusCode, messageArgs);
+    }
+
     public FimsRuntimeException(JSONObject response) {
         super(response);
     }
 
-    public Integer getHttpStatusCode() {
-        return httpStatusCode;
-    }
-
-    public String getUsrMessage() {
-        return usrMessage;
-    }
-
-    public String getDeveloperMessage() {
-        return developerMessage;
-    }
 }
