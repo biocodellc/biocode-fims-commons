@@ -105,11 +105,7 @@ public class Rule {
         this.worksheet = worksheet;
         // Synchronize the Excel Worksheet instance with the digester worksheet instance
         //fimsPrinter.out.println("setting to "+ digesterWorksheet.getSheetname());
-        try {
-            worksheet.setTable(digesterWorksheet.getSheetname());
-        } catch (FimsException e) {
-            throw new FimsRuntimeException(500, e);
-        }
+        worksheet.setTable(digesterWorksheet.getSheetname());
     }
 
     public String getDecimalLatitude() {

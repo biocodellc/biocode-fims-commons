@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Loop a bunch of attributes, queried from some model and write to a spreadsheet
@@ -31,10 +32,8 @@ import java.util.LinkedList;
 public class QueryWriter {
     // Loop all the columns associated with this worksheet
     ArrayList<Attribute> attributes;
-    Validation validation;
     ArrayList extraColumns;
     Integer totalColumns;
-    String sheetName;
     XSSFWorkbook wb = new XSSFWorkbook();
     Sheet sheet;
     private static Logger logger = LoggerFactory.getLogger(QueryWriter.class);
@@ -42,10 +41,8 @@ public class QueryWriter {
     /**
      * @param attributes ArrayList of attributes passed as argument is meant to come from digester.Mapping instance
      */
-    public QueryWriter(ArrayList<Attribute> attributes, String sheetName, Validation validation) {
-        this.sheetName = sheetName;
+    public QueryWriter(ArrayList<Attribute> attributes, String sheetName) {
         this.attributes = attributes;
-        this.validation = validation;
         totalColumns = attributes.size() - 1;
         extraColumns = new ArrayList();
 
@@ -56,7 +53,6 @@ public class QueryWriter {
      * Find the column position for this array
      *
      * @param columnName
-     *
      * @return
      */
     public Integer getColumnPosition(String columnName) {
@@ -93,7 +89,6 @@ public class QueryWriter {
      * Create a header row for all columns (initial + extra ones encountered)
      *
      * @param sheet
-     *
      * @return
      */
     public org.apache.poi.ss.usermodel.Row createHeaderRow(Sheet sheet) {
@@ -124,7 +119,6 @@ public class QueryWriter {
      * create a row at a specified index
      *
      * @param rowNum
-     *
      * @return
      */
     public Row createRow(int rowNum) {
@@ -222,7 +216,7 @@ public class QueryWriter {
         attributes.add(a);
 
         // Data Values
-        QueryWriter queryWriter = new QueryWriter(attributes, "myworksheet", null);
+        QueryWriter queryWriter = new QueryWriter(attributes, "myworksheet");
 
         Row r = queryWriter.createRow(1);
         queryWriter.createCell(r, "Specimen_num_collector", "MBIO57");
@@ -271,60 +265,57 @@ public class QueryWriter {
         createHeaderRow(sheet);
 
         // Start constructing JSON.
-        JSONObject json = new JSONObject();
+        JSONArray dataset = new JSONArray();
 
         // Iterate through the rows.
         int count = 0;
         int LIMIT = 10000;
-        JSONArray rows = new JSONArray();
+        List<String> columns = new ArrayList<>();
         for (Row row : sheet) {
             if (count < LIMIT) {
-                JSONObject jRow = new JSONObject();
-                JSONArray cells = new JSONArray();
+                if (count == 0) {
+                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
+                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
+                        columns.add(String.valueOf(cell.getRichStringCellValue()));
+                    }
+                } else {
+                    JSONObject jRow = new JSONObject();
 
-                for (int cn = 0; cn < row.getLastCellNum(); cn++) {
-                    Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-                    if (cell == null) {
-                        cells.add("");
-                    } else {
-                        switch (cell.getCellType()) {
-                            case Cell.CELL_TYPE_STRING:
-                                cells.add(cell.getRichStringCellValue().getString());
-                                break;
-                            case Cell.CELL_TYPE_NUMERIC:
-                                if (DateUtil.isCellDateFormatted(cell)) {
-                                    cells.add(cell.getDateCellValue());
-                                } else {
-                                    cells.add(cell.getNumericCellValue());
-                                }
-                                break;
-                            case Cell.CELL_TYPE_BOOLEAN:
-                                cells.add(cell.getBooleanCellValue());
-                                break;
-                            case Cell.CELL_TYPE_FORMULA:
-                                cells.add(cell.getCellFormula());
-                                break;
-                            default:
-                                cells.add(cell.toString());
+                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
+                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
+                        if (cell == null) {
+                            jRow.put(columns.get(cn), null);
+                        } else {
+                            switch (cell.getCellType()) {
+                                case Cell.CELL_TYPE_STRING:
+                                    jRow.put(columns.get(cn), String.valueOf(cell.getRichStringCellValue()));
+                                    break;
+                                case Cell.CELL_TYPE_NUMERIC:
+                                    if (DateUtil.isCellDateFormatted(cell)) {
+                                        jRow.put(columns.get(cn), String.valueOf(cell.getDateCellValue()));
+                                    } else {
+                                        jRow.put(columns.get(cn), String.valueOf(cell.getNumericCellValue()));
+                                    }
+                                    break;
+                                case Cell.CELL_TYPE_BOOLEAN:
+                                    jRow.put(columns.get(cn), String.valueOf(cell.getBooleanCellValue()));
+                                    break;
+                                case Cell.CELL_TYPE_FORMULA:
+                                    jRow.put(columns.get(cn), String.valueOf(cell.getCellFormula()));
+                                    break;
+                                default:
+                                    jRow.put(columns.get(cn), cell.toString());
+                            }
                         }
                     }
-
+                    dataset.add(jRow);
                 }
-                if (count == 0) {
-                    json.put("header", cells);
-                } else {
-                    jRow.put("row", cells);
-                    rows.add(jRow);
-                }
+                count++;
             }
-            count++;
+
         }
-
-        // Create the JSON.
-        json.put("data", rows);
-
-        // Get the JSON text.
-        return writeFile(json.toString(), file);
+        // Write the JSON text.
+        return writeFile(dataset.toJSONString(), file);
     }
 
     /**
@@ -332,6 +323,7 @@ public class QueryWriter {
      *
      * @return
      */
+
     public XSSFWorkbook getWorkbook() {
         return wb;
     }
@@ -549,10 +541,10 @@ public class QueryWriter {
      * TODO: Make the writeCSPACE function general purpose using a library (apache?) for variable substitution
      *
      * @param file
-     *
+     * @param validation
      * @return
      */
-    public String writeCSPACE(File file) {
+    public String writeCSPACE(File file, Validation validation) {
         createHeaderRow(sheet);
 
         // Store all String elements
@@ -621,7 +613,7 @@ public class QueryWriter {
                         common.append("\t" + writeXMLValue("objectNumber", value) + "\n");
                     } else if (fieldName.equals("All_Collectors")) {
                         common.append("\t<fieldCollectors>\n");
-                        common.append("\t\t" + writeXMLValue("fieldCollector", fieldURILookup("Collector", value)) + "\n");
+                        common.append("\t\t" + writeXMLValue("fieldCollector", fieldURILookup("Collector", value, validation)) + "\n");
                         common.append("\t</fieldCollectors>\n");
                     } else if (fieldName.equals("Coll_Num")) {
                         common.append("\t" + writeXMLValue("fieldCollectionNumber", value) + "\n");
@@ -640,13 +632,13 @@ public class QueryWriter {
                                 "\t\t" + writeXMLValue("briefDescription", value) + "\n" +
                                 "\t</briefDescriptions>\n");
                     } else if (fieldName.equals("Label_Header")) {
-                        naturalhistory.append("\t" + writeXMLValue("labelHeader", fieldURILookup("Label_Header", value)) + "\n");
+                        naturalhistory.append("\t" + writeXMLValue("labelHeader", fieldURILookup("Label_Header", value, validation)) + "\n");
                     } else if (fieldName.equals("Main_Collector")) {
-                        naturalhistory.append("\t" + writeXMLValue("fieldCollectionNumberAssignor", fieldURILookup("Collector", value)) + "\n");
+                        naturalhistory.append("\t" + writeXMLValue("fieldCollectionNumberAssignor", fieldURILookup("Collector", value, validation)) + "\n");
                     } else if (fieldName.equals("ScientificName")) {
-                        taxon = writeXMLValue("taxon", fieldURILookup("ScientificName", value));
+                        taxon = writeXMLValue("taxon", fieldURILookup("ScientificName", value, validation));
                     } else if (fieldName.equals("DeterminedBy")) {
-                        identBy = writeXMLValue("identBy", fieldURILookup("DeterminedBy", value));
+                        identBy = writeXMLValue("identBy", fieldURILookup("DeterminedBy", value, validation));
                     } else if (fieldName.equals("Comments")) {
                         common.append("\t<comments>\n");
                         common.append("\t\t" + writeXMLValue("comment", value) + "\n");
@@ -705,7 +697,7 @@ public class QueryWriter {
                 }
 
                 // fieldCollectionDateGroup
-                common.append(displayCSPACEDate("fieldCollectionDateGroup", date, year, month, day,2));
+                common.append(displayCSPACEDate("fieldCollectionDateGroup", date, year, month, day, 2));
 
                 // TaxonomicIdentGroup
                 naturalhistory.append("\t<taxonomicIdentGroupList>\n" +
@@ -713,24 +705,24 @@ public class QueryWriter {
                         "\t\t\t" + taxon + "\n" +
                         "\t\t\t<qualifier></qualifier>\n" +
                         "\t\t\t" + identBy + "\n");
-                naturalhistory.append(displayCSPACEDate("identDateGroup", date, year, month, day,3));
+                naturalhistory.append(displayCSPACEDate("identDateGroup", date, year, month, day, 3));
                 naturalhistory.append("\t\t</taxonomicIdentGroup>\n" +
                         "\t</taxonomicIdentGroupList>\n");
 
                 naturalhistory.append("\t<localityGroupList>\n" +
                         "\t\t<localityGroup>\n" +
-                        "\t\t\t" + writeXMLValue ("fieldLocVerbatim",Locality) +"\n" +
-                        "\t\t\t" + writeXMLValue ("fieldLocCountry",Country) +"\n" +
-                        "\t\t\t" + writeXMLValue ("fieldLocState",State_Province) +"\n" +
-                        "\t\t\t" + writeXMLValue ("fieldLocCounty",County) +"\n" +
-                        "\t\t\t" + writeXMLValue ("minElevation",Elevation) +"\n" +
-                        "\t\t\t" + writeXMLValue ("elevationUnit",Elevation_Units) +"\n" +
-                        "\t\t\t" + writeXMLValue ("decimalLatitude",Latitude) +"\n" +
-                        "\t\t\t" + writeXMLValue ("decimalLongitude",Longitude) +"\n" +
-                        "\t\t\t" + writeXMLValue ("vLatitude",Latitude) +"\n" +
-                        "\t\t\t" + writeXMLValue ("vLongitude",Longitude) +"\n" +
-                        "\t\t\t" + writeXMLValue ("geoRefSource",Coordinate_Source) +"\n" +
-                        "\t\t\t" + writeXMLValue ("localitySource",Coordinate_Source) +"\n" +
+                        "\t\t\t" + writeXMLValue("fieldLocVerbatim", Locality) + "\n" +
+                        "\t\t\t" + writeXMLValue("fieldLocCountry", Country) + "\n" +
+                        "\t\t\t" + writeXMLValue("fieldLocState", State_Province) + "\n" +
+                        "\t\t\t" + writeXMLValue("fieldLocCounty", County) + "\n" +
+                        "\t\t\t" + writeXMLValue("minElevation", Elevation) + "\n" +
+                        "\t\t\t" + writeXMLValue("elevationUnit", Elevation_Units) + "\n" +
+                        "\t\t\t" + writeXMLValue("decimalLatitude", Latitude) + "\n" +
+                        "\t\t\t" + writeXMLValue("decimalLongitude", Longitude) + "\n" +
+                        "\t\t\t" + writeXMLValue("vLatitude", Latitude) + "\n" +
+                        "\t\t\t" + writeXMLValue("vLongitude", Longitude) + "\n" +
+                        "\t\t\t" + writeXMLValue("geoRefSource", Coordinate_Source) + "\n" +
+                        "\t\t\t" + writeXMLValue("localitySource", Coordinate_Source) + "\n" +
                         "\t\t</localityGroup>\n" +
                         "\t</localityGroupList>\n");
 
@@ -757,10 +749,11 @@ public class QueryWriter {
         return writeFile(sb.toString(), file);
     }
 
-    private String displayCSPACEDate(String dateGroup, String date, String year, String month, String day, int tabStops) {
+    private String displayCSPACEDate(String dateGroup, String date, String year, String month, String day,
+                                     int tabStops) {
         // Set the appropriate number of tabs
         String tabs = "";
-        for (int i =0; i < tabStops; i++) {
+        for (int i = 0; i < tabStops; i++) {
             tabs += "\t";
         }
 
@@ -794,11 +787,10 @@ public class QueryWriter {
      *
      * @param fieldName
      * @param value
-     *
      * @return
      */
 
-    private String fieldURILookup(String fieldName, String value) {
+    private String fieldURILookup(String fieldName, String value, Validation validation) {
         // Loop XML attribute value of ScientificName to get the REFNAME
         LinkedList<biocode.fims.digester.List> lists = validation.getLists();
         Iterator listsIt = lists.iterator();
@@ -834,7 +826,6 @@ public class QueryWriter {
      * Write a tab delimited output
      *
      * @param file
-     *
      * @return
      */
     public String writeTAB(File file, Boolean writeHeader) {

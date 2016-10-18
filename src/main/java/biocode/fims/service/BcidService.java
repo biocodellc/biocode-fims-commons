@@ -146,6 +146,22 @@ public class BcidService {
         return bcidRepository.findLatestDatasetsForExpeditions(expeditionIds);
     }
 
+    @Transactional
+    public void updateTs(Bcid bcid) {
+        if (bcid != null) {
+            bcidRepository.updateTs(bcid.getBcidId());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Bcid> getDatasets(int projectId, String expeditionCode) {
+        return bcidRepository.findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(
+                projectId,
+                expeditionCode,
+                ResourceTypes.DATASET_RESOURCE_TYPE
+        );
+    }
+
     public void delete(int bcidId) {
         bcidRepository.deleteByBcidId(bcidId);
     }

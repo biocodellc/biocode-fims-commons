@@ -212,7 +212,7 @@ public class ExpeditionService {
      */
     private void checkExpeditionCodeValidAndAvailable(String expeditionCode, int projectId) throws FimsException {
         // Check expeditionCode length
-        if (expeditionCode.length() < 4 || expeditionCode.length() > 50) {
+        if (expeditionCode == null || expeditionCode.length() < 4 || expeditionCode.length() > 50) {
             throw new FimsException("Expedition code " + expeditionCode + " must be between 4 and 50 characters long");
         }
 

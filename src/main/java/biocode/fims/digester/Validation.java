@@ -1,7 +1,9 @@
 package biocode.fims.digester;
 
+import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.reader.SqLiteDatasetConverter;
 import biocode.fims.reader.SqLiteTabularDataConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RendererInterface;
@@ -13,6 +15,8 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jdbc.Work;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -41,7 +45,7 @@ public class Validation implements RendererInterface {
     private static Logger logger = LoggerFactory.getLogger(Validation.class);
     // File reference for a sqlite Database
     private File sqliteFile;
-    private SqLiteTabularDataConverter tdc;
+    private SqLiteDatasetConverter sdc;
 
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
@@ -145,11 +149,9 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, Mapping mapping) throws FimsException {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, Dataset dataset) {
         PathManager pm = new PathManager();
-        File processDirectory = null;
-
-        processDirectory = pm.setDirectory(outputFolder);
+        File processDirectory = pm.setDirectory(outputFolder);
 
         // Load the SQLite JDBC driver.
         try {
@@ -159,21 +161,11 @@ public class Validation implements RendererInterface {
         }
 
         // Create SQLite file
-        //String pathPrefix = processDirectory + File.separator + inputFile.getName();
         String pathPrefix = processDirectory + File.separator + filenamePrefix;
         sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
 
-        tdc = new SqLiteTabularDataConverter(tabularDataReader, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
-
-        try {
-            tdc.convert(mapping);
-        } catch (Exception e) {
-            if (e instanceof FimsRuntimeException) {
-                throw new FimsException(((FimsRuntimeException) e).getUsrMessage(), e);
-            } else {
-                throw new FimsException(e);
-            }
-        }
+        sdc = new SqLiteDatasetConverter(dataset, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        sdc.convert(sheetName);
 
         // Create the SQLLite connection
         try {
@@ -207,24 +199,37 @@ public class Validation implements RendererInterface {
     /**
      * iterate through each Worksheet and append the messages to the processController
      */
-    public void getMessages(ProcessController processController) {
-        HashMap<String, LinkedList<RowMessage>> messages = new HashMap();
+    /**
+     * iterate through each {@link Worksheet} and collect the messages
+     * @return k,v map of sheetName: RowMessage list
+     */
+    public HashMap<String, LinkedList<RowMessage>> getMessages() {
+        HashMap<String, LinkedList<RowMessage>> messages = new HashMap<>();
         for (Iterator<Worksheet> w = worksheets.iterator(); w.hasNext(); ) {
             Worksheet worksheet = w.next();
             messages.put(worksheet.getSheetname(), worksheet.getMessages());
-            processController.setWorksheetName(worksheet.getSheetname());
+        }
+        return messages;
+    }
 
-            // Worksheet has errors
-            if (!worksheet.errorFree()) {
-                processController.setHasErrors(true);
-            } else if (!worksheet.warningFree()) {
-                // Worksheet has no errors but does have some warnings
-                processController.setHasWarnings(true);
-            } else {
-                processController.setValidated(true);
+    public boolean hasErrors() {
+        for (Worksheet w: worksheets) {
+            if (!w.errorFree()) {
+                return true;
             }
         }
-        processController.addMessages(messages);
+
+        return false;
+    }
+
+    public boolean hasWarnings() {
+        for (Worksheet w: worksheets) {
+            if (!w.warningFree()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -232,21 +237,12 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping) {
-//        FimsPrinter.out.println("Validate ...");
+    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, Dataset dataset) {
         this.tabularDataReader = tabularDataReader;
 
-        Worksheet sheet = null;
-        String sheetName = "";
-        try {
-            sheet = worksheets.get(0);
-            sheetName = sheet.getSheetname();
-            tabularDataReader.setTable(sheetName);
-        } catch (FimsException e) {
-            // An error here means the sheetname was not found, throw an application message
-            sheet.getMessages().addLast(new RowMessage("Unable to find a required worksheet named '" + sheetName + "' (no quotes)", "Spreadsheet check", RowMessage.ERROR));
-            return false;
-        }
+        Worksheet sheet = worksheets.get(0);
+        String sheetName = sheet.getSheetname();
+        tabularDataReader.setTable(sheetName);
 
         // Use the errorFree variable to control validation checking workflow
         boolean errorFree = true;
@@ -254,33 +250,13 @@ public class Validation implements RendererInterface {
         // Create the SQLLite Connection and catch any exceptions, and send to Error Message
         // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
         // processing data, such as worksheets containing duplicate column names, which will fail the data load.
-        try {
-            connection = createSqlLite(filenamePrefix, outputFolder, mapping);
 
-        } catch (FimsException e) {
-            logger.error("Fims Exception Thrown: ", e);
-            String msg;
-            if (e.getMessage().length() > 0) {
-                msg = e.getMessage();
-            } else {
-                msg = "Unable to parse spreadsheet.  This may be caused by having two columns with the same " +
-                        "name.  " +
-                        "Please add columns to pass validation.";
-            }
-            sheet.getMessages().addLast(new RowMessage(
-                    msg,
-                    "Initial Spreadsheet check",
-                    RowMessage.ERROR));
-
-            // Alsways have an error here
-            return false;
-        }
-
+        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, dataset);
 
         // Attempt to build hashes
         boolean hashErrorFree = true;
         try {
-            tdc.buildHashes(mapping);
+            sdc.buildHashes(mapping, sheetName);
         } catch (Exception e) {
             hashErrorFree = false;
         }
@@ -293,8 +269,7 @@ public class Validation implements RendererInterface {
                 Worksheet w = i.next();
 
                 boolean thisError = w.run(this);
-                if (processingErrorFree)
-                    processingErrorFree = thisError;
+                if (processingErrorFree) processingErrorFree = thisError;
             }
         }
 
@@ -378,6 +353,12 @@ public class Validation implements RendererInterface {
                 validDataTypeFormatRule.setLevel("error");
                 validDataTypeFormatRule.setType("validDataTypeFormat");
                 ws.addRule(validDataTypeFormatRule);
+
+                // run the "validDataTypeFormat" Rule for every worksheet
+                Rule validDataTypeFormatRule2 = new Rule(mapping);
+                validDataTypeFormatRule2.setLevel("warning");
+                validDataTypeFormatRule2.setType("datasetContainsExtraColumns");
+                ws.addRule(validDataTypeFormatRule2);
             }
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);
