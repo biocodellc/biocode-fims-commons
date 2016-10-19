@@ -11,6 +11,12 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.UploadCode;
 import biocode.fims.service.ExpeditionService;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorFactory;
+import org.springframework.beans.PropertyBatchUpdateException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +27,7 @@ import java.util.Map;
  * Core class for running fims validation and uploading.
  */
 public class Process {
+    private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
     private final List<AuxilaryFileManager> fileManagers;
     private final IDatasetFileManager datasetFileManager;
@@ -31,7 +38,7 @@ public class Process {
         // Required
         IDatasetFileManager datasetFileManager;
         ProcessController processController;
-        Map<String, String> fileMap;
+        Map<String, Map<String, Object>> fmProperties;
         File configFile;
 
         // Optional
@@ -55,12 +62,16 @@ public class Process {
 
         /**
          * Required.
+         * fmProperties contains the information we need to pass to the fileManager. The fmProperties
+         * is a map containing the name of the {@link FileManager} as the key and and Map as the value.
+         * This value map contains the property name and the property value for each property you would
+         * like to set for the corresponding {@link FileManager}. The properties are set via reflection
          *
-         * @param fileMap fileManagerName, filename pairs
+         * @param fmProperties <fileManagerName, <propertyName, propertyValue>>
          * @return
          */
-        public ProcessBuilder addFiles(Map<String, String> fileMap) {
-            this.fileMap = fileMap;
+        public ProcessBuilder addFmProperties(Map<String, Map<String, Object>> fmProperties) {
+            this.fmProperties = fmProperties;
             return this;
         }
 
@@ -76,14 +87,14 @@ public class Process {
 
 
         private boolean isValid() {
-            return fileMap != null && configFile != null;
+            return fmProperties != null && configFile != null;
         }
 
         public Process build() {
             if (isValid()) {
                 return new Process(this);
             } else {
-                throw new FimsRuntimeException("Server Error", "fileMap, configFile, and outputFolder must not be null.", 500);
+                throw new FimsRuntimeException("Server Error", "fmProperties, configFile, and outputFolder must not be null.", 500);
             }
         }
     }
@@ -93,7 +104,7 @@ public class Process {
         processController = builder.processController;
         fileManagers = builder.additionalFileManagers;
         configFile = builder.configFile;
-        addFiles(builder.fileMap);
+        addFmProperties(builder.fmProperties);
         addProcessControllerToFileManagers();
 
         if (processController.getMapping() == null) {
@@ -196,15 +207,26 @@ public class Process {
         ConfigurationFileTester cFT = new ConfigurationFileTester(configFile);
 
         boolean validConfig = cFT.isValidConfig();
-        processController.setConfigMessages(cFT.getMessages());
+        if (!validConfig) {
+            processController.setConfigMessages(cFT.getMessages());
+        }
 
         return validConfig;
     }
 
-    private void addFiles(Map<String, String> fileMap) {
-        for (Map.Entry<String, String> entry : fileMap.entrySet()) {
+    private void addFmProperties(Map<String, Map<String, Object>> fmProperties) {
+        for (Map.Entry<String, Map<String, Object>> entry : fmProperties.entrySet()) {
             FileManager fm = getFileManagerByName(entry.getKey());
-            fm.setFilename(entry.getValue());
+
+            if (entry.getValue() != null) {
+                PropertyAccessor propertyAccessor = PropertyAccessorFactory.forBeanPropertyAccess(fm);
+                try {
+                    propertyAccessor.setPropertyValues(entry.getValue());
+                } catch (PropertyBatchUpdateException | InvalidPropertyException e) {
+                    // do we want to throw an exception here? or just log the error and go on?
+                    throw new FimsRuntimeException(500, e);
+                }
+            }
         }
     }
 

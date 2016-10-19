@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Special purpose class for Bulk Loading Data
@@ -101,14 +102,16 @@ public class BulkLoader {
 
         System.out.println("Initializing ...");
 
-        HashMap<String, String> fileMap = new HashMap<>();
-        fileMap.put("dataset", inputFile);
+        HashMap<String, Map<String, Object>> fmProps = new HashMap<>();
+        HashMap<String, Object> props = new HashMap<>();
+        props.put("filename", inputFile);
+        fmProps.put("dataset", props);
 
         File configFile = new ConfigurationFileFetcher(pc.getProjectId(), pc.getOutputFolder(), true).getOutputFile();
 
         // Build the process object
         Process p = new Process.ProcessBuilder(datasetFileManager, pc)
-                .addFiles(fileMap)
+                .addFmProperties(fmProps)
                 .configFile(configFile)
                 .build();
 
