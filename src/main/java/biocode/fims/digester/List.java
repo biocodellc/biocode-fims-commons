@@ -53,7 +53,7 @@ public class List {
      *
      * @return
      */
-    public java.util.List getFields() {
+    public java.util.List<Field> getFields() {
         return fields;
     }
 

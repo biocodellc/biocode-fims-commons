@@ -797,10 +797,8 @@ public class QueryWriter {
         while (listsIt.hasNext()) {
             biocode.fims.digester.List l = (biocode.fims.digester.List) listsIt.next();
             if (l.getAlias().equals(fieldName)) {
-                java.util.List fieldlist = l.getFields();
-                Iterator fieldlistIt = fieldlist.iterator();
-                while (fieldlistIt.hasNext()) {
-                    Field f = (Field) fieldlistIt.next();
+                java.util.List<Field> fieldlist = l.getFields();
+                for (Field f: fieldlist) {
                     if (f.getValue().equals(value)) {
                         return f.getUri() + "'" + f.getValue() + "'";
                     }

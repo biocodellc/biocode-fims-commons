@@ -403,12 +403,8 @@ public class ProjectRestService extends FimsService {
         biocode.fims.digester.List results = validation.findList(listName);
         JSONArray list = new JSONArray();
 
-        Iterator it = results.getFields().iterator();
-
-        // Get field values
-        while (it.hasNext()) {
-            Field f = (Field)it.next();
-            list.add(f.getValue());
+        for (Field field: results.getFields()) {
+            list.add(field.getValue());
         }
 
         return Response.ok(list.toJSONString()).build();

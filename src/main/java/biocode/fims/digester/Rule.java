@@ -1547,7 +1547,7 @@ public class Rule {
      *
      * @return
      */
-    private List getListElements() {
+    private List<Field> getListElements() {
         Validation v = digesterWorksheet.getValidation();
         if (v == null) {
             return null;
