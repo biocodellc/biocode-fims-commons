@@ -355,10 +355,10 @@ public class Validation implements RendererInterface {
                 ws.addRule(validDataTypeFormatRule);
 
                 // run the "validDataTypeFormat" Rule for every worksheet
-                Rule validDataTypeFormatRule2 = new Rule(mapping);
-                validDataTypeFormatRule2.setLevel("warning");
-                validDataTypeFormatRule2.setType("datasetContainsExtraColumns");
-                ws.addRule(validDataTypeFormatRule2);
+                Rule unknownColumnsCheckRule = new Rule(mapping);
+                unknownColumnsCheckRule.setLevel("warning");
+                unknownColumnsCheckRule.setType("datasetContainsExtraColumns");
+                ws.addRule(unknownColumnsCheckRule);
             }
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);
