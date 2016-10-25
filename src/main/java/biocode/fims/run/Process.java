@@ -180,7 +180,7 @@ public class Process {
             throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, processController.getExpeditionCode());
         }
 
-        String status = "\tCreating expedition " + processController.getExpeditionCode() + " ... this is a one time process " +
+        String status = "\n\tCreating expedition " + processController.getExpeditionCode() + " ... this is a one time process " +
                 "before loading each spreadsheet and may take a minute...\n";
         processController.appendStatus(status);
 
