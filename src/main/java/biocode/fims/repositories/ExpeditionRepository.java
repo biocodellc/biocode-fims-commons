@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,5 +41,17 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     Page<Expedition> findByProjectProjectIdAndProjectUserUserId(int projectId, int userId, Pageable pageRequest);
 
-    Set<Expedition> findAllByProjectProjectIdAndUserUserId(int projectId, int userId);
+    List<Expedition> findAllByProjectProjectIdAndUserUserId(int projectId, int userId);
+
+    List<Expedition> findByPublicTrueAndProjectProjectId(int projectId);
+
+
+    /**
+     * select all {@link Expedition} for a given project that the user owns or is a public expeditions
+     * @param projectId
+     * @param userId
+     * @return
+     */
+    @Query("select e from Expedition e where projectId=:projectId and (userId=:userId or public=true)")
+    List<Expedition> findAllForProjectAndUserOrPublic(int projectId, int userId);
 }

@@ -375,8 +375,8 @@ public class ProjectRestService extends FimsService {
     @Authenticated
     @Path("/{projectId}/expeditions")
     @Produces(MediaType.APPLICATION_JSON)
-    public Set<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
-        return expeditionService.getExpeditions(projectId, user.getUserId());
+    public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
+        return expeditionService.getExpeditions(projectId, user.getUserId(), false);
     }
 
     /**

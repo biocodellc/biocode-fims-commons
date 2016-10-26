@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -125,8 +126,15 @@ public class ExpeditionService {
     }
 
     @Transactional(readOnly = true)
-    public Set<Expedition> getExpeditions(int projectId, int userId) {
-        Set<Expedition> expeditions = expeditionRepository.findAllByProjectProjectIdAndUserUserId(projectId, userId);
+    public List<Expedition> getExpeditions(int projectId, int userId, boolean includePublic) {
+        List<Expedition> expeditions;
+
+        if (includePublic) {
+            expeditions = expeditionRepository.findAllForProjectAndUserOrPublic(projectId, userId);
+        } else {
+            expeditions = expeditionRepository.findAllByProjectProjectIdAndUserUserId(projectId, userId);
+        }
+
 
         for (Expedition expedition: expeditions) {
             attachExpeditionBcids(expedition);
@@ -238,5 +246,9 @@ public class ExpeditionService {
                         Expedition.EXPEDITION_RESOURCE_TYPE
                 ));
         expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getExpeditionId()));
+    }
+
+    public List<Expedition> getPublicExpeditions(int projectId) {
+        return expeditionRepository.findByPublicTrueAndProjectProjectId(projectId);
     }
 }
