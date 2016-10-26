@@ -213,6 +213,7 @@ public class BcidService {
                 bcid.setEzidMade(true);
                 logger.info("{}", identifier.toString());
             } catch (EzidException e) {
+                logger.info("EzidException thrown trying to create Ezid {}. Trying to update now.", bcid.getIdentifier(), e);
                 // Attempt to set Metadata if this is an Exception
                 try {
                     ezidService.setMetadata(String.valueOf(bcid.getIdentifier()), map);
