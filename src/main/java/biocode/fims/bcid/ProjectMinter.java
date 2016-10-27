@@ -136,6 +136,7 @@ public class ProjectMinter {
      *
      * @return
      */
+
     public JSONArray getLatestGraphs(int projectId, String username) {
         JSONArray graphs = new JSONArray();
         PreparedStatement stmt = null;

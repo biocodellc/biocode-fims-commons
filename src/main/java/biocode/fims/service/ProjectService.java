@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnitUtil;
 
 
 /**
@@ -44,14 +45,22 @@ public class ProjectService {
     }
 
 
+    @Transactional(readOnly = true)
     public boolean isUserMemberOfProject(User user, Project project) {
         boolean userIsProjectMember = false;
-        for (Project userProject: user.getProjectsMemberOf()) {
+
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
+            user = entityManager.find(User.class, user.getUserId());
+        }
+
+        for (Project userProject : user.getProjectsMemberOf()) {
             if (userProject.equals(project)) {
                 userIsProjectMember = true;
                 break;
             }
         }
+
         return userIsProjectMember;
     }
 
@@ -65,13 +74,14 @@ public class ProjectService {
 
     /**
      * checks if a user is the admin of a specific project
+     *
      * @param user
      * @param projectId
      * @return
      */
     public boolean isProjectAdmin(User user, int projectId) {
         user = entityManager.merge(user);
-        for (Project p: user.getProjects()) {
+        for (Project p : user.getProjects()) {
             if (p.getProjectId() == projectId) {
                 return true;
             }
