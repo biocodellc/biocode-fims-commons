@@ -69,22 +69,22 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
             List<MediaType> accepts = httpHeaders.getAcceptableMediaTypes();
             logger.warn("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
             // if request accepts JSON, return the error in JSON, otherwise use html
-            if (accepts.contains(MediaType.APPLICATION_JSON_TYPE)) {
-                mediaType = MediaType.APPLICATION_JSON;
-            } else {
+            if (accepts.contains(MediaType.TEXT_HTML_TYPE)) {
                 mediaType = MediaType.TEXT_HTML;
+            } else {
+                mediaType = MediaType.APPLICATION_JSON;
             }
         }
 
-        if (mediaType.contains( MediaType.APPLICATION_JSON )) {
+        if (mediaType.contains( MediaType.TEXT_HTML)) {
+            // add errorInfo to session to be used on custom error page
+            session.setAttribute("errorInfo", errorInfo);
+            return Response.status(errorInfo.getHttpStatusCode()).build();
+        } else {
             return Response.status(errorInfo.getHttpStatusCode())
                     .entity(errorInfo.toJSON())
                     .type(MediaType.APPLICATION_JSON)
                     .build();
-        } else {
-            // add errorInfo to session to be used on custom error page
-            session.setAttribute("errorInfo", errorInfo);
-            return Response.status(errorInfo.getHttpStatusCode()).build();
         }
     }
 
