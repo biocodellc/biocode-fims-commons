@@ -820,6 +820,11 @@ public class QueryWriter {
 
     }
 
+    public String writeCSV(File file, Boolean writeHeader) {
+        return writeTabularDataFile(file, writeHeader, ",");
+    }
+
+
     /**
      * Write a tab delimited output
      *
@@ -827,6 +832,10 @@ public class QueryWriter {
      * @return
      */
     public String writeTAB(File file, Boolean writeHeader) {
+        return writeTabularDataFile(file, writeHeader, "\t");
+    }
+
+    private String writeTabularDataFile(File file, boolean writeHeader, String delimeter) {
         // Header Row
         if (writeHeader) {
             createHeaderRow(sheet);
@@ -844,23 +853,13 @@ public class QueryWriter {
                 for (int cn = 0; cn < row.getLastCellNum(); cn++) {
                     Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
                     if (cell == null) {
-                        fileOut.write(("\t").getBytes());
+                        fileOut.write((delimeter).getBytes());
                     } else {
                         byte[] contentInBytes = cell.getStringCellValue().getBytes();
                         fileOut.write(contentInBytes);
-                        fileOut.write(("\t").getBytes());
+                        fileOut.write((delimeter).getBytes());
                     }
                 }
-
-                 /*
-                Iterator cellIt = row.cellIterator();
-                while (cellIt.hasNext()) {
-                    Cell cell = (Cell) cellIt.next();
-                    byte[] contentInBytes = cell.getStringCellValue().getBytes();
-                    fileOut.write(contentInBytes);
-                    fileOut.write(("\t").getBytes());
-                }
-                */
                 fileOut.write(("\n").getBytes());
             }
             fileOut.close();
@@ -870,5 +869,6 @@ public class QueryWriter {
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);
         }
+
     }
 }
