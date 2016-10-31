@@ -1,5 +1,6 @@
 package biocode.fims.rest;
 
+import biocode.fims.rest.filters.APIVersionFilter;
 import biocode.fims.rest.filters.AdminFilter;
 import biocode.fims.rest.filters.AuthenticatedFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -22,5 +23,6 @@ public class FimsApplication extends ResourceConfig {
         register(RequestContextFilter.class);
         register(AuthenticatedFilter.class);
         register(AdminFilter.class);
+        register(APIVersionFilter.class);
     }
 }
