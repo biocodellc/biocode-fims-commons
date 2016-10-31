@@ -16,6 +16,7 @@ import biocode.fims.utils.QueryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import java.net.URISyntaxException;
 /**
  * REST interface for handling user authentication
  */
+@Controller
 @Path("authenticationService")
 public class AuthenticationService extends FimsService {
     @Context

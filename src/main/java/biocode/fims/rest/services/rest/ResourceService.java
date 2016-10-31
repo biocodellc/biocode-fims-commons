@@ -5,6 +5,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.Response;
 /**
  * REST interface for creating elements, to be called from the interface or other consuming applications.
  */
+@Controller
 @Path("resourceTypes")
 public class ResourceService extends FimsService {
 

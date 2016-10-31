@@ -18,6 +18,7 @@ import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -30,6 +31,7 @@ import java.util.*;
  * Currently, there are no REST services for creating projects, which instead must be added to the Database
  * manually by an administrator
  */
+@Controller
 @Path("projects")
 public class ProjectRestService extends FimsService {
     private ExpeditionService expeditionService;

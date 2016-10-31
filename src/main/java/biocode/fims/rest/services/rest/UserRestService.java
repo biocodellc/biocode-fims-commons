@@ -13,6 +13,7 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response;
 /**
  * The REST Interface for dealing with users. Includes user creation and profile updating.
  */
+@Controller
 @Path("users")
 public class UserRestService extends FimsService {
 

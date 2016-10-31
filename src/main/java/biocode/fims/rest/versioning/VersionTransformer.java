@@ -4,6 +4,8 @@ import biocode.fims.rest.FimsService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -15,7 +17,8 @@ import java.util.*;
  */
 @Aspect
 public class VersionTransformer {
-    private static String TRANSFORMER_PACKAGE = "biocode.fims.rest.versioning.transformers";
+    private final static Logger logger = LoggerFactory.getLogger(VersionTransformer.class);
+    private final static String TRANSFORMER_PACKAGE = "biocode.fims.rest.versioning.transformers";
 
     @Around("execution(* biocode.fims.rest.services..*.*(..))")
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
@@ -84,9 +87,8 @@ public class VersionTransformer {
 
         try {
             transformer = (Transformer) Class.forName(transformerClass).newInstance();
-        } catch (ClassNotFoundException e) {
-        } catch (InstantiationException e) {
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            logger.debug("Problem instentiating transformer class: " + transformerClass);
         }
 
         return transformer;
