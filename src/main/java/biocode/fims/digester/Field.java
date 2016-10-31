@@ -5,7 +5,9 @@ package biocode.fims.digester;
  */
 public class Field {
     private String uri;
-     private String value;
+    private String value;
+    private String defined_by;
+
 
     public String getUri() {
         return uri;
@@ -21,6 +23,14 @@ public class Field {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getDefined_by() {
+        return defined_by;
+    }
+
+    public void setDefined_by(String defined_by) {
+        this.defined_by = defined_by;
     }
 }
 

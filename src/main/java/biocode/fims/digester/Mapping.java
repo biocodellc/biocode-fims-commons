@@ -124,7 +124,8 @@ public class Mapping {
         relations.addLast(r);
     }
 
-    public LinkedList<Relation> getRelations() { return relations;}
+    public LinkedList<Relation> getRelations() {
+        return relations;}
 
     /**
      * Find Entity defined by given worksheet and worksheetUniqueKey

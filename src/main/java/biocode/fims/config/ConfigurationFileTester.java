@@ -287,16 +287,19 @@ public class ConfigurationFileTester {
             }
         }
 
-        // Tell is if atLeastOneUniqueKey is not found.
-        if (!atLeastOneUniqueKeyFound) {
-            messages.add(this, "Worksheet unique key = '" + worksheetUniqueKey + "' does not have uniqueValue rule", "atLeastOneUniqueKeyFound");
-            passedTest = false;
-        }
+        // only apply this rule for single entity files.
+        if (entities.getLength() <= 1) {
+            // Tell is if atLeastOneUniqueKey is not found.
+            if (!atLeastOneUniqueKeyFound) {
+                messages.add(this, "Worksheet unique key = '" + worksheetUniqueKey + "' does not have uniqueValue rule", "atLeastOneUniqueKeyFound");
+                passedTest = false;
+            }
 
-        // Tell is if atLeastOneUniqueKey is not found.
-        if (!atLeastOneRequiredColumnFound) {
-            messages.add(this, "Worksheet unique key = '" + worksheetUniqueKey + "' is not defined as a Required Column with level = 'error'", "atLeastOneRequiredColumnFound");
-            passedTest = false;
+            // Tell is if atLeastOneUniqueKey is not found.
+            if (!atLeastOneRequiredColumnFound) {
+                messages.add(this, "Worksheet unique key = '" + worksheetUniqueKey + "' is not defined as a Required Column with level = 'error'", "atLeastOneRequiredColumnFound");
+                passedTest = false;
+            }
         }
 
         return passedTest;
