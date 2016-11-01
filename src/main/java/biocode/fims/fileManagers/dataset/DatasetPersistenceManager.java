@@ -10,6 +10,8 @@ public interface DatasetPersistenceManager {
 
     void upload(ProcessController processController, Dataset dataset);
 
+    boolean validate(ProcessController processController);
+
     String getWebAddress();
 
     String getGraph();

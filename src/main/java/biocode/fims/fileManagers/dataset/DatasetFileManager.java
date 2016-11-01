@@ -19,6 +19,7 @@ import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.net.URI;
@@ -53,10 +54,12 @@ public class DatasetFileManager implements IDatasetFileManager {
         if (filename != null) {
             persistenceManager.upload(processController, dataset);
 
+            URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : null;
+
             Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
                     .title("Dataset: " + processController.getExpeditionCode())
-                    .webAddress(URI.create(persistenceManager.getWebAddress()))
+                    .webAddress(webaddress)
                     .graph(persistenceManager.getGraph())
                     .finalCopy(processController.getFinalCopy())
                     .build();
@@ -139,7 +142,7 @@ public class DatasetFileManager implements IDatasetFileManager {
             // get the Messages from each worksheet and add them to the processController
             processController.addMessages(validation.getMessages());
 
-            if (validation.hasErrors()) {
+            if (validation.hasErrors() || !persistenceManager.validate(processController)) {
                 return false;
             } else if (validation.hasWarnings()) {
                 processController.setHasWarnings(true);

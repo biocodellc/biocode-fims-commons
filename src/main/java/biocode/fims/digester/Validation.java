@@ -1,22 +1,16 @@
 package biocode.fims.digester;
 
 import biocode.fims.fileManagers.dataset.Dataset;
-import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.reader.SqLiteDatasetConverter;
-import biocode.fims.reader.SqLiteTabularDataConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
-import biocode.fims.run.ProcessController;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.jdbc.Work;
-import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
