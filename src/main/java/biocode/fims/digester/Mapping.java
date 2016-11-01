@@ -6,6 +6,7 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Mapping builds the D2RQ structure for converting between relational format to RDF.
@@ -98,6 +100,14 @@ public class Mapping {
             for (Attribute attribute: entity.getAttributes()) {
                 columnNames.add(attribute.getColumn());
             }
+        }
+        return columnNames;
+    }
+
+    public java.util.List<String> getColumnNamesForWorksheet(String sheetName) {
+        List<String> columnNames = new ArrayList<>();
+        for (Attribute a: getAllAttributes(sheetName)) {
+            columnNames.add(a.getColumn());
         }
         return columnNames;
     }

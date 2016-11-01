@@ -54,11 +54,7 @@ public class CsvTabularDataConverter {
      * written in the same order as the acceptableColumns list.
      */
     public void convert(List<Attribute> attributes, String sheetName) {
-        try {
-            source.setTable(sheetName);
-        } catch (FimsException e) {
-            throw new ServerErrorException(e);
-        }
+        source.setTable(sheetName);
 
         // get the columns in the order they appear in the dataset so we can refer to the columns by index later.
         // this is necessary in order to insert the column into the db in the order we expect

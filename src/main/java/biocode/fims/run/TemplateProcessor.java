@@ -358,19 +358,18 @@ public class TemplateProcessor {
             // Get an instance of a particular list
             biocode.fims.digester.List list = (biocode.fims.digester.List) listsIt.next();
 
-            //Get the number of rows in this list
-            int numRowsInList = list.getFields().size();
-
             // List of fields from this validation rule
-            List validationFieldList = list.getFields();
+            List<Field> validationFieldList = list.getFields();
+
+            //Get the number of rows in this list
+            int numRowsInList = validationFieldList.size();
 
             // Validation Fields
             if (validationFieldList.size() > 0) {
 
                 // populate this validation list in the Lists sheet
                 int counterForRows = 0;
-                Iterator fieldlistIt = validationFieldList.iterator();
-                while (fieldlistIt.hasNext()) {
+                for (Field f: validationFieldList) {
                     String value;
                     XSSFCellStyle style;
                     // Write header
@@ -386,7 +385,6 @@ public class TemplateProcessor {
                         cell.setCellStyle(style);
                     }
                     // Write cell values
-                    Field f = (Field) fieldlistIt.next();
                     value = f.getValue();
 
                     style = regularStyle;

@@ -2,6 +2,7 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ValidationCode;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
@@ -157,11 +158,11 @@ public class ExcelReader implements TabularDataReader {
             return (currSheet < excelWb.getNumberOfSheets());
     }
 
-    public void setTable(String worksheet) throws FimsException {
+    public void setTable(String worksheet) {
         Sheet exsheet = excelWb.getSheet(worksheet);
 
         if (exsheet == null) {
-            throw new FimsException("Unable to find worksheet " + worksheet);
+            throw new FimsRuntimeException(ValidationCode.INVALID_SHEET, 400, worksheet);
         }
         currSheet = excelWb.getSheetIndex(worksheet) + 1;
         rowIterator = exsheet.rowIterator();

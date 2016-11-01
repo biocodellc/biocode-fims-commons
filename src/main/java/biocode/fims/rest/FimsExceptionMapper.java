@@ -50,16 +50,8 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         if (session != null) {
             ProcessController pc = (ProcessController) session.getAttribute("processController");
             if (pc != null) {
-                try {
-                    //delete any tmp files that were created
-                    if (pc.getInputFilename() != null) {
-                        new File(pc.getInputFilename()).delete();
-                    }
-                    if (pc.getFastaManager() != null && pc.getFastaManager().getFastaFilename() != null) {
-                        new File(pc.getFastaManager().getFastaFilename()).delete();
-                    }
-                } catch (NullPointerException e2) {
-                    logger.warn("NullPointerException thrown trying to delete processController.getInputFilename.");
+                if (pc.getProcess() != null) {
+                    pc.getProcess().close();
                 }
 
                 //remove processController from session
@@ -77,22 +69,22 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
             List<MediaType> accepts = httpHeaders.getAcceptableMediaTypes();
             logger.warn("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
             // if request accepts JSON, return the error in JSON, otherwise use html
-            if (accepts.contains(MediaType.APPLICATION_JSON_TYPE)) {
-                mediaType = MediaType.APPLICATION_JSON;
-            } else {
+            if (accepts.contains(MediaType.TEXT_HTML_TYPE)) {
                 mediaType = MediaType.TEXT_HTML;
+            } else {
+                mediaType = MediaType.APPLICATION_JSON;
             }
         }
 
-        if (mediaType.contains( MediaType.APPLICATION_JSON )) {
+        if (mediaType.contains( MediaType.TEXT_HTML)) {
+            // add errorInfo to session to be used on custom error page
+            session.setAttribute("errorInfo", errorInfo);
+            return Response.status(errorInfo.getHttpStatusCode()).build();
+        } else {
             return Response.status(errorInfo.getHttpStatusCode())
                     .entity(errorInfo.toJSON())
                     .type(MediaType.APPLICATION_JSON)
                     .build();
-        } else {
-            // add errorInfo to session to be used on custom error page
-            session.setAttribute("errorInfo", errorInfo);
-            return Response.status(errorInfo.getHttpStatusCode()).build();
         }
     }
 

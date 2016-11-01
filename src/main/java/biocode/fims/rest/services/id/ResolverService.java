@@ -16,6 +16,7 @@ import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -26,6 +27,7 @@ import java.net.URI;
 /**
  * This is the core Resolver Service for BCIDs.  It returns URIs
  */
+@Controller
 @Path("/")
 public class ResolverService extends FimsService {
 

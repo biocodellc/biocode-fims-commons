@@ -1,14 +1,21 @@
 package biocode.fims.fimsExceptions;
 
+import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONObject;
+import org.springframework.context.MessageSource;
+
+import java.io.PrintWriter;
+import java.util.Locale;
 
 /**
  * An abstract exception to be extended by exceptions thrown to return appropriate responses.
  */
 public abstract class FimsAbstractException extends RuntimeException {
+    private static final MessageSource messageSource = (MessageSource) SpringApplicationContext.getBean("messageSource");
     String usrMessage = "Server Error";
     Integer httpStatusCode;
     String developerMessage;
+    ErrorCode errorCode;
 
     public FimsAbstractException(String usrMessage, Integer httpStatusCode) {
         super();
@@ -48,6 +55,17 @@ public abstract class FimsAbstractException extends RuntimeException {
         this.developerMessage = (String) response.get("developerMessage");
     }
 
+    public FimsAbstractException(ErrorCode errorCode, int httpStatusCode, String... messageArgs) {
+        super();
+        this.errorCode = errorCode;
+        this.usrMessage = getUserMessageFromErrorCode(messageArgs);
+        this.httpStatusCode = httpStatusCode;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
     public Integer getHttpStatusCode() {
         return httpStatusCode;
     }
@@ -58,5 +76,24 @@ public abstract class FimsAbstractException extends RuntimeException {
 
     public String getDeveloperMessage() {
         return developerMessage;
+    }
+
+    private String getUserMessageFromErrorCode(String... messageArgs) {
+        if (errorCode == null) {
+            return "Server Error";
+        }
+
+        String key = errorCode.getClass().getSimpleName() + "__" + errorCode;
+        return messageSource.getMessage(key, messageArgs, Locale.US);
+    }
+
+    @Override
+    public String toString() {
+        return "FimsAbstractException{" +
+                " usrMessage='" + usrMessage + '\'' +
+                ", errorCode=" + errorCode +
+                ", httpStatusCode=" + httpStatusCode +
+                ", developerMessage='" + developerMessage + '\'' +
+                '}';
     }
 }

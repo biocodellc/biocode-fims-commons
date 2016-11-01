@@ -8,6 +8,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.File;
@@ -41,6 +42,8 @@ public abstract class FimsService {
     public String uploadPath() {
         return context.getRealPath(settingsManager.retrieveValue("uploadDir")) + File.separator;
     }
+
+    public HttpHeaders getHeaders() { return headers; }
 
     @Context
     public void setSessionVariables(HttpServletRequest request) {

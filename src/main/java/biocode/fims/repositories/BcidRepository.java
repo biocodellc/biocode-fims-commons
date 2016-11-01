@@ -28,18 +28,23 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     void save(Bcid bcid);
 
+    @Modifying
+    @Query(value = "update bcids set ts=CURRENT_TIMESTAMP where bcidId=:bcidId", nativeQuery = true)
+    void updateTs(@Param("bcidId") int bcidId);
+
     /**
      * This method invokes the SQL query that is configured by using the {@code @Query} annotation.
+     *
      * @param identifier the identifier of the {@link Bcid} to fetch
      * @return the {@link Bcid} with the provided identifier
      */
     @Query(value =
             "SELECT b.bcidId, b.ezidMade, b.ezidRequest, b.identifier, b.userId, b.doi, b.title, " +
                     "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId, b.sourceFile " +
-            "FROM bcids AS b " +
-            "LEFT OUTER JOIN expeditionBcids AS eb " +
+                    "FROM bcids AS b " +
+                    "LEFT OUTER JOIN expeditionBcids AS eb " +
                     "ON b.bcidId=eb.bcidId " +
-            "WHERE BINARY identifier=:identifier",
+                    "WHERE BINARY identifier=:identifier",
             nativeQuery = true)
     Bcid findByIdentifier(@Param("identifier") String identifier);
 
@@ -51,13 +56,24 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     @Query(value =
             "select b from Bcid b where b.ts in \n" +
-                "(select max(b2.ts) from Bcid b2 where " +
+                    "(select max(b2.ts) from Bcid b2 where " +
                     "b2.expedition.project.projectId=:projectId and " +
                     "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
                     "and b.expedition.expeditionId=b2.expedition.expeditionId" +
-                ")"
+                    ")"
     )
     Set<Bcid> findLatestDatasets(@Param("projectId") int projectId);
+
+    @Query(value =
+            "select b from Bcid b where b.ts in \n" +
+                    "(select max(b2.ts) from Bcid b2 where " +
+                    "b2.expedition.project.projectId=:projectId and " +
+                    "b2.expedition.expeditionCode=:expeditionCode and " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
+                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
+                    ")"
+    )
+    Bcid findLatestDataset(@Param("projectId") int projectId, @Param("expeditionCode") String expeditionCode);
 
     @Query(value =
             "select b from Bcid b where b.ts in \n" +
@@ -77,4 +93,6 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
     Bcid findOneByTitleAndExpeditionExpeditionId(String title, int expeditionId);
 
     Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
+
+    List<Bcid> findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(int projectId, String expeditionCode, String resourceType);
 }

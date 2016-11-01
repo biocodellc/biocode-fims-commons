@@ -31,7 +31,7 @@ public interface TabularDataReader {
 
     public Integer getColumnPosition(String colName);
 
-    public void setTable(String table) throws FimsException;
+    public void setTable(String table);
     /**
      * Get a short string identifying the file format(s) supported by this
      * reader.  This string can be treated as a constant that is used to request

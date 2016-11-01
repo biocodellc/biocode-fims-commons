@@ -1,6 +1,8 @@
 package biocode.fims.run;
 
+import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.entities.User;
+import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
@@ -11,6 +13,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Special purpose class for Bulk Loading Data
@@ -28,6 +32,7 @@ public class BulkLoader {
     static String inputFastaDirectory = "/Users/jdeck/Google Drive/!DIPnet_DB/Repository/1_cleaned_nonaligned_fasta_files";
 
     private static ExpeditionService expeditionService;
+    private static DatasetFileManager datasetFileManager;
 
     static boolean triplify = false;
     static boolean upload = true;
@@ -40,6 +45,7 @@ public class BulkLoader {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         UserService userService = applicationContext.getBean(UserService.class);
         expeditionService = applicationContext.getBean(ExpeditionService.class);
+        datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
 
         // Redirect output to file
         PrintStream out = new PrintStream(new FileOutputStream(outputDirectory + File.separator + "dipnetloading_output.txt"));
@@ -92,25 +98,28 @@ public class BulkLoader {
         // Create the process controller object
         ProcessController pc = new ProcessController(PROJECT_ID, expeditionCode);
         pc.setUserId(user.getUserId());
+        pc.setOutputFolder(outputDirectory);
 
         System.out.println("Initializing ...");
 
+        HashMap<String, Map<String, Object>> fmProps = new HashMap<>();
+        HashMap<String, Object> props = new HashMap<>();
+        props.put("filename", inputFile);
+        fmProps.put("dataset", props);
+
+        File configFile = new ConfigurationFileFetcher(pc.getProjectId(), pc.getOutputFolder(), true).getOutputFile();
+
         // Build the process object
-        Process p = new Process(
-                outputDirectory,
-                pc,
-                expeditionService
-        );
-        pc.setInputFilename(inputFile);
+        Process p = new Process.ProcessBuilder(datasetFileManager, pc)
+                .addFmProperties(fmProps)
+                .configFile(configFile)
+                .build();
 
         System.out.println("\tinputFilename = " + inputFile);
 
-        // Run our validator
-        p.runValidation();
-
         // If there is errors, tell the user and stop the operation
-        if (pc.getHasErrors()) {
-            System.out.println(pc.getCommandLineSB().toString());
+        if (!p.validate()) {
+            System.out.println(pc.getMessages().toJSONString());
             return;
         }
 
@@ -120,14 +129,14 @@ public class BulkLoader {
             FimsPrinter.out.println("NOT CHECKING FOR WARNINGS");
             readyToLoad = true;
             // Check for warnings if not forceload
-        } else if (!pc.isValidated() && pc.getHasWarnings()) {
+        } else if (pc.getHasWarnings()) {
             System.out.println("WARNINGS PRESENT, NOT LOADING");
-            System.out.println(pc.getCommandLineSB().toString());
+            System.out.println(pc.getMessages().toJSONString());
         }
 
         // Run the loader
         if (readyToLoad) {
-            p.runAllLocally();
+            p.upload(false, false, expeditionService);
         }
     }
 

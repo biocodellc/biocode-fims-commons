@@ -2,19 +2,14 @@ package biocode.fims.run;
 
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
-import biocode.fims.fasta.FastaManager;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
-import biocode.fims.utils.StringGenerator;
 import ch.lambdaj.group.Group;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
 import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
@@ -25,37 +20,29 @@ import static ch.lambdaj.Lambda.*;
  * working in a Servlet environment.
  */
 public class ProcessController {
-    private Boolean hasErrors = false;
     private Boolean hasWarnings = false;
     private StringBuilder commandLineWarningsSB;
-    private Boolean clearedOfWarnings = false;
-    private Boolean expeditionAssignedToUserAndExists = false;   // checks that the userId is authenticated against the supplied expedition
-    private Boolean expeditionCreateRequired = false;
-    private Boolean validated = false;
-    private String inputFilename;
+    private Process process;
     private String expeditionCode;
     private String expeditionTitle;
     private int projectId;
     private int userId;
     private Validation validation;
     private Mapping mapping;
-    private FastaManager fastaManager;
-    private String worksheetName;
     // Store all messages as a k,v pair of sheetName: messages
     private HashMap<String, List<RowMessage>> messages = new HashMap<>();
+    private JSONObject configMessages;
     private StringBuilder statusSB = new StringBuilder();
+    private StringBuilder successfullUploadSB = new StringBuilder();
     private String accessionNumber;
-    private String defaultSheetUniqueKey;
     private Boolean publicStatus = false;   // default to false
     private Boolean finalCopy = false;
-    private static Logger logger = LoggerFactory.getLogger(ProcessController.class);
+    private String outputFolder;
+    private JSONObject fastqMetadata;
 
-    public String getWorksheetName() {
-        return worksheetName;
-    }
-
-    public void setWorksheetName(String worksheetName) {
-        this.worksheetName = worksheetName;
+    public ProcessController(int projectId, String expeditionCode) {
+        this.expeditionCode = expeditionCode;
+        this.projectId = projectId;
     }
 
     public StringBuilder getStatusSB() {
@@ -63,26 +50,23 @@ public class ProcessController {
     }
 
     public void appendStatus(String s) {
-        statusSB.append(stringToHTMLJSON(s));
+        statusSB.append(stringToHTML(s));
     }
 
-    public ProcessController(int projectId, String expeditionCode) {
-        this.expeditionCode = expeditionCode;
-        this.projectId = projectId;
+    public String getSuccessMessage() {
+        return successfullUploadSB.toString();
     }
 
-    public ProcessController() {
-
-    }
-    public int getUserId() { return userId; }
-
-    public void setUserId(int userId) { this.userId = userId; }
-    public Boolean isExpeditionCreateRequired() {
-        return expeditionCreateRequired;
+    public void appendSuccessMessage(String s) {
+        successfullUploadSB.append(stringToHTML(s));
     }
 
-    public void setExpeditionCreateRequired(Boolean expeditionCreateRequired) {
-        this.expeditionCreateRequired = expeditionCreateRequired;
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public Boolean getHasWarnings() {
@@ -91,38 +75,6 @@ public class ProcessController {
 
     public void setHasWarnings(Boolean hasWarnings) {
         this.hasWarnings = hasWarnings;
-    }
-
-    public Boolean getHasErrors() {
-        return hasErrors;
-    }
-
-    public void setHasErrors(Boolean hasErrors) {
-        this.hasErrors = hasErrors;
-    }
-
-    public Boolean isClearedOfWarnings() {
-        return clearedOfWarnings;
-    }
-
-    public void setClearedOfWarnings(Boolean clearedOfWarnings) {
-        this.clearedOfWarnings = clearedOfWarnings;
-    }
-
-    public Boolean isValidated() {
-        return validated;
-    }
-
-    public void setValidated(Boolean validated) {
-        this.validated = validated;
-    }
-
-    public String getInputFilename() {
-        return inputFilename;
-    }
-
-    public void setInputFilename(String inputFilename) {
-        this.inputFilename = inputFilename;
     }
 
     public String getExpeditionCode() {
@@ -139,14 +91,6 @@ public class ProcessController {
 
     public int getProjectId() {
         return projectId;
-    }
-
-    public Boolean isExpeditionAssignedToUserAndExists() {
-        return expeditionAssignedToUserAndExists;
-    }
-
-    public void setExpeditionAssignedToUserAndExists(Boolean expeditionAssignedToUserAndExists) {
-        this.expeditionAssignedToUserAndExists = expeditionAssignedToUserAndExists;
     }
 
     public Validation getValidation() {
@@ -167,86 +111,14 @@ public class ProcessController {
     }
 
     /**
-     * Tells whether the given filename is ready to upload
-     *
-     * @return
-     */
-    public Boolean isReadyToUpload() {
-        if (expeditionAssignedToUserAndExists &&
-                validated &&
-                inputFilename != null &&
-                expeditionCode != null &&
-                projectId > 0)
-            return true;
-        else
-            return false;
-    }
-
-    /**
-     * return a string that is to be used in html and is json safe
+     * return a string that is to be used in html
      *
      * @param s
-     *
      * @return
      */
-    public String stringToHTMLJSON(String s) {
+    private String stringToHTML(String s) {
         s = s.replaceAll("\n", "<br>").replaceAll("\t", "");
-        return JSONObject.escape(s);
-    }
-
-
-    public String printStatus() {
-        String retVal = "";
-        retVal += "\tprojectId = " + projectId + "\n";
-        retVal += "\texpeditionCode = " + expeditionCode + "\n";
-        retVal += "\tinputFilename = " + inputFilename + "\n";
-
-        if (clearedOfWarnings)
-            retVal += "\tclearedOfWarnings=true\n";
-        else
-            retVal += "\tclearedOfWarnings=true\n";
-        if (hasWarnings)
-            retVal += "\thasWarnings=true\n";
-        else
-            retVal += "\thasWarnings=true\n";
-        if (expeditionAssignedToUserAndExists)
-            retVal += "\texpeditionAssignedToUser=true\n";
-        else
-            retVal += "\texpeditionAssignedToUser=false\n";
-        if (validated)
-            retVal += "\tvalidated=true\n";
-        else
-            retVal += "\tvalidated=false\n";
-
-        return retVal;
-    }
-
-    /**
-     * take an InputStream and extension and write it to a file in the operating systems temp dir.
-     *
-     * @param is
-     * @param ext
-     *
-     * @return
-     */
-    public String saveTempFile(InputStream is, String ext) {
-        String tempDir = System.getProperty("java.io.tmpdir");
-        File f = new File(tempDir, new StringGenerator().generateString(20) + '.' + ext);
-
-        try {
-            OutputStream os = new FileOutputStream(f);
-            try {
-                byte[] buffer = new byte[4096];
-                for (int n; (n = is.read(buffer)) != -1; )
-                    os.write(buffer, 0, n);
-            } finally {
-                os.close();
-            }
-        } catch (IOException e) {
-            logger.warn("IOException", e);
-            return null;
-        }
-        return f.getAbsolutePath();
+        return s;
     }
 
     public void setAccessionNumber(String accessionNumber) {
@@ -257,35 +129,13 @@ public class ProcessController {
         return accessionNumber;
     }
 
-    public void setDefaultSheetUniqueKey(String defaultSheetUniqueKey) {
-        this.defaultSheetUniqueKey = defaultSheetUniqueKey;
-    }
 
-    public String getDefaultSheetUniqueKey() {
-        return defaultSheetUniqueKey;
-    }
-
-    public void setCommandLineSB(StringBuilder commandLineWarningsSB) {
-        this.commandLineWarningsSB = commandLineWarningsSB;
-    }
-
-    public StringBuilder getCommandLineSB() {
-        return commandLineWarningsSB;
-    }
     public void setFinalCopy(Boolean finalCopy) {
         this.finalCopy = finalCopy;
     }
 
     public boolean getFinalCopy() {
         return finalCopy;
-    }
-
-    public FastaManager getFastaManager() {
-        return fastaManager;
-    }
-
-    public void setFastaManager(FastaManager fastaManager) {
-        this.fastaManager = fastaManager;
     }
 
     public Mapping getMapping() {
@@ -302,6 +152,7 @@ public class ProcessController {
 
     /**
      * print messages for the command line
+     *
      * @return
      */
     public String printMessages() {
@@ -320,7 +171,7 @@ public class ProcessController {
                 java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
 
                 // Parse the Row Messages that are meant for HTML display
-                commandLineWarningSB.append(htmlParser.convert(key)+"\n");
+                commandLineWarningSB.append(htmlParser.convert(key) + "\n");
 
                 for (RowMessage m : rowMessageList) {
                     commandLineWarningSB.append("\t" + m.print() + "\n");
@@ -333,18 +184,19 @@ public class ProcessController {
 
     /**
      * get messages as JSON
+     *
      * @return
      */
     public JSONObject getMessages() {
-        JSONArray messageArray = new JSONArray();
+        JSONObject worksheets = new JSONObject();
 
         // iterate through each sheet in messages and append associated messages
         Iterator it = messages.keySet().iterator();
         while (it.hasNext()) {
             String sheetName = (String) it.next();
             JSONObject sheetMessages = new JSONObject();
-            JSONArray warningMessages = new JSONArray();
-            JSONArray errorMessages = new JSONArray();
+            JSONObject warningMessages = new JSONObject();
+            JSONObject errorMessages = new JSONObject();
 
             // Group all Messages using lambdaj jar library
             Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessage()));
@@ -361,31 +213,58 @@ public class ProcessController {
                     }
                 }
                 if (errorGroupArray.size() > 0) {
-                    JSONObject group = new JSONObject();
-                    group.put(key, errorGroupArray);
-                    errorMessages.add(group);
+                    errorMessages.put(key, errorGroupArray);
                 }
                 if (warningGroupArray.size() > 0) {
-                    JSONObject group = new JSONObject();
-                    group.put(key, warningGroupArray);
-                    warningMessages.add(group);
+                    warningMessages.put(key, warningGroupArray);
                 }
             }
 
             sheetMessages.put("warnings", warningMessages);
             sheetMessages.put("errors", errorMessages);
-            JSONObject sheet = new JSONObject();
-            sheet.put(sheetName, sheetMessages);
-            messageArray.add(sheet);
+            worksheets.put(sheetName, sheetMessages);
         }
 
         JSONObject messages = new JSONObject();
-        messages.put("worksheets", messageArray);
+        messages.put("worksheets", worksheets);
+        messages.put("config", configMessages);
         return messages;
     }
 
     public void addMessage(String sheetName, RowMessage rowMessage) {
+        if (messages.get(sheetName) == null) {
+            messages.put(sheetName, new LinkedList<RowMessage>());
+        }
+
         messages.get(sheetName).add(rowMessage);
     }
 
+    public void setConfigMessages(JSONObject messages) {
+        configMessages = messages;
+    }
+
+    public String getOutputFolder() {
+        return outputFolder;
+    }
+
+    public void setOutputFolder(String outputFolder) {
+        this.outputFolder = outputFolder;
+    }
+
+    public void setProcess(Process process) {
+        this.process = process;
+    }
+
+    public Process getProcess() {
+        return process;
+    }
+
+    // hack until we get FastqFileManger.upload working
+    public void setFastqMetadata(JSONObject fastqMetadata) {
+        this.fastqMetadata = fastqMetadata;
+    }
+
+    public JSONObject getFastqMetadata() {
+        return fastqMetadata;
+    }
 }

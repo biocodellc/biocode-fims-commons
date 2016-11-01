@@ -46,9 +46,16 @@ sourceSets {
 
 dependencies {
     server 'jstl:jstl:1.2'
-    server('org.glassfish.jersey.ext:jersey-spring3:2.22.2') {
-        exclude module: 'bean-validator'
-    }
+
+    // necessary for custom jersey-spring3.aopfix.jar to fix jersey issue JERSEY-3126
+    server group: 'org.glassfish.hk2', name: 'spring-bridge', version: '2.4.0-b34'
+    server group: 'org.springframework', name: 'spring-web', version: '4.2.5.RELEASE'
+//    server('org.glassfish.jersey.ext:jersey-spring3:2.22.2') {
+//        exclude module: 'bean-validator'
+//    }
+    // custom jersey-spring implementation with a fix to inject @Context variables into aop proxied beans
+    server fileTree(dir: 'lib', include: ['*.jar'])
+
     server 'org.glassfish.jersey.ext:jersey-bean-validation:2.22.2'
     server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.2'
     server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.22.2'
@@ -72,6 +79,10 @@ dependencies {
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     server 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
     server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.0'
+
+    // aspectj
+    runtime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
+    compile group: 'org.springframework', name: 'spring-aop', version: '4.2.5.RELEASE'
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
 
