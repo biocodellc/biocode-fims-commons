@@ -64,9 +64,12 @@ public class ExpeditionService {
         }
 
         expeditionRepository.save(expedition);
-        Bcid bcid = createExpeditionBcid(expedition, webAddress);
+
+        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
+
+        Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
         expedition.setExpeditionBcid(bcid);
-        createEntityBcids(mapping, expedition.getExpeditionId(), userId);
+        createEntityBcids(mapping, expedition.getExpeditionId(), userId, ezidRequest);
     }
 
     public void update(Expedition expedition) {
@@ -187,8 +190,7 @@ public class ExpeditionService {
      * @param webAddress
      * @return
      */
-    private Bcid createExpeditionBcid(Expedition expedition, URI webAddress) {
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
+    private Bcid createExpeditionBcid(Expedition expedition, URI webAddress, boolean ezidRequest) {
 
         Bcid expditionBcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
                 .webAddress(webAddress)
@@ -201,11 +203,11 @@ public class ExpeditionService {
         return expditionBcid;
     }
 
-    private void createEntityBcids(Mapping mapping, int expeditionId, int userId) {
+    private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
         EntityToBcidMapper mapper = new EntityToBcidMapper();
 
         for (Entity entity : mapping.getEntities()) {
-            Bcid bcid = mapper.map(entity);
+            Bcid bcid = mapper.map(entity, ezidRequest);
             bcidService.create(bcid, userId);
             bcidService.attachBcidToExpedition(bcid, expeditionId);
 
