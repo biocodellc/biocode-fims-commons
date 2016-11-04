@@ -173,7 +173,7 @@ public class BcidService {
      * @return
      */
     @Transactional(readOnly = true)
-    public Set<Bcid> getEntityBcids(int expeditionId) {
+    public List<Bcid> getEntityBcids(int expeditionId) {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeNotIn(expeditionId,
                 ResourceTypes.DATASET_RESOURCE_TYPE, Expedition.EXPEDITION_RESOURCE_TYPE);
     }

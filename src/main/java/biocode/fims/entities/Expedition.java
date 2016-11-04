@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,7 +26,7 @@ public class Expedition {
     private Project project;
     private User user;
     private Bcid expeditionBcid;
-    private Set<Bcid> entityBcids;
+    private List<Bcid> entityBcids;
 
     public static class ExpeditionBuilder {
 
@@ -213,11 +214,11 @@ public class Expedition {
 
     @Transient
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="identifier")
-    public Set<Bcid> getEntityBcids() {
+    public List<Bcid> getEntityBcids() {
         return entityBcids;
     }
 
-    public void setEntityBcids(Set<Bcid> entityBcids) {
+    public void setEntityBcids(List<Bcid> entityBcids) {
         this.entityBcids = entityBcids;
     }
 }

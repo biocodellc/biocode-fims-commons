@@ -171,7 +171,7 @@ public class ExpeditionService {
     @Transactional(readOnly = true)
     public void setEntityIdentifiers(Mapping mapping, String expeditionCode, int projectId) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
-        Set<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
+        List<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
 
         for (Bcid bcid : expeditionEntityBcids) {
             for (Entity entity : mapping.getEntities()) {
