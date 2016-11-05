@@ -16,7 +16,7 @@ public class ElasticSearchIndexer {
     private final Logger logger = LoggerFactory.getLogger(ElasticSearchIndexer.class);
 
     private final Client client;
-    private final String TYPE = "dataset";
+    private final static String TYPE = "dataset";
 
     public ElasticSearchIndexer(Client client) {
         this.client = client;

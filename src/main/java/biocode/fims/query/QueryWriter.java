@@ -259,63 +259,66 @@ public class QueryWriter {
         }
     }
 
-
-    public String writeJSON(File file) {
-        // Header Row
-        createHeaderRow(sheet);
-
-        // Start constructing JSON.
+    /**
+     * This returns the query results as a JSONArray of JSONObject where each JSONObject contains "field":"value" pairs
+     *
+     * @return
+     */
+    public JSONArray getJSON() {
         JSONArray dataset = new JSONArray();
+        ArrayList<String> columns = new ArrayList<>();
+
+        for (Attribute attribute : attributes) {
+            columns.add(attribute.getColumn());
+        }
 
         // Iterate through the rows.
-        int count = 0;
-        int LIMIT = 10000;
-        List<String> columns = new ArrayList<>();
         for (Row row : sheet) {
-            if (count < LIMIT) {
-                if (count == 0) {
-                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
-                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-                        columns.add(String.valueOf(cell.getRichStringCellValue()));
-                    }
-                } else {
-                    JSONObject jRow = new JSONObject();
+            JSONObject sample = new JSONObject();
 
-                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
-                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-                        if (cell == null) {
-                            jRow.put(columns.get(cn), null);
-                        } else {
-                            switch (cell.getCellType()) {
-                                case Cell.CELL_TYPE_STRING:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getRichStringCellValue()));
-                                    break;
-                                case Cell.CELL_TYPE_NUMERIC:
-                                    if (DateUtil.isCellDateFormatted(cell)) {
-                                        jRow.put(columns.get(cn), String.valueOf(cell.getDateCellValue()));
-                                    } else {
-                                        jRow.put(columns.get(cn), String.valueOf(cell.getNumericCellValue()));
-                                    }
-                                    break;
-                                case Cell.CELL_TYPE_BOOLEAN:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getBooleanCellValue()));
-                                    break;
-                                case Cell.CELL_TYPE_FORMULA:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getCellFormula()));
-                                    break;
-                                default:
-                                    jRow.put(columns.get(cn), cell.toString());
+            for (int index = 0; index < columns.size(); index++) {
+                Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
+                Object value = null;
+
+                if (cell != null) {
+
+                    switch (cell.getCellType()) {
+
+                        case Cell.CELL_TYPE_STRING:
+                            value = cell.getRichStringCellValue().getString();
+                            break;
+
+                        case Cell.CELL_TYPE_NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                value = cell.getDateCellValue();
+                            } else {
+                                value = cell.getNumericCellValue();
                             }
-                        }
-                    }
-                    dataset.add(jRow);
-                }
-                count++;
-            }
+                            break;
 
+                        case Cell.CELL_TYPE_BOOLEAN:
+                            value = cell.getBooleanCellValue();
+                            break;
+
+                        case Cell.CELL_TYPE_FORMULA:
+                            value = cell.getCellFormula();
+                            break;
+
+                        case Cell.CELL_TYPE_BLANK:
+                            value = "";
+                            break;
+
+                        default:
+                            value = cell.toString();
+
+                    }
+                }
+
+                sample.put(columns.get(index), String.valueOf(value));
+            }
+            dataset.add(sample);
         }
-        // Write the JSON text.
-        return writeFile(dataset.toJSONString(), file);
+        return dataset;
     }
 
     /**
@@ -798,7 +801,7 @@ public class QueryWriter {
             biocode.fims.digester.List l = (biocode.fims.digester.List) listsIt.next();
             if (l.getAlias().equals(fieldName)) {
                 java.util.List<Field> fieldlist = l.getFields();
-                for (Field f: fieldlist) {
+                for (Field f : fieldlist) {
                     if (f.getValue().equals(value)) {
                         return f.getUri() + "'" + f.getValue() + "'";
                     }
@@ -870,56 +873,5 @@ public class QueryWriter {
             throw new FimsRuntimeException(500, e);
         }
 
-    }
-
-    /**
-     * This returns the query results as a JSONArray of JSONObject where each JSONObject contains "field":"value" pairs
-     *
-     * @return
-     */
-    public String getJSON() {
-        JSONArray dataset = new JSONArray();
-        ArrayList<String> columns = new ArrayList<>();
-
-        for (Attribute attribute : attributes) {
-            columns.add(attribute.getColumn());
-        }
-
-        // Iterate through the rows.
-        for (Row row : sheet) {
-            JSONObject sample = new JSONObject();
-
-            for (int index = 0; index < columns.size(); index++) {
-                Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
-                Object value;
-
-                switch (cell.getCellType()) {
-                    case Cell.CELL_TYPE_STRING:
-                        value = cell.getRichStringCellValue().getString();
-                        break;
-                    case Cell.CELL_TYPE_NUMERIC:
-                        if (DateUtil.isCellDateFormatted(cell)) {
-                            value = cell.getDateCellValue();
-                        } else {
-                            value = cell.getNumericCellValue();
-                        }
-                        break;
-                    case Cell.CELL_TYPE_BOOLEAN:
-                        value = cell.getBooleanCellValue();
-                        break;
-                    case Cell.CELL_TYPE_FORMULA:
-                        value = cell.getCellFormula();
-                        break;
-                    case Cell.CELL_TYPE_BLANK:
-                        value = "";
-                        break;
-                    default:
-                        value = cell.toString();
-                }
-                sample.put(columns.get(index), String.valueOf(value));
-            }
-            dataset.add(sample);
-        }
-        return dataset.toJSONString();
     }
 }
