@@ -1375,7 +1375,8 @@ public class Rule {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
-            logger.warn("NullPointerException", e);
+                // Commenting out warning message here... it gets thrown way too often
+            //logger.warn("NullPointerException", e);
             // do nothing, just make it not caseInsensitive
         }
 
