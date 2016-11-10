@@ -403,12 +403,16 @@ public class ProjectRestService extends FimsService {
         validation.addValidationRules(configFile, mapping);
 
         biocode.fims.digester.List results = validation.findList(listName);
-        JSONArray list = new JSONArray();
+        if (results != null) {
+            JSONArray list = new JSONArray();
 
-        for (Field field: results.getFields()) {
-            list.add(field.getValue());
+            for (Field field : results.getFields()) {
+                list.add(field.getValue());
+            }
+
+            return Response.ok(list.toJSONString()).build();
+        } else {
+            throw new BadRequestException("No list \"" + listName + "\" found");
         }
-
-        return Response.ok(list.toJSONString()).build();
     }
 }
