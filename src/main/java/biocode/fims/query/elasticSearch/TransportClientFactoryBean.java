@@ -46,7 +46,7 @@ public class TransportClientFactoryBean implements FactoryBean<TransportClient>,
     private String clusterNodes = "127.0.0.1:9300";
     private String clusterName = "elasticsearch";
     private Boolean clientTransportSniff = true;
-    private Boolean clientIgnoreClusterName = Boolean.FALSE;
+    private Boolean clientIgnoreClusterName = false;
     private String clientPingTimeout = "5s";
     private String clientNodesSamplerInterval = "5s";
     private TransportClient client;
