@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -376,7 +377,7 @@ public class EzidService {
                     try {
                         StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                         ((HttpPut) request).setEntity(myEntity);
-                    } catch (UnsupportedEncodingException e) {
+                    } catch (UnsupportedCharsetException e) {
                         throw new EzidException(e);
                     }
                 }
@@ -389,7 +390,7 @@ public class EzidService {
                         System.out.println("requestBody = " + requestBody);
                         StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                         ((HttpPost) request).setEntity(myEntity);
-                    } catch (UnsupportedEncodingException e) {
+                    } catch (UnsupportedCharsetException e) {
                         throw new EzidException(e);
                     }
                 }

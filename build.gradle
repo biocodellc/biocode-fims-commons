@@ -11,8 +11,8 @@ apply plugin: "java"
 apply plugin: "idea"
 apply plugin: "org.ajoberstar.github-pages"
 
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -85,7 +85,9 @@ dependencies {
     compile group: 'org.springframework', name: 'spring-aop', version: '4.2.5.RELEASE'
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
-    server group: 'org.elasticsearch', name: 'elasticsearch', version: '5.0.0'
+    server group: 'org.elasticsearch.client', name: 'transport', version: '5.0.0'
+    // required for elasticsearch
+    server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
 
     server 'org.xerial:sqlite-jdbc:3.7.2'
     server 'org.slf4j:slf4j-log4j12:1.7.19'

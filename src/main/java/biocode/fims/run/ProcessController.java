@@ -267,4 +267,8 @@ public class ProcessController {
     public JSONObject getFastqMetadata() {
         return fastqMetadata;
     }
+
+    public void setExpeditionCode(String expeditionCode) {
+        this.expeditionCode = expeditionCode;
+    }
 }

@@ -16,6 +16,7 @@ public class Entity {
     private String conceptURI;
     private String entityId;
     private String conceptForwardingAddress;
+    private boolean esNestedObject = false;
     private URI identifier;
 
     private final LinkedList<Attribute> attributes = new LinkedList<Attribute>();
@@ -71,6 +72,14 @@ public class Entity {
 
     public void setConceptURI(String conceptURI) {
         this.conceptURI = conceptURI;
+    }
+
+    public boolean isEsNestedObject() {
+        return esNestedObject;
+    }
+
+    public void setEsNestedObject(boolean esNestedObject) {
+        this.esNestedObject = esNestedObject;
     }
 
     /**

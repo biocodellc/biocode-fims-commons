@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -85,8 +86,8 @@ public class TransportClientFactoryBean implements FactoryBean<TransportClient>,
         buildClient();
     }
 
-    protected void buildClient() throws Exception {
-        client = TransportClient.builder().settings(settings()).build();
+    private void buildClient() throws Exception {
+        client = new PreBuiltTransportClient(settings());
         Assert.hasText(clusterNodes, "[Assertion failed] clusterNodes settings missing.");
         for (String clusterNode : split(clusterNodes, COMMA)) {
             String hostName = substringBeforeLast(clusterNode, COLON);

@@ -162,6 +162,10 @@ public class Process {
             fm.upload(datasetFileManager.isNewDataset());
         }
 
+//        if (esIndex) {
+
+//        }
+
         processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
     }
@@ -254,7 +258,7 @@ public class Process {
     public void close() {
         datasetFileManager.close();
         for (FileManager fm: fileManagers) {
-            fm.close();;
+            fm.close();
         }
     }
 }
