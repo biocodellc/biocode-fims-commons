@@ -49,7 +49,7 @@ dependencies {
 
     // necessary for custom jersey-spring3.aopfix.jar to fix jersey issue JERSEY-3126
     server group: 'org.glassfish.hk2', name: 'spring-bridge', version: '2.4.0-b34'
-    server group: 'org.springframework', name: 'spring-web', version: '4.2.5.RELEASE'
+    server group: 'org.springframework', name: 'spring-web', version: '4.3.4.RELEASE'
 //    server('org.glassfish.jersey.ext:jersey-spring3:2.22.2') {
 //        exclude module: 'bean-validator'
 //    }
@@ -82,7 +82,7 @@ dependencies {
 
     // aspectj
     runtime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
-    compile group: 'org.springframework', name: 'spring-aop', version: '4.2.5.RELEASE'
+    compile group: 'org.springframework', name: 'spring-aop', version: '4.3.4.RELEASE'
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
     // TODO migrate to rest client when it becomes more mature
