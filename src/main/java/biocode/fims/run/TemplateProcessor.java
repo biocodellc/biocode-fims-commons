@@ -62,9 +62,9 @@ public class TemplateProcessor {
     Integer projectId;
     private String username = null;
 
-    public TemplateProcessor(Integer projectId, String outputFolder, Boolean useCache, XSSFWorkbook workbook) {
+    public TemplateProcessor(Integer projectId, String outputFolder, XSSFWorkbook workbook) {
         this.projectId = projectId;
-        ConfigurationFileFetcher configFile = new ConfigurationFileFetcher(projectId, outputFolder, useCache);
+        ConfigurationFileFetcher configFile = new ConfigurationFileFetcher(projectId, outputFolder, true);
         SettingsManager sm = SettingsManager.getInstance();
         naan = Integer.parseInt(sm.retrieveValue("naan"));
 
@@ -149,11 +149,10 @@ public class TemplateProcessor {
      *
      * @param projectId
      * @param outputFolder
-     * @param useCache
      */
-    public void instantiateTemplateProcessor(Integer projectId, String outputFolder, Boolean useCache) {
+    public void instantiateTemplateProcessor(Integer projectId, String outputFolder) {
         this.projectId = projectId;
-        ConfigurationFileFetcher fetcher = new ConfigurationFileFetcher(projectId, outputFolder, useCache);
+        ConfigurationFileFetcher fetcher = new ConfigurationFileFetcher(projectId, outputFolder, true);
         instantiateTemplateProcessor(fetcher.getOutputFile());
     }
 
@@ -163,11 +162,10 @@ public class TemplateProcessor {
      *
      * @param projectId
      * @param outputFolder
-     * @param useCache
      * @param accessionNumber
      * @param datasetCode
      */
-    public TemplateProcessor(Integer projectId, String outputFolder, Boolean useCache,
+    public TemplateProcessor(Integer projectId, String outputFolder,
                              String accessionNumber, String datasetCode, String identifier, String username) {
         // we can't have a null value for accessionNumber or datasetCode if using this constructor
         if (accessionNumber == null || datasetCode == null) {
@@ -177,7 +175,7 @@ public class TemplateProcessor {
         this.accessionNumber = accessionNumber;
         this.datasetCode = datasetCode;
         this.identifier = identifier;
-        instantiateTemplateProcessor(projectId, outputFolder, useCache);
+        instantiateTemplateProcessor(projectId, outputFolder);
     }
 
     /**
@@ -198,8 +196,8 @@ public class TemplateProcessor {
         instantiateTemplateProcessor(file);
     }
 
-    public TemplateProcessor(Integer projectId, String outputFolder, Boolean useCache) {
-        instantiateTemplateProcessor(projectId, outputFolder, useCache);
+    public TemplateProcessor(Integer projectId, String outputFolder) {
+        instantiateTemplateProcessor(projectId, outputFolder);
     }
 
     public Mapping getMapping() {

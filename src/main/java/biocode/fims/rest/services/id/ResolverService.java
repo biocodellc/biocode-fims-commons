@@ -79,7 +79,7 @@ public class ResolverService extends FimsService {
 
             if (expedition != null) {
                 File configFile = new ConfigurationFileFetcher(
-                        expedition.getProject().getProjectId(), uploadPath(), false
+                        expedition.getProject().getProjectId(), uploadPath(), true
                 ).getOutputFile();
 
                 mapping = new Mapping();

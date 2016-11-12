@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnitUtil;
+import java.util.List;
 
 
 /**
@@ -88,6 +89,14 @@ public class ProjectService {
         }
         return false;
 
+    }
+
+    public List<Project> getProjects() {
+        return projectRepository.findAll();
+    }
+
+    public List<Project> getProjects(String projectUrl) {
+        return projectRepository.findAllByProjectUrl(projectUrl);
     }
 }
 

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 /**
  * This repositories provides CRUD operations for {@link Project} objects
@@ -22,4 +23,8 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
     void save(Project project);
 
     Project findByProjectId(int projectId);
+
+    List<Project> findAll();
+
+    List<Project> findAllByProjectUrl(String projectUrl);
 }

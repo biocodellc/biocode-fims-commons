@@ -71,7 +71,7 @@ public class ExpeditionRestService extends FimsService {
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
         URI uri;
 
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);

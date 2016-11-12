@@ -1,23 +1,32 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.entities.Expedition;
+import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import org.elasticsearch.client.transport.TransportClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -34,19 +43,24 @@ import java.util.*;
 @Controller
 @Path("projects")
 public class ProjectRestService extends FimsService {
+    private static final Logger logger = LoggerFactory.getLogger(ProjectRestService.class);
     private ExpeditionService expeditionService;
+    private ProjectService projectService;
+    private final TransportClient esClient;
 
     @Autowired
-    ProjectRestService(ExpeditionService expeditionService,
-                       OAuthProviderService providerService, SettingsManager settingsManager) {
+    ProjectRestService(ExpeditionService expeditionService, TransportClient esClient,
+                       OAuthProviderService providerService, SettingsManager settingsManager, ProjectService projectService) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
+        this.esClient = esClient;
+        this.projectService = projectService;
     }
 
     /**
      * Produce a list of all publically available projects and the private projects the logged in user is a memeber of
      *
-     * @return  Generates a JSON listing containing project metadata as an array
+     * @return Generates a JSON listing containing project metadata as an array
      */
     @GET
     @Path("/list")
@@ -78,7 +92,7 @@ public class ProjectRestService extends FimsService {
     @Path("/{projectId}/graphs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getLatestGraphsByExpedition(@PathParam("projectId") Integer projectId) {
-        ProjectMinter project= new ProjectMinter();
+        ProjectMinter project = new ProjectMinter();
         String username = null;
         if (user != null) {
             username = user.getUsername();
@@ -94,7 +108,7 @@ public class ProjectRestService extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAbstract(@PathParam("projectId") int projectId) {
         JSONObject obj = new JSONObject();
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
 
         // Write the all of the checkbox definitions to a String Variable
         //obj.put("abstract", JSONValue.escape(t.printAbstract()));
@@ -113,14 +127,14 @@ public class ProjectRestService extends FimsService {
     @Path("/myGraphs/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMyLatestGraphs() {
-        ProjectMinter project= new ProjectMinter();
+        ProjectMinter project = new ProjectMinter();
 
         String response = project.getMyLatestGraphs(user.getUsername());
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
 
-     /**
+    /**
      * Get the users datasets
      *
      * @return
@@ -130,7 +144,7 @@ public class ProjectRestService extends FimsService {
     @Path("/myDatasets/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDatasets() {
-        ProjectMinter project= new ProjectMinter();
+        ProjectMinter project = new ProjectMinter();
 
         String response = project.getMyTemplatesAndDatasets(user.getUsername());
 
@@ -139,6 +153,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Return a json representation to be used for select options of the projects that a user is an admin to
+     *
      * @return
      */
     @GET
@@ -147,7 +162,7 @@ public class ProjectRestService extends FimsService {
     @Path("/admin/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserAdminProjects() {
-        ProjectMinter project= new ProjectMinter();
+        ProjectMinter project = new ProjectMinter();
         JSONArray projects = project.getAdminProjects(user.getUsername());
 
         return Response.ok(projects.toJSONString()).build();
@@ -156,6 +171,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used for updating a project's configuration.
+     *
      * @param projectID
      * @param title
      * @param validationXML
@@ -210,6 +226,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to remove a user as a member of a project.
+     *
      * @param projectId
      * @param userId
      * @return
@@ -233,6 +250,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to add a user as a member of a project.
+     *
      * @param projectId
      * @param userId
      * @return
@@ -262,6 +280,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to retrieve a JSON representation of the project's a user is a member of.
+     *
      * @return
      */
     @GET
@@ -276,6 +295,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to save a fims template generator configuration
+     *
      * @param checkedOptions
      * @param configName
      * @param projectId
@@ -311,6 +331,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to get the fims template generator configurations for a given project
+     *
      * @param projectId
      * @return
      */
@@ -326,6 +347,7 @@ public class ProjectRestService extends FimsService {
 
     /**
      * Service used to get a specific fims template generator configuration
+     *
      * @param configName
      * @param projectId
      * @return
@@ -340,8 +362,10 @@ public class ProjectRestService extends FimsService {
 
         return Response.ok(response.toJSONString()).build();
     }
+
     /**
      * Service used to delete a specific fims template generator configuration
+     *
      * @param configName
      * @param projectId
      * @return
@@ -370,7 +394,6 @@ public class ProjectRestService extends FimsService {
      * Return a JSON representation of the expedition's that a user is a member of
      *
      * @param projectId
-     *
      * @return
      */
     @GET
@@ -385,7 +408,6 @@ public class ProjectRestService extends FimsService {
      * Retrieve a list of valid values for a given column
      *
      * @param projectId
-     *
      * @return
      */
     @GET
@@ -414,5 +436,31 @@ public class ProjectRestService extends FimsService {
         } else {
             throw new BadRequestException("No list \"" + listName + "\" found");
         }
+    }
+
+    @GET
+    @Path("/{projectId}/config/refreshCache")
+    public Response refreshCache(@PathParam("projectId") Integer projectId) {
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+
+        if (esClient != null) {
+            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+            JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
+            indexer.updateMapping(projectId, mapping, settingsManager);
+        }
+
+        return Response.noContent().build();
+    }
+
+    @Scheduled(cron = "0 0 2 * * *")
+    @GET
+    @Path("/config/refreshCache")
+    public Response refreshAllCache() {
+        logger.info("refreshing project config caches");
+        List<Project> projects = projectService.getProjects(settingsManager.retrieveValue("appRoot"));
+
+        projects.forEach(p -> refreshCache(p.getProjectId()));
+
+        return Response.noContent().build();
     }
 }
