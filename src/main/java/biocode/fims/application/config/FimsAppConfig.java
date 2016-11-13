@@ -1,0 +1,78 @@
+package biocode.fims.application.config;
+
+import biocode.fims.bcid.Resolver;
+import biocode.fims.ezid.EzidUtils;
+import biocode.fims.service.BcidService;
+import biocode.fims.service.ExpeditionService;
+import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.SpringApplicationContext;
+import org.elasticsearch.client.Client;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.*;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+
+import java.io.FileNotFoundException;
+
+/**
+ * Configuration for resource needed for all biocode-fims applications. This includes web and cli apps
+ */
+@Configuration
+@ComponentScan(basePackages = {"biocode.fims.service"})
+@ImportResource({
+        "classpath:data-access-config.xml"
+})
+public class FimsAppConfig {
+    @Autowired
+    Environment env;
+
+    @Autowired
+    BcidService bcidService;
+    @Autowired
+    ExpeditionService expeditionService;
+
+    @Bean
+    public SettingsManager settingsManager() throws FileNotFoundException {
+        Resource propsFileResource = new ClassPathResource("biocode-fims.props");
+        if (!propsFileResource.exists()) {
+            throw new FileNotFoundException("biocode-fims.props File not found");
+        }
+        return SettingsManager.getInstance(propsFileResource);
+    }
+
+    @Bean
+    public Resolver resolver() throws FileNotFoundException {
+        return new Resolver(bcidService, settingsManager(), expeditionService);
+    }
+
+    @Bean
+    public SpringApplicationContext springApplicationContext() {
+        return new SpringApplicationContext();
+    }
+
+    @Bean
+    public EzidUtils ezidUtils() throws FileNotFoundException {
+        return new EzidUtils(settingsManager());
+    }
+
+    @Bean
+    public ReloadableResourceBundleMessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:locale/messages");
+        messageSource.setUseCodeAsDefaultMessage(true);
+        return messageSource;
+    }
+
+    @Bean
+    public Client esClient() throws Exception {
+        return null;
+    }
+
+    // TODO remove this if no bugs are found
+//    @Bean
+//    public ExpeditionMinter expeditionMinter() {
+//        return new ExpeditionMinter();
+//    }
+}

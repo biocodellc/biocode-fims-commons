@@ -16,7 +16,6 @@ import java.util.*;
  * The resource methods should always deal with code in the latest api version. This class will transform
  * the request and response through a pipeline for the requested api version.
  */
-@Aspect
 public class VersionTransformer {
     private final static Logger logger = LoggerFactory.getLogger(VersionTransformer.class);
     private final static String TRANSFORMER_PACKAGE = "biocode.fims.rest.versioning.transformers";

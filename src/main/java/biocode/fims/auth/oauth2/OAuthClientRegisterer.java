@@ -1,9 +1,11 @@
 package biocode.fims.auth.oauth2;
 
+import biocode.fims.application.config.FimsAppConfig;
 import biocode.fims.entities.OAuthClient;
 import biocode.fims.service.OAuthProviderService;
 import org.apache.commons.cli.*;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
@@ -18,7 +20,7 @@ public class OAuthClientRegisterer {
      * @param args
      */
     public static void main(String args[]) {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(FimsAppConfig.class);
         OAuthProviderService providerService = applicationContext.getBean(OAuthProviderService.class);
 
         // Some classes to help us

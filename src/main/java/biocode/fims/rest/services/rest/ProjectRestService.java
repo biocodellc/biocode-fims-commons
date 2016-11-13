@@ -19,6 +19,7 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -46,10 +47,10 @@ public class ProjectRestService extends FimsService {
     private static final Logger logger = LoggerFactory.getLogger(ProjectRestService.class);
     private ExpeditionService expeditionService;
     private ProjectService projectService;
-    private final TransportClient esClient;
+    private final Client esClient;
 
     @Autowired
-    ProjectRestService(ExpeditionService expeditionService, TransportClient esClient,
+    ProjectRestService(ExpeditionService expeditionService, Client esClient,
                        OAuthProviderService providerService, SettingsManager settingsManager, ProjectService projectService) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
