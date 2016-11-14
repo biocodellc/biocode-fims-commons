@@ -18,6 +18,8 @@ import java.io.FileNotFoundException;
 
 /**
  * Configuration for resource needed for all biocode-fims applications. This includes web and cli apps
+ * Currently this class is ment to be extened, Thus you would need to copy all the annotations to the
+ * subclass. TODO: Fix the problem with circular dependencies and use the @Import notation instead of subclassing
  */
 @Configuration
 @ComponentScan(basePackages = {"biocode.fims.service"})
