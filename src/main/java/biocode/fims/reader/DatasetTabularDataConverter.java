@@ -1,7 +1,6 @@
 package biocode.fims.reader;
 
 import biocode.fims.digester.Attribute;
-import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ValidationCode;
 import biocode.fims.reader.plugins.TabularDataReader;
@@ -14,7 +13,7 @@ import java.util.List;
 
 
 /**
- * Takes a data source represented by a TabularDataReader and converts it to {@link Dataset}
+ * Takes a data source represented by a TabularDataReader and converts it to dataset
  */
 public class DatasetTabularDataConverter {
     private TabularDataReader source;
@@ -24,9 +23,9 @@ public class DatasetTabularDataConverter {
     }
 
     /**
-     * Reads the source data and converts it to a {@link Dataset}.
+     * Reads the source data and converts it to a dataset.
      */
-    public Dataset convert(List<Attribute> attributes, String sheetName) {
+    public JSONArray convert(List<Attribute> attributes, String sheetName) {
         JSONArray sheet = new JSONArray();
         source.setTable(sheetName);
 
@@ -61,6 +60,6 @@ public class DatasetTabularDataConverter {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
-        return new Dataset(attributeColumns, sheet);
+        return sheet;
     }
 }

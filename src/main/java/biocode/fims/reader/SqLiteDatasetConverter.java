@@ -4,11 +4,11 @@ import biocode.fims.bcid.Database;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
-import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ValidationCode;
 import biocode.fims.settings.Hasher;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +18,11 @@ import java.util.*;
 
 
 /**
- * Takes a data source represented by a {@link Dataset} and converts it to a
+ * Takes a data source represented by a dataset and converts it to a
  * SQLite Database.
  */
 public final class SqLiteDatasetConverter {
-    private final Dataset dataset;
+    private final JSONArray dataset;
     String dest;
 
     private static Logger logger = LoggerFactory.getLogger(SqLiteDatasetConverter.class);
@@ -31,7 +31,7 @@ public final class SqLiteDatasetConverter {
      * @param dataset
      * @param dest    A valid SQLIte JDBC connection string.
      */
-    public SqLiteDatasetConverter(Dataset dataset, String dest) {
+    public SqLiteDatasetConverter(JSONArray dataset, String dest) {
         this.dataset = dataset;
         this.dest = dest;
     }
@@ -168,14 +168,14 @@ public final class SqLiteDatasetConverter {
     /**
      * Creates a single table in the destination Database. If the specified table name
      * already exists in the Database, IT IS DROPPED.  A new table with columns matching the keys
-     * of the first sample in the {@link Dataset} and all samples from the {@link Dataset}
+     * of the first sample in the dataset and all samples from the dataset
      * are copied to the new table.
      *
      * @param conn  A valid connection to a destination Database.
      * @param tName The name to use for the table in the destination Database.
      */
     private void buildTable(Connection conn, String tName) {
-        if (dataset.getSamples().isEmpty()) {
+        if (dataset.isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
@@ -206,7 +206,7 @@ public final class SqLiteDatasetConverter {
             // set up the table definition query
             String query = "CREATE TABLE [" + tName + "] (";
             colcnt = 0;
-            List<String> columns = new ArrayList<>(((JSONObject) dataset.getSamples().get(0)).keySet());
+            List<String> columns = new ArrayList<>(((JSONObject) dataset.get(0)).keySet());
             for (String colname : columns) {
                 if (colcnt++ > 0) {
                     query += ", ";
@@ -241,7 +241,7 @@ public final class SqLiteDatasetConverter {
             stmt.execute("BEGIN TRANSACTION");
 
             // populate the table with the source data
-            for (Object obj : dataset.getSamples()) {
+            for (Object obj : dataset) {
                 JSONObject sample = (JSONObject) obj;
                 cnt = 0;
                 StringBuilder sb = new StringBuilder();

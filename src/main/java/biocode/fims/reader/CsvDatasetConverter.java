@@ -2,13 +2,13 @@ package biocode.fims.reader;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
-import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.fimsExceptions.ValidationCode;
 import biocode.fims.settings.PathManager;
 import biocode.fims.utils.DateUtils;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +20,11 @@ import java.util.*;
 
 
 /**
- * Takes a data source represented by a {@link Dataset} and converts it to a
+ * Takes a data source represented by a dataset and converts it to a
  * CSV file
  */
 public final class CsvDatasetConverter {
-    private final Dataset dataset;
+    private final JSONArray fimsMetadata;
     private final String filenamePrefix;
     private final String outputDir;
 
@@ -33,21 +33,22 @@ public final class CsvDatasetConverter {
     private static Logger logger = LoggerFactory.getLogger(CsvDatasetConverter.class);
 
     /**
-     * @param dataset
+     * @param fimsMetadata
      * @param outputDir A valid filepath for the new csv file
+     * @param filenamePrefix
      */
-    public CsvDatasetConverter(Dataset dataset, String outputDir, String filenamePrefix) {
-        this.dataset = dataset;
+    public CsvDatasetConverter(JSONArray fimsMetadata, String outputDir, String filenamePrefix) {
+        this.fimsMetadata = fimsMetadata;
         this.outputDir = outputDir;
         this.filenamePrefix = filenamePrefix;
     }
 
 
     /**
-     * converts the dataset samples to a csv file
+     * converts the fimsMetadata samples to a csv file
      */
     public void convert(List<Attribute> attributes) {
-        if (dataset.getSamples().isEmpty()) {
+        if (fimsMetadata.isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
@@ -58,7 +59,7 @@ public final class CsvDatasetConverter {
         try {
             FileOutputStream fos = new FileOutputStream(csvFile);
 
-            for (Object s : dataset.getSamples()) {
+            for (Object s : fimsMetadata) {
                 JSONObject sample = (JSONObject) s;
 
                 for (Attribute a : attributes) {
@@ -73,9 +74,9 @@ public final class CsvDatasetConverter {
 
                         data.append(value + ",");
                     } else {
-                        // if the column doesn't exist in the dataset, add a placeholder in the csv file.
+                        // if the column doesn't exist in the fimsMetadata, add a placeholder in the csv file.
                         // This is required because we later use the attributes list to insert the csv data
-                        // into the db. If a column in missing from the dataset and a placeholder isn't entered in the
+                        // into the db. If a column in missing from the fimsMetadata and a placeholder isn't entered in the
                         // csv, then the csv data becomes mis-aligned with attributes list, causing invalid data
                         // to be persisted
                         data.append(",");

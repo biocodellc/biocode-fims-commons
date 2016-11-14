@@ -6,7 +6,7 @@ import biocode.fims.digester.Validation;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.FileManager;
-import biocode.fims.fileManagers.dataset.IDatasetFileManager;
+import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.UploadCode;
 import biocode.fims.service.ExpeditionService;
@@ -30,13 +30,13 @@ public class Process {
     private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
     private final List<AuxilaryFileManager> fileManagers;
-    private final IDatasetFileManager datasetFileManager;
+    private final DatasetFileManager datasetFileManager;
     private final ProcessController processController;
     private final File configFile;
 
     public static class ProcessBuilder {
         // Required
-        IDatasetFileManager datasetFileManager;
+        DatasetFileManager datasetFileManager;
         ProcessController processController;
         Map<String, Map<String, Object>> fmProperties;
         File configFile;
@@ -44,7 +44,7 @@ public class Process {
         // Optional
         List<AuxilaryFileManager> additionalFileManagers = new ArrayList<>();
 
-        public ProcessBuilder(IDatasetFileManager datasetFileManager, ProcessController processController) {
+        public ProcessBuilder(DatasetFileManager datasetFileManager, ProcessController processController) {
             this.datasetFileManager = datasetFileManager;
             this.processController = processController;
         }

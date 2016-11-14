@@ -1,6 +1,5 @@
 package biocode.fims.digester;
 
-import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.reader.SqLiteDatasetConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
@@ -11,6 +10,7 @@ import biocode.fims.settings.PathManager;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -143,7 +143,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, Dataset dataset) {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, JSONArray dataset) {
         PathManager pm = new PathManager();
         File processDirectory = pm.setDirectory(outputFolder);
 
@@ -231,7 +231,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, Dataset dataset) {
+    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, JSONArray dataset) {
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = worksheets.get(0);

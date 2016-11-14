@@ -8,7 +8,7 @@ import org.json.simple.JSONArray;
  */
 public interface DatasetPersistenceManager {
 
-    void upload(ProcessController processController, Dataset dataset);
+    void upload(ProcessController processController, JSONArray dataset);
 
     boolean validate(ProcessController processController);
 
@@ -16,5 +16,5 @@ public interface DatasetPersistenceManager {
 
     String getGraph();
 
-    Dataset getDataset(ProcessController processController);
+    JSONArray getDataset(ProcessController processController);
 }

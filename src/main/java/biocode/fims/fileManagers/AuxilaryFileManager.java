@@ -1,9 +1,10 @@
 package biocode.fims.fileManagers;
 
-import biocode.fims.fileManagers.dataset.Dataset;
+import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import org.json.simple.JSONArray;
 
 /**
- * Interface for FileManagers that depend on {@link biocode.fims.fileManagers.dataset.IDatasetFileManager}
+ * Interface for FileManagers that depend on {@link DatasetFileManager}
  */
 public interface AuxilaryFileManager extends FileManager {
 
@@ -13,7 +14,7 @@ public interface AuxilaryFileManager extends FileManager {
      *
      * @return
      */
-    boolean validate(Dataset dataset);
+    boolean validate(JSONArray dataset);
 
     void upload(boolean newDataset);
 }
