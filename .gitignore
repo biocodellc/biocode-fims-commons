@@ -2,6 +2,7 @@
 *.iml
 *.props
 *.properties
+!src/main/resources/settings-manager.properties
 build/*
 classes/*
 .gradle

@@ -11,18 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import java.io.FileNotFoundException;
 
 /**
  * Configuration for resource needed for all biocode-fims applications. This includes web and cli apps
- * Currently this class is ment to be extened, Thus you would need to copy all the annotations to the
- * subclass. TODO: Fix the problem with circular dependencies and use the @Import notation instead of subclassing
  */
 @Configuration
 @ComponentScan(basePackages = {"biocode.fims.service"})
+@Import({SettingsManagerConfig.class})
 @ImportResource({
         "classpath:data-access-config.xml"
 })
@@ -34,19 +31,12 @@ public class FimsAppConfig {
     BcidService bcidService;
     @Autowired
     ExpeditionService expeditionService;
-
-    @Bean
-    public SettingsManager settingsManager() throws FileNotFoundException {
-        Resource propsFileResource = new ClassPathResource("biocode-fims.props");
-        if (!propsFileResource.exists()) {
-            throw new FileNotFoundException("biocode-fims.props File not found");
-        }
-        return SettingsManager.getInstance(propsFileResource);
-    }
+    @Autowired
+    SettingsManager settingsManager;
 
     @Bean
     public Resolver resolver() throws FileNotFoundException {
-        return new Resolver(bcidService, settingsManager(), expeditionService);
+        return new Resolver(bcidService, settingsManager, expeditionService);
     }
 
     @Bean
@@ -56,7 +46,7 @@ public class FimsAppConfig {
 
     @Bean
     public EzidUtils ezidUtils() throws FileNotFoundException {
-        return new EzidUtils(settingsManager());
+        return new EzidUtils(settingsManager);
     }
 
     @Bean
@@ -71,10 +61,4 @@ public class FimsAppConfig {
     public Client esClient() throws Exception {
         return null;
     }
-
-    // TODO remove this if no bugs are found
-//    @Bean
-//    public ExpeditionMinter expeditionMinter() {
-//        return new ExpeditionMinter();
-//    }
 }
