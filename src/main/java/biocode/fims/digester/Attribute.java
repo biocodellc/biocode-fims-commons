@@ -2,8 +2,6 @@ package biocode.fims.digester;
 
 import biocode.fims.settings.FimsPrinter;
 
-import javax.xml.crypto.Data;
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +22,7 @@ public class Attribute implements Comparable {
     private String dataformat;
     private String delimited_by;
     private String type;
+    private Boolean displayAnnotationProperty;
 
     public String getColumn() {
         return column;
@@ -39,6 +38,21 @@ public class Attribute implements Comparable {
         // INSTEAD: use THIS syntax and handle replacements elsewhere.
         this.column = column;
 
+    }
+
+    /**
+     * Default is true
+     * @return
+     */
+    public Boolean getDisplayAnnotationProperty() {
+        if (displayAnnotationProperty == null) {
+            return true;
+        }
+        return displayAnnotationProperty;
+    }
+
+    public void setDisplayAnnotationProperty(Boolean displayAnnotationProperty) {
+        this.displayAnnotationProperty = displayAnnotationProperty;
     }
 
     public String getIsDefinedByURIString() {
