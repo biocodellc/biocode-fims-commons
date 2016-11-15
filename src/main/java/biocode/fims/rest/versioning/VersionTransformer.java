@@ -24,8 +24,8 @@ public class VersionTransformer {
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
         FimsService fimsService = (FimsService) jp.getTarget();
 
-        // Make v1 the default version, if not set by getHeaders()
-        String version = "v1";
+        // Set the default version, if not set by getHeaders()
+        String version = APIVersion.DEFAULT_VERSION;
         if (fimsService.getHeaders() != null) {
             version = fimsService.getHeaders().getHeaderString("Api-Version");
         }
