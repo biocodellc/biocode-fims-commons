@@ -23,7 +23,12 @@ public class VersionTransformer {
     @Around("execution(* biocode.fims.rest.services..*.*(..))")
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
         FimsService fimsService = (FimsService) jp.getTarget();
-        String version = fimsService.getHeaders().getHeaderString("Api-Version");
+
+        // Make v1 the default version, if not set by getHeaders()
+        String version = "v1";
+        if (fimsService.getHeaders() != null) {
+            version = fimsService.getHeaders().getHeaderString("Api-Version");
+        }
         Object returnValue;
 
         Object[] args = jp.getArgs();
