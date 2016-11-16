@@ -1,4 +1,4 @@
-package biocode.fims.fileManagers.dataset;
+package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.run.ProcessController;
 import org.json.simple.JSONArray;
@@ -6,9 +6,9 @@ import org.json.simple.JSONArray;
 /**
  * Interface for handling dataset persistence
  */
-public interface DatasetPersistenceManager {
+public interface FimsMetadataPersistenceManager {
 
-    void upload(ProcessController processController, JSONArray dataset);
+    void upload(ProcessController processController, JSONArray fimsMetadata);
 
     boolean validate(ProcessController processController);
 

@@ -18,20 +18,20 @@ import java.util.*;
 
 
 /**
- * Takes a data source represented by a dataset and converts it to a
+ * Takes a data source represented by a JsonArray and converts it to a
  * SQLite Database.
  */
-public final class SqLiteDatasetConverter {
+public final class SqLiteJsonConverter {
     private final JSONArray dataset;
     String dest;
 
-    private static Logger logger = LoggerFactory.getLogger(SqLiteDatasetConverter.class);
+    private static Logger logger = LoggerFactory.getLogger(SqLiteJsonConverter.class);
 
     /**
      * @param dataset
      * @param dest    A valid SQLIte JDBC connection string.
      */
-    public SqLiteDatasetConverter(JSONArray dataset, String dest) {
+    public SqLiteJsonConverter(JSONArray dataset, String dest) {
         this.dataset = dataset;
         this.dest = dest;
     }

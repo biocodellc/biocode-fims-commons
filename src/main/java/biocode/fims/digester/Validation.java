@@ -1,7 +1,7 @@
 package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.reader.SqLiteDatasetConverter;
+import biocode.fims.reader.SqLiteJsonConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
@@ -39,7 +39,7 @@ public class Validation implements RendererInterface {
     private static Logger logger = LoggerFactory.getLogger(Validation.class);
     // File reference for a sqlite Database
     private File sqliteFile;
-    private SqLiteDatasetConverter sdc;
+    private SqLiteJsonConverter sdc;
 
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
@@ -143,7 +143,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, JSONArray dataset) {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, JSONArray fimsMetadata) {
         PathManager pm = new PathManager();
         File processDirectory = pm.setDirectory(outputFolder);
 
@@ -158,7 +158,7 @@ public class Validation implements RendererInterface {
         String pathPrefix = processDirectory + File.separator + filenamePrefix;
         sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
 
-        sdc = new SqLiteDatasetConverter(dataset, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        sdc = new SqLiteJsonConverter(fimsMetadata, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
         sdc.convert(sheetName);
 
         // Create the SQLLite connection
@@ -231,7 +231,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, JSONArray dataset) {
+    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, JSONArray fimsMetadata) {
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = worksheets.get(0);
@@ -245,7 +245,7 @@ public class Validation implements RendererInterface {
         // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
         // processing data, such as worksheets containing duplicate column names, which will fail the data load.
 
-        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, dataset);
+        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, fimsMetadata);
 
         // Attempt to build hashes
         boolean hashErrorFree = true;

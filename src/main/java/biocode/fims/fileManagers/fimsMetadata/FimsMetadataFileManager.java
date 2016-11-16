@@ -1,12 +1,13 @@
-package biocode.fims.fileManagers.dataset;
+package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
+import biocode.fims.fileManagers.FileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.reader.DatasetTabularDataConverter;
+import biocode.fims.reader.JsonTabularDataConverter;
 import biocode.fims.reader.ReaderManager;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
@@ -17,19 +18,18 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.ServerSideSpreadsheetTools;
 import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.net.URI;
 
 /**
- * IDatasetFileManger implementation to handle datasets
+ * special FileManger implementation to handle FimsMetadata files
  */
-public class FimsMetadataFileManager implements DatasetFileManager {
+public class FimsMetadataFileManager implements FileManager {
     private static final String NAME = "fimsMetadata";
 
-    private final DatasetPersistenceManager persistenceManager;
+    private final FimsMetadataPersistenceManager persistenceManager;
     private final SettingsManager settingsManager;
     private final ExpeditionService expeditionService;
     private final BcidService bcidService;
@@ -37,7 +37,7 @@ public class FimsMetadataFileManager implements DatasetFileManager {
     private String filename;
     private JSONArray fimsMetadata;
 
-    public FimsMetadataFileManager(DatasetPersistenceManager persistenceManager, SettingsManager settingsManager,
+    public FimsMetadataFileManager(FimsMetadataPersistenceManager persistenceManager, SettingsManager settingsManager,
                                    ExpeditionService expeditionService, BcidService bcidService) {
         this.persistenceManager = persistenceManager;
         this.settingsManager = settingsManager;
@@ -45,7 +45,6 @@ public class FimsMetadataFileManager implements DatasetFileManager {
         this.bcidService = bcidService;
     }
 
-    @Override
     public void upload() {
         Assert.notNull(processController);
 
@@ -56,7 +55,7 @@ public class FimsMetadataFileManager implements DatasetFileManager {
 
             Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
-                    .title("Dataset: " + processController.getExpeditionCode())
+                    .title("Fims Metadata Dataset: " + processController.getExpeditionCode())
                     .webAddress(webaddress)
                     .graph(persistenceManager.getGraph())
                     .finalCopy(processController.getFinalCopy())
@@ -87,24 +86,22 @@ public class FimsMetadataFileManager implements DatasetFileManager {
             bcidService.update(bcid);
 
             processController.appendSuccessMessage(
-                    "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() +
+                    "Fims Metadata Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() +
                             " (wait 15 minutes for resolution to become active)" +
                             "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode()
             );
         }
     }
 
-    @Override
     public boolean isNewDataset() {
         return filename != null;
     }
 
-    @Override
     public boolean validate() {
         Assert.notNull(processController);
 
         if (filename != null) {
-            processController.appendStatus("\nRunning dataset validation.");
+            processController.appendStatus("\nRunning fims metadata dataset validation.");
             Mapping mapping = processController.getMapping();
             Validation validation = processController.getValidation();
             String outputPrefix = processController.getExpeditionCode() + "_output";
@@ -121,7 +118,7 @@ public class FimsMetadataFileManager implements DatasetFileManager {
             }
 
             try {
-                DatasetTabularDataConverter tdc = new DatasetTabularDataConverter(tdr);
+                JsonTabularDataConverter tdc = new JsonTabularDataConverter(tdr);
                 fimsMetadata = tdc.convert(mapping.getDefaultSheetAttributes(), sheetName);
 
                 // Run the validation
@@ -149,12 +146,10 @@ public class FimsMetadataFileManager implements DatasetFileManager {
         return true;
     }
 
-    @Override
     public void setProcessController(ProcessController processController) {
         this.processController = processController;
     }
 
-    @Override
     public JSONArray getDataset() {
         if (fimsMetadata == null) {
             fimsMetadata = persistenceManager.getDataset(processController);
@@ -163,20 +158,17 @@ public class FimsMetadataFileManager implements DatasetFileManager {
         return fimsMetadata;
     }
 
-    @Override
     public void setFilename(String filename) {
         if (this.filename != null) {
-            throw new FimsRuntimeException("Server Error", "You can only upload 1 dataset at a time", 500);
+            throw new FimsRuntimeException("Server Error", "You can only upload 1 fims metadata dataset at a time", 500);
         }
         this.filename = filename;
     }
 
-    @Override
     public String getName() {
         return NAME;
     }
 
-    @Override
     public void close() {
         if (filename != null) {
             new File(filename).delete();

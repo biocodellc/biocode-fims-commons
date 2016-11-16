@@ -13,17 +13,17 @@ import java.util.List;
 
 
 /**
- * Takes a data source represented by a TabularDataReader and converts it to dataset
+ * Takes a data source represented by a TabularDataReader and converts it to JSON
  */
-public class DatasetTabularDataConverter {
+public class JsonTabularDataConverter {
     private TabularDataReader source;
 
-    public DatasetTabularDataConverter(TabularDataReader source) {
+    public JsonTabularDataConverter(TabularDataReader source) {
         this.source = source;
     }
 
     /**
-     * Reads the source data and converts it to a dataset.
+     * Reads the source data and converts it to a JSONArray.
      */
     public JSONArray convert(List<Attribute> attributes, String sheetName) {
         JSONArray sheet = new JSONArray();
@@ -33,9 +33,9 @@ public class DatasetTabularDataConverter {
             throw new FimsRuntimeException(ValidationCode.NO_DATA, 400);
         }
 
-        // get the columns in the order they appear in the dataset so we can refer to the columns by index later.
+        // get the columns in the order they appear in the table so we can refer to the columns by index later.
         // this is necessary in order to insert the column into the db in the order we expect
-        List<String> datasetColumns = Arrays.asList(source.tableGetNextRow());
+        List<String> tableColumns = Arrays.asList(source.tableGetNextRow());
         List<String> attributeColumns = new ArrayList<>();
 
         for (Attribute a : attributes) {
@@ -46,8 +46,8 @@ public class DatasetTabularDataConverter {
             JSONObject sample = new JSONObject();
             String[] row = source.tableGetNextRow();
 
-            for (int col = 0; col < datasetColumns.size(); col++) {
-                String column = datasetColumns.get(col);
+            for (int col = 0; col < tableColumns.size(); col++) {
+                String column = tableColumns.get(col);
                 if (sample.containsKey(column)) {
                     throw new FimsRuntimeException(ValidationCode.DUPLICATE_COLUMNS, 400, column);
                 }
