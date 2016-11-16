@@ -112,15 +112,12 @@ public final class SqLiteDatasetConverter {
      */
     private void buildHashes(Connection connection, Mapping mapping, String tName) {
         // Loop through entities and find which ones define HASH
-        LinkedList<Entity> entities = mapping.getEntities();
-        Iterator it = entities.iterator();
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
 
-            while (it.hasNext()) {
-                Entity entity = (Entity) it.next();
-                if (entity.getWorksheetUniqueKey().contains("HASH")) {
+            for (Entity entity: mapping.getEntities()) {
+                if (entity.hasWorksheet() && entity.getWorksheetUniqueKey().contains("HASH")) {
 
                     // Add this column Bcid
                     String alter = "ALTER TABLE " + tName + " ADD COLUMN " + entity.getWorksheetUniqueKey() + " text";

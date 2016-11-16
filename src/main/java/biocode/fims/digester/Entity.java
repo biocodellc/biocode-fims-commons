@@ -1,6 +1,7 @@
 package biocode.fims.digester;
 
 import biocode.fims.settings.FimsPrinter;
+import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
 import java.util.LinkedList;
@@ -95,6 +96,14 @@ public class Entity {
 
     public void setIdentifier(URI identifier) {
         this.identifier = identifier;
+    }
+
+    /**
+     * If this entity is represented as a worksheet
+     * @return
+     */
+    public boolean hasWorksheet() {
+        return !StringUtils.isBlank(worksheet);
     }
 
     /**

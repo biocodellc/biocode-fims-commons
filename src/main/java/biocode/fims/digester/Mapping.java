@@ -44,10 +44,9 @@ public class Mapping {
      * @return
      */
     public String getDefaultSheetName() {
-        Iterator it = entities.iterator();
-        while (it.hasNext()) {
-            Entity entity = (Entity) it.next();
-            return entity.getWorksheet();
+        // TODO this will fail if the 1st entity doesn't have a worksheet
+        if (entities.size() > 0) {
+            return entities.getFirst().getWorksheet();
         }
         return null;
     }
@@ -59,7 +58,7 @@ public class Mapping {
      */
     public String getConceptForwardingAddress(String identifier) {
         String forwardingAddress = null;
-        for (Entity entity: entities) {
+        for (Entity entity : entities) {
             if (entity.getIdentifier().toString().equals(identifier)) {
                 forwardingAddress = entity.getConceptForwardingAddress();
                 break;
@@ -82,22 +81,22 @@ public class Mapping {
      * @return
      */
     public String getDefaultSheetUniqueKey() {
-        Iterator it = entities.iterator();
-        while (it.hasNext()) {
-            Entity entity = (Entity) it.next();
-            return entity.getWorksheetUniqueKey();
+        // TODO this will fail if the 1st entity doesn't have a worksheet
+        if (entities.size() > 0) {
+            return entities.getFirst().getWorksheetUniqueKey();
         }
         return null;
     }
 
     /**
      * Get a list of the column names for each entity in the mapping
+     *
      * @return LinkedList<String> of columnNames
      */
     public LinkedList<String> getColumnNames() {
         LinkedList<String> columnNames = new LinkedList<>();
-        for (Entity entity: entities) {
-            for (Attribute attribute: entity.getAttributes()) {
+        for (Entity entity : entities) {
+            for (Attribute attribute : entity.getAttributes()) {
                 columnNames.add(attribute.getColumn());
             }
         }
@@ -106,7 +105,7 @@ public class Mapping {
 
     public java.util.List<String> getColumnNamesForWorksheet(String sheetName) {
         List<String> columnNames = new ArrayList<>();
-        for (Attribute a: getAllAttributes(sheetName)) {
+        for (Attribute a : getAllAttributes(sheetName)) {
             columnNames.add(a.getColumn());
         }
         return columnNames;
@@ -135,13 +134,13 @@ public class Mapping {
     }
 
     public LinkedList<Relation> getRelations() {
-        return relations;}
+        return relations;
+    }
 
     /**
      * Find Entity defined by given worksheet and worksheetUniqueKey
      *
      * @param conceptAlias
-     *
      * @return
      */
     public Entity findEntity(String conceptAlias) {
@@ -183,13 +182,14 @@ public class Mapping {
      * @return
      */
     public ArrayList<Attribute> getAllAttributes(String worksheet) {
-        ArrayList<Attribute> a = new ArrayList<Attribute>();
-        for (Iterator<Entity> i = entities.iterator(); i.hasNext(); ) {
-            Entity e = i.next();
-            if (e.getWorksheet().equals(worksheet))
-                a.addAll(e.getAttributes());
+        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+
+        for (Entity entity : entities) {
+            if (entity.hasWorksheet() && entity.getWorksheet().equals(worksheet))
+                attributes.addAll(entity.getAttributes());
         }
-        return a;
+
+        return attributes;
     }
 
     public JSONArray getAllAttributesJSON(String worksheet) {
@@ -209,14 +209,15 @@ public class Mapping {
 
     /**
      * return all {@link Entity} objects that have the given {@Attribute}.uri
+     *
      * @param uri
      * @return
      */
     public ArrayList<Entity> getEntititesWithAttributeUri(String uri) {
         ArrayList<Entity> entities = new ArrayList<>();
 
-        for (Entity entity: this.entities) {
-            for (Attribute attribute: entity.getAttributes()) {
+        for (Entity entity : this.entities) {
+            for (Attribute attribute : entity.getAttributes()) {
                 if (attribute.getUri().equals(uri)) {
                     entities.add(entity);
                 }
@@ -230,7 +231,6 @@ public class Mapping {
      * (generated from  functions)
      *
      * @param attributes
-     *
      * @return
      */
     public URI lookupAnyProperty(URI property, ArrayList<Attribute> attributes) {
@@ -253,7 +253,6 @@ public class Mapping {
      * (generated from getAllAttributes functions)
      *
      * @param attributes
-     *
      * @return
      */
     public URI lookupColumn(String columnName, ArrayList<Attribute> attributes) {
@@ -261,7 +260,7 @@ public class Mapping {
         while (it.hasNext()) {
             Attribute a = (Attribute) it.next();
             if (a.getColumn().equalsIgnoreCase(columnName)) {
-               try {
+                try {
                     return new URI(a.getUri());
                 } catch (URISyntaxException e) {
                     throw new FimsRuntimeException(500, e);
@@ -273,7 +272,6 @@ public class Mapping {
 
     /**
      * Process mapping component rules
-     *
      */
     public synchronized void addMappingRules(File configFile) {
         ConvertUtils.register(new EnumConverter(), DataType.class);
