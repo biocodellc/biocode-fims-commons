@@ -333,6 +333,7 @@ public class Validation implements RendererInterface {
         d.addSetProperties("fims/validation/lists/list/field");
         d.addSetNext("fims/validation/lists/list/field", "addField");
         d.addCallMethod("fims/validation/lists/list/field", "setValue", 0);
+        d.addCallMethod("fims/validation/lists/list/field/definition", "setDefinition", 0);
 
         // Create column objects
         d.addObjectCreate("fims/validation/worksheet/column", ColumnTrash.class);
