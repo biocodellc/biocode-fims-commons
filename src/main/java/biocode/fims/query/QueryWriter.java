@@ -273,7 +273,7 @@ public class QueryWriter {
 
         // Iterate through the rows.
         for (Row row : sheet) {
-            JSONObject sample = new JSONObject();
+            JSONObject resource = new JSONObject();
 
             for (int index = 0; index < columns.size(); index++) {
                 Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
@@ -313,9 +313,9 @@ public class QueryWriter {
                     }
                 }
 
-                sample.put(columns.get(index), String.valueOf(value));
+                resource.put(columns.get(index), String.valueOf(value));
             }
-            dataset.add(sample);
+            dataset.add(resource);
         }
         return dataset;
     }

@@ -82,7 +82,7 @@ public final class SqLiteJsonConverter {
      * Reads the source data and converts it to a Sqlite Database.
      * Uses the Database connection string provided in the constructor
      * Any tables that already exist in the destination Database will
-     * be DROPPED.  The table will have columns matching the keys of the first sample
+     * be DROPPED.  The table will have columns matching the keys of the first resource
      */
     public void convert(String tableName) {
         Connection connection = null;
@@ -165,7 +165,7 @@ public final class SqLiteJsonConverter {
     /**
      * Creates a single table in the destination Database. If the specified table name
      * already exists in the Database, IT IS DROPPED.  A new table with columns matching the keys
-     * of the first sample in the dataset and all samples from the dataset
+     * of the first resource in the dataset and all resources from the dataset
      * are copied to the new table.
      *
      * @param conn  A valid connection to a destination Database.
@@ -239,11 +239,11 @@ public final class SqLiteJsonConverter {
 
             // populate the table with the source data
             for (Object obj : dataset) {
-                JSONObject sample = (JSONObject) obj;
+                JSONObject resource = (JSONObject) obj;
                 cnt = 0;
                 StringBuilder sb = new StringBuilder();
                 for (String col : columns) {
-                    String dataval = String.valueOf(sample.get(col));
+                    String dataval = String.valueOf(resource.get(col));
                     // Ignore any data that is NA or na by setting it to blank
                     if (dataval.equalsIgnoreCase("na"))
                         dataval = "";

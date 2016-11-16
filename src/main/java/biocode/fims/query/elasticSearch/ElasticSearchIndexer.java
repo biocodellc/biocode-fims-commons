@@ -37,7 +37,7 @@ public class ElasticSearchIndexer {
     private final Logger logger = LoggerFactory.getLogger(ElasticSearchIndexer.class);
 
     private final Client client;
-    private final static String TYPE = "sample";
+    private final static String TYPE = "resource";
 
     public ElasticSearchIndexer(Client client) {
         this.client = client;
@@ -72,14 +72,14 @@ public class ElasticSearchIndexer {
         }
 
         for (Object obj : dataset) {
-            JSONObject sample = (JSONObject) obj;
-            String id = expeditionCode + "_" + sample.get(uniqueKey);
-            // denormalize the sample. Adding the expeditionCode allows us to query samples by expeditionCode
-            sample.put("expedition", expedition);
+            JSONObject resource = (JSONObject) obj;
+            String id = expeditionCode + "_" + resource.get(uniqueKey);
+            // denormalize the resource. Adding the expeditionCode allows us to query resources by expeditionCode
+            resource.put("expedition", expedition);
 
             bulkRequest.add(
                     client.prepareIndex(String.valueOf(projectId), TYPE, id)
-                            .setSource(sample)
+                            .setSource(resource)
             );
         }
 

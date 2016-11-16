@@ -43,17 +43,17 @@ public class JsonTabularDataConverter {
         }
 
         for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
-            JSONObject sample = new JSONObject();
+            JSONObject resource = new JSONObject();
             String[] row = source.tableGetNextRow();
 
             for (int col = 0; col < tableColumns.size(); col++) {
                 String column = tableColumns.get(col);
-                if (sample.containsKey(column)) {
+                if (resource.containsKey(column)) {
                     throw new FimsRuntimeException(ValidationCode.DUPLICATE_COLUMNS, 400, column);
                 }
-                sample.put(column, row[col]);
+                resource.put(column, row[col]);
             }
-            sheet.add(sample);
+            sheet.add(resource);
         }
 
         if (sheet.size() == 0) {
