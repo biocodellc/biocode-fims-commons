@@ -160,6 +160,17 @@ public class ProcessController {
         StringBuilder commandLineWarningSB = new StringBuilder();
         Html2Text htmlParser = new Html2Text();
 
+        if (configMessages != null) {
+            commandLineWarningSB.append("Configuration File Errors: \n");
+
+            JSONArray errorMessages = (JSONArray) ((JSONObject) configMessages.get("errors")).get("Configuration File");
+            for (Object msg: errorMessages) {
+
+                commandLineWarningSB.append("\t" + msg + "\n");
+
+            }
+        }
+
         // iterate through each sheet in messages and append associated messages
         Iterator it = messages.keySet().iterator();
         while (it.hasNext()) {
@@ -179,6 +190,7 @@ public class ProcessController {
             }
 
         }
+
         return commandLineWarningSB.toString();
     }
 
