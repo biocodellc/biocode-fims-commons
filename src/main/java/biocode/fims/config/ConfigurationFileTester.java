@@ -222,7 +222,6 @@ public class ConfigurationFileTester {
         ArrayList<String> uniqueKeys = getUniqueValueRules(rules);
 
         ArrayList<String> requiredColumns = getRequiredValueThrowsErrorRules(rules);
-        //System.out.println("REQUIRED COLUMNS = " + requiredColumns);
 
         // Loop Entities
         NodeList entities = document.getElementsByTagName("entity");
@@ -233,57 +232,60 @@ public class ConfigurationFileTester {
         for (int i = 0; i < entities.getLength(); i++) {
             NamedNodeMap entityAttributes = entities.item(i).getAttributes();
 
-            // Check worksheetUniqueKeys
-            worksheetUniqueKey = entityAttributes.getNamedItem("worksheetUniqueKey").getNodeValue();
+            // only check uniqueKeys for the entity if the entity has a worksheet
+            if (entityAttributes.getNamedItem("worksheet") != null) {
+                // Check worksheetUniqueKeys
+                worksheetUniqueKey = entityAttributes.getNamedItem("worksheetUniqueKey").getNodeValue();
 
-            if (uniqueKeys.contains(worksheetUniqueKey)) {
-                atLeastOneUniqueKeyFound = true;
-            }
-
-            if (requiredColumns.contains(worksheetUniqueKey)) {
-                atLeastOneRequiredColumnFound = true;
-            }
-
-            // construct a List to hold URI values to check they are unique within the node
-            List<String> uriList = new ArrayList<String>();
-
-            // Check the attributes for this entity
-            List entityChildren = elements(entities.item(i));
-            for (int j = 0; j < entityChildren.size(); j++) {
-                Element attributeElement = (Element) entityChildren.get(j);
-
-                if (attributeElement != null) { //&& node.getNodeName().equals("attribute")) {
-
-                    NamedNodeMap attributes = attributeElement.getAttributes();//.getNamedItem("uri");
-
-                    // Check the URI field by populating the uriList with values
-                    String uri = null;
-                    try {
-                        uri = attributes.getNamedItem("uri").getNodeValue().toString();
-                    } catch (NullPointerException e) {
-                    }
-                    if (uri != null) {
-                        uriList.add(uri);
-                    }
-
-                    String column = null;
-                    try {
-                        column = attributes.getNamedItem("column").getNodeValue();
-                    } catch (NullPointerException e) {
-                    }
-                    if (column != null) {
-                        if (!checkSpecialCharacters(column)) {
-                            passedTest = false;
-                        }
-                    }
-
-
+                if (uniqueKeys.contains(worksheetUniqueKey)) {
+                    atLeastOneUniqueKeyFound = true;
                 }
 
-            }
-            // Run the URI list unique Value check for each entity
-            if (!checkUniqueValuesInList("URI attribute value", uriList)) {
-                passedTest = false;
+                if (requiredColumns.contains(worksheetUniqueKey)) {
+                    atLeastOneRequiredColumnFound = true;
+                }
+
+                // construct a List to hold URI values to check they are unique within the node
+                List<String> uriList = new ArrayList<String>();
+
+                // Check the attributes for this entity
+                List entityChildren = elements(entities.item(i));
+                for (int j = 0; j < entityChildren.size(); j++) {
+                    Element attributeElement = (Element) entityChildren.get(j);
+
+                    if (attributeElement != null) { //&& node.getNodeName().equals("attribute")) {
+
+                        NamedNodeMap attributes = attributeElement.getAttributes();//.getNamedItem("uri");
+
+                        // Check the URI field by populating the uriList with values
+                        String uri = null;
+                        try {
+                            uri = attributes.getNamedItem("uri").getNodeValue().toString();
+                        } catch (NullPointerException e) {
+                        }
+                        if (uri != null) {
+                            uriList.add(uri);
+                        }
+
+                        String column = null;
+                        try {
+                            column = attributes.getNamedItem("column").getNodeValue();
+                        } catch (NullPointerException e) {
+                        }
+                        if (column != null) {
+                            if (!checkSpecialCharacters(column)) {
+                                passedTest = false;
+                            }
+                        }
+
+
+                    }
+
+                }
+                // Run the URI list unique Value check for each entity
+                if (!checkUniqueValuesInList("URI attribute value", uriList)) {
+                    passedTest = false;
+                }
             }
         }
 
