@@ -6,7 +6,6 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -53,7 +52,7 @@ public class Mapping {
     }
 
     /**
-     * The default conceptForwardingAddress is the one referenced by the first entity
+     * Get the conceptForwardingAddress for the entity with the given identifier
      *
      * @return
      */
@@ -66,14 +65,6 @@ public class Mapping {
             }
         }
         return forwardingAddress;
-    }
-
-    /**
-     * get the expeditionForwardingAddress specified in the config {@link Metadata}
-     * @return
-     */
-    public String getExpeditionForwardingAddress() {
-        return metadata.getExpeditionForwardingAddress();
     }
 
     /**
@@ -190,6 +181,14 @@ public class Mapping {
                 a.addAll(e.getAttributes());
         }
         return a;
+    }
+
+    /**
+     * convience method to get all attributes for the default sheet
+     * @return
+     */
+    public ArrayList<Attribute> getDefaultSheetAttributes() {
+        return getAllAttributes(getDefaultSheetName());
     }
 
     public JSONArray getAllAttributesJSON(String worksheet) {

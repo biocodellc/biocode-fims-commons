@@ -252,6 +252,7 @@ public class Validation implements RendererInterface {
         try {
             sdc.buildHashes(mapping, sheetName);
         } catch (Exception e) {
+            logger.warn("", e);
             hashErrorFree = false;
         }
 

@@ -217,7 +217,7 @@ public class TemplateProcessor {
      */
     public JSONObject getDefinition(String columnName) {
         //TODO should this be in mapping?
-        Iterator attributes = mapping.getAllAttributes(mapping.getDefaultSheetName()).iterator();
+        Iterator attributes = mapping.getDefaultSheetAttributes().iterator();
         // Get a list of rules for the first digester.Worksheet instance
         Worksheet sheet = this.validation.getWorksheets().get(0);
 
@@ -280,7 +280,7 @@ public class TemplateProcessor {
 
         // A list of names we've already added
         ArrayList addedNames = new ArrayList();
-        Iterator attributes = mapping.getAllAttributes(mapping.getDefaultSheetName()).iterator();
+        Iterator attributes = mapping.getDefaultSheetAttributes().iterator();
 
         while (attributes.hasNext()) {
             Attribute a = (Attribute) attributes.next();

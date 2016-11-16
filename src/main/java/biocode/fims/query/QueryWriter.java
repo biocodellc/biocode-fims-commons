@@ -165,7 +165,6 @@ public class QueryWriter {
         while (it.hasNext()) {
             Attribute attribute = (Attribute) it.next();
             // map column names to datatype
-            // TODO: this part bombs when the configuration file does not have a URI specified, thus we need to write a configuration file validator?
             try {
                 if (attribute.getUri().equals(predicate)) {
                     colName = attribute.getColumn();
@@ -174,7 +173,7 @@ public class QueryWriter {
 
             } catch (Exception e) {
                 //TODO should we be catching Exception?
-                logger.warn("Exception", e);
+                logger.error("Exception", e);
                 // For now, do nothing.
             }
         }

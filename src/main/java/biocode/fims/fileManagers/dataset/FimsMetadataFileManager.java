@@ -17,6 +17,7 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.ServerSideSpreadsheetTools;
 import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -121,7 +122,7 @@ public class FimsMetadataFileManager implements DatasetFileManager {
 
             try {
                 DatasetTabularDataConverter tdc = new DatasetTabularDataConverter(tdr);
-                fimsMetadata = tdc.convert(mapping.getAllAttributes(sheetName), sheetName);
+                fimsMetadata = tdc.convert(mapping.getDefaultSheetAttributes(), sheetName);
 
                 // Run the validation
                 validation.run(tdr, outputPrefix, processController.getOutputFolder(), mapping, fimsMetadata);
