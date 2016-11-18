@@ -9,8 +9,10 @@ import biocode.fims.fileManagers.FileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.UploadCode;
+import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.InvalidPropertyException;
@@ -30,8 +32,9 @@ public class Process {
     private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
     private final List<AuxilaryFileManager> fileManagers;
-    private final FimsMetadataFileManager FimsMetadataFileManager;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
     private final ProcessController processController;
+    private final ElasticSearchIndexer esIndexer;
     private final File configFile;
 
     public static class ProcessBuilder {
@@ -43,6 +46,7 @@ public class Process {
 
         // Optional
         List<AuxilaryFileManager> additionalFileManagers = new ArrayList<>();
+        public ElasticSearchIndexer esIndexer;
 
         public ProcessBuilder(FimsMetadataFileManager FimsMetadataFileManager, ProcessController processController) {
             this.FimsMetadataFileManager = FimsMetadataFileManager;
@@ -85,6 +89,11 @@ public class Process {
             return this;
         }
 
+        public ProcessBuilder elasticSearchIndexer(ElasticSearchIndexer indexer) {
+            esIndexer = indexer;
+            return this;
+        }
+
 
         private boolean isValid() {
             return fmProperties != null && configFile != null;
@@ -100,10 +109,11 @@ public class Process {
     }
 
     private Process(ProcessBuilder builder) {
-        FimsMetadataFileManager = builder.FimsMetadataFileManager;
+        fimsMetadataFileManager = builder.FimsMetadataFileManager;
         processController = builder.processController;
         fileManagers = builder.additionalFileManagers;
         configFile = builder.configFile;
+        esIndexer = builder.esIndexer;
         addFmProperties(builder.fmProperties);
         addProcessControllerToFileManagers();
 
@@ -126,10 +136,10 @@ public class Process {
     public boolean validate() {
         processController.appendStatus("\nValidating...\n");
 
-        boolean valid = validateConfigFile() && FimsMetadataFileManager.validate();
+        boolean valid = validateConfigFile() && fimsMetadataFileManager.validate();
 
         for (AuxilaryFileManager fm : fileManagers) {
-            if (!fm.validate(FimsMetadataFileManager.getDataset())) {
+            if (!fm.validate(fimsMetadataFileManager.getDataset())) {
                 valid = false;
             }
         }
@@ -138,14 +148,14 @@ public class Process {
     }
 
     public void upload(boolean createExpedition, boolean ignoreUser, ExpeditionService expeditionService) {
-        if (createExpedition && FimsMetadataFileManager.isNewDataset()) {
+        if (createExpedition && fimsMetadataFileManager.isNewDataset()) {
             createExpedition(expeditionService);
         }
 
         Expedition expedition = getExpedition(expeditionService);
 
         if (expedition == null) {
-            if (FimsMetadataFileManager.isNewDataset()) {
+            if (fimsMetadataFileManager.isNewDataset()) {
                 throw new FimsRuntimeException(UploadCode.EXPEDITION_CREATE, 400, processController.getExpeditionCode());
             } else {
                 throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, processController.getExpeditionCode());
@@ -156,15 +166,23 @@ public class Process {
             }
         }
 
-        FimsMetadataFileManager.upload();
+        fimsMetadataFileManager.upload();
 
         for (AuxilaryFileManager fm : fileManagers) {
-            fm.upload(FimsMetadataFileManager.isNewDataset());
+            fm.upload(fimsMetadataFileManager.isNewDataset());
         }
 
-//        if (esIndex) {
+        if (esIndexer != null) {
+            // TODO maybe we should only update the index if datasetFileManager.isNewDataset = false?
+            JSONArray fimsMetadata = fimsMetadataFileManager.index();
+            fileManagers.forEach(fm -> fm.index(fimsMetadata));
 
-//        }
+            esIndexer.indexDataset(
+                    processController.getProjectId(),
+                    processController.getExpeditionCode(),
+                    fimsMetadata
+            );
+        }
 
         processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
@@ -235,8 +253,8 @@ public class Process {
     }
 
     private FileManager getFileManagerByName(String fileManagerName) {
-        if (StringUtils.equals(FimsMetadataFileManager.getName(), fileManagerName)) {
-            return FimsMetadataFileManager;
+        if (StringUtils.equals(fimsMetadataFileManager.getName(), fileManagerName)) {
+            return fimsMetadataFileManager;
         }
 
         for (FileManager fm : fileManagers) {
@@ -248,7 +266,7 @@ public class Process {
     }
 
     private void addProcessControllerToFileManagers() {
-        FimsMetadataFileManager.setProcessController(processController);
+        fimsMetadataFileManager.setProcessController(processController);
 
         for (FileManager fm : fileManagers) {
             fm.setProcessController(processController);
@@ -256,7 +274,7 @@ public class Process {
     }
 
     public void close() {
-        FimsMetadataFileManager.close();
+        fimsMetadataFileManager.close();
         for (FileManager fm: fileManagers) {
             fm.close();
         }

@@ -1,6 +1,7 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.bcid.ResourceTypes;
+import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.entities.Bcid;
@@ -18,10 +19,12 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.ServerSideSpreadsheetTools;
 import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 
 /**
  * special FileManger implementation to handle FimsMetadata files
@@ -167,6 +170,35 @@ public class FimsMetadataFileManager implements FileManager {
 
     public String getName() {
         return NAME;
+    }
+
+    /**
+     * prepares the fimsMetadata array for indexing via elasticsearch.
+     * This adds the bcid and expeditionCode to each resource
+     * @return
+     */
+    public JSONArray index() {
+        JSONArray fimsMetadataIndex = new JSONArray();
+        fimsMetadataIndex.addAll(getDataset());
+
+        String uniqueKey = processController.getMapping().getDefaultSheetUniqueKey();
+
+        Entity rootEntity = processController.getMapping().getRootEntity();
+        Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
+        Bcid rootEntityBcid = bcidService.getEntityBcid(rootEntity, expedition);
+
+        if (rootEntityBcid == null) {
+            throw new FimsRuntimeException("Server Error", "rootEntityBcid is null", 500);
+        }
+
+        String rootIdentifier = String.valueOf(rootEntityBcid.getIdentifier());
+        for (Object o: fimsMetadataIndex) {
+            JSONObject resource = (JSONObject) o;
+            resource.put("expedition.expeditionCode", processController.getExpeditionCode());
+            resource.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey));
+        }
+
+        return fimsMetadataIndex;
     }
 
     public void close() {

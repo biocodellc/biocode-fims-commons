@@ -1,34 +1,19 @@
 package biocode.fims.query.elasticSearch;
 
-import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SendEmail;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexAction;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
-import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-
-import java.io.File;
 
 /**
  * Class for sending JSON documents to be Elasticsearch for indexing
@@ -44,18 +29,17 @@ public class ElasticSearchIndexer {
     }
 
     /**
-     * method for indexing an entire dataset
+     * method for indexing an entire dataset. We expect each resource in the dataset to have a "bcid" field,
+     * as we use the bcid field for the document id
      *
      * @param projectId
      * @param expeditionCode
-     * @param uniqueKey
      * @param dataset
      */
-    public void indexDataset(int projectId, String expeditionCode, String uniqueKey, JSONArray dataset) {
+    public void indexDataset(int projectId, String expeditionCode, JSONArray dataset) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
-        JSONObject expedition = new JSONObject();
-        expedition.put("expeditionCode", expeditionCode);
 
+        // TODO don't delete until after successfully indexing?
         BulkIndexByScrollResponse deleteResponse = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
                 .source(String.valueOf(projectId))
                 .filter(QueryBuilders.termQuery("_type", TYPE))
@@ -73,12 +57,9 @@ public class ElasticSearchIndexer {
 
         for (Object obj : dataset) {
             JSONObject resource = (JSONObject) obj;
-            String id = expeditionCode + "_" + resource.get(uniqueKey);
-            // denormalize the resource. Adding the expeditionCode allows us to query resources by expeditionCode
-            resource.put("expedition", expedition);
 
             bulkRequest.add(
-                    client.prepareIndex(String.valueOf(projectId), TYPE, id)
+                    client.prepareIndex(String.valueOf(projectId), TYPE, String.valueOf(resource.get("bcid")))
                             .setSource(resource)
             );
         }

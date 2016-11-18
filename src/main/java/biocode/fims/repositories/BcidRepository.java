@@ -3,6 +3,7 @@ package biocode.fims.repositories;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.Bcid;
 
+import biocode.fims.entities.Expedition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +23,7 @@ import java.util.Set;
  * This repositories provides CRUD operations for {@link Bcid} objects
  */
 @Transactional
-public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificationExecutor {
+public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampleExecutor<Bcid> {
 
     @Modifying
     void delete(Bcid bcid);

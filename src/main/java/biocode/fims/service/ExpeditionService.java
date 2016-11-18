@@ -204,10 +204,8 @@ public class ExpeditionService {
     }
 
     private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
-        EntityToBcidMapper mapper = new EntityToBcidMapper();
-
         for (Entity entity : mapping.getEntities()) {
-            Bcid bcid = mapper.map(entity, ezidRequest);
+            Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
             bcidService.create(bcid, userId);
             bcidService.attachBcidToExpedition(bcid, expeditionId);
 

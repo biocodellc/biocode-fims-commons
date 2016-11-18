@@ -1,18 +1,22 @@
 package biocode.fims.service;
 
 import biocode.fims.bcid.*;
+import biocode.fims.digester.Entity;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.entities.*;
+import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -22,10 +26,7 @@ import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Service class for handling {@link Bcid} persistence
@@ -161,18 +162,6 @@ public class BcidService {
                 ResourceTypes.DATASET_RESOURCE_TYPE
         );
     }
-//    /**
-//     * fetch the latest Bcid with resourceType = 'http://purl.org/dc/dcmitype/Dataset' for the provided
-//     * {@link Expedition}s
-//     * @param expedition
-//     * @return
-//     */
-//    @Transactional(readOnly = true)
-//    public Bcid getLatestDatasetForExpedition(Expedition expedition) {
-//        Assert.notNull(expedition);
-//
-//        return bcidRepository.findOneLatestDatasetForExpedition(expedition.getExpeditionId());
-//    }
 
     public void delete(int bcidId) {
         bcidRepository.deleteByBcidId(bcidId);
@@ -193,6 +182,18 @@ public class BcidService {
     @Transactional(readOnly = true)
     public Set<Bcid> getBcidsWithEzidRequest() {
         return bcidRepository.findAllByEzidRequestTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public Bcid getEntityBcid(Entity entity, Expedition expedition) {
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreNullValues()
+                .withIgnorePaths("ezidRequest", "ezidMade", "bcidId", "finalCopy");
+
+        Bcid exampleBcid = EntityToBcidMapper.map(entity, false);
+        exampleBcid.setExpedition(expedition);
+
+        return bcidRepository.findOne(Example.of(exampleBcid, matcher));
     }
 
     private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {

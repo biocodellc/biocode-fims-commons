@@ -15,5 +15,10 @@ public interface AuxilaryFileManager extends FileManager {
      */
     boolean validate(JSONArray fimsMetadata);
 
-    void upload(boolean fimsMetadata);
+    void upload(boolean newDataset);
+
+    /**
+     * method will always be called. this is called to add any additional data to the Dataset for indexing via ElasticSearch.
+     **/
+    void index(JSONArray dataset);
 }
