@@ -23,47 +23,41 @@ public class VersionTransformer {
     @Around("execution(* biocode.fims.rest.services..*.*(..))")
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
         FimsService fimsService = (FimsService) jp.getTarget();
-        HttpHeaders headers = fimsService.getHeaders();
 
-        if (headers == null) {
-            logger.warn("missing HttpHeaders in VersionTransformer");
-            return jp.proceed();
+        String version = fimsService.getHeaders().getHeaderString("Api-Version");
+        Object returnValue;
+
+        Object[] args = jp.getArgs();
+
+        if (args.length == 0) {
+            returnValue = jp.proceed();
         } else {
-            String version = headers.getHeaderString("Api-Version");
-            Object returnValue;
-
-            Object[] args = jp.getArgs();
-
-            if (args.length == 0) {
-                returnValue = jp.proceed();
-            } else {
-                HashMap<String, Object> argMap = new LinkedHashMap<>();
-                String[] argNames = ((MethodSignature) jp.getSignature()).getParameterNames();
-                for (int i = 0; i < args.length; i++) {
-                    argMap.put(argNames[i], args[i]);
-                }
-
-                for (APIVersion apiVersion : APIVersion.range(version)) {
-                    // TODO implement a request transformer
-                }
-
-                returnValue = jp.proceed(argMap.values().toArray());
+            HashMap<String, Object> argMap = new LinkedHashMap<>();
+            String[] argNames = ((MethodSignature) jp.getSignature()).getParameterNames();
+            for (int i = 0; i < args.length; i++) {
+                argMap.put(argNames[i], args[i]);
             }
 
-            if (returnValue != null) {
-                List<APIVersion> versionRangeReversed = APIVersion.range(version);
-                Collections.reverse(versionRangeReversed);
-                // remove the latest APIVersion as that is what the returnVal is from the resource Method
-                versionRangeReversed.remove(0);
-
-                for (APIVersion apiVersion : versionRangeReversed) {
-                    Transformer transformer = getTransformer(apiVersion, jp.getTarget().getClass().getSimpleName());
-                    returnValue = transformResponse(returnValue, transformer, jp.getSignature().getName());
-                }
+            for (APIVersion apiVersion : APIVersion.range(version)) {
+                // TODO implement a request transformer
             }
 
-            return returnValue;
+            returnValue = jp.proceed(argMap.values().toArray());
         }
+
+        if (returnValue != null) {
+            List<APIVersion> versionRangeReversed = APIVersion.range(version);
+            Collections.reverse(versionRangeReversed);
+            // remove the latest APIVersion as that is what the returnVal is from the resource Method
+            versionRangeReversed.remove(0);
+
+            for (APIVersion apiVersion : versionRangeReversed) {
+                Transformer transformer = getTransformer(apiVersion, jp.getTarget().getClass().getSimpleName());
+                returnValue = transformResponse(returnValue, transformer, jp.getSignature().getName());
+            }
+        }
+
+        return returnValue;
     }
 
     private void transformResource(LinkedHashMap<String, Object> argMap, APIVersion version, String classShortName) {
