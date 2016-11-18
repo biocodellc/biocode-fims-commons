@@ -56,9 +56,4 @@ public class FimsAppConfig {
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
-
-    @Bean
-    public Client esClient() throws Exception {
-        return null;
-    }
 }
