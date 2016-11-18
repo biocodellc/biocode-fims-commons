@@ -89,12 +89,14 @@ public class ConfigurationFileEsMapper {
     private static JSONObject getIntegerPropertyInfo() {
         JSONObject propertyInfo = new JSONObject();
         propertyInfo.put("type", "integer");
+        propertyInfo.put("ignore_malformed", true);
         return propertyInfo;
     }
 
     private static JSONObject getFloatPropertyInfo() {
         JSONObject propertyInfo = new JSONObject();
         propertyInfo.put("type", "float");
+        propertyInfo.put("ignore_malformed", true);
         return propertyInfo;
     }
 
@@ -102,6 +104,7 @@ public class ConfigurationFileEsMapper {
         JSONObject propertyInfo = new JSONObject();
         propertyInfo.put("type", "date");
         propertyInfo.put("format", attribute.getDataformat().replaceAll(",", "||"));
+        propertyInfo.put("ignore_malformed", true);
         return propertyInfo;
     }
 }
