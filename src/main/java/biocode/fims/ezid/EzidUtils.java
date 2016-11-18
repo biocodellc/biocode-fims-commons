@@ -3,7 +3,7 @@ package biocode.fims.ezid;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.User;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.SendEmail;
+import biocode.fims.utils.EmailUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,13 +97,9 @@ public class EzidUtils {
         }
 
         // Send an Email that this completed
-        SendEmail sendEmail = new SendEmail(
-                settingsManager.retrieveValue("mailUser"),
-                settingsManager.retrieveValue("mailPassword"),
-                settingsManager.retrieveValue("mailFrom"),
-                settingsManager.retrieveValue("mailUser"),
+        EmailUtils.sendAdminEmail(
                 "Error creating Ezid(s)",
-                sb.toString());
-        sendEmail.start();
+                sb.toString()
+        );
     }
 }

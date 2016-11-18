@@ -1,7 +1,7 @@
 package biocode.fims.query.elasticSearch;
 
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.SendEmail;
+import biocode.fims.utils.EmailUtils;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -68,6 +68,10 @@ public class ElasticSearchIndexer {
 
         if (response.hasFailures()) {
             logger.error(response.buildFailureMessage());
+            EmailUtils.sendAdminEmail(
+                    "ElasticSearch error indexing dataset",
+                    response.buildFailureMessage()
+            );
         }
 
     }
@@ -93,14 +97,10 @@ public class ElasticSearchIndexer {
             }
         } catch (Exception e) {
             logger.warn("", e);
-            SendEmail sendEmail = new SendEmail(
-                    settingsManager.retrieveValue("mailUser"),
-                    settingsManager.retrieveValue("mailPassword"),
-                    settingsManager.retrieveValue("mailFrom"),
-                    settingsManager.retrieveValue("mailUser"),
+            EmailUtils.sendAdminEmail(
                     "Error update elastic mapping - projectId [" + projectId + "]",
-                    e.toString());
-            sendEmail.start();
+                    e.toString()
+            );
         }
     }
 }
