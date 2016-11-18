@@ -4,8 +4,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -37,17 +35,20 @@ public class Mapping {
     }
 
     /**
-     * The default sheetname is the one referenced by the first entity
-     * TODO: set defaultSheetName in a more formal manner, currently we're basing this on a "single" spreadsheet model
+     * The default sheetname is the one referenced by the root entity
      *
      * @return
      */
     public String getDefaultSheetName() {
-        // TODO this will fail if the 1st entity doesn't have a worksheet
-        if (entities.size() > 0) {
-            return entities.getFirst().getWorksheet();
-        }
-        return null;
+        return getRootEntity().getWorksheet();
+    }
+
+    /**
+     * the root entity is the first entity
+     * @return
+     */
+    public Entity getRootEntity() {
+        return entities.getFirst();
     }
 
     /**
@@ -67,16 +68,12 @@ public class Mapping {
     }
 
     /**
-     * The default unique key is the one referenced by the first entity
+     * The default unique key is the one referenced by the root entity
      *
      * @return
      */
     public String getDefaultSheetUniqueKey() {
-        // TODO this will fail if the 1st entity doesn't have a worksheet
-        if (entities.size() > 0) {
-            return entities.getFirst().getWorksheetUniqueKey();
-        }
-        return null;
+        return getRootEntity().getWorksheetUniqueKey();
     }
 
     /**

@@ -213,7 +213,7 @@ public class ConfigurationFileTester {
      *
      * @return
      */
-    public boolean checkUniqueKeys() {
+    private boolean checkUniqueKeys() {
         String worksheetUniqueKey = "";
         boolean passedTest = true;
 
@@ -232,8 +232,11 @@ public class ConfigurationFileTester {
         for (int i = 0; i < entities.getLength(); i++) {
             NamedNodeMap entityAttributes = entities.item(i).getAttributes();
 
-            // only check uniqueKeys for the entity if the entity has a worksheet
-            if (entityAttributes.getNamedItem("worksheet") != null) {
+            if (i == 0 && entityAttributes.getNamedItem("worksheet") == null) {
+                messages.add(this, "First entity does not specify a worksheet", "rootEntityCheck");
+                passedTest = false;
+            } else if (entityAttributes.getNamedItem("worksheet") != null) {
+                // only check uniqueKeys for the entity if the entity has a worksheet
                 // Check worksheetUniqueKeys
                 worksheetUniqueKey = entityAttributes.getNamedItem("worksheetUniqueKey").getNodeValue();
 
