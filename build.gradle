@@ -34,13 +34,13 @@ idea {
 //noinspection GroovyAssignabilityCheck
 sourceSets {
     main {
-        compileClasspath += [configurations.provided]
-        compileClasspath += [configurations.server]
+        compileClasspath.plus(configurations.provided)
+        compileClasspath.plus(configurations.server)
     }
     test {
-        compileClasspath += [configurations.provided]
-        compileClasspath += [configurations.server]
-        runtimeClasspath += [configurations.server]
+        compileClasspath.plus(configurations.provided)
+        compileClasspath.plus(configurations.server)
+        runtimeClasspath.plus(configurations.server)
     }
 }
 
