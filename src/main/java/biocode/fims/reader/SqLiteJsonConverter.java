@@ -117,10 +117,10 @@ public final class SqLiteJsonConverter {
             stmt = connection.createStatement();
 
             for (Entity entity: mapping.getEntities()) {
-                if (entity.hasWorksheet() && entity.getWorksheetUniqueKey().contains("HASH")) {
+                if (entity.hasWorksheet() && entity.getUniqueKey().contains("HASH")) {
 
                     // Add this column Bcid
-                    String alter = "ALTER TABLE " + tName + " ADD COLUMN " + entity.getWorksheetUniqueKey() + " text";
+                    String alter = "ALTER TABLE " + tName + " ADD COLUMN " + entity.getUniqueKey() + " text";
                     stmt.executeUpdate(alter);
 
                     LinkedList<Attribute> attributes = entity.getAttributes();
@@ -142,7 +142,7 @@ public final class SqLiteJsonConverter {
                     updateStatement.execute("BEGIN TRANSACTION");
                     while (rs.next()) {
                         String update = "UPDATE " + tName +
-                                " SET " + entity.getWorksheetUniqueKey() + " = \"" +
+                                " SET " + entity.getUniqueKey() + " = \"" +
                                 hasher.hasherDigester(rs.getString("toHash")) + "\" " +
                                 " WHERE rowid = " + rs.getString("rowid");
                         updateStatement.executeUpdate(update);

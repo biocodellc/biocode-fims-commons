@@ -73,7 +73,7 @@ public class Mapping {
      * @return
      */
     public String getDefaultSheetUniqueKey() {
-        return getRootEntity().getWorksheetUniqueKey();
+        return getRootEntity().getUniqueKey();
     }
 
     /**
@@ -262,7 +262,8 @@ public class Mapping {
 
         // Create entity objects
         d.addObjectCreate("fims/mapping/entity", Entity.class);
-        d.addSetProperties("fims/mapping/entity");
+        // the last 2 params provide backwards compatibility for config files that still use worksheetUniqueKey
+        d.addSetProperties("fims/mapping/entity", "worksheetUniqueKey", "uniqueKey");
         d.addSetNext("fims/mapping/entity", "addEntity");
 
         // Add attributes associated with this entity
