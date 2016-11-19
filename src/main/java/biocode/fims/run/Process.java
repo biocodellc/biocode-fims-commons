@@ -9,7 +9,7 @@ import biocode.fims.fileManagers.FileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.UploadCode;
-import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;

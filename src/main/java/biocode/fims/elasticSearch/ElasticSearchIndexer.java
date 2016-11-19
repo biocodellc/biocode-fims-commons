@@ -1,4 +1,4 @@
-package biocode.fims.query.elasticSearch;
+package biocode.fims.elasticSearch;
 
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
