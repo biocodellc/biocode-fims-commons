@@ -9,3 +9,4 @@ classes/*
 jetty-env.xml
 tripleOutput/
 dist/
+.python-version

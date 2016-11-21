@@ -2,6 +2,7 @@ package biocode.fims.elasticSearch;
 
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -39,7 +40,6 @@ public class ElasticSearchIndexer {
     public void indexDataset(int projectId, String expeditionCode, JSONArray dataset) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
-        // TODO don't delete until after successfully indexing?
         BulkIndexByScrollResponse deleteResponse = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
                 .source(String.valueOf(projectId))
                 .filter(QueryBuilders.termQuery("_type", TYPE))
@@ -64,15 +64,25 @@ public class ElasticSearchIndexer {
             );
         }
 
-        BulkResponse response = bulkRequest.get();
+        try {
+            BulkResponse response = bulkRequest.get();
 
-        if (response.hasFailures()) {
-            logger.error(response.buildFailureMessage());
+            if (response.hasFailures()) {
+                logger.error(response.buildFailureMessage());
+                EmailUtils.sendAdminEmail(
+                        "ElasticSearch error indexing dataset",
+                        response.buildFailureMessage()
+                );
+            }
+        } catch (Exception e) {
+            logger.error("", e);
             EmailUtils.sendAdminEmail(
                     "ElasticSearch error indexing dataset",
-                    response.buildFailureMessage()
+                    ExceptionUtils.getFullStackTrace(e)
             );
+
         }
+
 
     }
 
@@ -99,7 +109,7 @@ public class ElasticSearchIndexer {
             logger.warn("", e);
             EmailUtils.sendAdminEmail(
                     "Error update elastic mapping - projectId [" + projectId + "]",
-                    e.toString()
+                    ExceptionUtils.getFullStackTrace(e)
             );
         }
     }

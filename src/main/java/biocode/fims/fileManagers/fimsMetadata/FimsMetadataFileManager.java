@@ -21,9 +21,11 @@ import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -178,8 +180,9 @@ public class FimsMetadataFileManager implements FileManager {
      * @return
      */
     public JSONArray index() {
-        JSONArray fimsMetadataIndex = new JSONArray();
-        fimsMetadataIndex.addAll(getDataset());
+        // TODO do we need to do a deepCopy as not to change the fimsMetadata object?
+        // call this to make sure the fimsMetadata is set
+        getDataset();
 
         String uniqueKey = processController.getMapping().getDefaultSheetUniqueKey();
 
@@ -192,13 +195,13 @@ public class FimsMetadataFileManager implements FileManager {
         }
 
         String rootIdentifier = String.valueOf(rootEntityBcid.getIdentifier());
-        for (Object o: fimsMetadataIndex) {
+        for (Object o: fimsMetadata) {
             JSONObject resource = (JSONObject) o;
             resource.put("expedition.expeditionCode", processController.getExpeditionCode());
             resource.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey));
         }
 
-        return fimsMetadataIndex;
+        return fimsMetadata;
     }
 
     public void close() {

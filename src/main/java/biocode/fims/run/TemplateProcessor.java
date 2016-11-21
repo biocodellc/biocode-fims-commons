@@ -948,7 +948,7 @@ public class TemplateProcessor {
         while (it.hasNext()) {
             String fieldName = ((Cell) it.next()).toString();
             // TODO: test implications of adding or NOT adding BCID column at this point
-            if (!fieldName.equalsIgnoreCase("BCID")) {
+            if (!fieldName.equalsIgnoreCase("bcid")) {
                 fields.add(fieldName);
             }
         }

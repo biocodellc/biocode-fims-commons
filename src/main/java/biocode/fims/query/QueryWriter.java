@@ -183,13 +183,24 @@ public class QueryWriter {
 
         // Set the value conditionally, we can specify datatypes in the configuration file so interpret them
         // as appropriate here.
-        if (datatype != null && datatype.equals(DataType.INTEGER)) {
+        // TODO handle other DataTypes?
+        if (datatype != null && (
+                datatype.equals(DataType.INTEGER) || datatype.equals(DataType.FLOAT))) {
             //fimsPrinter.out.println("value = " + value);
             //Its a number(int or float).. Excel treats both as numeric
             XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
             style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
             cell.setCellStyle(style);
-            cell.setCellValue(Float.parseFloat(value));
+            try {
+                if (datatype.equals(DataType.INTEGER)) {
+                    cell.setCellValue(Integer.parseInt(value));
+                } else {
+                    cell.setCellValue(Float.parseFloat(value));
+                }
+            } catch (NumberFormatException e) {
+                logger.warn("error converting {} to float value", value);
+                cell.setCellValue(value);
+            }
         } else {
             cell.setCellValue(value);
         }
@@ -598,7 +609,7 @@ public class QueryWriter {
                     String value = c.toString();
 
                     // Write out XML Values
-                    if (fieldName.equals("BCID")) {
+                    if (fieldName.equals("bcid")) {
                         // check if resolution mechanism is attached
                         if (!value.contains("http")) {
                             value = "http://n2t.net/" + value;
