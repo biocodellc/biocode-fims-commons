@@ -126,7 +126,7 @@ public class Mapping {
     }
 
     /**
-     * Find Entity defined by given worksheet and worksheetUniqueKey
+     * Find Entity with a given conceptAlias
      *
      * @param conceptAlias
      * @return
@@ -136,6 +136,21 @@ public class Mapping {
             if (conceptAlias.equals(entity.getConceptAlias()))
                 return entity;
         }
+        return null;
+    }
+
+    /**
+     * find entity with the given conceptUri
+     * @param conceptUri
+     * @return
+     */
+    public Entity findEntityByConceptUri(String conceptUri) {
+        for (Entity entity: entities) {
+            if (conceptUri.equals(entity.getConceptURI())) {
+                return entity;
+            }
+        }
+
         return null;
     }
 

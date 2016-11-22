@@ -115,7 +115,6 @@ public class Process {
         configFile = builder.configFile;
         esIndexer = builder.esIndexer;
         addFmProperties(builder.fmProperties);
-        addProcessControllerToFileManagers();
 
         if (processController.getMapping() == null) {
             // Parse the Mapping object (this object is used extensively in downstream functions!)
@@ -131,6 +130,8 @@ public class Process {
 
             processController.setValidation(validation);
         }
+
+        addProcessControllerToFileManagers();
     }
 
     public boolean validate() {
