@@ -20,6 +20,11 @@
         <property name="url" value="${bcidUrl}" />
         <property name="username" value="${bcidUser}" />
         <property name="password" value="${bcidPassword}" />
+        <property name="connectionProperties">
+            <props>
+                <prop key="useSSL">false</prop>
+            </props>
+        </property>
     </bean>
 
     <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">

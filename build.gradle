@@ -82,7 +82,7 @@ dependencies {
 
     // aspectj
     runtime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
-    compile group: 'org.springframework', name: 'spring-aop', version: '4.3.4.RELEASE'
+    server group: 'org.springframework', name: 'spring-aop', version: '4.3.4.RELEASE'
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
     // TODO migrate to rest client when it becomes more mature
