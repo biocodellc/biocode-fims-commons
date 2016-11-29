@@ -445,7 +445,7 @@ public class ProjectRestService extends FimsService {
         if (esClient != null) {
             ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
             JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
-            indexer.updateMapping(projectId, mapping, settingsManager);
+            indexer.updateMapping(projectId, mapping);
         }
 
         return Response.noContent().build();
@@ -458,7 +458,9 @@ public class ProjectRestService extends FimsService {
         logger.info("refreshing project config caches");
         List<Project> projects = projectService.getProjects(settingsManager.retrieveValue("appRoot"));
 
-        projects.forEach(p -> refreshCache(p.getProjectId()));
+        for (Project p: projects) {
+            refreshCache(p.getProjectId());
+        }
 
         return Response.noContent().build();
     }

@@ -1,6 +1,7 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.bcid.ResourceTypes;
+import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
@@ -25,8 +26,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * special FileManger implementation to handle FimsMetadata files
@@ -177,14 +177,11 @@ public class FimsMetadataFileManager implements FileManager {
     /**
      * prepares the fimsMetadata array for indexing via elasticsearch.
      * This adds the bcid and expeditionCode to each resource
+     *
      * @return
      */
     public JSONArray index() {
-        // TODO do we need to do a deepCopy as not to change the fimsMetadata object?
-        // call this to make sure the fimsMetadata is set
-        getDataset();
-
-        String uniqueKey = processController.getMapping().getDefaultSheetUniqueKey();
+        JSONArray dataset = getDataset();
 
         Entity rootEntity = processController.getMapping().getRootEntity();
         Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
@@ -194,19 +191,73 @@ public class FimsMetadataFileManager implements FileManager {
             throw new FimsRuntimeException("Server Error", "rootEntityBcid is null", 500);
         }
 
-        String rootIdentifier = String.valueOf(rootEntityBcid.getIdentifier());
-        for (Object o: fimsMetadata) {
-            JSONObject resource = (JSONObject) o;
-            resource.put("expedition.expeditionCode", processController.getExpeditionCode());
-            resource.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey));
-        }
-
-        return fimsMetadata;
+        return prepareIndex(dataset, String.valueOf(rootEntityBcid.getIdentifier()));
     }
 
     public void close() {
         if (filename != null) {
             new File(filename).delete();
         }
+    }
+
+    /**
+     * prepare all resources in a dataset for indexing. This involves:
+     *
+     *   1. transforming each column -> uri if possible
+     *   2. denormalizing each resource for elasticsearch by:
+     *
+     *      1. adding expedition.expeditionCode
+     *      2. adding bcid
+     *
+     *
+     * @param dataset
+     * @param rootIdentifier
+     * @return
+     */
+    private JSONArray prepareIndex(JSONArray dataset, String rootIdentifier) {
+        JSONArray index = new JSONArray();
+
+        Map<String, String> columnToUriMap = getColumnToUriMap();
+        String uniqueKey = processController.getMapping().getDefaultSheetUniqueKey();
+
+        for (Object o : dataset) {
+            JSONObject resource = (JSONObject) o;
+            JSONObject resourceIndex = new JSONObject();
+
+            for (Map.Entry entry : (Set<Map.Entry>) resource.entrySet()) {
+                Object key = entry.getKey();
+
+                if (columnToUriMap.containsKey(entry.getKey())) {
+                    key = columnToUriMap.get(entry.getKey());
+                }
+
+                resourceIndex.put(key, entry.getValue());
+
+            }
+
+            resourceIndex.put("expedition.expeditionCode", processController.getExpeditionCode());
+            resourceIndex.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey));
+
+            index.add(resourceIndex);
+        }
+
+        return index;
+    }
+
+    /**
+     * generate a map of ("column", "uri") pairs for each attribute in the {@link Mapping#getDefaultSheetAttributes()}
+     * for easy lookup of attribute column to uri
+     *
+     * @return
+     */
+    private Map<String, String> getColumnToUriMap() {
+        Map<String, String> columnToUriMap = new HashMap<>();
+        List<Attribute> attributes = processController.getMapping().getDefaultSheetAttributes();
+
+        for (Attribute attribute : attributes) {
+            columnToUriMap.put(attribute.getColumn(), attribute.getUri());
+        }
+
+        return columnToUriMap;
     }
 }

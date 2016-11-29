@@ -176,7 +176,9 @@ public class Process {
         if (esIndexer != null) {
             // TODO maybe we should only update the index if datasetFileManager.isNewDataset = false?
             JSONArray fimsMetadata = fimsMetadataFileManager.index();
-            fileManagers.forEach(fm -> fm.index(fimsMetadata));
+            for (AuxilaryFileManager fm: fileManagers) {
+                fm.index(fimsMetadata);
+            }
 
             esIndexer.indexDataset(
                     processController.getProjectId(),

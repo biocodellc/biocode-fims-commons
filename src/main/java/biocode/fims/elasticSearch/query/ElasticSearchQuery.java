@@ -1,8 +1,11 @@
 package biocode.fims.elasticSearch.query;
 
+import biocode.fims.digester.Attribute;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * Domain object containing ElasticSearch query information
@@ -14,11 +17,13 @@ public class ElasticSearchQuery {
     private String[] types;
     private String[] indicies;
     private String[] source;
+    private List<Attribute> attributes;
     private QueryBuilder query;
 
-    public ElasticSearchQuery(QueryBuilder query, String[] indicies) {
+    public ElasticSearchQuery(QueryBuilder query, String[] indicies, List<Attribute> attributes) {
         this.query = query;
         this.indicies = indicies;
+        this.attributes = attributes;
     }
 
     public String[] getIndicies() {
@@ -54,5 +59,9 @@ public class ElasticSearchQuery {
     public ElasticSearchQuery source(String[] source) {
         this.source = source;
         return this;
+    }
+
+    public List<Attribute> getAttributes() {
+        return attributes;
     }
 }

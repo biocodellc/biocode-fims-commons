@@ -4,6 +4,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
+import biocode.fims.elasticSearch.ElasticSearchUtils;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.query.QueryWriter;
@@ -30,10 +31,7 @@ import org.springframework.data.domain.PageImpl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,43 +45,45 @@ public class EsQuery {
 
     private final Client client;
     private final ElasticSearchQuery query;
+    private final String outputDir;
 
-    public EsQuery(Client client, ElasticSearchQuery query) {
+    public EsQuery(Client client, ElasticSearchQuery query, String outputDir) {
         this.client = client;
         this.query = query;
+        this.outputDir = outputDir;
     }
 
-    public String writeKml(List<Attribute> attributes, String outputDir) {
+    public String writeKml() {
         SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();
 
         List<JSONObject> resources = mapScrollableResults(searchRequestBuilder.get());
 
-        QueryWriter queryWriter = getQueryWriter(attributes, resources, DEFAULT_SHEET);
+        QueryWriter queryWriter = getQueryWriter(resources, DEFAULT_SHEET);
 
         return queryWriter.writeKML(PathManager.createFile("output.kml", outputDir));
     }
 
-    public String writeTab(List<Attribute> attributes, String outputDir) {
+    public String writeTab() {
         SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();
 
         List<JSONObject> resources = mapScrollableResults(searchRequestBuilder.get());
 
-        QueryWriter queryWriter = getQueryWriter(attributes, resources, DEFAULT_SHEET);
+        QueryWriter queryWriter = getQueryWriter(resources, DEFAULT_SHEET);
 
         return queryWriter.writeTAB(PathManager.createFile("output.tsv", outputDir), true);
     }
 
-    public String writeCsv(List<Attribute> attributes, String outputDir) {
+    public String writeCsv() {
         SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();
 
         List<JSONObject> resources = mapScrollableResults(searchRequestBuilder.get());
 
-        QueryWriter queryWriter = getQueryWriter(attributes, resources, DEFAULT_SHEET);
+        QueryWriter queryWriter = getQueryWriter(resources, DEFAULT_SHEET);
 
         return queryWriter.writeCSV(PathManager.createFile("output.csv", outputDir), true);
     }
 
-    public String writeCSpace(List<Attribute> attributes, String outputDir) {
+    public String writeCSpace() {
         if (query.getIndicies().length > 1) {
             throw new BadRequestException("You can only query 1 project at a time for cspace queries");
         }
@@ -92,7 +92,7 @@ public class EsQuery {
 
         List<JSONObject> resources = mapScrollableResults(searchRequestBuilder.get());
 
-        QueryWriter queryWriter = getQueryWriter(attributes, resources, DEFAULT_SHEET);
+        QueryWriter queryWriter = getQueryWriter(resources, DEFAULT_SHEET);
 
         File configFile = new ConfigurationFileFetcher(Integer.parseInt(query.getIndicies()[0]), outputDir, true).getOutputFile();
 
@@ -105,7 +105,7 @@ public class EsQuery {
         return queryWriter.writeCSPACE(PathManager.createFile("output.cspace.xml", outputDir), validation);
     }
 
-    public File writeExcel(List<Attribute> attributes, String outputDir) {
+    public File writeExcel() {
         int projectId = 0;
         SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();
 
@@ -124,7 +124,7 @@ public class EsQuery {
             sheetName = mapping.getDefaultSheetName();
         }
 
-        QueryWriter queryWriter = getQueryWriter(attributes, resources, sheetName);
+        QueryWriter queryWriter = getQueryWriter(resources, sheetName);
 
         String excelFile = queryWriter.writeExcel(PathManager.createFile("output.xlsx", outputDir));
 
@@ -152,8 +152,8 @@ public class EsQuery {
         return mapPageableResults(getResponse(searchRequestBuilder));
     }
 
-    private QueryWriter getQueryWriter(List<Attribute> attributes, List<JSONObject> resources, String sheetName) {
-        QueryWriter queryWriter = new QueryWriter(attributes, sheetName);
+    private QueryWriter getQueryWriter(List<JSONObject> resources, String sheetName) {
+        QueryWriter queryWriter = new QueryWriter(query.getAttributes(), sheetName);
 
         populateQueryWriter(queryWriter, resources);
 
@@ -169,7 +169,6 @@ public class EsQuery {
                 Set<Map.Entry> set = resource.entrySet();
                 for (Map.Entry entry: set) {
                     // TODO support arrays, and objects
-                    // TODO currently passing in columnName instead of uri, querywriter will only detect dataType if passed a uri
                     // TODO write bcid last?
                     queryWriter.createCell(row, String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
 
@@ -218,13 +217,20 @@ public class EsQuery {
         return searchRequestBuilder;
     }
 
+    /**
+     * maps all elasticsearch hits to a Page<JSONObject>, transforming each resource key from a uri -> column
+     * @param response
+     * @return
+     */
     private Page<JSONObject> mapPageableResults(SearchResponse response) {
         List<JSONObject> results = new ArrayList<>();
         long totalHits = response.getHits().getTotalHits();
 
         for (SearchHit hit : response.getHits()) {
             if (!StringUtils.isBlank(hit.getSourceAsString())) {
-                results.add(new JSONObject(hit.getSource()));
+                results.add(
+                        ElasticSearchUtils.transformResource(hit.getSource(), query.getAttributes())
+                );
             }
         }
 

@@ -1,6 +1,7 @@
 package biocode.fims.config;
 
 import biocode.fims.digester.*;
+import com.sun.tools.doclint.HtmlTag;
 import org.json.simple.JSONObject;
 
 import java.io.File;
@@ -39,13 +40,17 @@ public class ConfigurationFileEsMapper {
                 JSONObject property = new JSONObject();
                 JSONObject nestedObjectProperties = new JSONObject();
 
-                entity.getAttributes().forEach(a->nestedObjectProperties.put(a.getColumn(), getAttributePropertyInfo(a)));
+                for (Attribute attribute: entity.getAttributes()) {
+                    nestedObjectProperties.put(attribute.getUri(), getAttributePropertyInfo(attribute));
+                }
 
                 property.put("type", "nested");
                 property.put("properties", nestedObjectProperties);
                 properties.put(entity.getConceptAlias(), property);
             } else {
-                entity.getAttributes().forEach(a->properties.put(a.getColumn(), getAttributePropertyInfo(a)));
+                for (Attribute attribute: entity.getAttributes()) {
+                    properties.put(attribute.getUri(), getAttributePropertyInfo(attribute));
+                }
             }
 
         }

@@ -86,7 +86,7 @@ public class ElasticSearchIndexer {
 
     }
 
-    public void updateMapping(int projectId, JSONObject mapping, SettingsManager settingsManager) {
+    public void updateMapping(int projectId, JSONObject mapping) {
         String index = String.valueOf(projectId);
 
         try {

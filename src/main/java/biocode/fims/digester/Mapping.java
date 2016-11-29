@@ -2,6 +2,7 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
+import com.sun.tools.doclint.HtmlTag;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
@@ -244,26 +245,35 @@ public class Mapping {
         }
         return null;
     }
-
     /**
-     * Lookup any property associated with a column name from a list of attributes
-     * (generated from getAllAttributes functions)
+     * Lookup the column associated with a uri from a list of attributes
      *
      * @param attributes
      * @return
      */
-    public URI lookupColumn(String columnName, ArrayList<Attribute> attributes) {
-        Iterator it = attributes.iterator();
-        while (it.hasNext()) {
-            Attribute a = (Attribute) it.next();
-            if (a.getColumn().equalsIgnoreCase(columnName)) {
-                try {
-                    return new URI(a.getUri());
-                } catch (URISyntaxException e) {
-                    throw new FimsRuntimeException(500, e);
-                }
+    public String lookupColumnForUri(String uri, List<Attribute> attributes) {
+        for (Attribute attribute: attributes) {
+            if (attribute.getUri().equalsIgnoreCase(uri)) {
+                return attribute.getColumn();
             }
         }
+
+        return null;
+    }
+
+    /**
+     * Lookup the uri associated with a columnName from a list of attributes
+     *
+     * @param attributes
+     * @return
+     */
+    public String lookupUriForColumn(String columnName, List<Attribute> attributes) {
+        for (Attribute attribute: attributes) {
+            if (attribute.getColumn().equalsIgnoreCase(columnName)) {
+                return attribute.getUri();
+            }
+        }
+
         return null;
     }
 
