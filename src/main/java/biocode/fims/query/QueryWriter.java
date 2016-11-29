@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class QueryWriter {
     // Loop all the columns associated with this worksheet
-    ArrayList<Attribute> attributes;
+    List<Attribute> attributes;
     ArrayList extraColumns;
     Integer totalColumns;
     XSSFWorkbook wb = new XSSFWorkbook();
@@ -41,7 +41,7 @@ public class QueryWriter {
     /**
      * @param attributes ArrayList of attributes passed as argument is meant to come from digester.Mapping instance
      */
-    public QueryWriter(ArrayList<Attribute> attributes, String sheetName) {
+    public QueryWriter(List<Attribute> attributes, String sheetName) {
         this.attributes = attributes;
         totalColumns = attributes.size() - 1;
         extraColumns = new ArrayList();
@@ -123,7 +123,7 @@ public class QueryWriter {
      */
     public Row createRow(int rowNum) {
         // make ALL rows one more than the expected rowNumber to account for the header row
-        return sheet.createRow((short) rowNum + 1);
+        return sheet.createRow(rowNum + 1);
     }
 
     /**
