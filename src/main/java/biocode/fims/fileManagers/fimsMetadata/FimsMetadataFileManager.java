@@ -184,8 +184,8 @@ public class FimsMetadataFileManager implements FileManager {
         JSONArray dataset = getDataset();
 
         Entity rootEntity = processController.getMapping().getRootEntity();
-        Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
-        Bcid rootEntityBcid = bcidService.getEntityBcid(rootEntity, expedition);
+        Bcid rootEntityBcid = expeditionService.getEntityBcid(
+                processController.getExpeditionCode(), processController.getProjectId(), rootEntity.getConceptAlias());
 
         if (rootEntityBcid == null) {
             throw new FimsRuntimeException("Server Error", "rootEntityBcid is null", 500);
@@ -202,13 +202,12 @@ public class FimsMetadataFileManager implements FileManager {
 
     /**
      * prepare all resources in a dataset for indexing. This involves:
-     *
-     *   1. transforming each column -> uri if possible
-     *   2. denormalizing each resource for elasticsearch by:
-     *
-     *      1. adding expedition.expeditionCode
-     *      2. adding bcid
-     *
+     * <p>
+     * 1. transforming each column -> uri if possible
+     * 2. denormalizing each resource for elasticsearch by:
+     * <p>
+     * 1. adding expedition.expeditionCode
+     * 2. adding bcid
      *
      * @param dataset
      * @param rootIdentifier

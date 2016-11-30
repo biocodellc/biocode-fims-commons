@@ -184,17 +184,6 @@ public class BcidService {
         return bcidRepository.findAllByEzidRequestTrue();
     }
 
-    @Transactional(readOnly = true)
-    public Bcid getEntityBcid(Entity entity, Expedition expedition) {
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withIgnoreNullValues()
-                .withIgnorePaths("ezidRequest", "ezidMade", "bcidId", "finalCopy");
-
-        Bcid exampleBcid = EntityToBcidMapper.map(entity, false);
-        exampleBcid.setExpedition(expedition);
-
-        return bcidRepository.findOne(Example.of(exampleBcid, matcher));
-    }
 
     private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
         String bow = scheme + "/" + naan + "/";

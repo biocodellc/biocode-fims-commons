@@ -1,7 +1,6 @@
 package biocode.fims.elasticSearch.query;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.elasticSearch.ElasticSearchUtils;
@@ -18,8 +17,6 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.json.simple.JSONObject;
