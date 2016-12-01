@@ -189,12 +189,14 @@ public class QueryWriter {
             //fimsPrinter.out.println("value = " + value);
             //Its a number(int or float).. Excel treats both as numeric
             XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
-            style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-            cell.setCellStyle(style);
             try {
                 if (datatype.equals(DataType.INTEGER)) {
+                    style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
+                    cell.setCellStyle(style);
                     cell.setCellValue(Integer.parseInt(value));
                 } else {
+                    style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
+                    cell.setCellStyle(style);
                     cell.setCellValue(Float.parseFloat(value));
                 }
             } catch (NumberFormatException e) {

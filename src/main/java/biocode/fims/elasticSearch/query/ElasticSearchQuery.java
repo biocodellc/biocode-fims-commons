@@ -17,13 +17,12 @@ public class ElasticSearchQuery {
     private String[] types;
     private String[] indicies;
     private String[] source;
-    private List<Attribute> attributes;
     private QueryBuilder query;
 
-    public ElasticSearchQuery(QueryBuilder query, String[] indicies, List<Attribute> attributes) {
+    public ElasticSearchQuery(QueryBuilder query, String[] indicies, String[] types) {
         this.query = query;
         this.indicies = indicies;
-        this.attributes = attributes;
+        this.types = types;
     }
 
     public String[] getIndicies() {
@@ -47,11 +46,6 @@ public class ElasticSearchQuery {
         return types;
     }
 
-    public ElasticSearchQuery types(String[] types) {
-        this.types = types;
-        return this;
-    }
-
     public String[] getSource() {
         return source;
     }
@@ -61,7 +55,4 @@ public class ElasticSearchQuery {
         return this;
     }
 
-    public List<Attribute> getAttributes() {
-        return attributes;
-    }
 }
