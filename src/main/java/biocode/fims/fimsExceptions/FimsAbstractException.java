@@ -62,6 +62,13 @@ public abstract class FimsAbstractException extends RuntimeException {
         this.httpStatusCode = httpStatusCode;
     }
 
+    public FimsAbstractException(ErrorCode errorCode, String developerMessage, int httpStatusCode, String... messageArgs) {
+        super(developerMessage);
+        this.errorCode = errorCode;
+        this.usrMessage = getUserMessageFromErrorCode(messageArgs);
+        this.httpStatusCode = httpStatusCode;
+    }
+
     public ErrorCode getErrorCode() {
         return errorCode;
     }
