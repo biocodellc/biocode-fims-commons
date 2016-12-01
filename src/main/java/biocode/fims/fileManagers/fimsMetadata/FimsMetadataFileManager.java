@@ -32,7 +32,7 @@ import java.util.*;
  * special FileManger implementation to handle FimsMetadata files
  */
 public class FimsMetadataFileManager implements FileManager {
-    private static final String NAME = "fimsMetadata";
+    public static final String NAME = "fimsMetadata";
 
     private final FimsMetadataPersistenceManager persistenceManager;
     private final SettingsManager settingsManager;
