@@ -320,4 +320,14 @@ public class Mapping {
             throw new FimsRuntimeException(500, e);
         }
     }
+
+    public Attribute lookupAttribute(String columnName, String sheetName) {
+        for (Attribute a: getAllAttributes(sheetName)) {
+            if (a.getColumn().equals(columnName)) {
+                return a;
+            }
+        }
+
+        return null;
+    }
 }
