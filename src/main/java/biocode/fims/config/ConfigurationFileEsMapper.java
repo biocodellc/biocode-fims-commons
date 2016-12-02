@@ -82,7 +82,7 @@ public class ConfigurationFileEsMapper {
 
         JSONObject keywordField = new JSONObject();
         keywordField.put("type", "keyword");
-        keywordField.put("ignore_above", 256);
+        keywordField.put("ignore_above", 10922);
         fields.put("keyword", keywordField);
 
 

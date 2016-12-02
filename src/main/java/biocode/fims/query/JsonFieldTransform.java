@@ -4,7 +4,7 @@ import biocode.fims.digester.DataType;
 import com.fasterxml.jackson.core.JsonPointer;
 
 /**
- * java bean to hold information for Transforming Json Fields
+ * java bean to hold information for Transforming Json Fields into human readable output
  * @author RJ Ewing
  */
 public class JsonFieldTransform {
