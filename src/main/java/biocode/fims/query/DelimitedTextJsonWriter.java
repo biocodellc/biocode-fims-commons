@@ -46,8 +46,8 @@ public class DelimitedTextJsonWriter implements JsonWriter {
      * @param delimiter
      * @param writeHeader
      */
-    protected DelimitedTextJsonWriter(ArrayNode resources, List<JsonFieldTransform> columns, String outputDirectory,
-                                      String delimiter, boolean writeHeader) {
+    public DelimitedTextJsonWriter(ArrayNode resources, List<JsonFieldTransform> columns, String outputDirectory,
+                                   String delimiter, boolean writeHeader) {
         this(resources, columns, outputDirectory, delimiter);
         this.writeHeader = writeHeader;
     }
@@ -61,7 +61,7 @@ public class DelimitedTextJsonWriter implements JsonWriter {
 
             if (writeHeader) {
 
-                for (JsonFieldTransform column: columns) {
+                for (JsonFieldTransform column : columns) {
 
                     writer.write(column.getFieldName());
                     writer.write(delimiter);
@@ -71,9 +71,9 @@ public class DelimitedTextJsonWriter implements JsonWriter {
                 writer.write("\n");
             }
 
-            for (JsonNode resource: resources) {
+            for (JsonNode resource : resources) {
 
-                for (JsonFieldTransform column: columns) {
+                for (JsonFieldTransform column : columns) {
                     writer.write(resource.at(column.getPath()).asText(""));
                     writer.write(delimiter);
                 }

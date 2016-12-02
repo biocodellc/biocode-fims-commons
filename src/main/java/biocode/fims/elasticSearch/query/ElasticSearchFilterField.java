@@ -1,5 +1,7 @@
 package biocode.fims.elasticSearch.query;
 
+import biocode.fims.digester.DataType;
+
 /**
  * @author RJ Ewing
  */
@@ -7,6 +9,7 @@ public class ElasticSearchFilterField {
 
     private final String field;
     private final String displayName;
+    private final DataType dataType;
     private boolean nested = false;
     private String path;
 
@@ -14,9 +17,10 @@ public class ElasticSearchFilterField {
      * @param field       how this ElasticSearch property is accessed
      * @param displayName how we should display this Filter to the user
      */
-    public ElasticSearchFilterField(String field, String displayName) {
+    public ElasticSearchFilterField(String field, String displayName, DataType dataType) {
         this.field = field;
         this.displayName = displayName;
+        this.dataType = dataType;
     }
 
     /**
@@ -70,5 +74,10 @@ public class ElasticSearchFilterField {
      */
     public String getPath() {
         return path;
+    }
+
+    public DataType getDataType() {
+        //TODO create an enum and use the ElasticSearch dataType
+        return dataType;
     }
 }
