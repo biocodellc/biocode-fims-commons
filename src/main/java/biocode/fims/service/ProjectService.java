@@ -98,6 +98,10 @@ public class ProjectService {
     public List<Project> getProjects(String projectUrl) {
         return projectRepository.findAllByProjectUrl(projectUrl);
     }
+
+    public List<Project> getProjectsWithExpeditionsAndMembers(String projectUrl) {
+        return projectRepository.readByProjectUrl(projectUrl, "Project.withExpeditionsAndMembers");
+    }
 }
 
 
