@@ -155,6 +155,7 @@ public class ProjectMinter {
                     "    \twhere eB.bcidId=b.bcidId\n" +
                     "    \tand eB.expeditionId=p.expeditionId\n" +
                     " and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b.subResourceType = \"FimsMetadata\" \n" +
                     "    and p.projectId = ?\n" +
                     "    \tgroup by p.expeditionCode) as  b2,\n" +
                     "expeditions p,  expeditionBcids eB\n" +
@@ -162,6 +163,7 @@ public class ProjectMinter {
                     " and eB.bcidId=b1.bcidId\n" +
                     " and eB.expeditionId=p.expeditionId\n" +
                     " and b1.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b1.subResourceType = \"FimsMetadata\" " +
                     "    and p.projectId =?";
 
             // Enforce restriction on viewing particular bcids -- this is important for protected bcids
@@ -573,6 +575,7 @@ public class ProjectMinter {
                     "UNION " +
                     "SELECT e.expeditionTitle, p.projectTitle FROM expeditions e, expeditionBcids eB, projects p, bcids b " +
                     "WHERE b.userId = ? and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b.subResourceType = \"FimsMetadata\" \n" +
                     " and eB.bcidId=b.bcidId\n" +
                     " and e.expeditionId=eB.expeditionId\n" +
                     " and p.projectId=e.projectId\n" +
@@ -614,6 +617,7 @@ public class ProjectMinter {
                     "p.projectTitle as projectTitle \n" +
                     "from bcids b, expeditions e,  expeditionBcids eB, projects p\n" +
                     "where b.userId = ? and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b.subResourceType = \"FimsMetadata\" \n" +
                     " and eB.bcidId=b.bcidId\n" +
                     " and e.expeditionId=eB.expeditionId\n" +
                     " and p.projectId=e.projectId\n" +
@@ -686,6 +690,7 @@ public class ProjectMinter {
                     "    \twhere eB.bcidId=b.bcidId\n" +
                     "    \tand eB.expeditionId=e.expeditionId\n" +
                     " and b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b.subResourceType = \"FimsMetadata\" \n" +
                     "    \tgroup by e.expeditionCode) as  b2,\n" +
                     "expeditions e,  expeditionBcids eB, projects p\n" +
                     "where e.expeditionCode = b2.expeditionCode and b1.ts = b2.maxts\n" +
@@ -693,6 +698,7 @@ public class ProjectMinter {
                     " and eB.expeditionId=e.expeditionId\n" +
                     " and p.projectId=e.projectId\n" +
                     " and b1.resourceType = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
+                    " and b1.subResourceType = \"FimsMetadata\" \n" +
                     "    and e.userId = ?";
 
             stmt = conn.prepareStatement(sql);

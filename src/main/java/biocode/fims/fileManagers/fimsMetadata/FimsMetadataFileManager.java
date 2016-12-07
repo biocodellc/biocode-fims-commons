@@ -33,6 +33,7 @@ import java.util.*;
  */
 public class FimsMetadataFileManager implements FileManager {
     public static final String NAME = "fimsMetadata";
+    public static final String DATASET_RESOURCE_SUB_TYPE = "FimsMetadata";
 
     private final FimsMetadataPersistenceManager persistenceManager;
     private final SettingsManager settingsManager;
@@ -63,6 +64,7 @@ public class FimsMetadataFileManager implements FileManager {
                     .title("Fims Metadata Dataset: " + processController.getExpeditionCode())
                     .webAddress(webaddress)
                     .graph(persistenceManager.getGraph())
+                    .subResourceType(DATASET_RESOURCE_SUB_TYPE)
                     .finalCopy(processController.getFinalCopy())
                     .build();
 
@@ -81,7 +83,7 @@ public class FimsMetadataFileManager implements FileManager {
             // save the spreadsheet on the server
             File inputFile = new File(filename);
             String ext = FileUtils.getExtension(inputFile.getName(), null);
-            String filename = "bcid_id_" + bcid.getBcidId() + "." + ext;
+            String filename = "fims_metadata_bcid_id_" + bcid.getBcidId() + "." + ext;
             File outputFile = new File(settingsManager.retrieveValue("serverRoot") + filename);
 
             ServerSideSpreadsheetTools serverSideSpreadsheetTools = new ServerSideSpreadsheetTools(inputFile);

@@ -303,7 +303,7 @@ public class ExpeditionMinter {
             //System.out.println(expedition.getGraphMetadata("_qNK_fuHVbRSTNvA_8pG.xlsx"));
             System.out.println("starting ...");
 //            System.out.println(expedition.getExpeditionss(9,"trizna"));
-            //System.out.println(expedition.getDatasets(30));
+            //System.out.println(expedition.getFimsMetadataDatasets(30));
 
             System.out.println("ending ...");
             //System.out.println(expedition.listExpeditions(8,"mwangiwangui25@gmail.com"));
@@ -571,6 +571,7 @@ public class ExpeditionMinter {
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
                     "WHERE b.bcidId = eB.bcidId && eB.expeditionId = ? && e.expeditionId = eB.expeditionId " +
                     "AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" " +
+                    "AND b.subResourceType = \"FimsMetadata\" " +
                     "ORDER BY b.ts DESC";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, expeditionId);
@@ -625,6 +626,7 @@ public class ExpeditionMinter {
                     " \tAND b.bcidId = eB.bcidId\n" +
                     " \tAND eB.expeditionId = e.expeditionId \n" +
                     " \tAND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" \n" +
+                    " \tAND b.subResourceType = \"FimsMetadata\" \n" +
                     " GROUP BY eB.expeditionId";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, projectId);

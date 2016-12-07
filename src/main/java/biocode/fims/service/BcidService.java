@@ -1,25 +1,21 @@
 package biocode.fims.service;
 
 import biocode.fims.bcid.*;
-import biocode.fims.digester.Entity;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.entities.*;
-import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -125,26 +121,7 @@ public class BcidService {
 
     @Transactional(readOnly = true)
     public Set<Bcid> getLatestDatasets(int projectId) {
-        return bcidRepository.findLatestDatasets(projectId);
-    }
-
-    /**
-     * fetch the latest Bcids with resourceType = 'http://purl.org/dc/dcmitype/Dataset' for the provided list of
-     * {@link Expedition}s
-     *
-     * @param expeditions
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public Set<Bcid> getLatestDatasetsForExpeditions(List<Expedition> expeditions) {
-        Assert.notEmpty(expeditions);
-
-        List<Integer> expeditionIds = new ArrayList<>();
-
-        for (Expedition expedition : expeditions)
-            expeditionIds.add(expedition.getExpeditionId());
-
-        return bcidRepository.findLatestDatasetsForExpeditions(expeditionIds);
+        return bcidRepository.findLatestFimsMetadataDatasets(projectId);
     }
 
     @Transactional
@@ -155,11 +132,12 @@ public class BcidService {
     }
 
     @Transactional(readOnly = true)
-    public List<Bcid> getDatasets(int projectId, String expeditionCode) {
-        return bcidRepository.findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(
+    public List<Bcid> getFimsMetadataDatasets(int projectId, String expeditionCode) {
+        return bcidRepository.findAllByResourceTypeAndSubResourceType(
                 projectId,
                 expeditionCode,
-                ResourceTypes.DATASET_RESOURCE_TYPE
+                ResourceTypes.DATASET_RESOURCE_TYPE,
+                FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE
         );
     }
 
