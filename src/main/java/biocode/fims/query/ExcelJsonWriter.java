@@ -1,7 +1,7 @@
 package biocode.fims.query;
 
 import biocode.fims.digester.DataType;
-import biocode.fims.fimsExceptions.FileCode;
+import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.PathManager;
 import com.fasterxml.jackson.databind.JsonNode;

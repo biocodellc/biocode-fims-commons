@@ -1,10 +1,10 @@
 package biocode.fims.fimsExceptions;
 
+import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONObject;
 import org.springframework.context.MessageSource;
 
-import java.io.PrintWriter;
 import java.util.Locale;
 
 /**

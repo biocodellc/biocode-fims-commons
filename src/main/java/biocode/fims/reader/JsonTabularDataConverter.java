@@ -2,7 +2,7 @@ package biocode.fims.reader;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ValidationCode;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.reader.plugins.TabularDataReader;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

@@ -4,7 +4,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.fimsExceptions.ValidationCode;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.settings.PathManager;
 import biocode.fims.utils.DateUtils;
 import org.apache.commons.lang.StringUtils;

@@ -1,4 +1,4 @@
-package biocode.fims.fimsExceptions;
+package biocode.fims.fimsExceptions.errorCodes;
 
 /**
  * @author RJ Ewing

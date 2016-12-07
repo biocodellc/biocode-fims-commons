@@ -1,15 +1,12 @@
 package biocode.fims.elasticSearch.query;
 
-import biocode.fims.elasticSearch.ElasticSearchUtils;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.GenericErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.SpringObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -17,7 +14,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;

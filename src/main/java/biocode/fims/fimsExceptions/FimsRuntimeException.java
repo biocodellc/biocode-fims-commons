@@ -1,5 +1,6 @@
 package biocode.fims.fimsExceptions;
 
+import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
 import org.json.simple.JSONObject;
 
 /**

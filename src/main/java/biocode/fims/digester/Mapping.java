@@ -2,7 +2,6 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
-import com.sun.tools.doclint.HtmlTag;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;

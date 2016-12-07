@@ -1,4 +1,4 @@
-package biocode.fims.fimsExceptions;
+package biocode.fims.fimsExceptions.errorCodes;
 
 /**
  * {@link ErrorCode} to handle validation errors

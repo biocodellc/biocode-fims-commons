@@ -1,7 +1,6 @@
 package biocode.fims.config;
 
 import biocode.fims.digester.*;
-import com.sun.tools.doclint.HtmlTag;
 import org.json.simple.JSONObject;
 
 import java.io.File;

@@ -1,4 +1,6 @@
-package biocode.fims.fimsExceptions;
+package biocode.fims.fimsExceptions.errorCodes;
+
+import biocode.fims.fimsExceptions.FimsAbstractException;
 
 /**
  * Interface for application errors. Implementations are ment to be enums. We then can add the {@link ErrorCode}

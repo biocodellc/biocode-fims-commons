@@ -1,6 +1,6 @@
 package biocode.fims.utils;
 
-import biocode.fims.fimsExceptions.FileCode;
+import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.PathManager;
 import org.slf4j.Logger;

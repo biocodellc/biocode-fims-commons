@@ -8,7 +8,7 @@ import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.FileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.UploadCode;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
 import org.apache.commons.lang.StringUtils;

@@ -5,7 +5,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ValidationCode;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.settings.Hasher;
 import biocode.fims.utils.SqlLiteNameCleaner;
 import org.json.simple.JSONArray;
