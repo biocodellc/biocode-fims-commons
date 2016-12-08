@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * configuration class for any biocode-fims implementation webapp.
  */
 @Configuration
-@ComponentScan(basePackages = {"biocode.fims.rest"})
+@ComponentScan(basePackages = {"biocode.fims.rest", VersionTransformer.TRANSFORMER_PACKAGE})
 @EnableScheduling
 @EnableAspectJAutoProxy
 public class FimsWebAppConfig {

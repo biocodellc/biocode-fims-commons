@@ -227,7 +227,7 @@ public class ExpeditionRestService extends FimsService {
      *
      * @param expeditionCode
      * @param projectId
-     * @param ignoreUser     if specified as true then we don't perform a check on what user owns the dataset
+     * @param ignoreUser     if specified as true then we don't perform a check on what user owns the fimsMetadata
      *
      * @return
      */

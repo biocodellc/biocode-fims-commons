@@ -104,6 +104,11 @@ public class BcidService {
     }
 
     @Transactional(readOnly = true)
+    public List<Bcid> getBcids(List<String> graph) {
+        return bcidRepository.findAllByGraphIn(graph);
+    }
+
+    @Transactional(readOnly = true)
     public Bcid getBcidByTitle(int expeditionId, String title) {
         return bcidRepository.findOneByTitleAndExpeditionExpeditionId(title, expeditionId);
     }

@@ -4,7 +4,7 @@ import biocode.fims.run.ProcessController;
 import org.json.simple.JSONArray;
 
 /**
- * Interface for handling dataset persistence
+ * Interface for handling fimsMetadata persistence
  */
 public interface FimsMetadataPersistenceManager {
 

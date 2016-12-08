@@ -82,4 +82,6 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
                                                        @Param("expeditionCode") String expeditionCode,
                                                        @Param("resourceType") String resourceType,
                                                        @Param("subResourceType") String subResourceType);
+
+    List<Bcid> findAllByGraphIn(List<String> graph);
 }

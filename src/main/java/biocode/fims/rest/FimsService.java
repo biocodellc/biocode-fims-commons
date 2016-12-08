@@ -11,12 +11,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.UriInfo;
 import java.io.File;
 
 /**
  * An abstract class that sets the necessary information when communicating with Biocode-Fims services
  */
 public abstract class FimsService {
+    @Context
+    public UriInfo uriInfo;
     @Context
     protected ServletContext context;
     @Context

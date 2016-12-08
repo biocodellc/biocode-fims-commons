@@ -84,9 +84,12 @@ public class ProjectRestService extends FimsService {
     /**
      * Given a project id, get the latest graphs by expedition
      *
+     * This service is no longer supported and will be removed in the future. Use {@link ProjectRestService#listExpeditions(Integer)}
+     *
      * @param projectId
      * @return
      */
+    @Deprecated
     @GET
     @Path("/{projectId}/graphs")
     @Produces(MediaType.APPLICATION_JSON)
