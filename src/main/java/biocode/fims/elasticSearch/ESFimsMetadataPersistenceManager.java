@@ -12,6 +12,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ESFimsMetadataPersistenceManager implements FimsMetadataPersistenceManager {
     private final Client client;
+    private String graph;
 
     public ESFimsMetadataPersistenceManager(Client client) {
         this.client = client;
@@ -41,7 +43,9 @@ public class ESFimsMetadataPersistenceManager implements FimsMetadataPersistence
 
     @Override
     public String getGraph() {
-        return null;
+        // doing this until we remove the deprecated ProjectRestService.getLatestGraphsByExpedition
+        // this maintains backwards compatibility with v1 query api
+        return graph == null ? graph = String.valueOf(UUID.randomUUID()) : graph;
     }
 
     @Override
