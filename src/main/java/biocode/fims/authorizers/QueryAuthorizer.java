@@ -7,8 +7,14 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +22,8 @@ import java.util.List;
  * @author RJ Ewing
  */
 public class QueryAuthorizer {
+    private final static Logger logger = LoggerFactory.getLogger(QueryAuthorizer.class);
+
     private final ProjectService projectService;
     private final SettingsManager settingsManager;
 
@@ -125,5 +133,50 @@ public class QueryAuthorizer {
         }
 
         return allAuthorizedExpeditions && foundExpeditionCodes.size() == expeditionCodes.size();
+    }
+
+    /**
+     * Checks that the {@param user} has access to the {@param projectIds} and expedition.expeditionCode within the
+     * {@param esQueryNode} and that there is no query terms on the "bcid" field
+     * @param projectIds
+     * @param esQueryNode
+     * @param user
+     * @return
+     */
+    public boolean authorizedQuery(List<Integer> projectIds, ObjectNode esQueryNode, User user) {
+        JsonParser parser = esQueryNode.traverse();
+        List<String> expeditionCodes = new ArrayList<>();
+
+        JsonToken token;
+        try {
+            while ((token = parser.nextToken()) != null) {
+
+                if (token.equals(JsonToken.FIELD_NAME)) {
+                    if (parser.getCurrentName().equals("bcid")) {
+                        return false;
+                    } else if (parser.getCurrentName().equals("expedition.expeditionCode")) {
+
+                        if (parser.nextToken() == JsonToken.START_OBJECT) {
+
+                            while ((token = parser.nextToken()) != JsonToken.END_OBJECT) {
+
+                                if (token.equals(JsonToken.FIELD_NAME) && parser.getCurrentName().equals("query")) {
+                                    parser.nextToken();
+                                    expeditionCodes.add(parser.getValueAsString());
+                                    break;
+                                }
+                            }
+                        } else {
+                            expeditionCodes.add(parser.getValueAsString());
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.warn("IOException parsing esQueryNode in QueryAuthorizer");
+            return false;
+        }
+
+        return authorizedQuery(projectIds, expeditionCodes, user);
     }
 }
