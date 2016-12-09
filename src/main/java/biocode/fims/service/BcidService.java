@@ -40,6 +40,7 @@ public class BcidService {
     private final UserService userService;
     private final EzidUtils ezidUtils;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
+    private List<Bcid> bcidsWithOutEzidRequest;
 
     @Autowired
     public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
@@ -233,5 +234,9 @@ public class BcidService {
         if (!ezidErrors.isEmpty()) {
             ezidUtils.sendErrorEmail(ezidErrors);
         }
+    }
+
+    public List<Bcid> getBcidsWithOutEzidRequest() {
+        return bcidRepository.findAllByEzidRequestFalse();
     }
 }
