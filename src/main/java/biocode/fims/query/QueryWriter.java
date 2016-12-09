@@ -192,12 +192,15 @@ public class QueryWriter {
             try {
                 if (datatype.equals(DataType.INTEGER)) {
                     style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-                    cell.setCellStyle(style);
                     cell.setCellValue(Integer.parseInt(value));
+                    cell.setCellStyle(style);
                 } else {
                     style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
                     cell.setCellStyle(style);
-                    cell.setCellValue(Float.parseFloat(value));
+                    // even though this is a float datatype, cell.setCellValue only accepts double values.
+                    // if we pass a float value, it will be cast to double, and incorrect "percision" is added,
+                    // giving us a different value
+                    cell.setCellValue(Double.parseDouble(value));
                 }
             } catch (NumberFormatException e) {
                 logger.warn("error converting {} to float value", value);
@@ -278,17 +281,12 @@ public class QueryWriter {
      */
     public JSONArray getJSON() {
         JSONArray dataset = new JSONArray();
-        ArrayList<String> columns = new ArrayList<>();
-
-        for (Attribute attribute : attributes) {
-            columns.add(attribute.getColumn());
-        }
 
         // Iterate through the rows.
         for (Row row : sheet) {
             JSONObject resource = new JSONObject();
 
-            for (int index = 0; index < columns.size(); index++) {
+            for (int index = 0; index < attributes.size(); index++) {
                 Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
                 Object value = null;
 
@@ -305,6 +303,10 @@ public class QueryWriter {
                                 value = cell.getDateCellValue();
                             } else {
                                 value = cell.getNumericCellValue();
+                                // excel will return numbers as double. If it is an integer, get the int value
+                                if (attributes.get(index).getDatatype() == DataType.INTEGER) {
+                                    value = ((Double) value).intValue();
+                                }
                             }
                             break;
 
@@ -326,7 +328,7 @@ public class QueryWriter {
                     }
                 }
 
-                resource.put(columns.get(index), String.valueOf(value));
+                resource.put(attributes.get(index).getColumn(), String.valueOf(value));
             }
             dataset.add(resource);
         }
