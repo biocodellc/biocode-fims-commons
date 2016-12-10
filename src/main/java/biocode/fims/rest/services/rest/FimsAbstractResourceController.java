@@ -16,12 +16,10 @@ import javax.ws.rs.core.Response;
 /**
  * REST interface for creating elements, to be called from the interface or other consuming applications.
  */
-@Controller
-@Path("resourceTypes")
-public class ResourceService extends FimsService {
+public abstract class FimsAbstractResourceController extends FimsService {
 
     @Autowired
-    ResourceService(OAuthProviderService providerService, SettingsManager settingsManager) {
+    FimsAbstractResourceController(OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
     }
 

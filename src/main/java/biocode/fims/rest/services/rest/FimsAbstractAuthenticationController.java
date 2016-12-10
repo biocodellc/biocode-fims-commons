@@ -16,7 +16,6 @@ import biocode.fims.utils.QueryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,19 +31,17 @@ import java.net.URISyntaxException;
 /**
  * REST interface for handling user authentication
  */
-@Controller
-@Path("authenticationService")
-public class AuthenticationService extends FimsService {
+public abstract class FimsAbstractAuthenticationController extends FimsService {
     @Context
     private HttpServletRequest request;
-    private static Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+    private static Logger logger = LoggerFactory.getLogger(FimsAbstractAuthenticationController.class);
 
     private final UserService userService;
     private final OAuthProviderService oAuthProviderService;
 
     @Autowired
-    public AuthenticationService(OAuthProviderService oAuthProviderService,
-                                 UserService userService, SettingsManager settingsManager) {
+    public FimsAbstractAuthenticationController(OAuthProviderService oAuthProviderService,
+                                                UserService userService, SettingsManager settingsManager) {
         super(oAuthProviderService, settingsManager);
         this.oAuthProviderService = oAuthProviderService;
         this.userService = userService;

@@ -23,15 +23,13 @@ import javax.ws.rs.core.Response;
 /**
  * The REST Interface for dealing with users. Includes user creation and profile updating.
  */
-@Controller
-@Path("users")
-public class UserRestService extends FimsService {
+public abstract class FimsAbstractUserController extends FimsService {
 
-    private final UserService userService;
+    protected final UserService userService;
 
     @Autowired
-    UserRestService(UserService userService,
-                    OAuthProviderService providerService, SettingsManager settingsManager) {
+    FimsAbstractUserController(UserService userService,
+                               OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.userService = userService;
     }

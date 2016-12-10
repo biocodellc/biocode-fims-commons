@@ -13,12 +13,10 @@ import javax.ws.rs.core.Response;
 /**
  * Biocode-Fims utility services
  */
-@Controller
-@Path("utils/")
-public class Utils extends FimsService {
+public abstract class FimsAbstractUtilsController extends FimsService {
 
     @Autowired
-    Utils(OAuthProviderService providerService, SettingsManager settingsManager) {
+    FimsAbstractUtilsController(OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
     }
 

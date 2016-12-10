@@ -27,15 +27,13 @@ import java.util.Hashtable;
  * REST interface calls for working with bcids.    This includes creating a bcid, looking up
  * bcids by user associated with them, and JSON representation of group metadata.
  */
-@Controller
-@Path("bcids")
-public class BcidRestService extends FimsService {
+public abstract class FimsAbstractBcidController extends FimsService {
 
     private final BcidService bcidService;
 
     @Autowired
-    BcidRestService(BcidService bcidService, OAuthProviderService providerService,
-                    SettingsManager settingsManager) {
+    FimsAbstractBcidController(BcidService bcidService, OAuthProviderService providerService,
+                               SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.bcidService = bcidService;
     }

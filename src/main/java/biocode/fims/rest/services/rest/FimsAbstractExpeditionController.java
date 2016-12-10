@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.*;
@@ -36,16 +35,14 @@ import java.net.URLDecoder;
 /**
  * REST interface calls for working with expeditions.  This includes creating, updating and deleting expeditions.
  */
-@Controller
-@Path("expeditions")
-public class ExpeditionRestService extends FimsService {
+public abstract class FimsAbstractExpeditionController extends FimsService {
 
-    private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
+    private static Logger logger = LoggerFactory.getLogger(FimsAbstractExpeditionController.class);
     private final ExpeditionService expeditionService;
 
     @Autowired
-    public ExpeditionRestService(ExpeditionService expeditionService,
-                                 OAuthProviderService providerService, SettingsManager settingsManager) {
+    public FimsAbstractExpeditionController(ExpeditionService expeditionService,
+                                            OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
     }
@@ -124,7 +121,7 @@ public class ExpeditionRestService extends FimsService {
         try {
             expeditionCode = URLDecoder.decode(expeditionCode, "utf-8");
         } catch (UnsupportedEncodingException e) {
-            logger.warn("UnsupportedEncodingException in ExpeditionRestService.fetchAlias method.", e);
+            logger.warn("UnsupportedEncodingException in FimsAbstractExpeditionController.fetchAlias method.", e);
         }
 
         try {

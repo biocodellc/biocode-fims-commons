@@ -4,10 +4,7 @@ import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.wadl.WadlApplicationContext;
 import org.glassfish.jersey.server.wadl.internal.ApplicationDescription;
 
-import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -20,18 +17,15 @@ import java.io.Writer;
 /**
  * Describes the REST service in a human readable manner
  */
-@Produces({"application/vnd.sun.wadl+xml", "application/xml"})
-@Singleton
-@Path("fims.wadl")
-public final class WadlResources {
+public abstract class FimsAbstractWadlResourcesController {
 
+    @Context
     private WadlApplicationContext wadlContext;
     private com.sun.research.ws.wadl.Application application;
     private byte[] wadlXmlRepresentation;
     private final SettingsManager settingsManager;
 
-    public WadlResources(@Context WadlApplicationContext wadlContext, SettingsManager settingsManager) {
-        this.wadlContext = wadlContext;
+    public FimsAbstractWadlResourcesController(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
     }
 
