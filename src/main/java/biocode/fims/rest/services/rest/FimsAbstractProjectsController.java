@@ -39,20 +39,15 @@ import java.util.*;
  * Currently, there are no REST services for creating projects, which instead must be added to the Database
  * manually by an administrator
  */
-@Controller
-@Path("projects")
-public class ProjectRestService extends FimsService {
-    private static final Logger logger = LoggerFactory.getLogger(ProjectRestService.class);
-    private ExpeditionService expeditionService;
-    private ProjectService projectService;
-    private final Client esClient;
+public abstract class FimsAbstractProjectsController extends FimsService {
+    private static final Logger logger = LoggerFactory.getLogger(FimsAbstractProjectsController.class);
+    protected ExpeditionService expeditionService;
+    protected ProjectService projectService;
 
-    @Autowired
-    ProjectRestService(ExpeditionService expeditionService, Client esClient,
-                       OAuthProviderService providerService, SettingsManager settingsManager, ProjectService projectService) {
+    FimsAbstractProjectsController(ExpeditionService expeditionService, OAuthProviderService providerService,
+                                   SettingsManager settingsManager, ProjectService projectService) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
-        this.esClient = esClient;
         this.projectService = projectService;
     }
 
@@ -62,7 +57,6 @@ public class ProjectRestService extends FimsService {
      * @return Generates a JSON listing containing project metadata as an array
      */
     @GET
-    @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response fetchList(@QueryParam("includePublic") @DefaultValue("false") boolean includePublic) {
 
@@ -84,7 +78,7 @@ public class ProjectRestService extends FimsService {
     /**
      * Given a project id, get the latest graphs by expedition
      *
-     * This service is no longer supported and will be removed in the future. Use {@link ProjectRestService#listExpeditions(Integer)}
+     * This service is no longer supported and will be removed in the future. Use {@link FimsAbstractProjectsController#listExpeditions(Integer)}
      *
      * @param projectId
      * @return
@@ -443,13 +437,7 @@ public class ProjectRestService extends FimsService {
     @GET
     @Path("/{projectId}/config/refreshCache")
     public Response refreshCache(@PathParam("projectId") Integer projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
-
-        if (esClient != null) {
-            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-            JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
-            indexer.updateMapping(projectId, mapping);
-        }
+        new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
 
         return Response.noContent().build();
     }

@@ -23,7 +23,6 @@ public class FimsWebAppConfig {
     @Value("classpath:api-version-urls.yaml")
     private Resource urlFile;
 
-
     @Bean
     public VersionTransformer versionTransformer() {
         return new VersionTransformer();
