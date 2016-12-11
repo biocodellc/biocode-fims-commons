@@ -58,8 +58,8 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
     Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
 
     @Query(value =
-            "select b from Bcid b where b.ts in \n" +
-                    "(select max(b2.ts) from Bcid b2 where " +
+            "select b from Bcid b where b.bcidId in \n" +
+                    "(select max(b2.bcidId) from Bcid b2 where " +
                     "b2.expedition.project.projectId=:projectId and " +
                     "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' and " +
                     "b2.subResourceType='" + FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE + "' " +
