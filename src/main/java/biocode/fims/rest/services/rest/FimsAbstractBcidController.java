@@ -8,13 +8,10 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.*;
 import biocode.fims.settings.SettingsManager;
-import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.util.StringUtil;
 import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,9 +29,8 @@ public abstract class FimsAbstractBcidController extends FimsService {
     private final BcidService bcidService;
 
     @Autowired
-    FimsAbstractBcidController(BcidService bcidService, OAuthProviderService providerService,
-                               SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    FimsAbstractBcidController(BcidService bcidService, SettingsManager settingsManager) {
+        super(settingsManager);
         this.bcidService = bcidService;
     }
 
@@ -93,7 +89,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         }
 
         Bcid bcid = builder.build();
-        bcidService.create(bcid, user.getUserId());
+        bcidService.create(bcid, userContext.getUser().getUserId());
 
         // TODO return the bcid object here
         return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
@@ -112,8 +108,8 @@ public abstract class FimsAbstractBcidController extends FimsService {
     public Response run(@PathParam("bcidId") Integer bcidId) {
         String response;
         String username = null;
-        if (user != null) {
-            username = user.getUsername();
+        if (userContext.getUser() != null) {
+            username = userContext.getUser().getUsername();
         }
         try {
             Bcid bcid = bcidService.getBcid(bcidId);
@@ -148,8 +144,8 @@ public abstract class FimsAbstractBcidController extends FimsService {
     public Response bcidList() {
         BcidMinter bcidMinter = new BcidMinter();
         String username = null;
-        if (user != null) {
-            username = user.getUsername();
+        if (userContext.getUser() != null) {
+            username = userContext.getUser().getUsername();
         }
         JSONArray response = bcidMinter.bcidList(username);
 
@@ -186,7 +182,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         if (identifier == null || identifier.isEmpty()) {
             throw new BadRequestException("You must include an identifier.");
         }
-        if (!bcidMinter.userOwnsBcid(identifier, user.getUserId())) {
+        if (!bcidMinter.userOwnsBcid(identifier, userContext.getUser().getUserId())) {
             throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
         }
 

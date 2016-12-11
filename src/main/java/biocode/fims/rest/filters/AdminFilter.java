@@ -1,8 +1,7 @@
 package biocode.fims.rest.filters;
 
-import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.service.OAuthProviderService;
+import biocode.fims.rest.UserContext;
 import biocode.fims.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,7 +14,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Custom filter for checking if a user is a project admin
@@ -27,22 +25,18 @@ public class AdminFilter implements ContainerRequestFilter {
     @Context
     HttpServletRequest webRequest;
     @Autowired
-    private OAuthProviderService oAuthProviderService;
-    @Autowired
     private UserService userService;
+    @Autowired
+    private UserContext userContext;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
             throws IOException {
         HttpSession session = webRequest.getSession();
         Object projectAdmin = session.getAttribute("projectAdmin");
-        List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
 
-        if (accessTokenList != null && !accessTokenList.isEmpty()) {
-            User user = oAuthProviderService.getUser((String) accessTokenList.get(0));
-            if (user != null) {
-                projectAdmin = userService.isAProjectAdmin(user);
-            }
+        if (userContext.getUser() != null) {
+                projectAdmin = userService.isAProjectAdmin(userContext.getUser());
         }
 
         if (projectAdmin == null) {

@@ -13,7 +13,6 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
@@ -27,10 +26,8 @@ public abstract class FimsAbstractUserController extends FimsService {
 
     protected final UserService userService;
 
-    @Autowired
-    FimsAbstractUserController(UserService userService,
-                               OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    FimsAbstractUserController(UserService userService, SettingsManager settingsManager) {
+        super(settingsManager);
         this.userService = userService;
     }
 
@@ -78,7 +75,7 @@ public abstract class FimsAbstractUserController extends FimsService {
 
         ProjectMinter p = new ProjectMinter();
         // check if the user is this project's admin
-        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
             throw new ForbiddenRequestException("You can't add a user to a project that you're not an admin.");
         }
 
@@ -119,10 +116,10 @@ public abstract class FimsAbstractUserController extends FimsService {
                                   @FormParam("username") String updateUsername,
                                   @QueryParam("return_to") String returnTo) {
         Boolean adminAccess = false;
-        User userToUpdate = this.user;
+        User userToUpdate = this.userContext.getUser();
 
-        if (!user.getUsername().equals(updateUsername.trim())) {
-            if (!userService.isAProjectAdmin(user)) {
+        if (!userContext.getUser().getUsername().equals(updateUsername.trim())) {
+            if (!userService.isAProjectAdmin(userContext.getUser())) {
                 throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
             } else {
                 adminAccess = true;
@@ -138,7 +135,7 @@ public abstract class FimsAbstractUserController extends FimsService {
             if (adminAccess) {
                 userToUpdate.setPassword(PasswordHash.createHash(newPassword));
                 // Make the user change their password next time they login
-                user.setHasSetPassword(false);
+                userContext.getUser().setHasSetPassword(false);
             } else if (!oldPassword.isEmpty()) {
                 // If user's old_password matches stored pass, then update the user's password to the new value
                 if (userService.getUser(updateUsername, oldPassword) == null)
@@ -180,9 +177,9 @@ public abstract class FimsAbstractUserController extends FimsService {
     @Path("/profile")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserData() {
-        if (user != null) {
-            user.setAdmin(userService.isAProjectAdmin(user));
-            return Response.ok(user).build();
+        if (userContext.getUser() != null) {
+            userContext.getUser().setAdmin(userService.isAProjectAdmin(userContext.getUser()));
+            return Response.ok(userContext.getUser()).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");
     }

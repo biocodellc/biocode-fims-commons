@@ -14,9 +14,6 @@ import org.springframework.core.env.Environment;
 public class ElasticSearchAppConfig {
     @Autowired
     private Environment env;
-    @Autowired
-    Client esClient;
-
     @Bean
     // This bean handles the creation/destruction of the esClient bean that is autowired
     public TransportClientFactoryBean transportClientFactoryBean() {

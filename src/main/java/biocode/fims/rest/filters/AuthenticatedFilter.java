@@ -1,6 +1,7 @@
 package biocode.fims.rest.filters;
 
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
+import biocode.fims.rest.UserContext;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ext.Provider;
@@ -21,38 +23,17 @@ import java.util.List;
  */
 @Provider
 @Authenticated
-@Priority(Priorities.AUTHENTICATION)
+@Priority(Priorities.AUTHORIZATION)
 public class AuthenticatedFilter implements ContainerRequestFilter {
-    @Context
-    HttpServletRequest webRequest;
     @Autowired
-    private OAuthProviderService oAuthProviderService;
+    private UserContext userContext;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
-        throws IOException {
-        HttpSession session = webRequest.getSession();
-        String accessToken = null;
-        List accessTokenList = requestContext.getUriInfo().getQueryParameters().get("access_token");
-
-        String authHeader = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
-
-        if (accessTokenList != null && !accessTokenList.isEmpty())
-            accessToken = (String) accessTokenList.get(0);
-
-        // If accessToken is null, check if the HTTP Authorization header is present and formatted correctly
-        if (accessToken == null && authHeader != null && authHeader.startsWith("Bearer ")) {
-            // Extract the token from the HTTP Authorization header
-            accessToken = authHeader.substring("Bearer".length()).trim();
-        }
-
-        if (accessToken != null) {
-            if (oAuthProviderService.getUser(accessToken) == null) {
-                throw new UnauthorizedRequestException("You must be logged in to access this service",
-                        "Invalid/Expired access_token");
-            }
-        } else if (session.getAttribute("user") == null) {
-            throw new UnauthorizedRequestException("You must be logged in to access this service.");
+            throws IOException {
+        if (userContext.getUser() == null) {
+            throw new UnauthorizedRequestException("You must be logged in to access this service",
+                    "Possible Invalid/Expired access_token");
         }
     }
 }

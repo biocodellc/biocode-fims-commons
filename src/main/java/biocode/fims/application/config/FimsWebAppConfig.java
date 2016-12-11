@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.rest.UserContext;
 import biocode.fims.rest.versioning.VersionTransformer;
 import biocode.fims.rest.versioning.VersionUrlConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,5 +37,11 @@ public class FimsWebAppConfig {
         }
 
         return new VersionUrlConfig();
+    }
+
+    @Bean
+    @Scope(value="request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public UserContext userContext() {
+        return new UserContext();
     }
 }

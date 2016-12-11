@@ -1,7 +1,6 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Mapping;
@@ -10,7 +9,6 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -19,14 +17,11 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
-import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -44,9 +39,9 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     protected ExpeditionService expeditionService;
     protected ProjectService projectService;
 
-    FimsAbstractProjectsController(ExpeditionService expeditionService, OAuthProviderService providerService,
-                                   SettingsManager settingsManager, ProjectService projectService) {
-        super(providerService, settingsManager);
+    FimsAbstractProjectsController(ExpeditionService expeditionService, SettingsManager settingsManager,
+                                   ProjectService projectService) {
+        super(settingsManager);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
     }
@@ -63,13 +58,14 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         ProjectMinter project = new ProjectMinter();
         Integer userId = null;
 
-        if (user == null && !includePublic) {
+        if (userContext.getUser() == null && !includePublic) {
             throw new BadRequestException("You must be logged in if you don't want to include public projects");
         }
-        if (user != null) {
-            userId = user.getUserId();
+        if (userContext.getUser() != null) {
+            userId = userContext.getUser().getUserId();
         }
 
+//        List<Project> projects = projectService.getProjects(user, includePublic);
         JSONArray response = project.listProjects(userId, includePublic);
 
         return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
@@ -90,8 +86,8 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     public Response getLatestGraphsByExpedition(@PathParam("projectId") Integer projectId) {
         ProjectMinter project = new ProjectMinter();
         String username = null;
-        if (user != null) {
-            username = user.getUsername();
+        if (userContext.getUser() != null) {
+            username = userContext.getUser().getUsername();
         }
 
         JSONArray graphs = project.getLatestGraphs(projectId, username);
@@ -125,7 +121,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     public Response getMyLatestGraphs() {
         ProjectMinter project = new ProjectMinter();
 
-        String response = project.getMyLatestGraphs(user.getUsername());
+        String response = project.getMyLatestGraphs(userContext.getUser().getUsername());
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -142,7 +138,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     public Response getDatasets() {
         ProjectMinter project = new ProjectMinter();
 
-        String response = project.getMyTemplatesAndDatasets(user.getUsername());
+        String response = project.getMyTemplatesAndDatasets(userContext.getUser().getUsername());
 
         return Response.ok(response).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -159,7 +155,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserAdminProjects() {
         ProjectMinter project = new ProjectMinter();
-        JSONArray projects = project.getAdminProjects(user.getUsername());
+        JSONArray projects = project.getAdminProjects(userContext.getUser().getUsername());
 
         return Response.ok(projects.toJSONString()).build();
     }
@@ -186,11 +182,11 @@ public abstract class FimsAbstractProjectsController extends FimsService {
                                  @FormParam("public") String publicProject) {
         ProjectMinter p = new ProjectMinter();
 
-        if (!p.isProjectAdmin(user.getUserId(), projectID)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUserId(), projectID)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
 
-        JSONObject metadata = p.getMetadata(projectID, user.getUsername());
+        JSONObject metadata = p.getMetadata(projectID, userContext.getUser().getUsername());
         Hashtable<String, String> update = new Hashtable<String, String>();
 
         if (title != null &&
@@ -235,7 +231,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     public Response removeUser(@PathParam("projectId") Integer projectId,
                                @PathParam("userId") Integer userId) {
         ProjectMinter p = new ProjectMinter();
-        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
             throw new ForbiddenRequestException("You are not this project's admin.");
         }
 
@@ -266,7 +262,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
             throw new ForbiddenRequestException("You are not this project's admin");
         }
         p.addUserToProject(userId, projectId);
@@ -285,7 +281,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserProjects() {
         ProjectMinter p = new ProjectMinter();
-        JSONArray projects = p.listUsersProjects(user.getUsername());
+        JSONArray projects = p.listUsersProjects(userContext.getUser().getUsername());
         return Response.ok(projects.toJSONString()).build();
     }
 
@@ -313,13 +309,13 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         ProjectMinter projectMinter = new ProjectMinter();
 
         if (projectMinter.templateConfigExists(configName, projectId)) {
-            if (projectMinter.usersTemplateConfig(configName, projectId, user.getUserId())) {
-                projectMinter.updateTemplateConfig(configName, projectId, user.getUserId(), checkedOptions);
+            if (projectMinter.usersTemplateConfig(configName, projectId, userContext.getUser().getUserId())) {
+                projectMinter.updateTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
             } else {
                 return Response.ok("{\"error\": \"A configuration with that name already exists, and you are not the owner.\"}").build();
             }
         } else {
-            projectMinter.saveTemplateConfig(configName, projectId, user.getUserId(), checkedOptions);
+            projectMinter.saveTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
         }
 
         return Response.ok("{\"success\": \"Successfully saved template configuration.\"}").build();
@@ -377,7 +373,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, user.getUserId())) {
+        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, userContext.getUser().getUserId())) {
             p.removeTemplateConfig(configName, projectId);
         } else {
             return Response.ok("{\"error\": \"Only the owners of a configuration can remove the configuration.\"}").build();
@@ -397,7 +393,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Path("/{projectId}/expeditions")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
-        return expeditionService.getExpeditions(projectId, user.getUserId(), false);
+        return expeditionService.getExpeditions(projectId, userContext.getUser().getUserId(), false);
     }
 
     /**

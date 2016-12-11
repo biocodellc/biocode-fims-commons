@@ -4,7 +4,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -16,8 +15,8 @@ import javax.ws.rs.core.Response;
 public abstract class FimsAbstractUtilsController extends FimsService {
 
     @Autowired
-    FimsAbstractUtilsController(OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    FimsAbstractUtilsController(SettingsManager settingsManager) {
+        super(settingsManager);
     }
 
     @GET

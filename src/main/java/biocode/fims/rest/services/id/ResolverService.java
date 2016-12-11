@@ -38,7 +38,7 @@ public class ResolverService extends FimsService {
     @Autowired
     ResolverService(BcidService bcidService, OAuthProviderService providerService,
                     SettingsManager settingsManager, Resolver resolver) {
-        super(providerService, settingsManager);
+        super(settingsManager);
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
         this.resolver = resolver;
@@ -104,8 +104,8 @@ public class ResolverService extends FimsService {
         String divider = settingsManager.retrieveValue("divider");
         Identifier identifier = new Identifier(identifierString, divider);
         String username = null;
-        if (user != null) {
-            username = user.getUsername();
+        if (userContext.getUser() != null) {
+            username = userContext.getUser().getUsername();
         }
 
         try {

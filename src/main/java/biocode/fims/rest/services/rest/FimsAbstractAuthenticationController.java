@@ -42,7 +42,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
     @Autowired
     public FimsAbstractAuthenticationController(OAuthProviderService oAuthProviderService,
                                                 UserService userService, SettingsManager settingsManager) {
-        super(oAuthProviderService, settingsManager);
+        super(settingsManager);
         this.oAuthProviderService = oAuthProviderService;
         this.userService = userService;
     }
@@ -153,7 +153,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
             throw new BadRequestException("invalid_request");
         }
 
-        if (user == null || !oAuthLogin) {
+        if (userContext.getUser() == null || !oAuthLogin) {
             session.setAttribute("oAuthLogin", "false");
             // need the user to login
             try {
@@ -166,7 +166,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
             }
         }
         //TODO ask user if they want to share profile information with requesting party
-        OAuthNonce oAuthNonce = oAuthProviderService.generateNonce(oAuthClient, user, redirectURL);
+        OAuthNonce oAuthNonce = oAuthProviderService.generateNonce(oAuthClient, userContext.getUser(), redirectURL);
 
         // no longer need oAuthLogin session attribute
         session.removeAttribute("oAuthLogin");
