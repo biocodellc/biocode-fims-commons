@@ -1,6 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.entities.User;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,8 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
     User findOneByResetToken(@Param("resetToken") String resetToken);
 
     Set<User> findAll();
+
+    @EntityGraph(value = "User.withProjectsMemberOf", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("select u from User u where u.username = :username")
+    User getUserWithMemberProjects(@Param("username") String username);
 }

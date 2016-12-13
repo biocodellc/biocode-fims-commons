@@ -1,7 +1,6 @@
 package biocode.fims.service;
 
 import biocode.fims.entities.*;
-import biocode.fims.repositories.DateItemRepository;
 import biocode.fims.repositories.OAuthClientRepository;
 import biocode.fims.repositories.OAuthNonceRepository;
 import biocode.fims.repositories.OAuthTokenRepository;
@@ -18,23 +17,21 @@ import static java.util.concurrent.TimeUnit.*;
  */
 @Service
 public class OAuthProviderService {
-    private long NONCE_EXPIRATION_INTEVAL = MILLISECONDS.convert(10, MINUTES);
-    private long ACCESS_TOKEN_EXPIRATION_INTEVAL = MILLISECONDS.convert(1, HOURS);
-    private long REFRESH_TOKEN_EXPIRATION_INTEVAL = MILLISECONDS.convert(1, DAYS);
+    private static long NONCE_EXPIRATION_INTEVAL = MILLISECONDS.convert(10, MINUTES);
+    public static long ACCESS_TOKEN_EXPIRATION_INTEVAL = SECONDS.convert(1, HOURS);
+    private static long REFRESH_TOKEN_EXPIRATION_INTEVAL = SECONDS.convert(1, DAYS);
 
     private final OAuthClientRepository oAuthClientRepository;
     private final OAuthTokenRepository oAuthTokenRepository;
     private final OAuthNonceRepository oAuthNonceRepository;
-    private final DateItemRepository dateItemRepository;
     private final UserService userService;
 
     @Autowired
     public OAuthProviderService(OAuthClientRepository oAuthClientRepository, OAuthTokenRepository oAuthTokenRepository,
-                                OAuthNonceRepository oAuthNonceRepository, DateItemRepository dateItemRepository, UserService userService) {
+                                OAuthNonceRepository oAuthNonceRepository, UserService userService) {
         this.oAuthClientRepository = oAuthClientRepository;
         this.oAuthTokenRepository = oAuthTokenRepository;
         this.oAuthNonceRepository = oAuthNonceRepository;
-        this.dateItemRepository = dateItemRepository;
         this.userService = userService;
     }
 
@@ -48,47 +45,24 @@ public class OAuthProviderService {
      * @return
      */
     @Transactional(readOnly = true)
-    public boolean validNonce(String clientId, String code, String redirectUri) {
-        OAuthNonce oAuthNonce = oAuthNonceRepository.findOneByCodeAndRedirectUriAndOAuthClientClientId(clientId, code, redirectUri);
-        DateItem currentTs = dateItemRepository.getCurrentDateItem();
-
-        if (oAuthNonce != null) {
-            long nonceAge = currentTs.getDate().getTime() - oAuthNonce.getTs().getTime();
-            if (nonceAge < NONCE_EXPIRATION_INTEVAL) {
-                return true;
-            }
-        }
-        return false;
+    public OAuthNonce getValidNonce(String clientId, String code, String redirectUri) {
+        return oAuthNonceRepository.getOAuthNonce(clientId, code, redirectUri, NONCE_EXPIRATION_INTEVAL);
     }
 
     @Transactional(readOnly = true)
     public User getUser(String accessToken) {
-        OAuthToken oAuthToken = oAuthTokenRepository.findOneByToken(accessToken);
-        DateItem currentTs = dateItemRepository.getCurrentDateItem();
-
-        if (oAuthToken != null) {
-            long nonceAge = currentTs.getDate().getTime() - oAuthToken.getTs().getTime();
-            if (nonceAge < ACCESS_TOKEN_EXPIRATION_INTEVAL) {
-                return oAuthToken.getUser();
-            }
-        }
-        return null;
+        return oAuthTokenRepository.getUser(accessToken, ACCESS_TOKEN_EXPIRATION_INTEVAL);
     }
 
     @Transactional(readOnly = true)
     public OAuthToken getOAuthToken(String refreshToken) {
-        OAuthToken oAuthToken = oAuthTokenRepository.findOneByRefreshToken(refreshToken);
-        DateItem currentTs = dateItemRepository.getCurrentDateItem();
+        OAuthToken oAuthToken = oAuthTokenRepository.getOAuthToken(refreshToken, REFRESH_TOKEN_EXPIRATION_INTEVAL);
 
-        if (oAuthToken != null) {
-            long nonceAge = currentTs.getDate().getTime() - oAuthToken.getTs().getTime();
-            if (nonceAge < REFRESH_TOKEN_EXPIRATION_INTEVAL &&
-                    userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
-                return oAuthToken;
-            }
+        if (oAuthToken != null && userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
+            return oAuthToken;
         }
-        return null;
 
+        return null;
     }
 
     public OAuthToken generateToken(OAuthToken expiredOAuthToken) {
@@ -99,8 +73,7 @@ public class OAuthProviderService {
         return newOAuthToken;
     }
 
-    public OAuthToken generateToken(OAuthClient oAuthClient, String state, String code) {
-        OAuthNonce oAuthNonce = oAuthNonceRepository.findOneByCodeAndOAuthClientClientId(oAuthClient.getClientId(), code);
+    public OAuthToken generateToken(OAuthClient oAuthClient, String state, OAuthNonce oAuthNonce) {
         User user = oAuthNonce.getUser();
         oAuthNonceRepository.delete(oAuthNonce);
 

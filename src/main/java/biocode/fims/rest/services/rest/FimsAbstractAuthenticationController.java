@@ -232,11 +232,12 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
                 throw new BadRequestException("invalid_request", "redirect_uri is null");
             }
 
-            if (code == null || !oAuthProviderService.validNonce(clientId, code, redirectUri)) {
+            OAuthNonce nonce = oAuthProviderService.getValidNonce(clientId, code, redirectUri);
+            if (code == null || nonce == null) {
                 throw new BadRequestException("invalid_grant", "Either code was null or the code doesn't match the " +
                         "clientId or the redirect_uri didn't match the redirect_uri sent with the authorization_code request");
             }
-            accessToken = oAuthProviderService.generateToken(oAuthClient, state, code);
+            accessToken = oAuthProviderService.generateToken(oAuthClient, state, nonce);
         } else if (grantType.equalsIgnoreCase("password")) {
             User user = userService.getUser(username, password);
 

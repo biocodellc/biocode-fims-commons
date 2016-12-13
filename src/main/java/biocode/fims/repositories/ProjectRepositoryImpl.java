@@ -1,6 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.entities.Project;
+import biocode.fims.repositories.customOperations.ProjectCustomOperations;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

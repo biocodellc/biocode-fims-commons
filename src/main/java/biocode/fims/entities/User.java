@@ -12,6 +12,10 @@ import java.util.Set;
 /**
  * User entity object
  */
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "User.withProjectsMemberOf",
+                attributeNodes = @NamedAttributeNode("projectsMemberOf")),
+})
 @Entity
 @Table(name = "users")
 public class User {

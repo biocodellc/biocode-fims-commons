@@ -114,12 +114,10 @@ CREATE TABLE `userProjects` (
 DROP TABLE IF EXISTS `oAuthClients`;
 
 CREATE TABLE `oAuthClients` (
-  `oAuthClientId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `clientId` char(20) NOT NULL COMMENT 'the public unique client id',
   `clientSecret` char(75) NOT NULL COMMENT 'the private shared secret',
   `callback` varchar(2083) NOT NULL COMMENT 'The callback url of the client app',
   PRIMARY KEY (`oAuthClientId`),
-  UNIQUE KEY `oAuthClients_clientIdx` (`clientId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `oAuthNonces`;

@@ -12,12 +12,9 @@ import java.util.Set;
 @Entity
 @Table(name = "oAuthClients")
 public class OAuthClient implements Serializable {
-    private int oAuthClientId;
     private String clientId;
     private String clientSecret;
     private String callback;
-    private Set<OAuthNonce> oAuthNonces;
-    private Set<OAuthToken> oAuthTokens;
 
     public static class OAuthClientBuilder {
         private final String clientId = StringGenerator.generateString(20);
@@ -44,15 +41,6 @@ public class OAuthClient implements Serializable {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getoAuthClientId() {
-        return oAuthClientId;
-    }
-
-    public void setoAuthClientId(int oAuthClientId) {
-        this.oAuthClientId = oAuthClientId;
-    }
-
     public String getClientId() {
         return clientId;
     }
@@ -80,46 +68,20 @@ public class OAuthClient implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof OAuthClient)) return false;
 
         OAuthClient that = (OAuthClient) o;
 
-        if (oAuthClientId != that.oAuthClientId) return false;
-        if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
-        if (clientSecret != null ? !clientSecret.equals(that.clientSecret) : that.clientSecret != null) return false;
-        if (callback != null ? !callback.equals(that.callback) : that.callback != null) return false;
-
-        return true;
+        if (!getClientId().equals(that.getClientId())) return false;
+        if (!getClientSecret().equals(that.getClientSecret())) return false;
+        return getCallback().equals(that.getCallback());
     }
 
     @Override
     public int hashCode() {
-        int result = oAuthClientId;
-        result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
-        result = 31 * result + (clientSecret != null ? clientSecret.hashCode() : 0);
-        result = 31 * result + (callback != null ? callback.hashCode() : 0);
+        int result = getClientId().hashCode();
+        result = 31 * result + getClientSecret().hashCode();
+        result = 31 * result + getCallback().hashCode();
         return result;
-    }
-
-    @OneToMany(mappedBy = "oAuthClient",
-            fetch = FetchType.LAZY
-    )
-    public Set<OAuthNonce> getoAuthNonces() {
-        return oAuthNonces;
-    }
-
-    public void setoAuthNonces(Set<OAuthNonce> oAuthNonces) {
-        this.oAuthNonces = oAuthNonces;
-    }
-
-    @OneToMany(mappedBy = "oAuthClient",
-            fetch = FetchType.LAZY
-    )
-    public Set<OAuthToken> getoOAuthTokens() {
-        return oAuthTokens;
-    }
-
-    public void setoOAuthTokens(Set<OAuthToken> oAuthTokens) {
-        this.oAuthTokens = oAuthTokens;
     }
 }

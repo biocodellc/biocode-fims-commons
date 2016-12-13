@@ -1,4 +1,4 @@
-package biocode.fims.repositories;
+package biocode.fims.repositories.customOperations;
 
 import biocode.fims.entities.Project;
 
