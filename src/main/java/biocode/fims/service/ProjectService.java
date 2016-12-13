@@ -24,10 +24,12 @@ public class ProjectService {
     private EntityManager entityManager;
 
     private final ProjectRepository projectRepository;
+    private final UserService userService;
 
     @Autowired
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(ProjectRepository projectRepository, UserService userService) {
         this.projectRepository = projectRepository;
+        this.userService = userService;
     }
 
     public void create(Project project, int userId) {
@@ -52,6 +54,7 @@ public class ProjectService {
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
+            // TODO maybe fetch user using entityGraph here?
             user = entityManager.find(User.class, user.getUserId());
         }
 
@@ -66,11 +69,11 @@ public class ProjectService {
     }
 
     public Project getProjectWithMembers(int projectId) {
-        return projectRepository.readByProjectId(projectId, "Project.withMembers");
+        return projectRepository.getProjectByProjectId(projectId, "Project.withMembers");
     }
 
     public Project getProjectWithExpeditions(int projectId) {
-        return projectRepository.readByProjectId(projectId, "Project.withExpeditions");
+        return projectRepository.getProjectByProjectId(projectId, "Project.withExpeditions");
     }
 
     /**
@@ -81,7 +84,12 @@ public class ProjectService {
      * @return
      */
     public boolean isProjectAdmin(User user, int projectId) {
-        user = entityManager.merge(user);
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projects")) {
+            // TODO maybe fetch user using entityGraph here?
+            user = entityManager.merge(user);
+        }
+
         for (Project p : user.getProjects()) {
             if (p.getProjectId() == projectId) {
                 return true;
@@ -99,8 +107,8 @@ public class ProjectService {
         return projectRepository.findAllByProjectUrl(projectUrl);
     }
 
-    public List<Project> getProjectsWithExpeditionsAndMembers(String projectUrl) {
-        return projectRepository.readByProjectUrl(projectUrl, "Project.withExpeditionsAndMembers");
+    public List<Project> getProjectsWithExpeditions(String projectUrl) {
+        return projectRepository.getAllByProjectUrl(projectUrl, "Project.withExpeditions");
     }
 }
 

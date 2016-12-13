@@ -8,7 +8,7 @@ import java.util.List;
  * defines custom ProjectRepository operations
  */
 public interface ProjectCustomOperations {
-    Project readByProjectId(int projectId, String entityGraph);
+    Project getProjectByProjectId(int projectId, String entityGraph);
 
-    List<Project> readByProjectUrl(String projectUrl, String entityGraph);
+    List<Project> getAllByProjectUrl(String projectUrl, String entityGraph);
 }

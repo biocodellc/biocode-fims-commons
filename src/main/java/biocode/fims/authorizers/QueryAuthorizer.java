@@ -48,7 +48,7 @@ public class QueryAuthorizer {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT_LIST, 500);
         }
 
-        List<Project> projects = projectService.getProjectsWithExpeditionsAndMembers(settingsManager.retrieveValue("appRoot"));
+        List<Project> projects = projectService.getProjectsWithExpeditions(settingsManager.retrieveValue("appRoot"));
 
         if (expeditionCodes.size() > 0) {
             return authorizedExpeditionAccess(projectIds, expeditionCodes, projects, user);
@@ -89,12 +89,12 @@ public class QueryAuthorizer {
     }
 
     private boolean authorizedUserForProject(Project project, User user) {
-        return project.getUser().equals(user) || project.getProjectMembers().contains(user);
+        return projectService.isUserMemberOfProject(user, project);
     }
 
     /**
-     * checks that every expeditionCode is a public expedition, or the user owns the expedition, and that each
-     * expeditionCode exists
+     * checks that every expeditionCode is a public expedition, or the user is a member of the project the expedition
+     * belongs to, and that each expeditionCode exists
      *
      * @param projectIds      must not be empty
      * @param expeditionCodes
@@ -105,7 +105,6 @@ public class QueryAuthorizer {
     private boolean authorizedExpeditionAccess(List<Integer> projectIds, List<String> expeditionCodes, List<Project> projects, User user) {
         Assert.notEmpty(projectIds);
 
-        boolean allAuthorizedExpeditions = true;
         List<String> foundExpeditionCodes = new ArrayList<>();
 
         for (Project project : projects) {
@@ -113,31 +112,36 @@ public class QueryAuthorizer {
             // if the project is in the projectIds list, then we need to check if there is an expedition in the expeditionCodes list
             if (projectIds.contains(project.getProjectId())) {
 
+                boolean userMemberOfProject = authorizedUserForProject(project, user);
+                boolean foundExpeditionForProject = false;
+
                 for (Expedition expedition : project.getExpeditions()) {
 
                     if (expeditionCodes.contains(expedition.getExpeditionCode())) {
 
+                        foundExpeditionForProject = true;
                         foundExpeditionCodes.add(expedition.getExpeditionCode());
 
-                        if (!expedition.isPublic() && !expedition.getUser().equals(user)) {
-
-                            allAuthorizedExpeditions = false;
-
-                        }
-
                     }
+                }
+
+                // since we are filtering on expeditionCodes, we only care about project access if we found an
+                // expedition in the project
+                if (foundExpeditionForProject && !project.isPublic() && !userMemberOfProject) {
+                    return false;
                 }
 
             }
 
         }
 
-        return allAuthorizedExpeditions && foundExpeditionCodes.size() == expeditionCodes.size();
+        // check that we found all expeditions to be in a Project in the projectIds list
+        return foundExpeditionCodes.size() == expeditionCodes.size();
     }
 
     /**
      * Checks that the {@param user} has access to the {@param projectIds} and expedition.expeditionCode within the
-     * {@param esQueryNode} and that there is no query terms on the "bcid" field
+     * {@param esQueryNode}
      * @param projectIds
      * @param esQueryNode
      * @param user
@@ -152,9 +156,7 @@ public class QueryAuthorizer {
             while ((token = parser.nextToken()) != null) {
 
                 if (token.equals(JsonToken.FIELD_NAME)) {
-                    if (parser.getCurrentName().equals("bcid")) {
-                        return false;
-                    } else if (parser.getCurrentName().equals("expedition.expeditionCode")) {
+                    if (parser.getCurrentName().equals("expedition.expeditionCode")) {
 
                         if (parser.nextToken() == JsonToken.START_OBJECT) {
 

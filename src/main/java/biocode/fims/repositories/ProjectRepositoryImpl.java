@@ -14,7 +14,7 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     private EntityManager em;
 
     @Override
-    public Project readByProjectId(int projectId, String entityGraph) {
+    public Project getProjectByProjectId(int projectId, String entityGraph) {
         return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectId = :id", Project.class)
                 .setParameter("id", projectId)
                 .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
@@ -22,7 +22,7 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     }
 
     @Override
-    public List<Project> readByProjectUrl(String projectUrl, String entityGraph) {
+    public List<Project> getAllByProjectUrl(String projectUrl, String entityGraph) {
         return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectUrl= :url", Project.class)
                 .setParameter("url", projectUrl)
                 .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
