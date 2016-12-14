@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -66,6 +67,6 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     List<Expedition> getUserProjectExpeditions(int projectId, int userId, boolean includePrivate);
 
     @Query("select e from Expedition e where projectId=:projectId and public=true")
-    List<Expedition> findAllByProjectProjectIdAndPublic(int projectId);
+    List<Expedition> findAllByProjectProjectIdAndPublic(@Param("projectId") int projectId);
 
 }
