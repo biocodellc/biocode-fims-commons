@@ -5,18 +5,18 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
-import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.rest.services.rest.resources.ExpeditionsResource;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -382,18 +382,9 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Response.ok("{\"success\": \"Successfully removed template configuration.\"}").build();
     }
 
-    /**
-     * Return a JSON representation of the expedition's that a user is a member of
-     *
-     * @param projectId
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Path("/{projectId}/expeditions")
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
-        return expeditionService.getExpeditions(projectId, userContext.getUser().getUserId(), false);
+    @Path("{projectId}/expeditions")
+    public Resource getUserProjectResource() {
+        return Resource.from(ExpeditionsResource.class);
     }
 
     /**

@@ -54,4 +54,18 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     @Query("select e from Expedition e where projectId=:projectId and (userId=:userId or public=true)")
     List<Expedition> findAllForProjectAndUserOrPublic(int projectId, int userId);
+
+    /**
+     * select all public {@link Expedition} for a user in the specified project
+     * @param projectId
+     * @param userId
+     * @param includePrivate if true, we will include private expeditions in the results
+     * @return
+     */
+    @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
+    List<Expedition> getUserProjectExpeditions(int projectId, int userId, boolean includePrivate);
+
+    @Query("select e from Expedition e where projectId=:projectId and public=true")
+    List<Expedition> findAllByProjectProjectIdAndPublic(int projectId);
+
 }

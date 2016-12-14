@@ -61,7 +61,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUser(String username, String password) {
-        User user = userRepository.getUserWithMemberProjects(username);
+        User user = getUserWithMemberProjects(username);
 
         if (user != null && !user.getPassword().isEmpty()) {
             if (PasswordHash.validatePassword(password, user.getPassword())
@@ -141,5 +141,9 @@ public class UserService {
         // TODO fetch w entity graph to issue a join. Currently this issues 2 selects
         user = entityManager.merge(user);
         return user.getProjects().size() > 0;
+    }
+
+    public User getUserWithMemberProjects(String username) {
+        return userRepository.getUserWithMemberProjects(username);
     }
 }

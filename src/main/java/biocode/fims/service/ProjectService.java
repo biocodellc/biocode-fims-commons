@@ -54,8 +54,7 @@ public class ProjectService {
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
-            // TODO maybe fetch user using entityGraph here?
-            user = entityManager.find(User.class, user.getUserId());
+            user = userService.getUserWithMemberProjects(user.getUsername());
         }
 
         for (Project userProject : user.getProjectsMemberOf()) {

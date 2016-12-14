@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Service class for handling {@link Expedition} persistence
@@ -118,6 +117,17 @@ public class ExpeditionService {
         );
     }
 
+    @Transactional
+    public List<Expedition> getExpeditions(int projectId) {
+        List<Expedition> expeditions = expeditionRepository.findAllByProjectProjectIdAndPublic(projectId);
+
+        for (Expedition expedition: expeditions) {
+            attachExpeditionBcids(expedition);
+        }
+
+        return expeditions;
+
+    }
     @Transactional(readOnly = true)
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
         Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
@@ -129,15 +139,10 @@ public class ExpeditionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Expedition> getExpeditions(int projectId, int userId, boolean includePublic) {
+    public List<Expedition> getExpeditionsForUser(int projectId, int userId, boolean includePrivate) {
         List<Expedition> expeditions;
 
-        if (includePublic) {
-            expeditions = expeditionRepository.findAllForProjectAndUserOrPublic(projectId, userId);
-        } else {
-            expeditions = expeditionRepository.findAllByProjectProjectIdAndUserUserId(projectId, userId);
-        }
-
+        expeditions = expeditionRepository.getUserProjectExpeditions(projectId, userId, includePrivate);
 
         for (Expedition expedition: expeditions) {
             attachExpeditionBcids(expedition);

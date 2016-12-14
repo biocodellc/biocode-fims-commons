@@ -4,6 +4,7 @@ import biocode.fims.entities.OAuthToken;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.customOperations.OAuthTokenCustomOperations;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
