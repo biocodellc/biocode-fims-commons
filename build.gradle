@@ -44,13 +44,19 @@ sourceSets {
     }
 }
 
+compileJava {
+    options.fork = true
+    options.forkOptions.jvmArgs += ["-parameters"]
+	options.forkOptions.executable = 'javac'
+}
+
 dependencies {
     server 'jstl:jstl:1.2'
 
     // necessary for custom jersey-spring3.aopfix.jar to fix jersey issue JERSEY-3126
     server group: 'org.glassfish.hk2', name: 'spring-bridge', version: '2.4.0-b34'
     server group: 'org.springframework', name: 'spring-web', version: '4.3.4.RELEASE'
-//    server('org.glassfish.jersey.ext:jersey-spring3:2.22.2') {
+//    server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
 //        exclude module: 'bean-validator'
 //    }
     // custom jersey-spring implementation with a fix to inject @Context variables into aop proxied beans

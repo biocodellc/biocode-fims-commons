@@ -76,7 +76,7 @@ public class UserServiceTest {
         projects.add(project);
         Mockito.when(user.getProjectsMemberOf()).thenReturn(projects);
 
-        Mockito.when(userService.getUser("demo")).thenReturn(user);
+        Mockito.when(userRepository.getUserWithMemberProjects("demo")).thenReturn(user);
         assertEquals(user, userService.getUser("demo", PASSWORD));
     }
 
