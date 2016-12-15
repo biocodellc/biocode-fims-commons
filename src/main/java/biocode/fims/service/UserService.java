@@ -11,8 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Set;
@@ -145,5 +144,27 @@ public class UserService {
 
     public User getUserWithMemberProjects(String username) {
         return userRepository.getUserWithMemberProjects(username);
+    }
+
+    /**
+     * Returns the @param user with the loaded @param userEntityGraph
+     *
+     * @param user
+     * @param userEntityGraph
+     * @return
+     */
+    public User loadUserEntityGraph(User user, String userEntityGraph) {
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+
+        for (AttributeNode node : entityManager.getEntityGraph(userEntityGraph).getAttributeNodes()) {
+
+            String attributeName = node.getAttributeName();
+            if (attributeName != null && !unitUtil.isLoaded(user, attributeName)) {
+                return userRepository.getUser(user.getUserId(), userEntityGraph);
+            }
+
+        }
+
+        return user;
     }
 }

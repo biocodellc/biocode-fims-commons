@@ -1,6 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.entities.User;
+import biocode.fims.repositories.customOperations.UserCustomOperations;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,7 +16,7 @@ import java.util.Set;
  * This repositories provides CRUD operations for {@link User} objects
  */
 @Transactional
-public interface UserRepository extends Repository<User, Integer>, JpaSpecificationExecutor {
+public interface UserRepository extends Repository<User, Integer>, JpaSpecificationExecutor, UserCustomOperations {
 
     @Modifying
     void delete(User user);

@@ -7,7 +7,7 @@ import biocode.fims.entities.User;
  * defines custom OAuthTokenRepository operations
  */
 public interface OAuthTokenCustomOperations {
-    User getUser(String accessToken, long expirationInterval);
+    User getUser(String accessToken, long expirationInterval, String userEntityGraph);
 
     OAuthToken getOAuthToken(String refreshToken, long expirationInteval);
 }

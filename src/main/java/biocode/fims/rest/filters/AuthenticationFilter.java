@@ -2,7 +2,9 @@ package biocode.fims.rest.filters;
 
 import biocode.fims.entities.User;
 import biocode.fims.rest.UserContext;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.service.OAuthProviderService;
+import biocode.fims.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Priority;
@@ -16,6 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 /**
@@ -34,6 +37,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Autowired
     private OAuthProviderService providerService;
+    @Autowired
+    private UserService userService;
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -51,13 +56,21 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             accessToken = authHeader.substring("Bearer".length()).trim();
         }
 
+        Annotation userEntityGraphAnnotation = resourceInfo.getResourceMethod().getAnnotation(UserEntityGraph.class);
+        String userEntityGraph = userEntityGraphAnnotation == null ? null : ((UserEntityGraph) userEntityGraphAnnotation).value();
+
         if (accessToken != null && !accessToken.isEmpty()) {
-            userContext.setUser(providerService.getUser(accessToken));
+            userContext.setUser(providerService.getUser(accessToken, userEntityGraph));
         } else {
             HttpSession session = webRequest.getSession();
 
             if (session.getAttribute("user") != null) {
-                userContext.setUser((User) session.getAttribute("user"));
+                User user = (User) session.getAttribute("user");
+
+                if (userEntityGraph != null) {
+                    user = userService.loadUserEntityGraph(user, userEntityGraph);
+                }
+                userContext.setUser(user);
             }
         }
     }

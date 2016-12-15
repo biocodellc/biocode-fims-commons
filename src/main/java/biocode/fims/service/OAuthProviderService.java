@@ -50,8 +50,8 @@ public class OAuthProviderService {
     }
 
     @Transactional(readOnly = true)
-    public User getUser(String accessToken) {
-        return oAuthTokenRepository.getUser(accessToken, ACCESS_TOKEN_EXPIRATION_INTEVAL);
+    public User getUser(String accessToken, String userEntityGraph) {
+        return oAuthTokenRepository.getUser(accessToken, ACCESS_TOKEN_EXPIRATION_INTEVAL, userEntityGraph);
     }
 
     @Transactional(readOnly = true)

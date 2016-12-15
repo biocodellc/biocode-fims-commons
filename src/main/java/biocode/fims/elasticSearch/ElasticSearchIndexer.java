@@ -1,6 +1,5 @@
 package biocode.fims.elasticSearch;
 
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;

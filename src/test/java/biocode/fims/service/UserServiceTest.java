@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
 
-import javax.persistence.Inheritance;
 import java.util.HashSet;
 import java.util.Set;
 

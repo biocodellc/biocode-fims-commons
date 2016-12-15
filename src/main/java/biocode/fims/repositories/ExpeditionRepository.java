@@ -42,19 +42,8 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     Page<Expedition> findByProjectProjectIdAndProjectUserUserId(int projectId, int userId, Pageable pageRequest);
 
-    List<Expedition> findAllByProjectProjectIdAndUserUserId(int projectId, int userId);
-
     List<Expedition> findByPublicTrueAndProjectProjectId(int projectId);
 
-
-    /**
-     * select all {@link Expedition} for a given project that the user owns or is a public expeditions
-     * @param projectId
-     * @param userId
-     * @return
-     */
-    @Query("select e from Expedition e where projectId=:projectId and (userId=:userId or public=true)")
-    List<Expedition> findAllForProjectAndUserOrPublic(int projectId, int userId);
 
     /**
      * select all public {@link Expedition} for a user in the specified project
@@ -65,8 +54,5 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
     List<Expedition> getUserProjectExpeditions(int projectId, int userId, boolean includePrivate);
-
-    @Query("select e from Expedition e where projectId=:projectId and public=true")
-    List<Expedition> findAllByProjectProjectIdAndPublic(@Param("projectId") int projectId);
 
 }

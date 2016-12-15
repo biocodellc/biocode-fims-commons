@@ -13,13 +13,6 @@
         </query>
     </named-native-query>
 
-    <named-native-query name="OAuthToken.getUser" result-set-mapping="OAuthToken.User">
-        <query>
-            SELECT u.* from oAuthTokens t, users u where t.userId = u.userId and t.token = :token
-            and TIMESTAMPDIFF(SECOND, t.ts, CURRENT_TIMESTAMP) &lt;= :expirationInterval
-        </query>
-    </named-native-query>
-
     <named-native-query name="OAuthNonce.getOAuthNonce" result-set-mapping="OAuthNonce">
         <query>
             SELECT n.*, u.*

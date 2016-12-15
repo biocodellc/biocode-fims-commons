@@ -50,7 +50,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public boolean isUserMemberOfProject(User user, Project project) {
-        boolean userIsProjectMember = false;
+        if (user == null) return false;
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
@@ -59,12 +59,11 @@ public class ProjectService {
 
         for (Project userProject : user.getProjectsMemberOf()) {
             if (userProject.equals(project)) {
-                userIsProjectMember = true;
-                break;
+                return true;
             }
         }
 
-        return userIsProjectMember;
+        return false;
     }
 
     public Project getProjectWithMembers(int projectId) {

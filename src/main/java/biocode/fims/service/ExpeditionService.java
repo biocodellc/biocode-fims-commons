@@ -117,17 +117,6 @@ public class ExpeditionService {
         );
     }
 
-    @Transactional
-    public List<Expedition> getExpeditions(int projectId) {
-        List<Expedition> expeditions = expeditionRepository.findAllByProjectProjectIdAndPublic(projectId);
-
-        for (Expedition expedition: expeditions) {
-            attachExpeditionBcids(expedition);
-        }
-
-        return expeditions;
-
-    }
     @Transactional(readOnly = true)
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
         Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);

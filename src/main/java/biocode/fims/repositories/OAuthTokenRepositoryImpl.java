@@ -4,25 +4,57 @@ import biocode.fims.entities.OAuthToken;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.customOperations.OAuthTokenCustomOperations;
 
-import javax.persistence.EntityGraph;
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.sql.Date;
+import java.sql.Time;
 
 /**
- * Implementation of ProjectCustomOperations
+ * Implementation of OAuthTokenCustomOperations
  */
 public class OAuthTokenRepositoryImpl implements OAuthTokenCustomOperations {
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager em;
 
     @Override
-    public User getUser(String accessToken, long expirationInterval) {
+    public User getUser(String accessToken, long expirationInterval, String userEntityGraph) {
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+        CriteriaQuery<User> cq = builder.createQuery(User.class);
+        Root<OAuthToken> root = cq.from(OAuthToken.class);
+
+        Join<OAuthToken, User> user = root.join("user", JoinType.INNER);
+
+        if (userEntityGraph != null) {
+            for (AttributeNode node : em.getEntityGraph(userEntityGraph).getAttributeNodes()) {
+
+                String attributeName = node.getAttributeName();
+                if (attributeName != null) {
+                    user.fetch(attributeName);
+                }
+
+            }
+        }
+
+        Expression<Time> timeDiff = builder.function(
+                "TIMEDIFF",
+                Time.class,
+                builder.currentTimestamp(),
+                root.<Date>get("ts")
+        );
+
+        Expression<Integer> timeToSec = builder.function(
+                "TIME_TO_SEC",
+                Integer.class,
+                timeDiff
+        );
+
+        Predicate hasToken = builder.equal(root.get("token"), accessToken);
+        Predicate notExpired = builder.le(timeToSec, expirationInterval);
+        cq.where(hasToken, notExpired);
+        cq.select(user);
+
         try {
-            return (User) em.createNamedQuery("OAuthToken.getUser")
-                    .setParameter("token", accessToken)
-                    .setParameter("expirationInterval", expirationInterval)
-                    .getSingleResult();
+            return em.createQuery(cq).getSingleResult();
         } catch (NoResultException e) {
             return null;
         }

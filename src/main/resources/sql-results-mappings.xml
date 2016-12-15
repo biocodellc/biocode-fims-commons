@@ -15,8 +15,4 @@
         <entity-result entity-class="biocode.fims.entities.User"/>
     </sql-result-set-mapping>
 
-    <sql-result-set-mapping name="OAuthToken.User">
-        <entity-result entity-class="biocode.fims.entities.User"/>
-    </sql-result-set-mapping>
-
 </entity-mappings>
