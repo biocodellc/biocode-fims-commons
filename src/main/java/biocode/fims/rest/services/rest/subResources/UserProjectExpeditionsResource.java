@@ -1,9 +1,7 @@
-package biocode.fims.rest.services.rest.resources;
+package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.entities.Expedition;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.UserContext;
-import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
@@ -22,9 +20,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserProjectExpeditionsResource extends FimsService {
     private final ExpeditionService expeditionService;
-
-    @Autowired
-    UserContext userContext;
 
     @PathParam("projectId")
     private int projectId;

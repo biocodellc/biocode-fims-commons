@@ -1,9 +1,7 @@
-package biocode.fims.rest.services.rest.resources;
+package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.model.Resource;
@@ -12,17 +10,17 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author RJ Ewing
  */
 @Controller
 @AuthenticatedUserResource
+@Produces(MediaType.APPLICATION_JSON)
 public class UserProjectResource extends FimsService {
     private final ProjectService projectService;
-
-//    @Autowired
-//    UserProjectExpeditionsResource userProjectExpeditionsResource;
 
     @PathParam("userId")
     private int userId;
@@ -34,10 +32,8 @@ public class UserProjectResource extends FimsService {
     }
 
     @Path("{projectId}/expeditions")
-    public Resource getUserProjectExpeditionsResource(@PathParam("projectId") Integer projectId) {
+    public Resource getUserProjectExpeditionsResource() {
         return Resource.from(UserProjectExpeditionsResource.class);
-//        return userProjectExpeditionsResource;
     }
-
 
 }

@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest.resources;
+package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.entities.Expedition;
 import biocode.fims.service.ExpeditionService;

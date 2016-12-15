@@ -8,17 +8,14 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.services.rest.resources.UserProjectResource;
+import biocode.fims.rest.services.rest.subResources.UserProjectResource;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
-import javax.ws.rs.container.ResourceContext;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -28,8 +25,6 @@ import javax.ws.rs.core.Response;
 public abstract class FimsAbstractUserController extends FimsService {
 
     protected final UserService userService;
-    @Context
-    ResourceContext resourceContext;
 
     FimsAbstractUserController(UserService userService, SettingsManager settingsManager) {
         super(settingsManager);
@@ -37,9 +32,8 @@ public abstract class FimsAbstractUserController extends FimsService {
     }
 
     @Path("{userId}/projects")
-    public UserProjectResource getUserProjectResource(@PathParam("userId") Integer userId) {
-//        return Resource.from(UserProjectResource.class);
-        return resourceContext.getResource(UserProjectResource.class);
+    public Resource getUserProjectResource(@PathParam("userId") Integer userId) {
+        return Resource.from(UserProjectResource.class);
     }
 
     /**
