@@ -38,17 +38,14 @@ public class BcidService {
     private final BcidRepository bcidRepository;
     protected final SettingsManager settingsManager;
     private final UserService userService;
-    private final EzidUtils ezidUtils;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
-    private List<Bcid> bcidsWithOutEzidRequest;
 
     @Autowired
     public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
-                       UserService userService, EzidUtils ezidUtils) {
+                       UserService userService) {
         this.bcidRepository = bcidRepository;
         this.settingsManager = settingsManager;
         this.userService = userService;
-        this.ezidUtils = ezidUtils;
     }
 
     @Transactional
@@ -204,6 +201,7 @@ public class BcidService {
 
         }
         Set<Bcid> bcids = getBcidsWithEzidRequestNotMade();
+        EzidUtils ezidUtils = new EzidUtils(settingsManager);
 
         for (Bcid bcid : bcids) {
             // Dublin Core metadata profile element

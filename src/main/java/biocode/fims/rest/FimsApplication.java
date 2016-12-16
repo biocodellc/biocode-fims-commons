@@ -5,10 +5,13 @@ import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
 import biocode.fims.rest.services.rest.subResources.UserProjectExpeditionsResource;
 import biocode.fims.rest.services.rest.subResources.UserProjectResource;
+import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
@@ -68,16 +71,9 @@ public class FimsApplication extends ResourceConfig {
         for (Class resourceClass : getClasses()) {
             if (resourceClass.getPackage().getName().startsWith("biocode.fims.rest.services")) {
 
-                boolean springBean = false;
-
-                for (Annotation annotation : resourceClass.getDeclaredAnnotations()) {
-
-                    if (springBeanAnnotations.contains(annotation.annotationType())) {
-                        springBean = true;
-                    }
-                }
-
-                if (!springBean) {
+                // check for @Component annotation or for the bean in the applicationContexgt
+                if (AnnotationUtils.findAnnotation(resourceClass, Component.class) == null
+                        && SpringApplicationContext.getBean(resourceClass) == null) {
                     nonSpringBeans.add(resourceClass);
                 }
             }

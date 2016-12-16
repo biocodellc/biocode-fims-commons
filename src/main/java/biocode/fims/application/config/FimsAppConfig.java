@@ -1,7 +1,6 @@
 package biocode.fims.application.config;
 
 import biocode.fims.bcid.Resolver;
-import biocode.fims.ezid.EzidUtils;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
@@ -41,11 +40,6 @@ public class FimsAppConfig {
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
-    }
-
-    @Bean
-    public EzidUtils ezidUtils() throws FileNotFoundException {
-        return new EzidUtils(settingsManager);
     }
 
     @Bean
