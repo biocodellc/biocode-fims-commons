@@ -27,16 +27,6 @@ import java.util.List;
  */
 public class FimsApplication extends ResourceConfig {
 
-    private static List<Class> springBeanAnnotations;
-
-    static {
-        springBeanAnnotations = new ArrayList<>();
-        springBeanAnnotations.add(Controller.class);
-        springBeanAnnotations.add(Component.class);
-        springBeanAnnotations.add(Service.class);
-        springBeanAnnotations.add(Repository.class);
-    }
-
     public FimsApplication() {
         super();
 

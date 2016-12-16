@@ -8,6 +8,7 @@ import biocode.fims.digester.Validation;
 import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -59,7 +60,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         Integer userId = null;
 
         if (userContext.getUser() == null && !includePublic) {
-            throw new BadRequestException("You must be logged in if you don't want to include public projects");
+            throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
         }
         if (userContext.getUser() != null) {
             userId = userContext.getUser().getUserId();
