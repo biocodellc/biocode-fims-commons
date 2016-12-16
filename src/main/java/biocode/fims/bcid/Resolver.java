@@ -56,7 +56,7 @@ public class Resolver {
                         resolution = bcid.getWebAddress();
                     else {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
-                        String expeditionForwardingAddress = mapping.getExpeditionForwardingAddress();
+                        String expeditionForwardingAddress = mapping.getMetadata().getExpeditionForwardingAddress();
 
                         if (!StringUtils.isEmpty(expeditionForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(expeditionForwardingAddress)

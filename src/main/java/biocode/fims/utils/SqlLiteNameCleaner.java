@@ -22,7 +22,7 @@ public class SqlLiteNameCleaner {
      * @param tName The table name to fix, if needed.
      * @return The corrected table name.
      */
-    public String fixNames(String tName) {
+    public static String fixNames(String tName) {
         String newName;
 
         // replace spaces with underscores

@@ -5,6 +5,7 @@ import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.entities.*;
 import biocode.fims.repositories.BcidRepository;
@@ -15,17 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Service class for handling {@link Bcid} persistence
@@ -43,6 +40,7 @@ public class BcidService {
     private final UserService userService;
     private final EzidUtils ezidUtils;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
+    private List<Bcid> bcidsWithOutEzidRequest;
 
     @Autowired
     public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
@@ -107,6 +105,11 @@ public class BcidService {
     }
 
     @Transactional(readOnly = true)
+    public List<Bcid> getBcids(List<String> graph) {
+        return bcidRepository.findAllByGraphIn(graph);
+    }
+
+    @Transactional(readOnly = true)
     public Bcid getBcidByTitle(int expeditionId, String title) {
         return bcidRepository.findOneByTitleAndExpeditionExpeditionId(title, expeditionId);
     }
@@ -124,26 +127,7 @@ public class BcidService {
 
     @Transactional(readOnly = true)
     public Set<Bcid> getLatestDatasets(int projectId) {
-        return bcidRepository.findLatestDatasets(projectId);
-    }
-
-    /**
-     * fetch the latest Bcids with resourceType = 'http://purl.org/dc/dcmitype/Dataset' for the provided list of
-     * {@link Expedition}s
-     *
-     * @param expeditions
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public Set<Bcid> getLatestDatasetsForExpeditions(List<Expedition> expeditions) {
-        Assert.notEmpty(expeditions);
-
-        List<Integer> expeditionIds = new ArrayList<>();
-
-        for (Expedition expedition : expeditions)
-            expeditionIds.add(expedition.getExpeditionId());
-
-        return bcidRepository.findLatestDatasetsForExpeditions(expeditionIds);
+        return bcidRepository.findLatestFimsMetadataDatasets(projectId);
     }
 
     @Transactional
@@ -154,11 +138,12 @@ public class BcidService {
     }
 
     @Transactional(readOnly = true)
-    public List<Bcid> getDatasets(int projectId, String expeditionCode) {
-        return bcidRepository.findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(
+    public List<Bcid> getFimsMetadataDatasets(int projectId, String expeditionCode) {
+        return bcidRepository.findAllByResourceTypeAndSubResourceType(
                 projectId,
                 expeditionCode,
-                ResourceTypes.DATASET_RESOURCE_TYPE
+                ResourceTypes.DATASET_RESOURCE_TYPE,
+                FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE
         );
     }
 
@@ -182,6 +167,7 @@ public class BcidService {
     public Set<Bcid> getBcidsWithEzidRequest() {
         return bcidRepository.findAllByEzidRequestTrue();
     }
+
 
     private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
         String bow = scheme + "/" + naan + "/";
@@ -248,5 +234,9 @@ public class BcidService {
         if (!ezidErrors.isEmpty()) {
             ezidUtils.sendErrorEmail(ezidErrors);
         }
+    }
+
+    public List<Bcid> getBcidsWithOutEzidRequest() {
+        return bcidRepository.findAllByEzidRequestFalse();
     }
 }

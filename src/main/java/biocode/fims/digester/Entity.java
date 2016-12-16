@@ -12,11 +12,12 @@ import java.util.LinkedList;
 public class Entity {
 
     private String worksheet;
-    private String worksheetUniqueKey;
+    private String uniqueKey;
     private String conceptAlias;
     private String conceptURI;
     private String entityId;
     private String conceptForwardingAddress;
+    private boolean esNestedObject = false;
     private URI identifier;
 
     private final LinkedList<Attribute> attributes = new LinkedList<Attribute>();
@@ -50,12 +51,12 @@ public class Entity {
         this.worksheet = worksheet;
     }
 
-    public String getWorksheetUniqueKey() {
-        return worksheetUniqueKey;
+    public String getUniqueKey() {
+        return uniqueKey;
     }
 
-    public void setWorksheetUniqueKey(String worksheetUniqueKey) {
-        this.worksheetUniqueKey = worksheetUniqueKey;
+    public void setUniqueKey(String uniqueKey) {
+        this.uniqueKey = uniqueKey;
     }
 
     public String getConceptAlias() {
@@ -74,12 +75,20 @@ public class Entity {
         this.conceptURI = conceptURI;
     }
 
+    public boolean isEsNestedObject() {
+        return esNestedObject;
+    }
+
+    public void setEsNestedObject(boolean esNestedObject) {
+        this.esNestedObject = esNestedObject;
+    }
+
     /**
      * Get the table.column notation
      * @return
      */
     public String getColumn() {
-        return worksheet + "." + worksheetUniqueKey;
+        return worksheet + "." + uniqueKey;
     }
 
     public String getConceptForwardingAddress() {
@@ -112,7 +121,7 @@ public class Entity {
     public void print() {
         FimsPrinter.out.println("  EntityId:" + entityId);
         FimsPrinter.out.println("    worksheet=" + worksheet);
-        FimsPrinter.out.println("    worksheetUniqueKey=" + worksheetUniqueKey);
+        FimsPrinter.out.println("    uniqueKey=" + uniqueKey);
         FimsPrinter.out.println("    conceptName=" + conceptAlias);
         FimsPrinter.out.println("    conceptURI=" + conceptURI);
         //fimsPrinter.out.println("    Bcid=" + Bcid);

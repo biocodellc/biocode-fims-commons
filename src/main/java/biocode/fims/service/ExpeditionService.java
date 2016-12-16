@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Service class for handling {@link Expedition} persistence
@@ -129,15 +128,10 @@ public class ExpeditionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Expedition> getExpeditions(int projectId, int userId, boolean includePublic) {
+    public List<Expedition> getExpeditionsForUser(int projectId, int userId, boolean includePrivate) {
         List<Expedition> expeditions;
 
-        if (includePublic) {
-            expeditions = expeditionRepository.findAllForProjectAndUserOrPublic(projectId, userId);
-        } else {
-            expeditions = expeditionRepository.findAllByProjectProjectIdAndUserUserId(projectId, userId);
-        }
-
+        expeditions = expeditionRepository.getUserProjectExpeditions(projectId, userId, includePrivate);
 
         for (Expedition expedition: expeditions) {
             attachExpeditionBcids(expedition);
@@ -204,10 +198,8 @@ public class ExpeditionService {
     }
 
     private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
-        EntityToBcidMapper mapper = new EntityToBcidMapper();
-
         for (Entity entity : mapping.getEntities()) {
-            Bcid bcid = mapper.map(entity, ezidRequest);
+            Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
             bcidService.create(bcid, userId);
             bcidService.attachBcidToExpedition(bcid, expeditionId);
 

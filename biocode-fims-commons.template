@@ -16,7 +16,7 @@ appRoot = http://localhost:8080/
 naan = 99999
 
 # ignoreUser defaults to false. If set to true then application does not run check to see if user is unique
-# for a particular dataset.  That is, it allows users besides the dataset creator to load data to this dataset
+# for a particular expedition.  That is, it allows users besides the expedition creator to load data to this expedition
 ignoreUser = false
 
 # when set to true, stack traces will be returned form the server when exceptions occur.

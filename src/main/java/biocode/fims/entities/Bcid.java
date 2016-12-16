@@ -29,6 +29,7 @@ public class Bcid {
     private String title;
     private URI webAddress;
     private String resourceType;
+    private String subResourceType;
     private Date ts;
     private String graph;
     private String sourceFile;
@@ -43,6 +44,7 @@ public class Bcid {
         //Optional parameters
         private boolean ezidMade = false;
 
+        private String subResourceType;
         private boolean ezidRequest = true;
         private String doi;
         private String title;
@@ -92,6 +94,11 @@ public class Bcid {
             return this;
         }
 
+        public BcidBuilder subResourceType(String subResourceType) {
+            this.subResourceType = subResourceType;
+            return this;
+        }
+
         public Bcid build() {
             return new Bcid(this);
         }
@@ -108,13 +115,15 @@ public class Bcid {
         graph = builder.graph;
         sourceFile = builder.sourceFile;
         finalCopy = builder.finalCopy;
+        subResourceType = builder.subResourceType;
     }
 
     // needed for hibernate
-    Bcid() {}
+    Bcid() {
+    }
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getBcidId() {
         return bcidId;
     }
@@ -132,7 +141,7 @@ public class Bcid {
         this.ezidMade = ezidMade;
     }
 
-    @Column(columnDefinition ="bit not null")
+    @Column(columnDefinition = "bit not null")
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -184,6 +193,14 @@ public class Bcid {
         return webAddress;
     }
 
+    public String getSubResourceType() {
+        return subResourceType;
+    }
+
+    public void setSubResourceType(String subResourceType) {
+        this.subResourceType = subResourceType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -203,6 +220,8 @@ public class Bcid {
         if (getTitle() != null ? !getTitle().equals(bcid.getTitle()) : bcid.getTitle() != null) return false;
         if (getWebAddress() != null ? !getWebAddress().equals(bcid.getWebAddress()) : bcid.getWebAddress() != null)
             return false;
+        if (getSubResourceType() != null ? !getSubResourceType().equals(bcid.getSubResourceType()) : bcid.getSubResourceType() != null)
+            return false;
         if (!getResourceType().equals(bcid.getResourceType())) return false;
         if (getGraph() != null ? !getGraph().equals(bcid.getGraph()) : bcid.getGraph() != null) return false;
         return getUser().equals(bcid.getUser());
@@ -218,6 +237,7 @@ public class Bcid {
         result = 31 * result + (getTitle() != null ? getTitle().hashCode() : 0);
         result = 31 * result + (getWebAddress() != null ? getWebAddress().hashCode() : 0);
         result = 31 * result + getResourceType().hashCode();
+        result = 31 * result + (getSubResourceType() != null ? getSubResourceType().hashCode() : 0);
         result = 31 * result + (getGraph() != null ? getGraph().hashCode() : 0);
         result = 31 * result + (isFinalCopy() ? 1 : 0);
         result = 31 * result + getUser().hashCode();
@@ -283,6 +303,7 @@ public class Bcid {
                 ", title='" + title + '\'' +
                 ", webAddress='" + webAddress + '\'' +
                 ", resourceType='" + resourceType + '\'' +
+                ", subResourceType='" + subResourceType + '\'' +
                 ", ts=" + ts +
                 ", graph='" + graph + '\'' +
                 ", finalCopy=" + finalCopy +
@@ -292,7 +313,7 @@ public class Bcid {
     }
 
     @ManyToOne
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="expeditionId")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "expeditionId")
     @JsonIdentityReference(alwaysAsId = true)
     @JoinTable(name = "expeditionBcids",
             joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
@@ -309,7 +330,7 @@ public class Bcid {
     }
 
     @ManyToOne
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="userId")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
     @JsonIdentityReference(alwaysAsId = true)
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",

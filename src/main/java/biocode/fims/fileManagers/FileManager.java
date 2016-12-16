@@ -8,7 +8,6 @@ import biocode.fims.run.ProcessController;
 public interface FileManager {
 
     String getName();
-    void setFilename(String value);
     void setProcessController(ProcessController processController);
     void close();
 }

@@ -1,6 +1,5 @@
 package biocode.fims.digester;
 
-import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
@@ -22,6 +21,7 @@ import org.sqlite.Function;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -721,7 +721,6 @@ public class Rule {
      * Return the index of particular columns
      *
      * @param columns
-     *
      * @return
      */
     protected int[] getColumnIndices(String[] columns) {
@@ -796,7 +795,6 @@ public class Rule {
      * Smithsonian created rule to check Voucher heading
      *
      * @param worksheet
-     *
      * @throws Exception
      */
     @Deprecated
@@ -870,15 +868,14 @@ public class Rule {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
-            logger.warn("NullPointerException", e);
             // do nothing, just make it not caseInsensitive
         }
+
 
         // First check that this column exists before running this rule
         Boolean columnExists = checkColumnExists(getCleanedColumn());
         if (!columnExists) {
             // No need to return a message here if column does not exist
-            //messages.addLast(new RowMessage("Column name " + getColumn() + " does not exist", RowMessage.WARNING));
             return;
         }
 
@@ -886,12 +883,9 @@ public class Rule {
         listFields = getListElements();
         //listFields = getFields();
         // Loop the fields and put in a StringBuilder
-        int count = 0;
-        for (int k = 0; k < listFields.size(); k++) {
+        for (Field listField : listFields) {
             try {
-                String value = ((Field) listFields.get(k)).getValue();
-                // if (count > 0)
-                //     lookupSB.append(",");
+                String value = listField.getValue();
                 // NOTE: the following escapes single quotes using another single quote
                 // (two single quotes in a row allows us to query one single quote in SQLlite)
                 if (caseInsensitiveSearch) {
@@ -899,9 +893,7 @@ public class Rule {
                 } else {
                     fieldListSB.append("\'" + value.toString().replace("'", "''") + "\'");
                 }
-                fieldListArrayList.add(listFields.get(k).toString());
-
-                count++;
+                fieldListArrayList.add(listField.toString());
             } catch (Exception e) {
                 //TODO should we be catching Exception?
                 logger.warn("Exception", e);
@@ -1169,7 +1161,6 @@ public class Rule {
      * However, the following are recognized as numeric values ("15%", "100$", "1.02E10")
      *
      * @param thisColumn
-     *
      * @return
      */
     private boolean checkValidNumberSQL(String thisColumn) {
@@ -1200,7 +1191,6 @@ public class Rule {
      * Check that this is a valid Number, for internal use only
      *
      * @param rowValue
-     *
      * @return
      */
     private boolean checkValidNumber(String rowValue) {
@@ -1375,7 +1365,7 @@ public class Rule {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
-                // Commenting out warning message here... it gets thrown way too often
+            // Commenting out warning message here... it gets thrown way too often
             //logger.warn("NullPointerException", e);
             // do nothing, just make it not caseInsensitive
         }
@@ -1592,7 +1582,6 @@ public class Rule {
      * Convert an ArrayList to a string
      *
      * @param list
-     *
      * @return
      */
     private static String listToString(List<?> list) {
@@ -1622,12 +1611,15 @@ public class Rule {
      * @return
      */
     private List<Field> getListElements() {
+        List<Field> fields = new ArrayList<>();
         Validation v = digesterWorksheet.getValidation();
-        if (v == null) {
-            return null;
-        } else {
-            return v.findList(getList()).getFields();
+        if (v != null) {
+            biocode.fims.digester.List list = v.findList(getList());
+            if (list != null) {
+                fields.addAll(v.findList(getList()).getFields());
+            }
         }
+        return fields;
     }
 
     /**
@@ -1669,8 +1661,7 @@ public class Rule {
      *
      * @return
      */
-    private Integer getMessageLevel
-    () {
+    private Integer getMessageLevel() {
         if (this.getLevel().equals("warning"))
             return RowMessage.WARNING;
         else
@@ -1681,7 +1672,6 @@ public class Rule {
      * A simple check to see if a column exists in the SQLLite Database
      *
      * @param column
-     *
      * @return
      */
     private boolean checkColumnExists(String column) {
@@ -1710,7 +1700,6 @@ public class Rule {
      * get ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
-     *
      * @return
      */
     public JSONObject getRuleMetadata(biocode.fims.digester.List sList) {
@@ -1789,6 +1778,68 @@ public class Rule {
             }
         } catch (SQLException e) {
             throw new ServerErrorException(e);
+        }
+    }
+
+    /**
+     * rule to check that at least 1 column in a group of columns has a value
+     * <p>
+     * Example:
+     * <p>
+     * <rule type="requiredColumnInGroup" level="error">
+     * <field>column1</field>
+     * <field>column2</field>
+     * </rule>
+     */
+    public void requiredColumnInGroup() {
+        String groupMessage = "Missing column from group";
+        Statement statement = null;
+        ResultSet rs = null;
+        ResultSet rsColumns = null;
+        try {
+            statement = connection.createStatement();
+            rsColumns = statement.executeQuery("select * from " + digesterWorksheet.getSheetname() + " limit 0");
+            ResultSetMetaData rsMetadata = rsColumns.getMetaData();
+
+            List<String> columnsInWorksheet = new ArrayList<>();
+            // check that the fields exist in the worksheet sqlite table
+            for (int i = 1; i <= rsMetadata.getColumnCount(); i++) {
+                String column = rsMetadata.getColumnName(i);
+                if (fields.contains(column)) {
+                    columnsInWorksheet.add(column);
+                }
+            }
+
+            if (columnsInWorksheet.size() == 0) {
+                addMessage("at least 1 column(s) " + Arrays.toString(fields.toArray()) + " is required.", groupMessage);
+            } else {
+                StringBuilder sql = new StringBuilder();
+                sql.append("select rowId from ");
+                sql.append(digesterWorksheet.getSheetname());
+                sql.append(" where ");
+
+                int cnt = 1;
+                for (String field : fields) {
+                    sql.append("ifnull(");
+                    sql.append(SqlLiteNameCleaner.fixNames(field));
+                    sql.append(", '') = '' ");
+
+                    if (cnt++ < fields.size()) {
+                        sql.append("and ");
+                    }
+                }
+
+                rs = statement.executeQuery(sql.toString());
+                while (rs.next()) {
+                    int rowNum = rs.getInt("rowId");
+                    addMessage("at least 1 cell value in the column group " + Arrays.toString(fields.toArray()) + " is required.", groupMessage, rowNum);
+                }
+            }
+        } catch (SQLException e) {
+            throw new FimsRuntimeException(500, e);
+        } finally {
+            closeDb(statement, rs);
+            closeDb(null, rsColumns);
         }
     }
 

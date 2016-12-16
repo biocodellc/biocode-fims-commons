@@ -57,6 +57,7 @@ public class Expedition {
         }
 
     }
+
     private Expedition(ExpeditionBuilder builder) {
         expeditionCode = builder.expeditionCode;
         expeditionTitle = builder.expeditionTitle;
@@ -67,7 +68,7 @@ public class Expedition {
     Expedition() {}
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getExpeditionId() {
         return expeditionId;
     }
@@ -202,7 +203,7 @@ public class Expedition {
     }
 
     @Transient
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="identifier")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
     @JsonIdentityReference(alwaysAsId = true)
     public Bcid getExpeditionBcid() {
         return expeditionBcid;
@@ -213,7 +214,7 @@ public class Expedition {
     }
 
     @Transient
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property="identifier")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
     public List<Bcid> getEntityBcids() {
         return entityBcids;
     }

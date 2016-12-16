@@ -11,8 +11,8 @@ apply plugin: "java"
 apply plugin: "idea"
 apply plugin: "org.ajoberstar.github-pages"
 
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -44,13 +44,19 @@ sourceSets {
     }
 }
 
+compileJava {
+    options.fork = true
+    options.forkOptions.jvmArgs += ["-parameters"]
+	options.forkOptions.executable = 'javac'
+}
+
 dependencies {
     server 'jstl:jstl:1.2'
 
     // necessary for custom jersey-spring3.aopfix.jar to fix jersey issue JERSEY-3126
     server group: 'org.glassfish.hk2', name: 'spring-bridge', version: '2.4.0-b34'
-    server group: 'org.springframework', name: 'spring-web', version: '4.2.5.RELEASE'
-//    server('org.glassfish.jersey.ext:jersey-spring3:2.22.2') {
+    server group: 'org.springframework', name: 'spring-web', version: '4.3.4.RELEASE'
+//    server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
 //        exclude module: 'bean-validator'
 //    }
     // custom jersey-spring implementation with a fix to inject @Context variables into aop proxied beans
@@ -82,9 +88,13 @@ dependencies {
 
     // aspectj
     runtime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
-    compile group: 'org.springframework', name: 'spring-aop', version: '4.2.5.RELEASE'
+    server group: 'org.springframework', name: 'spring-aop', version: '4.3.4.RELEASE'
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
+    // TODO migrate to rest client when it becomes more mature
+    server group: 'org.elasticsearch.client', name: 'transport', version: '5.0.0'
+    // required for elasticsearch
+    server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
 
     server 'org.xerial:sqlite-jdbc:3.7.2'
     server 'org.slf4j:slf4j-log4j12:1.7.19'

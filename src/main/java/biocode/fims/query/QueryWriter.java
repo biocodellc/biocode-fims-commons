@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class QueryWriter {
     // Loop all the columns associated with this worksheet
-    ArrayList<Attribute> attributes;
+    List<Attribute> attributes;
     ArrayList extraColumns;
     Integer totalColumns;
     XSSFWorkbook wb = new XSSFWorkbook();
@@ -41,7 +41,7 @@ public class QueryWriter {
     /**
      * @param attributes ArrayList of attributes passed as argument is meant to come from digester.Mapping instance
      */
-    public QueryWriter(ArrayList<Attribute> attributes, String sheetName) {
+    public QueryWriter(List<Attribute> attributes, String sheetName) {
         this.attributes = attributes;
         totalColumns = attributes.size() - 1;
         extraColumns = new ArrayList();
@@ -123,7 +123,7 @@ public class QueryWriter {
      */
     public Row createRow(int rowNum) {
         // make ALL rows one more than the expected rowNumber to account for the header row
-        return sheet.createRow((short) rowNum + 1);
+        return sheet.createRow(rowNum + 1);
     }
 
     /**
@@ -165,7 +165,6 @@ public class QueryWriter {
         while (it.hasNext()) {
             Attribute attribute = (Attribute) it.next();
             // map column names to datatype
-            // TODO: this part bombs when the configuration file does not have a URI specified, thus we need to write a configuration file validator?
             try {
                 if (attribute.getUri().equals(predicate)) {
                     colName = attribute.getColumn();
@@ -174,7 +173,7 @@ public class QueryWriter {
 
             } catch (Exception e) {
                 //TODO should we be catching Exception?
-                logger.warn("Exception", e);
+                logger.error("Exception", e);
                 // For now, do nothing.
             }
         }
@@ -184,13 +183,29 @@ public class QueryWriter {
 
         // Set the value conditionally, we can specify datatypes in the configuration file so interpret them
         // as appropriate here.
-        if (datatype != null && datatype.equals(DataType.INTEGER)) {
+        // TODO handle other DataTypes?
+        if (datatype != null && (
+                datatype.equals(DataType.INTEGER) || datatype.equals(DataType.FLOAT))) {
             //fimsPrinter.out.println("value = " + value);
             //Its a number(int or float).. Excel treats both as numeric
             XSSFCellStyle style = (XSSFCellStyle) wb.createCellStyle();
-            style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-            cell.setCellStyle(style);
-            cell.setCellValue(Float.parseFloat(value));
+            try {
+                if (datatype.equals(DataType.INTEGER)) {
+                    style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
+                    cell.setCellValue(Integer.parseInt(value));
+                    cell.setCellStyle(style);
+                } else {
+                    style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
+                    cell.setCellStyle(style);
+                    // even though this is a float datatype, cell.setCellValue only accepts double values.
+                    // if we pass a float value, it will be cast to double, and incorrect "percision" is added,
+                    // giving us a different value
+                    cell.setCellValue(Double.parseDouble(value));
+                }
+            } catch (NumberFormatException e) {
+                logger.warn("error converting {} to float value", value);
+                cell.setCellValue(value);
+            }
         } else {
             cell.setCellValue(value);
         }
@@ -259,63 +274,65 @@ public class QueryWriter {
         }
     }
 
-
-    public String writeJSON(File file) {
-        // Header Row
-        createHeaderRow(sheet);
-
-        // Start constructing JSON.
+    /**
+     * This returns the query results as a JSONArray of JSONObject where each JSONObject contains "field":"value" pairs
+     *
+     * @return
+     */
+    public JSONArray getJSON() {
         JSONArray dataset = new JSONArray();
 
         // Iterate through the rows.
-        int count = 0;
-        int LIMIT = 10000;
-        List<String> columns = new ArrayList<>();
         for (Row row : sheet) {
-            if (count < LIMIT) {
-                if (count == 0) {
-                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
-                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-                        columns.add(String.valueOf(cell.getRichStringCellValue()));
-                    }
-                } else {
-                    JSONObject jRow = new JSONObject();
+            JSONObject resource = new JSONObject();
 
-                    for (int cn = 0; cn < row.getLastCellNum(); cn++) {
-                        Cell cell = row.getCell(cn, Row.CREATE_NULL_AS_BLANK);
-                        if (cell == null) {
-                            jRow.put(columns.get(cn), null);
-                        } else {
-                            switch (cell.getCellType()) {
-                                case Cell.CELL_TYPE_STRING:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getRichStringCellValue()));
-                                    break;
-                                case Cell.CELL_TYPE_NUMERIC:
-                                    if (DateUtil.isCellDateFormatted(cell)) {
-                                        jRow.put(columns.get(cn), String.valueOf(cell.getDateCellValue()));
-                                    } else {
-                                        jRow.put(columns.get(cn), String.valueOf(cell.getNumericCellValue()));
-                                    }
-                                    break;
-                                case Cell.CELL_TYPE_BOOLEAN:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getBooleanCellValue()));
-                                    break;
-                                case Cell.CELL_TYPE_FORMULA:
-                                    jRow.put(columns.get(cn), String.valueOf(cell.getCellFormula()));
-                                    break;
-                                default:
-                                    jRow.put(columns.get(cn), cell.toString());
+            for (int index = 0; index < attributes.size(); index++) {
+                Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
+                Object value = null;
+
+                if (cell != null) {
+
+                    switch (cell.getCellType()) {
+
+                        case Cell.CELL_TYPE_STRING:
+                            value = cell.getRichStringCellValue().getString();
+                            break;
+
+                        case Cell.CELL_TYPE_NUMERIC:
+                            if (DateUtil.isCellDateFormatted(cell)) {
+                                value = cell.getDateCellValue();
+                            } else {
+                                value = cell.getNumericCellValue();
+                                // excel will return numbers as double. If it is an integer, get the int value
+                                if (attributes.get(index).getDatatype() == DataType.INTEGER) {
+                                    value = ((Double) value).intValue();
+                                }
                             }
-                        }
-                    }
-                    dataset.add(jRow);
-                }
-                count++;
-            }
+                            break;
 
+                        case Cell.CELL_TYPE_BOOLEAN:
+                            value = cell.getBooleanCellValue();
+                            break;
+
+                        case Cell.CELL_TYPE_FORMULA:
+                            value = cell.getCellFormula();
+                            break;
+
+                        case Cell.CELL_TYPE_BLANK:
+                            value = "";
+                            break;
+
+                        default:
+                            value = cell.toString();
+
+                    }
+                }
+
+                resource.put(attributes.get(index).getColumn(), String.valueOf(value));
+            }
+            dataset.add(resource);
         }
-        // Write the JSON text.
-        return writeFile(dataset.toJSONString(), file);
+        return dataset;
     }
 
     /**
@@ -596,7 +613,7 @@ public class QueryWriter {
                     String value = c.toString();
 
                     // Write out XML Values
-                    if (fieldName.equals("BCID")) {
+                    if (fieldName.equals("bcid")) {
                         // check if resolution mechanism is attached
                         if (!value.contains("http")) {
                             value = "http://n2t.net/" + value;
@@ -798,7 +815,7 @@ public class QueryWriter {
             biocode.fims.digester.List l = (biocode.fims.digester.List) listsIt.next();
             if (l.getAlias().equals(fieldName)) {
                 java.util.List<Field> fieldlist = l.getFields();
-                for (Field f: fieldlist) {
+                for (Field f : fieldlist) {
                     if (f.getValue().equals(value)) {
                         return f.getUri() + "'" + f.getValue() + "'";
                     }

@@ -13,7 +13,10 @@ import java.util.Set;
         @NamedEntityGraph(name = "Project.withMembers",
                 attributeNodes = @NamedAttributeNode("projectMembers")),
         @NamedEntityGraph(name = "Project.withExpeditions",
-                attributeNodes = @NamedAttributeNode("expeditions"))
+                attributeNodes = @NamedAttributeNode("expeditions")),
+        @NamedEntityGraph(name = "Project.withExpeditionsAndMembers",
+                attributeNodes = {@NamedAttributeNode("projectMembers"), @NamedAttributeNode("expeditions")}
+        )
 })
 public class Project {
 

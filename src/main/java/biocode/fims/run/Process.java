@@ -6,11 +6,13 @@ import biocode.fims.digester.Validation;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.FileManager;
-import biocode.fims.fileManagers.dataset.IDatasetFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.UploadCode;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.InvalidPropertyException;
@@ -30,22 +32,24 @@ public class Process {
     private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
     private final List<AuxilaryFileManager> fileManagers;
-    private final IDatasetFileManager datasetFileManager;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
     private final ProcessController processController;
+    private final ElasticSearchIndexer esIndexer;
     private final File configFile;
 
     public static class ProcessBuilder {
         // Required
-        IDatasetFileManager datasetFileManager;
+        FimsMetadataFileManager FimsMetadataFileManager;
         ProcessController processController;
         Map<String, Map<String, Object>> fmProperties;
         File configFile;
 
         // Optional
         List<AuxilaryFileManager> additionalFileManagers = new ArrayList<>();
+        public ElasticSearchIndexer esIndexer;
 
-        public ProcessBuilder(IDatasetFileManager datasetFileManager, ProcessController processController) {
-            this.datasetFileManager = datasetFileManager;
+        public ProcessBuilder(FimsMetadataFileManager FimsMetadataFileManager, ProcessController processController) {
+            this.FimsMetadataFileManager = FimsMetadataFileManager;
             this.processController = processController;
         }
 
@@ -85,6 +89,11 @@ public class Process {
             return this;
         }
 
+        public ProcessBuilder elasticSearchIndexer(ElasticSearchIndexer indexer) {
+            esIndexer = indexer;
+            return this;
+        }
+
 
         private boolean isValid() {
             return fmProperties != null && configFile != null;
@@ -100,12 +109,12 @@ public class Process {
     }
 
     private Process(ProcessBuilder builder) {
-        datasetFileManager = builder.datasetFileManager;
+        fimsMetadataFileManager = builder.FimsMetadataFileManager;
         processController = builder.processController;
         fileManagers = builder.additionalFileManagers;
         configFile = builder.configFile;
+        esIndexer = builder.esIndexer;
         addFmProperties(builder.fmProperties);
-        addProcessControllerToFileManagers();
 
         if (processController.getMapping() == null) {
             // Parse the Mapping object (this object is used extensively in downstream functions!)
@@ -121,15 +130,17 @@ public class Process {
 
             processController.setValidation(validation);
         }
+
+        addProcessControllerToFileManagers();
     }
 
     public boolean validate() {
         processController.appendStatus("\nValidating...\n");
 
-        boolean valid = validateConfigFile() && datasetFileManager.validate();
+        boolean valid = validateConfigFile() && fimsMetadataFileManager.validate();
 
         for (AuxilaryFileManager fm : fileManagers) {
-            if (!fm.validate(datasetFileManager.getDataset())) {
+            if (!fm.validate(fimsMetadataFileManager.getDataset())) {
                 valid = false;
             }
         }
@@ -138,14 +149,14 @@ public class Process {
     }
 
     public void upload(boolean createExpedition, boolean ignoreUser, ExpeditionService expeditionService) {
-        if (createExpedition && datasetFileManager.isNewDataset()) {
+        if (createExpedition && fimsMetadataFileManager.isNewDataset()) {
             createExpedition(expeditionService);
         }
 
         Expedition expedition = getExpedition(expeditionService);
 
         if (expedition == null) {
-            if (datasetFileManager.isNewDataset()) {
+            if (fimsMetadataFileManager.isNewDataset()) {
                 throw new FimsRuntimeException(UploadCode.EXPEDITION_CREATE, 400, processController.getExpeditionCode());
             } else {
                 throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, processController.getExpeditionCode());
@@ -156,10 +167,24 @@ public class Process {
             }
         }
 
-        datasetFileManager.upload();
+        fimsMetadataFileManager.upload();
 
         for (AuxilaryFileManager fm : fileManagers) {
-            fm.upload(datasetFileManager.isNewDataset());
+            fm.upload(fimsMetadataFileManager.isNewDataset());
+        }
+
+        if (esIndexer != null) {
+            // TODO maybe we should only update the index if datasetFileManager.isNewDataset = false?
+            JSONArray fimsMetadata = fimsMetadataFileManager.index();
+            for (AuxilaryFileManager fm: fileManagers) {
+                fm.index(fimsMetadata);
+            }
+
+            esIndexer.indexDataset(
+                    processController.getProjectId(),
+                    processController.getExpeditionCode(),
+                    fimsMetadata
+            );
         }
 
         processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
@@ -231,8 +256,8 @@ public class Process {
     }
 
     private FileManager getFileManagerByName(String fileManagerName) {
-        if (StringUtils.equals(datasetFileManager.getName(), fileManagerName)) {
-            return datasetFileManager;
+        if (StringUtils.equals(fimsMetadataFileManager.getName(), fileManagerName)) {
+            return fimsMetadataFileManager;
         }
 
         for (FileManager fm : fileManagers) {
@@ -244,7 +269,7 @@ public class Process {
     }
 
     private void addProcessControllerToFileManagers() {
-        datasetFileManager.setProcessController(processController);
+        fimsMetadataFileManager.setProcessController(processController);
 
         for (FileManager fm : fileManagers) {
             fm.setProcessController(processController);
@@ -252,9 +277,9 @@ public class Process {
     }
 
     public void close() {
-        datasetFileManager.close();
+        fimsMetadataFileManager.close();
         for (FileManager fm: fileManagers) {
-            fm.close();;
+            fm.close();
         }
     }
 }

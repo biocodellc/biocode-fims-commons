@@ -7,6 +7,7 @@ public class Field {
     private String uri;
     private String value;
     private String defined_by;
+    private String definition;
 
 
     public String getUri() {
@@ -31,6 +32,14 @@ public class Field {
 
     public void setDefined_by(String defined_by) {
         this.defined_by = defined_by;
+    }
+
+    public String getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(String definition) {
+        this.definition = definition;
     }
 }
 

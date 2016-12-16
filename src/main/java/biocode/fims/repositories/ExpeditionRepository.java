@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -41,17 +42,17 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      */
     Page<Expedition> findByProjectProjectIdAndProjectUserUserId(int projectId, int userId, Pageable pageRequest);
 
-    List<Expedition> findAllByProjectProjectIdAndUserUserId(int projectId, int userId);
-
     List<Expedition> findByPublicTrueAndProjectProjectId(int projectId);
 
 
     /**
-     * select all {@link Expedition} for a given project that the user owns or is a public expeditions
+     * select all public {@link Expedition} for a user in the specified project
      * @param projectId
      * @param userId
+     * @param includePrivate if true, we will include private expeditions in the results
      * @return
      */
-    @Query("select e from Expedition e where projectId=:projectId and (userId=:userId or public=true)")
-    List<Expedition> findAllForProjectAndUserOrPublic(int projectId, int userId);
+    @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
+    List<Expedition> getUserProjectExpeditions(int projectId, int userId, boolean includePrivate);
+
 }

@@ -8,7 +8,7 @@ import biocode.fims.entities.Bcid;
  */
 public class EntityToBcidMapper {
 
-    public Bcid map(Entity entity, boolean ezidRequest) {
+    public static Bcid map(Entity entity, boolean ezidRequest) {
         return new Bcid.BcidBuilder(entity.getConceptURI())
                 .title(entity.getConceptAlias())
                 .ezidRequest(ezidRequest)

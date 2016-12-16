@@ -85,7 +85,7 @@ public class OAuthNonce {
         return result;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
             referencedColumnName = "userId"
@@ -98,7 +98,7 @@ public class OAuthNonce {
         this.user = user;
     }
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clientId",
             foreignKey = @ForeignKey(name = "FK_oAuthNonces_clientId"),
             referencedColumnName = "clientId")

@@ -1,8 +1,7 @@
 package biocode.fims.digester;
 
-import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.reader.SqLiteDatasetConverter;
+import biocode.fims.reader.SqLiteJsonConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
@@ -11,6 +10,7 @@ import biocode.fims.settings.PathManager;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -39,7 +39,7 @@ public class Validation implements RendererInterface {
     private static Logger logger = LoggerFactory.getLogger(Validation.class);
     // File reference for a sqlite Database
     private File sqliteFile;
-    private SqLiteDatasetConverter sdc;
+    private SqLiteJsonConverter sdc;
 
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
@@ -143,7 +143,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, Dataset dataset) {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, JSONArray fimsMetadata) {
         PathManager pm = new PathManager();
         File processDirectory = pm.setDirectory(outputFolder);
 
@@ -158,7 +158,7 @@ public class Validation implements RendererInterface {
         String pathPrefix = processDirectory + File.separator + filenamePrefix;
         sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
 
-        sdc = new SqLiteDatasetConverter(dataset, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        sdc = new SqLiteJsonConverter(fimsMetadata, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
         sdc.convert(sheetName);
 
         // Create the SQLLite connection
@@ -231,7 +231,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, Dataset dataset) {
+    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, JSONArray fimsMetadata) {
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = worksheets.get(0);
@@ -245,13 +245,14 @@ public class Validation implements RendererInterface {
         // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
         // processing data, such as worksheets containing duplicate column names, which will fail the data load.
 
-        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, dataset);
+        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, fimsMetadata);
 
         // Attempt to build hashes
         boolean hashErrorFree = true;
         try {
             sdc.buildHashes(mapping, sheetName);
         } catch (Exception e) {
+            logger.warn("", e);
             hashErrorFree = false;
         }
 
@@ -332,6 +333,7 @@ public class Validation implements RendererInterface {
         d.addSetProperties("fims/validation/lists/list/field");
         d.addSetNext("fims/validation/lists/list/field", "addField");
         d.addCallMethod("fims/validation/lists/list/field", "setValue", 0);
+        d.addCallMethod("fims/validation/lists/list/field/definition", "setDefinition", 0);
 
         // Create column objects
         d.addObjectCreate("fims/validation/worksheet/column", ColumnTrash.class);
@@ -347,12 +349,6 @@ public class Validation implements RendererInterface {
                 validDataTypeFormatRule.setLevel("error");
                 validDataTypeFormatRule.setType("validDataTypeFormat");
                 ws.addRule(validDataTypeFormatRule);
-
-                // run the "validDataTypeFormat" Rule for every worksheet
-                Rule unknownColumnsCheckRule = new Rule(mapping);
-                unknownColumnsCheckRule.setLevel("warning");
-                unknownColumnsCheckRule.setType("datasetContainsExtraColumns");
-                ws.addRule(unknownColumnsCheckRule);
             }
         } catch (IOException e) {
             throw new FimsRuntimeException(500, e);

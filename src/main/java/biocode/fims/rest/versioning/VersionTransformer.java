@@ -1,12 +1,15 @@
 package biocode.fims.rest.versioning;
 
 import biocode.fims.rest.FimsService;
+import biocode.fims.utils.SpringApplicationContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
+import javax.ws.rs.core.HttpHeaders;
 import java.util.*;
 
 /**
@@ -18,17 +21,13 @@ import java.util.*;
 @Aspect
 public class VersionTransformer {
     private final static Logger logger = LoggerFactory.getLogger(VersionTransformer.class);
-    private final static String TRANSFORMER_PACKAGE = "biocode.fims.rest.versioning.transformers";
+    public final static String TRANSFORMER_PACKAGE = "biocode.fims.rest.versioning.transformers";
 
     @Around("execution(* biocode.fims.rest.services..*.*(..))")
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
         FimsService fimsService = (FimsService) jp.getTarget();
 
-        // Set the default version, if not set by getHeaders()
-        String version = APIVersion.DEFAULT_VERSION;
-        if (fimsService.getHeaders() != null) {
-            version = fimsService.getHeaders().getHeaderString("Api-Version");
-        }
+        String version = fimsService.getHeaders().getHeaderString("Api-Version");
         Object returnValue;
 
         Object[] args = jp.getArgs();
@@ -36,17 +35,24 @@ public class VersionTransformer {
         if (args.length == 0) {
             returnValue = jp.proceed();
         } else {
-            HashMap<String, Object> argMap = new LinkedHashMap<>();
+            LinkedHashMap<String, Object> methodParamMap = new LinkedHashMap<>();
             String[] argNames = ((MethodSignature) jp.getSignature()).getParameterNames();
             for (int i = 0; i < args.length; i++) {
-                argMap.put(argNames[i], args[i]);
+                methodParamMap.put(argNames[i], args[i]);
             }
 
-            for (APIVersion apiVersion : APIVersion.range(version)) {
-                // TODO implement a request transformer
+            List<APIVersion> apiVersionRange = APIVersion.range(version);
+            // remove the latest APIVersion as that is what the previous APIVersion will transform the request to
+            apiVersionRange.remove(apiVersionRange.size() - 1);
+            for (APIVersion apiVersion : apiVersionRange) {
+                Transformer transformer = getTransformer(apiVersion, jp.getTarget().getClass().getSimpleName());
+
+                if (transformer != null) {
+                    transformer.updateRequestData(methodParamMap, jp.getSignature().getName(), fimsService.uriInfo.getQueryParameters());
+                }
             }
 
-            returnValue = jp.proceed(argMap.values().toArray());
+            returnValue = jp.proceed(methodParamMap.values().toArray());
         }
 
         if (returnValue != null) {
@@ -91,9 +97,9 @@ public class VersionTransformer {
         Transformer transformer = null;
 
         try {
-            transformer = (Transformer) Class.forName(transformerClass).newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            logger.debug("Problem instentiating transformer class: " + transformerClass);
+            transformer = (Transformer) SpringApplicationContext.getBean(Class.forName(transformerClass));
+        } catch (ClassNotFoundException e) {
+            logger.debug("Problem instantiating transformer class: " + transformerClass);
         }
 
         return transformer;

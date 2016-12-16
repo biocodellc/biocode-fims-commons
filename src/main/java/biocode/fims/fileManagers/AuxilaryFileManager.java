@@ -1,9 +1,9 @@
 package biocode.fims.fileManagers;
 
-import biocode.fims.fileManagers.dataset.Dataset;
+import org.json.simple.JSONArray;
 
 /**
- * Interface for FileManagers that depend on {@link biocode.fims.fileManagers.dataset.IDatasetFileManager}
+ * Interface for FileManagers that depend on {@link biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager}
  */
 public interface AuxilaryFileManager extends FileManager {
 
@@ -13,7 +13,12 @@ public interface AuxilaryFileManager extends FileManager {
      *
      * @return
      */
-    boolean validate(Dataset dataset);
+    boolean validate(JSONArray fimsMetadata);
 
     void upload(boolean newDataset);
+
+    /**
+     * method will always be called. this is called to add any additional data to the Dataset for indexing via ElasticSearch.
+     **/
+    void index(JSONArray dataset);
 }

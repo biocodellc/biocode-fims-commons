@@ -1,5 +1,6 @@
 package biocode.fims.rest.versioning;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.LinkedHashMap;
 
 /**
@@ -9,7 +10,7 @@ import java.util.LinkedHashMap;
  */
 public interface Transformer {
 
-    void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName);
+    void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName, MultivaluedMap<String, String> queryParameters);
 
     /**
      * transform the returnValue from APIVersion +1 to this APIVersion returnVal. Note it is not possible

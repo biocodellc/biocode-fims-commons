@@ -24,7 +24,7 @@ public enum APIVersion {
         return transformerSuffix;
     }
 
-    private static APIVersion version(String versionName) {
+    public static APIVersion version(String versionName) {
         for (APIVersion apiVersion : values()) {
             for (String name : apiVersion.names) {
                 if (name.equalsIgnoreCase(versionName))

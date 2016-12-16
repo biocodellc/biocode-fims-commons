@@ -1,6 +1,7 @@
 package biocode.fims.entities;
 
 import biocode.fims.serializers.OAuthTokenSerializer;
+import biocode.fims.service.OAuthProviderService;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ import java.util.Date;
 @Table(name = "oAuthTokens")
 public class OAuthToken {
     public final static String TOKEN_TYPE = "bearer";
-    public final static int EXPIRES_IN = 3600;
+    public final static long EXPIRES_IN = OAuthProviderService.ACCESS_TOKEN_EXPIRATION_INTEVAL;
 
     private int oAuthTokenId;
     private String token;
@@ -32,7 +33,8 @@ public class OAuthToken {
         this.user = user;
     }
 
-    OAuthToken() {}
+    OAuthToken() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -108,7 +110,7 @@ public class OAuthToken {
 
     @ManyToOne
     @JoinColumn(name = "clientId",
-            foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
+            foreignKey = @ForeignKey(name = "FK_oAuthTokens_clientId"),
             referencedColumnName = "clientId")
     public OAuthClient getoAuthClient() {
         return oAuthClient;

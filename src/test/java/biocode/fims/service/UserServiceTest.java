@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
 
-import javax.persistence.Inheritance;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -76,7 +75,7 @@ public class UserServiceTest {
         projects.add(project);
         Mockito.when(user.getProjectsMemberOf()).thenReturn(projects);
 
-        Mockito.when(userService.getUser("demo")).thenReturn(user);
+        Mockito.when(userRepository.getUserWithMemberProjects("demo")).thenReturn(user);
         assertEquals(user, userService.getUser("demo", PASSWORD));
     }
 

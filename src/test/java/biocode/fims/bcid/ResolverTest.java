@@ -1,6 +1,7 @@
 package biocode.fims.bcid;
 
 import biocode.fims.digester.Mapping;
+import biocode.fims.digester.Metadata;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
@@ -87,7 +88,9 @@ public class ResolverTest {
                 .build();
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(null).when(mapping).getExpeditionForwardingAddress();
+        Metadata metadata = PowerMockito.spy(new Metadata());
+        mapping.addMetadata(metadata);
+        PowerMockito.doReturn(null).when(metadata).getExpeditionForwardingAddress();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
@@ -152,7 +155,9 @@ public class ResolverTest {
         Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE).build();
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(WEBADRESS + "{ark}").when(mapping).getExpeditionForwardingAddress();
+        Metadata metadata = PowerMockito.spy(new Metadata());
+        mapping.addMetadata(metadata);
+        PowerMockito.doReturn(WEBADRESS + "{ark}").when(metadata).getExpeditionForwardingAddress();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
@@ -167,7 +172,9 @@ public class ResolverTest {
         Bcid bcid = new biocode.fims.entities.Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE).build();
 
         Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(null).when(mapping).getExpeditionForwardingAddress();
+        Metadata metadata = PowerMockito.spy(new Metadata());
+        mapping.addMetadata(metadata);
+        PowerMockito.doReturn(null).when(metadata).getExpeditionForwardingAddress();
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);

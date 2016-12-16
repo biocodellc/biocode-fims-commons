@@ -59,46 +59,6 @@ public class ExpeditionMinter {
         }
     }
 
-    /**
-     * Attach an individual URI reference to a expedition
-     *
-     * @param expeditionId
-     * @param identifier
-     */
-    public void attachReferenceToExpedition(Integer expeditionId, String identifier) {
-        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
-        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
-
-        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
-    }
-
-    /**
-     * Return the expedition id given the internalId
-     *
-     * @param expeditionUUID
-     *
-     * @return
-     *
-     * @throws SQLException
-     */
-    private Integer getExpeditionId(UUID expeditionUUID) {
-        String sql = "select expeditionId from expeditions where internalId = ?";
-        Connection conn = BcidDatabase.getConnection();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, expeditionUUID.toString());
-            rs = stmt.executeQuery();
-            rs.next();
-            return rs.getInt("expeditionId");
-        } catch (SQLException e) {
-            throw new ServerErrorException("Server Error", "SQLException while getting expedition Identifier", e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-    }
-
     private Integer getExpeditionId(String expeditionCode, Integer projectId) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -303,7 +263,7 @@ public class ExpeditionMinter {
             //System.out.println(expedition.getGraphMetadata("_qNK_fuHVbRSTNvA_8pG.xlsx"));
             System.out.println("starting ...");
 //            System.out.println(expedition.getExpeditionss(9,"trizna"));
-            //System.out.println(expedition.getDatasets(30));
+            //System.out.println(expedition.getFimsMetadataDatasets(30));
 
             System.out.println("ending ...");
             //System.out.println(expedition.listExpeditions(8,"mwangiwangui25@gmail.com"));
@@ -348,64 +308,6 @@ public class ExpeditionMinter {
             System.out.println(e.getMessage());
         }
     }
-
-    /**
-     * Check that expedition code is between 4 and 50 characters
-     *
-     * @param expeditionCode
-     *
-     * @return
-     */
-    private void checkExpeditionCodeValid(String expeditionCode) throws FimsException {
-        // Check expeditionCode length
-        if (expeditionCode.length() < 4 || expeditionCode.length() > 50) {
-            throw new FimsException("Expedition code " + expeditionCode + " must be between 4 and 50 characters long");
-        }
-
-        // Check to make sure characters are normal!
-        if (!expeditionCode.matches("[a-zA-Z0-9_-]*")) {
-            throw new FimsException("Expedition code " + expeditionCode + " contains one or more invalid characters. " +
-                    "Expedition code characters must be in one of the these ranges: [a-Z][0-9][-][_]");
-        }
-    }
-
-    /**
-     * Check that expedition code is not already in the Database
-     *
-     * @param expeditionCode
-     *
-     * @return
-     */
-    private boolean isExpeditionCodeAvailable(String expeditionCode, Integer projectId) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-
-        try {
-            String sql = "SELECT count(*) as count " +
-                    "FROM expeditions " +
-                    "WHERE expeditionCode = ? AND " +
-                    "projectId = ?";
-            stmt = conn.prepareStatement(sql);
-
-            stmt.setString(1, expeditionCode);
-            stmt.setInt(2, projectId);
-
-            rs = stmt.executeQuery();
-            rs.next();
-            Integer count = rs.getInt("count");
-            if (count >= 1) {
-                return false;
-            }
-            return true;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-
-    }
-
     /**
      * return the expedition metadata given the projectId and expeditionCode
      *
@@ -571,6 +473,7 @@ public class ExpeditionMinter {
                     "FROM bcids b, expeditionBcids eB, expeditions e " +
                     "WHERE b.bcidId = eB.bcidId && eB.expeditionId = ? && e.expeditionId = eB.expeditionId " +
                     "AND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" " +
+                    "AND b.subResourceType = \"FimsMetadata\" " +
                     "ORDER BY b.ts DESC";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, expeditionId);
@@ -625,6 +528,7 @@ public class ExpeditionMinter {
                     " \tAND b.bcidId = eB.bcidId\n" +
                     " \tAND eB.expeditionId = e.expeditionId \n" +
                     " \tAND b.resourceType = \"http://purl.org/dc/dcmitype/Dataset\" \n" +
+                    " \tAND b.subResourceType = \"FimsMetadata\" \n" +
                     " GROUP BY eB.expeditionId";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, projectId);

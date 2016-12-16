@@ -1,5 +1,6 @@
 package biocode.fims.fimsExceptions;
 
+import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
 import org.json.simple.JSONObject;
 
 /**
@@ -29,6 +30,10 @@ public class FimsRuntimeException extends FimsAbstractException {
 
     public FimsRuntimeException(ErrorCode errorCode, int httpStatusCode, String... messageArgs) {
         super(errorCode, httpStatusCode, messageArgs);
+    }
+
+    public FimsRuntimeException(ErrorCode errorCode, String developerMessage, int httpStatusCode, String... messageArgs) {
+        super(errorCode, developerMessage, httpStatusCode, messageArgs);
     }
 
     public FimsRuntimeException(JSONObject response) {

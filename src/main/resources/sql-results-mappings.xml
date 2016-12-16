@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_1.xsd"
+                 version="2.1">
+
+    <sql-result-set-mapping name="OAuthToken">
+        <entity-result entity-class="biocode.fims.entities.OAuthToken"/>
+        <entity-result entity-class="biocode.fims.entities.OAuthClient"/>
+        <entity-result entity-class="biocode.fims.entities.User"/>
+    </sql-result-set-mapping>
+
+    <sql-result-set-mapping name="OAuthNonce">
+        <entity-result entity-class="biocode.fims.entities.OAuthNonce"/>
+        <entity-result entity-class="biocode.fims.entities.User"/>
+    </sql-result-set-mapping>
+
+</entity-mappings>

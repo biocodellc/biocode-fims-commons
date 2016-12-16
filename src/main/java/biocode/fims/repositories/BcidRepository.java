@@ -3,6 +3,8 @@ package biocode.fims.repositories;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.Bcid;
 
+import biocode.fims.entities.Expedition;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +24,7 @@ import java.util.Set;
  * This repositories provides CRUD operations for {@link Bcid} objects
  */
 @Transactional
-public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificationExecutor {
+public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampleExecutor<Bcid> {
 
     @Modifying
     void delete(Bcid bcid);
@@ -55,36 +58,15 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
     Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
 
     @Query(value =
-            "select b from Bcid b where b.ts in \n" +
-                    "(select max(b2.ts) from Bcid b2 where " +
+            "select b from Bcid b where b.bcidId in \n" +
+                    "(select max(b2.bcidId) from Bcid b2 where " +
                     "b2.expedition.project.projectId=:projectId and " +
-                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' and " +
+                    "b2.subResourceType='" + FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE + "' " +
                     "and b.expedition.expeditionId=b2.expedition.expeditionId" +
                     ")"
     )
-    Set<Bcid> findLatestDatasets(@Param("projectId") int projectId);
-
-    @Query(value =
-            "select b from Bcid b where b.ts in \n" +
-                    "(select max(b2.ts) from Bcid b2 where " +
-                    "b2.expedition.project.projectId=:projectId and " +
-                    "b2.expedition.expeditionCode=:expeditionCode and " +
-                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
-                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
-                    ")"
-    )
-    Bcid findLatestDataset(@Param("projectId") int projectId, @Param("expeditionCode") String expeditionCode);
-
-    @Query(value =
-            "select b from Bcid b where b.ts in \n" +
-                    "(select max(b2.ts) from Bcid b2 where " +
-                    "b2.expedition.expeditionId in (:expeditionList) and " +
-                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " +
-                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
-                    ") " +
-                    "and b.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "'"
-    )
-    Set<Bcid> findLatestDatasetsForExpeditions(@Param("expeditionList") List<Integer> expeditionList);
+    Set<Bcid> findLatestFimsMetadataDatasets(@Param("projectId") int projectId);
 
     void deleteByBcidId(int bcidId);
 
@@ -94,5 +76,14 @@ public interface BcidRepository extends Repository<Bcid, Integer>, JpaSpecificat
 
     Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
 
-    List<Bcid> findAllByExpeditionProjectProjectIdAndExpeditionExpeditionCodeAndResourceTypeOrderByTsDesc(int projectId, String expeditionCode, String resourceType);
+    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
+            "and b.resourceType=:resourceType and b.subResourceType=:subResourceType order by b.ts desc ")
+    List<Bcid> findAllByResourceTypeAndSubResourceType(@Param("projectId") int projectId,
+                                                       @Param("expeditionCode") String expeditionCode,
+                                                       @Param("resourceType") String resourceType,
+                                                       @Param("subResourceType") String subResourceType);
+
+    List<Bcid> findAllByGraphIn(List<String> graph);
+
+    List<Bcid> findAllByEzidRequestFalse();
 }

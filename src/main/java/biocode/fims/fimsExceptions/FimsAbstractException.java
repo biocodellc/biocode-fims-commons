@@ -1,10 +1,10 @@
 package biocode.fims.fimsExceptions;
 
+import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONObject;
 import org.springframework.context.MessageSource;
 
-import java.io.PrintWriter;
 import java.util.Locale;
 
 /**
@@ -57,6 +57,13 @@ public abstract class FimsAbstractException extends RuntimeException {
 
     public FimsAbstractException(ErrorCode errorCode, int httpStatusCode, String... messageArgs) {
         super();
+        this.errorCode = errorCode;
+        this.usrMessage = getUserMessageFromErrorCode(messageArgs);
+        this.httpStatusCode = httpStatusCode;
+    }
+
+    public FimsAbstractException(ErrorCode errorCode, String developerMessage, int httpStatusCode, String... messageArgs) {
+        super(developerMessage);
         this.errorCode = errorCode;
         this.usrMessage = getUserMessageFromErrorCode(messageArgs);
         this.httpStatusCode = httpStatusCode;

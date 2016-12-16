@@ -2,9 +2,11 @@
 *.iml
 *.props
 *.properties
+!src/main/resources/settings-manager.properties
 build/*
 classes/*
 .gradle
 jetty-env.xml
 tripleOutput/
 dist/
+.python-version

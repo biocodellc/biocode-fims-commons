@@ -4,9 +4,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.w3c.dom.Attr;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -38,21 +35,24 @@ public class Mapping {
     }
 
     /**
-     * The default sheetname is the one referenced by the first entity
-     * TODO: set defaultSheetName in a more formal manner, currently we're basing this on a "single" spreadsheet model
+     * The default sheetname is the one referenced by the root entity
      *
      * @return
      */
     public String getDefaultSheetName() {
-        // TODO this will fail if the 1st entity doesn't have a worksheet
-        if (entities.size() > 0) {
-            return entities.getFirst().getWorksheet();
-        }
-        return null;
+        return getRootEntity().getWorksheet();
     }
 
     /**
-     * The default conceptForwardingAddress is the one referenced by the first entity
+     * the root entity is the first entity
+     * @return
+     */
+    public Entity getRootEntity() {
+        return entities.getFirst();
+    }
+
+    /**
+     * Get the conceptForwardingAddress for the entity with the given identifier
      *
      * @return
      */
@@ -68,24 +68,12 @@ public class Mapping {
     }
 
     /**
-     * get the expeditionForwardingAddress specified in the config {@link Metadata}
-     * @return
-     */
-    public String getExpeditionForwardingAddress() {
-        return metadata.getExpeditionForwardingAddress();
-    }
-
-    /**
-     * The default unique key is the one referenced by the first entity
+     * The default unique key is the one referenced by the root entity
      *
      * @return
      */
     public String getDefaultSheetUniqueKey() {
-        // TODO this will fail if the 1st entity doesn't have a worksheet
-        if (entities.size() > 0) {
-            return entities.getFirst().getWorksheetUniqueKey();
-        }
-        return null;
+        return getRootEntity().getUniqueKey();
     }
 
     /**
@@ -138,7 +126,7 @@ public class Mapping {
     }
 
     /**
-     * Find Entity defined by given worksheet and worksheetUniqueKey
+     * Find Entity with a given conceptAlias
      *
      * @param conceptAlias
      * @return
@@ -148,6 +136,21 @@ public class Mapping {
             if (conceptAlias.equals(entity.getConceptAlias()))
                 return entity;
         }
+        return null;
+    }
+
+    /**
+     * find entity with the given conceptUri
+     * @param conceptUri
+     * @return
+     */
+    public Entity findEntityByConceptUri(String conceptUri) {
+        for (Entity entity: entities) {
+            if (conceptUri.equals(entity.getConceptURI())) {
+                return entity;
+            }
+        }
+
         return null;
     }
 
@@ -192,19 +195,13 @@ public class Mapping {
         return attributes;
     }
 
-    public JSONArray getAllAttributesJSON(String worksheet) {
-        JSONArray attributes = new JSONArray();
-        for (Iterator<Entity> i = entities.iterator(); i.hasNext(); ) {
-            Entity e = i.next();
-            if (e.getWorksheet().equals(worksheet))
-                for (Object a: e.getAttributes()) {
-                    Attribute attribute = (Attribute) a;
-                    JSONObject at = new JSONObject();
-                    at.putAll(attribute.getMap());
-                    attributes.add(at);
-                }
-        }
-        return attributes;
+    /**
+     * convience method to get all attributes for the default sheet
+     *
+     * @return
+     */
+    public ArrayList<Attribute> getDefaultSheetAttributes() {
+        return getAllAttributes(getDefaultSheetName());
     }
 
     /**
@@ -247,26 +244,35 @@ public class Mapping {
         }
         return null;
     }
-
     /**
-     * Lookup any property associated with a column name from a list of attributes
-     * (generated from getAllAttributes functions)
+     * Lookup the column associated with a uri from a list of attributes
      *
      * @param attributes
      * @return
      */
-    public URI lookupColumn(String columnName, ArrayList<Attribute> attributes) {
-        Iterator it = attributes.iterator();
-        while (it.hasNext()) {
-            Attribute a = (Attribute) it.next();
-            if (a.getColumn().equalsIgnoreCase(columnName)) {
-                try {
-                    return new URI(a.getUri());
-                } catch (URISyntaxException e) {
-                    throw new FimsRuntimeException(500, e);
-                }
+    public String lookupColumnForUri(String uri, List<Attribute> attributes) {
+        for (Attribute attribute: attributes) {
+            if (attribute.getUri().equalsIgnoreCase(uri)) {
+                return attribute.getColumn();
             }
         }
+
+        return null;
+    }
+
+    /**
+     * Lookup the uri associated with a columnName from a list of attributes
+     *
+     * @param attributes
+     * @return
+     */
+    public String lookupUriForColumn(String columnName, List<Attribute> attributes) {
+        for (Attribute attribute: attributes) {
+            if (attribute.getColumn().equalsIgnoreCase(columnName)) {
+                return attribute.getUri();
+            }
+        }
+
         return null;
     }
 
@@ -280,7 +286,8 @@ public class Mapping {
 
         // Create entity objects
         d.addObjectCreate("fims/mapping/entity", Entity.class);
-        d.addSetProperties("fims/mapping/entity");
+        // the last 2 params provide backwards compatibility for config files that still use worksheetUniqueKey
+        d.addSetProperties("fims/mapping/entity", "worksheetUniqueKey", "uniqueKey");
         d.addSetNext("fims/mapping/entity", "addEntity");
 
         // Add attributes associated with this entity
@@ -311,5 +318,15 @@ public class Mapping {
         } catch (SAXException e) {
             throw new FimsRuntimeException(500, e);
         }
+    }
+
+    public Attribute lookupAttribute(String columnName, String sheetName) {
+        for (Attribute a: getAllAttributes(sheetName)) {
+            if (a.getColumn().equals(columnName)) {
+                return a;
+            }
+        }
+
+        return null;
     }
 }

@@ -125,7 +125,7 @@ public class ConfigurationFileTester {
      * @return
      */
     public boolean isValidConfig() {
-        return (checkUniqueKeys() && checkDatatypes() && checkConceptAlias());
+        return (checkWorksheetUniqueKeys() && checkDatatypes() && checkConceptAlias());
     }
 
     /**
@@ -209,11 +209,13 @@ public class ConfigurationFileTester {
     }
 
     /**
-     * Test that the configuration file is OK!
+     * checks that the first entity contains a worksheet attribute, and that any entities with worksheet attributes
+     * have a uniqueKey attribute with the uniqueKey attribute value has uniqueValue and requiredColumn w/ level error
+     * rules set
      *
      * @return
      */
-    public boolean checkUniqueKeys() {
+    private boolean checkWorksheetUniqueKeys() {
         String worksheetUniqueKey = "";
         boolean passedTest = true;
 
@@ -232,10 +234,18 @@ public class ConfigurationFileTester {
         for (int i = 0; i < entities.getLength(); i++) {
             NamedNodeMap entityAttributes = entities.item(i).getAttributes();
 
-            // only check uniqueKeys for the entity if the entity has a worksheet
-            if (entityAttributes.getNamedItem("worksheet") != null) {
-                // Check worksheetUniqueKeys
-                worksheetUniqueKey = entityAttributes.getNamedItem("worksheetUniqueKey").getNodeValue();
+            if (i == 0 && entityAttributes.getNamedItem("worksheet") == null) {
+                messages.add(this, "First entity does not specify a worksheet", "rootEntityCheck");
+                passedTest = false;
+            } else if (entityAttributes.getNamedItem("worksheet") != null) {
+                // only check uniqueKeys for the entity if the entity has a worksheet
+                // Check uniqueKeys
+                if (entityAttributes.getNamedItem("uniqueKey") != null) {
+                    worksheetUniqueKey = entityAttributes.getNamedItem("uniqueKey").getNodeValue();
+                } else {
+                    // provide backwards compatibility for config files that use worksheetUniqueKey
+                    worksheetUniqueKey = entityAttributes.getNamedItem("worksheetUniqueKey").getNodeValue();
+                }
 
                 if (uniqueKeys.contains(worksheetUniqueKey)) {
                     atLeastOneUniqueKeyFound = true;
@@ -475,7 +485,7 @@ public class ConfigurationFileTester {
         System.out.println(cFT.isValidConfig());
 //        cFT.parse();
 //        cFT.checkLists();
-//        cFT.checkUniqueKeys();
+//        cFT.checkWorksheetUniqueKeys();
         System.out.println(cFT.messages.printMessages());
 
         // Check ACTIVE Project configuration files
@@ -493,7 +503,7 @@ public class ConfigurationFileTester {
                 cFT.init(file);
                 cFT.parse();
                 cFT.checkLists();
-                cFT.checkUniqueKeys();
+                cFT.checkWorksheetUniqueKeys();
                 System.out.println(cFT.messages.printMessages());
             } catch (Exception e) {
                 e.printStackTrace();
