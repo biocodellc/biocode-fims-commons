@@ -1,7 +1,5 @@
 package biocode.fims.bcid;
 
-import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.repositories.BcidRepository;
@@ -9,15 +7,10 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 
 /**
  * Mint new expeditions.  Includes the automatic creation of a core set of entity types

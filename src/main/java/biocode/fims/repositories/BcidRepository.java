@@ -3,20 +3,14 @@ package biocode.fims.repositories;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.entities.Bcid;
 
-import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +37,7 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
      */
     @Query(value =
             "SELECT b.bcidId, b.ezidMade, b.ezidRequest, b.identifier, b.userId, b.doi, b.title, " +
-                    "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId, b.sourceFile " +
+                    "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId, b.sourceFile, b.subResourceType " +
                     "FROM bcids AS b " +
                     "LEFT OUTER JOIN expeditionBcids AS eb " +
                     "ON b.bcidId=eb.bcidId " +
