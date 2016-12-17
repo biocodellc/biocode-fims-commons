@@ -135,24 +135,14 @@ public class JSONRenderer extends Renderer {
     }
 
     private Boolean displayDatasets(Expedition expedition) {
-        Boolean ignoreUser = Boolean.getBoolean(settingsManager.retrieveValue("ignoreUser"));
         ProjectMinter projectMinter = new ProjectMinter();
 
         if (expedition != null) {
 
-            //if public expedition, return true
-            if (expedition.isPublic()) {
+            if (expedition.getProject().isPublic()) {
                 return true;
-            } else if (userId != null) {
-
-                // if ignore_user and user in project, return true
-                if (ignoreUser && projectMinter.userExistsInProject(userId, expedition.getProject().getProjectId())) {
+            } else if (userId != null && projectMinter.userExistsInProject(userId, expedition.getProject().getProjectId())) {
                     return true;
-                }
-                // if !ignore_user and userOwnsExpedition, return true
-                else if (!ignoreUser && expedition.getUser().getUserId() == userId) {
-                    return true;
-                }
             }
 
         }
