@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnitUtil;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -107,6 +108,25 @@ public class ProjectService {
 
     public List<Project> getProjectsWithExpeditions(String projectUrl) {
         return projectRepository.getAllByProjectUrl(projectUrl, "Project.withExpeditions");
+    }
+
+    /**
+     * get a list of projects for the current appRoot which are public, or the user is a member of
+     * @param appRoot
+     * @param user
+     * @return
+     */
+    public List<Project> getProjects(String appRoot, User user) {
+        List<Project> projects = projectRepository.findAllByProjectUrl(appRoot);
+        List<Project> filteredProjects = new ArrayList<>();
+
+        for (Project project: projects) {
+            if (project.isPublic() || isUserMemberOfProject(user, project)) {
+                filteredProjects.add(project);
+            }
+        }
+
+        return filteredProjects;
     }
 }
 

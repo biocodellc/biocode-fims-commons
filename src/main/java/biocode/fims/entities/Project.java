@@ -1,5 +1,7 @@
 package biocode.fims.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
@@ -134,6 +136,7 @@ public class Project {
         this.validationXml = validationXml;
     }
 
+    @JsonIgnore
     @Column(nullable = false)
     public String getProjectUrl() {
         return projectUrl;
@@ -160,26 +163,30 @@ public class Project {
 
         Project project = (Project) o;
 
-        if (this.getProjectId() != 0 && project.getProjectId() != 0)
-            return this.getProjectId() == project.getProjectId();
-
+        if (getProjectId() != project.getProjectId()) return false;
         if (isPublic() != project.isPublic()) return false;
         if (!getProjectCode().equals(project.getProjectCode())) return false;
         if (getProjectTitle() != null ? !getProjectTitle().equals(project.getProjectTitle()) : project.getProjectTitle() != null)
             return false;
         if (getProjectAbstract() != null ? !getProjectAbstract().equals(project.getProjectAbstract()) : project.getProjectAbstract() != null)
             return false;
-        return getValidationXml().equals(project.getValidationXml());
-
+        if (!getTs().equals(project.getTs())) return false;
+        if (!getValidationXml().equals(project.getValidationXml())) return false;
+        if (!getProjectUrl().equals(project.getProjectUrl())) return false;
+        return getUser().equals(project.getUser());
     }
 
     @Override
     public int hashCode() {
-        int result = getProjectCode().hashCode();
+        int result = getProjectId();
+        result = 31 * result + getProjectCode().hashCode();
         result = 31 * result + (getProjectTitle() != null ? getProjectTitle().hashCode() : 0);
         result = 31 * result + (getProjectAbstract() != null ? getProjectAbstract().hashCode() : 0);
+        result = 31 * result + getTs().hashCode();
         result = 31 * result + getValidationXml().hashCode();
         result = 31 * result + (isPublic() ? 1 : 0);
+        result = 31 * result + getProjectUrl().hashCode();
+        result = 31 * result + getUser().hashCode();
         return result;
     }
 
@@ -193,7 +200,9 @@ public class Project {
                 ", ts=" + ts +
                 ", validationXml='" + validationXml + '\'' +
                 ", isPublic=" + isPublic +
+                ", projectUrl='" + projectUrl + '\'' +
                 ", user=" + user +
+                ", public=" + isPublic() +
                 '}';
     }
 

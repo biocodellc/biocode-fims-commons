@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,7 +36,7 @@ public class User {
     private Set<Bcid> bcids;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
-    private Set<Project> projectsMemberOf;
+    private List<Project> projectsMemberOf;
     private Set<TemplateConfig> templateConfigs;
 
     public static class UserBuilder {
@@ -276,11 +277,11 @@ public class User {
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
             inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
     )
-    public Set<Project> getProjectsMemberOf() {
+    public List<Project> getProjectsMemberOf() {
         return projectsMemberOf;
     }
 
-    private void setProjectsMemberOf(Set<Project> projectsMemberOf) {
+    private void setProjectsMemberOf(List<Project> projectsMemberOf) {
         this.projectsMemberOf = projectsMemberOf;
     }
 

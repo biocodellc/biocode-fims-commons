@@ -1,6 +1,8 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.entities.Project;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
@@ -8,10 +10,10 @@ import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
@@ -36,4 +38,12 @@ public class UserProjectResource extends FimsService {
         return Resource.from(UserProjectExpeditionsResource.class);
     }
 
+    @UserEntityGraph("User.withProjectsMemberOf")
+    @GET
+    public List<Project> listProjects() {
+        return userContext.getUser().getProjectsMemberOf()
+                .stream()
+                .filter(p -> p.getProjectUrl().equals(appRoot))
+                .collect(Collectors.toList());
+    }
 }

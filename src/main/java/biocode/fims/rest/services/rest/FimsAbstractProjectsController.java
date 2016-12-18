@@ -13,10 +13,12 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
+import biocode.fims.rest.services.rest.subResources.ProjectResource;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.EmailUtils;
 import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -47,29 +49,10 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         this.projectService = projectService;
     }
 
-    /**
-     * Produce a list of all publically available projects and the private projects the logged in user is a memeber of
-     *
-     * @return Generates a JSON listing containing project metadata as an array
-     */
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response fetchList(@QueryParam("includePublic") @DefaultValue("false") boolean includePublic) {
 
-        ProjectMinter project = new ProjectMinter();
-        Integer userId = null;
-
-        if (userContext.getUser() == null && !includePublic) {
-            throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
-        }
-        if (userContext.getUser() != null) {
-            userId = userContext.getUser().getUserId();
-        }
-
-//        List<Project> projects = projectService.getProjects(user, includePublic);
-        JSONArray response = project.listProjects(userId, includePublic);
-
-        return Response.ok(response.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
+    @Path("/")
+    public Resource getProjectResource() {
+        return Resource.from(ProjectResource.class);
     }
 
     /**

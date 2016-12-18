@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -59,7 +61,7 @@ public class UserServiceTest {
     public void getUser_with_username_and_password_should_return_null_with_valid_password_and_not_member_of_project_at_domain() {
         Project project = new Project.ProjectBuilder("PROJ", "Test project", "n/a", "http://localhost/test/")
                 .build();
-        Set<Project> projects = new HashSet<>();
+        List<Project> projects = new ArrayList<>();
         projects.add(project);
         Mockito.when(user.getProjectsMemberOf()).thenReturn(projects);
 
@@ -71,7 +73,7 @@ public class UserServiceTest {
     public void getUser_with_username_and_password_should_return_user_with_valid_password_and_member_of_project_at_domain() {
         Project project = new Project.ProjectBuilder("PROJ", "Test project", "n/a", "http://localhost/")
                 .build();
-        Set<Project> projects = new HashSet<>();
+        List<Project> projects = new ArrayList<>();
         projects.add(project);
         Mockito.when(user.getProjectsMemberOf()).thenReturn(projects);
 

@@ -3,6 +3,7 @@ package biocode.fims.rest;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
+import biocode.fims.rest.services.rest.subResources.ProjectResource;
 import biocode.fims.rest.services.rest.subResources.UserProjectExpeditionsResource;
 import biocode.fims.rest.services.rest.subResources.UserProjectResource;
 import biocode.fims.utils.SpringApplicationContext;
@@ -44,6 +45,7 @@ public class FimsApplication extends ResourceConfig {
 
         // need to manually register an subResources. This is so they get registered with the SpringComponentProvider
         // otherwise, the VersionTransformer advice will not register with the subResource method
+        register(ProjectResource.class);
         register(ExpeditionsResource.class);
         register(UserProjectResource.class);
         register(UserProjectExpeditionsResource.class);
