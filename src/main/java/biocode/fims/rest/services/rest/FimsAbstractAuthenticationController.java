@@ -36,7 +36,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
     private HttpServletRequest request;
     private static Logger logger = LoggerFactory.getLogger(FimsAbstractAuthenticationController.class);
 
-    private final UserService userService;
+    protected final UserService userService;
     private final OAuthProviderService oAuthProviderService;
 
     @Autowired

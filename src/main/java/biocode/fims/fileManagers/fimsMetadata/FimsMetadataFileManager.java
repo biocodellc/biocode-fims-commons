@@ -21,6 +21,7 @@ import biocode.fims.tools.ServerSideSpreadsheetTools;
 import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.context.MessageSource;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -39,16 +40,18 @@ public class FimsMetadataFileManager implements FileManager {
     private final SettingsManager settingsManager;
     private final ExpeditionService expeditionService;
     private final BcidService bcidService;
+    private final MessageSource messageSource;
     private ProcessController processController;
     private String filename;
     private JSONArray fimsMetadata;
 
     public FimsMetadataFileManager(FimsMetadataPersistenceManager persistenceManager, SettingsManager settingsManager,
-                                   ExpeditionService expeditionService, BcidService bcidService) {
+                                   ExpeditionService expeditionService, BcidService bcidService, MessageSource messageSource) {
         this.persistenceManager = persistenceManager;
         this.settingsManager = settingsManager;
         this.expeditionService = expeditionService;
         this.bcidService = bcidService;
+        this.messageSource = messageSource;
     }
 
     public void upload() {
@@ -82,20 +85,20 @@ public class FimsMetadataFileManager implements FileManager {
 
             // save the spreadsheet on the server
             File inputFile = new File(filename);
-            String ext = FileUtils.getExtension(inputFile.getName(), null);
-            String filename = "fims_metadata_bcid_id_" + bcid.getBcidId() + "." + ext;
-            File outputFile = new File(settingsManager.retrieveValue("serverRoot") + filename);
 
-            ServerSideSpreadsheetTools serverSideSpreadsheetTools = new ServerSideSpreadsheetTools(inputFile);
-            serverSideSpreadsheetTools.write(outputFile);
-
-            bcid.setSourceFile(filename);
+            bcid.setSourceFile(persistenceManager.writeSourceFile(inputFile, bcid.getBcidId()));
             bcidService.update(bcid);
 
+            Object[] messagesArgs = new Object[] {
+                    bcid.getIdentifier(),
+                    processController.getExpeditionCode(),
+                    processController.getMapping().getRootEntity().getIdentifier()
+            };
             processController.appendSuccessMessage(
-                    "Fims Metadata Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() +
-                            " (wait 15 minutes for resolution to become active)" +
-                            "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode()
+                    messageSource.getMessage(
+                            "FimsMetadataFileManager__SUCCESSFUL_UPLOAD",
+                            messagesArgs,
+                            Locale.US)
             );
         }
     }
