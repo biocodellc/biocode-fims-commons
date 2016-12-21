@@ -53,18 +53,18 @@ compileJava {
 dependencies {
     server 'jstl:jstl:1.2'
 
-    // necessary for custom jersey-spring3.aopfix.jar to fix jersey issue JERSEY-3126
-    server group: 'org.glassfish.hk2', name: 'spring-bridge', version: '2.4.0-b34'
     server group: 'org.springframework', name: 'spring-web', version: '4.3.4.RELEASE'
-//    server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
-//        exclude module: 'bean-validator'
-//    }
-    // custom jersey-spring implementation with a fix to inject @Context variables into aop proxied beans
-    server fileTree(dir: 'lib', include: ['*.jar'])
+    server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
+        exclude module: 'bean-validator'
+        exclude module: 'asm-all-repackaged'
+    }
 
-    server 'org.glassfish.jersey.ext:jersey-bean-validation:2.22.2'
-    server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.2'
-    server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.22.2'
+    // the next 2 are to fix the excluded modules above
+    server group: 'org.glassfish.hk2.external', name: 'asm-all-repackaged', version: '2.5.0-b04'
+    server 'org.glassfish.jersey.ext:jersey-bean-validation:2.25'
+
+    server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.25'
+    server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.25'
     server 'javax.servlet:servlet-api:2.4'
     server 'org.apache.poi:poi:3.10.1'
     server 'org.apache.poi:poi-ooxml:3.10.1'
