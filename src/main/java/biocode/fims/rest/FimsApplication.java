@@ -2,13 +2,11 @@ package biocode.fims.rest;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.rest.filters.*;
-import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
-import biocode.fims.rest.services.rest.subResources.ProjectResource;
-import biocode.fims.rest.services.rest.subResources.UserProjectExpeditionsResource;
-import biocode.fims.rest.services.rest.subResources.UserProjectResource;
+import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 import org.springframework.context.ApplicationContext;
@@ -46,6 +44,8 @@ public class FimsApplication extends ResourceConfig {
         // need to manually register an subResources. This is so they get registered with the SpringComponentProvider
         // otherwise, the VersionTransformer advice will not register with the subResource method
         register(ProjectResource.class);
+        register(ProjectConfigurationResource.class);
+        register(ProjectConfigurationListResource.class);
         register(ExpeditionsResource.class);
         register(UserProjectResource.class);
         register(UserProjectExpeditionsResource.class);

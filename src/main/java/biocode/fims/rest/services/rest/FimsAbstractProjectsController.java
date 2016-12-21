@@ -13,6 +13,7 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
+import biocode.fims.rest.services.rest.subResources.ProjectConfigurationResource;
 import biocode.fims.rest.services.rest.subResources.ProjectResource;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
@@ -371,38 +372,9 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Resource.from(ExpeditionsResource.class);
     }
 
-    /**
-     * Retrieve a list of valid values for a given column
-     *
-     * @param projectId
-     * @return
-     */
-    @GET
-    @Path("/{projectId}/getListFields/{listName}/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getListFields(@PathParam("projectId") Integer projectId,
-                                  @PathParam("listName") String listName) {
-
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
-
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        Validation validation = new Validation();
-        validation.addValidationRules(configFile, mapping);
-
-        biocode.fims.digester.List results = validation.findList(listName);
-        if (results != null) {
-            JSONArray list = new JSONArray();
-
-            for (Field field : results.getFields()) {
-                list.add(field.getValue());
-            }
-
-            return Response.ok(list.toJSONString()).build();
-        } else {
-            throw new BadRequestException("No list \"" + listName + "\" found");
-        }
+    @Path("/{projectId}/config")
+    public Resource getProjectConfigurationResource() {
+        return Resource.from(ProjectConfigurationResource.class);
     }
 
     @GET
