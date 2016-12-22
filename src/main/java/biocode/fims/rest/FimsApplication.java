@@ -6,18 +6,12 @@ import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 

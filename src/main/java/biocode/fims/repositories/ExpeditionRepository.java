@@ -53,6 +53,6 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      * @return
      */
     @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
-    List<Expedition> getUserProjectExpeditions(int projectId, int userId, boolean includePrivate);
+    List<Expedition> getUserProjectExpeditions(@Param("projectId") int projectId, @Param("userId") int userId, @Param("includePrivate") boolean includePrivate);
 
 }
