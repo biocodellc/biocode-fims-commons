@@ -37,7 +37,7 @@ public class FileUtils {
      */
     public static String saveTempFile(InputStream is, String ext) {
         String tempDir = System.getProperty("java.io.tmpdir");
-        File f = new File(tempDir, new StringGenerator().generateString(20) + '.' + ext);
+        File f = PathManager.createUniqueFile( new StringGenerator().generateString(20) + '.' + ext, tempDir);
 
         try {
             OutputStream os = new FileOutputStream(f);

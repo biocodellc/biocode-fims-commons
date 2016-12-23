@@ -11,7 +11,7 @@ import java.io.File;
  */
 public interface FimsMetadataPersistenceManager {
 
-    void upload(ProcessController processController, JSONArray fimsMetadata);
+    void upload(ProcessController processController, JSONArray fimsMetadata, String filename);
 
     boolean validate(ProcessController processController);
 

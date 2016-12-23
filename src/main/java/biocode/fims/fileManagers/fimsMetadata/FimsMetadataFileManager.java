@@ -58,7 +58,7 @@ public class FimsMetadataFileManager implements FileManager {
         Assert.notNull(processController);
 
         if (filename != null) {
-            persistenceManager.upload(processController, fimsMetadata);
+            persistenceManager.upload(processController, fimsMetadata, filename);
 
             URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : null;
 

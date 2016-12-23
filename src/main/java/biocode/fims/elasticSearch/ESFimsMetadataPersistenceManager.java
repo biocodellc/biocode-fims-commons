@@ -29,7 +29,7 @@ public class ESFimsMetadataPersistenceManager extends AbstractFimsMetadataPersis
     }
 
     @Override
-    public void upload(ProcessController processController, JSONArray fimsMetadata) {
+    public void upload(ProcessController processController, JSONArray fimsMetadata, String filename) {
         // do nothing. all elasticsearch "uploading" is handled in FimsMetadataFileManager.index
     }
 
