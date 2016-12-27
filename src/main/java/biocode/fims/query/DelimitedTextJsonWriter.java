@@ -6,6 +6,8 @@ import biocode.fims.settings.PathManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.List;
@@ -22,6 +24,7 @@ public class DelimitedTextJsonWriter implements JsonWriter {
     private final List<JsonFieldTransform> columns;
     private final String delimiter;
     private boolean writeHeader = true;
+    private boolean isCsv;
 
     /**
      * @param resources       {@link ArrayNode} of {@link ObjectNode}'s to be written to the excel file.
@@ -36,6 +39,7 @@ public class DelimitedTextJsonWriter implements JsonWriter {
         this.outputDirectory = outputDirectory;
         this.columns = columns;
         this.delimiter = delimiter;
+        isCsv = StringUtils.equals(delimiter.trim(), ",");
     }
 
     /**
@@ -63,7 +67,11 @@ public class DelimitedTextJsonWriter implements JsonWriter {
 
                 for (JsonFieldTransform column : columns) {
 
-                    writer.write(column.getFieldName());
+                    if (isCsv) {
+                        StringEscapeUtils.escapeCsv(writer, column.getFieldName());
+                    } else {
+                        writer.write(column.getFieldName());
+                    }
                     writer.write(delimiter);
 
                 }
@@ -74,7 +82,9 @@ public class DelimitedTextJsonWriter implements JsonWriter {
             for (JsonNode resource : resources) {
 
                 for (JsonFieldTransform column : columns) {
-                    writer.write(resource.at(column.getPath()).asText(""));
+                    if (isCsv) {
+                        StringEscapeUtils.escapeCsv(writer, resource.at(column.getPath()).asText(""));
+                    }
                     writer.write(delimiter);
                 }
 

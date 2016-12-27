@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import javafx.beans.binding.StringExpression;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
@@ -130,9 +132,9 @@ public class KmlJsonWriter implements JsonWriter {
 
             for (JsonFieldTransform column : descriptionColumns) {
                 writer.write("<br>");
-                writer.write(column.getFieldName());
+                StringEscapeUtils.escapeXml(writer, column.getFieldName());
                 writer.write("=");
-                writer.write(resource.at(column.getPath()).asText());
+                StringEscapeUtils.escapeXml(writer, resource.at(column.getPath()).asText());
             }
 
             writer.write("\t\t]]>\n");
@@ -140,9 +142,9 @@ public class KmlJsonWriter implements JsonWriter {
 
             writer.write("\t\t<Point>\n");
             writer.write("\t\t\t<coordinates>");
-            writer.write(resource.at(longPath).asText());
+            StringEscapeUtils.escapeXml(writer, resource.at(longPath).asText());
             writer.write(",");
-            writer.write(resource.at(latPath).asText());
+            StringEscapeUtils.escapeXml(writer, resource.at(latPath).asText());
             writer.write("</coordinates>\n");
             writer.write("\t\t</Point>\n");
 
