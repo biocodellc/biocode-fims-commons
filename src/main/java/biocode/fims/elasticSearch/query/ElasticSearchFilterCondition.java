@@ -9,20 +9,10 @@ public class ElasticSearchFilterCondition {
     private final QueryOperator queryOperator = QueryOperator.EQUALS;
     private final ElasticSearchFilterField filterField;
     private final String value;
-    private boolean regexp = false;
 
     public ElasticSearchFilterCondition(ElasticSearchFilterField filterField, String value) {
         this.filterField = filterField;
         this.value = value;
-    }
-
-    public ElasticSearchFilterCondition regexp(boolean isRegexp) {
-        this.regexp = isRegexp;
-        return this;
-    }
-
-    public boolean isRegexp() {
-        return regexp;
     }
 
     public ElasticSearchFilterField getFilterField() {
