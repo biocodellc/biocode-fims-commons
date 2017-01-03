@@ -1,7 +1,10 @@
 package biocode.fims.elasticSearch;
 
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.utils.EmailUtils;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -14,6 +17,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Class for sending JSON documents to be Elasticsearch for indexing
@@ -86,22 +92,30 @@ public class ElasticSearchIndexer {
     }
 
     public void updateMapping(int projectId, JSONObject mapping) {
-        String index = String.valueOf(projectId);
+        String indexAlias = String.valueOf(projectId);
+        String index = indexAlias + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date());
 
         try {
-            IndicesExistsResponse response = client.admin().indices().prepareExists(index).get();
+            IndicesExistsResponse response = client.admin().indices().prepareExists(indexAlias).get();
 
             if (!response.isExists()) {
 
                 // if the index doesn't exist yet, then we need to create it
                 client.admin().indices().prepareCreate(index)
-                        .addMapping(TYPE, mapping).get();
+                        .addMapping(TYPE, mapping)
+                        .addAlias(new Alias(indexAlias))
+                        .get();
 
             } else {
 
                 client.admin().indices().preparePutMapping(index)
                         .setType(TYPE)
                         .setSource(mapping).get();
+
+                EmailUtils.sendAdminEmail(
+                        "ElasticSearch index mapping updated",
+                        "ProjectId [" + projectId + "] configuration file was changed, resulting in a update to the corresponding " +
+                                "ElasticSearch index. Existing data may need to be reindexed to reflect the changes.");
 
             }
         } catch (Exception e) {
