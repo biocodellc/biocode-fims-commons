@@ -39,45 +39,6 @@ public class ElasticSearchQuerier {
         this.query = query;
     }
 
-//    public File writeExcel() {
-//        int projectId = 0;
-//        SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();
-//
-//        List<JSONObject> resources = mapScrollableResults(getResponse(searchRequestBuilder));
-//
-//        String sheetName = DEFAULT_SHEET;
-//
-//        // if there is only 1 index, then we are only querying 1 project
-//        if (query.getIndicies().length == 1) {
-//            projectId = Integer.parseInt(query.getIndicies()[0]);
-//            File configFile = new ConfigurationFileFetcher(projectId, outputDir, true).getOutputFile();
-//
-//            Mapping mapping = new Mapping();
-//            mapping.addMappingRules(configFile);
-//
-//            sheetName = mapping.getDefaultSheetName();
-//        }
-//
-//        QueryWriter queryWriter = getQueryWriter(resources, sheetName);
-//
-//        String excelFile = queryWriter.writeExcel(PathManager.createFile("output.xlsx", outputDir));
-//
-//        if (query.getIndicies().length == 1) {
-//            // Here we attach the other components of the excel sheet found with
-//            XSSFWorkbook justData = null;
-//            try {
-//                justData = new XSSFWorkbook(new FileInputStream(excelFile));
-//            } catch (IOException e) {
-//                logger.error("failed to open QueryWriter excelFile", e);
-//            }
-//
-//            TemplateProcessor t = new TemplateProcessor(projectId, outputDir, justData);
-//            excelFile = t.createExcelFileFromExistingSources(sheetName, outputDir).getAbsolutePath();
-//        }
-//
-//        return new File(excelFile);
-//
-//    }
 
     public Page<ObjectNode> getPageableResults() {
         ObjectMapper objectMapper = new SpringObjectMapper();

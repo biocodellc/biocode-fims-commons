@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 
 /**
  * REST interface for handling user authentication
+ * @exclude
  */
 public abstract class FimsAbstractAuthenticationController extends FimsService {
     @Context

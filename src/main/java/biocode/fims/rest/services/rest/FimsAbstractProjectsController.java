@@ -2,13 +2,9 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Field;
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Validation;
 import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -19,7 +15,6 @@ import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.EmailUtils;
 import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -30,13 +25,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.util.*;
 
 /**
  * REST interface calls for working with projects.  This includes fetching details associated with projects.
  * Currently, there are no REST services for creating projects, which instead must be added to the Database
  * manually by an administrator
+ * @exclude
  */
 public abstract class FimsAbstractProjectsController extends FimsService {
     private static final Logger logger = LoggerFactory.getLogger(FimsAbstractProjectsController.class);
@@ -51,6 +46,10 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     }
 
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectResource
+     */
     @Path("/")
     public Resource getProjectResource() {
         return Resource.from(ProjectResource.class);
@@ -367,11 +366,19 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Response.ok("{\"success\": \"Successfully removed template configuration.\"}").build();
     }
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ExpeditionsResource
+     */
     @Path("{projectId}/expeditions")
     public Resource getUserProjectResource() {
         return Resource.from(ExpeditionsResource.class);
     }
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectConfigurationResource
+     */
     @Path("/{projectId}/config")
     public Resource getProjectConfigurationResource() {
         return Resource.from(ProjectConfigurationResource.class);

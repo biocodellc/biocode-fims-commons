@@ -34,6 +34,7 @@ import java.net.URLDecoder;
 
 /**
  * REST interface calls for working with expeditions.  This includes creating, updating and deleting expeditions.
+ * @exclude
  */
 public abstract class FimsAbstractExpeditionController extends FimsService {
 

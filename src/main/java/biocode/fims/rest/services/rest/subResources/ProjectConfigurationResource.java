@@ -25,6 +25,10 @@ public class ProjectConfigurationResource extends FimsService {
         super(settingsManager);
     }
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectConfigurationListResource
+     */
     @Path("/lists")
     public Resource getProjectConfigurationListResource() {
         return Resource.from(ProjectConfigurationListResource.class);

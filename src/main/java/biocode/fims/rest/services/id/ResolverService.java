@@ -26,6 +26,7 @@ import java.net.URI;
 
 /**
  * This is the core Resolver Service for BCIDs.  It returns URIs
+ * @exclude
  */
 @Controller
 @Path("/")

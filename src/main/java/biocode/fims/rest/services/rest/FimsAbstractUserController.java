@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * The REST Interface for dealing with users. Includes user creation and profile updating.
+ * @exclude
  */
 public abstract class FimsAbstractUserController extends FimsService {
 
@@ -31,15 +32,20 @@ public abstract class FimsAbstractUserController extends FimsService {
         this.userService = userService;
     }
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.UserProjectResource
+     */
     @Path("{userId}/projects")
-    public Resource getUserProjectResource(@PathParam("userId") Integer userId) {
+    public Resource getUserProjectResource() {
         return Resource.from(UserProjectResource.class);
     }
 
     /**
      * gets the UserProjectResource, passing in the userId from the current logged in user
      * this is to maintain backwards compatibility with api v1
-     * @return
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.UserProjectResource
      */
     @Deprecated
     @Path("projects")

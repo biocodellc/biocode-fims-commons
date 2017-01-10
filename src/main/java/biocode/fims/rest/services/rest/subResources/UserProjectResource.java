@@ -33,11 +33,20 @@ public class UserProjectResource extends FimsService {
         this.projectService = projectService;
     }
 
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.UserProjectExpeditionsResource
+     */
     @Path("{projectId}/expeditions")
     public Resource getUserProjectExpeditionsResource() {
         return Resource.from(UserProjectExpeditionsResource.class);
     }
 
+    /**
+     * Returns a list of projects that a user belongs to
+     *
+     * @return
+     */
     @UserEntityGraph("User.withProjectsMemberOf")
     @GET
     public List<Project> listProjects() {
