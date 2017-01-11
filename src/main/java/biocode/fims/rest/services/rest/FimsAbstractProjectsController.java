@@ -369,6 +369,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     /**
      *
      * @responseType biocode.fims.rest.services.rest.subResources.ExpeditionsResource
+     * @resourceTag Expeditions
      */
     @Path("{projectId}/expeditions")
     public Resource getUserProjectResource() {

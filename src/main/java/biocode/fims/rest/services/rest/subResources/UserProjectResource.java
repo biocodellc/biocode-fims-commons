@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
+ * @resourceTag Projects
  */
 @Controller
 @AuthenticatedUserResource
@@ -36,6 +37,7 @@ public class UserProjectResource extends FimsService {
     /**
      *
      * @responseType biocode.fims.rest.services.rest.subResources.UserProjectExpeditionsResource
+     * @resourceTag Expeditions
      */
     @Path("{projectId}/expeditions")
     public Resource getUserProjectExpeditionsResource() {

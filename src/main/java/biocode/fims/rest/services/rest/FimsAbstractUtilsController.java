@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 /**
  * Biocode-Fims utility services
  * @exclude
+ * @resourceTag Utils
  */
 public abstract class FimsAbstractUtilsController extends FimsService {
 

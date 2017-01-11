@@ -14,6 +14,7 @@ import java.util.List;
 
 /**
  * @author RJ Ewing
+ * @resourceTag Expeditions
  */
 @Controller
 @AuthenticatedUserResource

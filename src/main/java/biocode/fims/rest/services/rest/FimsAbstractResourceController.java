@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 /**
  * REST interface for creating elements, to be called from the interface or other consuming applications.
  * @exclude
+ * @resourceTag ResourceTypes
  */
 public abstract class FimsAbstractResourceController extends FimsService {
 

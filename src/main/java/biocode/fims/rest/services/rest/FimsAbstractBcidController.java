@@ -24,6 +24,7 @@ import java.util.Hashtable;
  * REST interface calls for working with bcids.    This includes creating a bcid, looking up
  * bcids by user associated with them, and JSON representation of group metadata.
  *
+ * @resourceTag Bcids
  * @exclude
  */
 public abstract class FimsAbstractBcidController extends FimsService {

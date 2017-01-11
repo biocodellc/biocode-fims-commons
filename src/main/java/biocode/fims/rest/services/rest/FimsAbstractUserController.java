@@ -35,6 +35,7 @@ public abstract class FimsAbstractUserController extends FimsService {
     /**
      *
      * @responseType biocode.fims.rest.services.rest.subResources.UserProjectResource
+     * @resourceTag Projects
      */
     @Path("{userId}/projects")
     public Resource getUserProjectResource() {
