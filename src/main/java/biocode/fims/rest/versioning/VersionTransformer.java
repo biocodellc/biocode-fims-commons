@@ -27,6 +27,13 @@ public class VersionTransformer {
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
         FimsService fimsService = (FimsService) jp.getTarget();
 
+        if (fimsService.getHeaders() == null) {
+            // the resource method was called outside of the Request Scope. This means that we can't do any transforming
+            // as we do not know what version is requested
+            logger.debug("Skipping REST Version Transformation. FimsService.getHeaders() is null");
+            return jp.proceed();
+        }
+
         String version = fimsService.getHeaders().getHeaderString("Api-Version");
         Object returnValue;
 
