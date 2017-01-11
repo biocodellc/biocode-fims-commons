@@ -5,7 +5,6 @@ import biocode.fims.fimsExceptions.FimsAbstractException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.run.ProcessController;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.ErrorInfo;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.slf4j.Logger;
@@ -20,9 +19,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -67,7 +63,7 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
             mediaType = uriInfo.getMatchedResourceMethod().getProducedTypes().get(0).toString();
         } catch(IndexOutOfBoundsException | NullPointerException ex) {
             List<MediaType> accepts = httpHeaders.getAcceptableMediaTypes();
-            logger.warn("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
+            logger.debug("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
             // if request accepts JSON, return the error in JSON, otherwise use html
             if (accepts.contains(MediaType.TEXT_HTML_TYPE)) {
                 mediaType = MediaType.TEXT_HTML;

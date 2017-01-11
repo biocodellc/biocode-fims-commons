@@ -266,16 +266,8 @@ public class Worksheet {
                     }
 
                     // Close the connection
-                } catch (NoSuchMethodException e) {
-                    logger.warn(null, e);
-                    // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
-                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
-                } catch(IllegalAccessException e) {
-                    logger.warn(null, e);
-                    // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
-                    //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
-                } catch (InvocationTargetException e) {
-                    logger.warn(null, e);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    logger.debug(null, e);
                     // Comment this out because I don't think we want to throw user messages for failed rules (FOR NOW)
                     //r.addMessage("Unable to run " + r.getType() + " on \"" + r.getColumn() + "\" column.");
                 }

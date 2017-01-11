@@ -372,7 +372,7 @@ public class Rule {
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            logger.error("SQL exception processing isIntegerDataFormat rule");
+            logger.debug("SQL exception processing isIntegerDataFormat rule");
             e.printStackTrace();
         } finally {
             closeDb(statement, rs);
@@ -407,7 +407,7 @@ public class Rule {
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            logger.error("SQL exception processing isFloatDataFormat rule");
+            logger.debug("SQL exception processing isFloatDataFormat rule");
             e.printStackTrace();
         } finally {
             closeDb(statement, rs);
@@ -459,7 +459,7 @@ public class Rule {
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            logger.error("SQL exception processing isDateDataFormat rule \n");
+            logger.debug("SQL exception processing isDateDataFormat rule \n");
             e.printStackTrace();
         } finally {
             closeDb(statement, rs);
@@ -514,7 +514,7 @@ public class Rule {
 
 
         } catch (SQLException e) {
-            logger.error("SQL exception processing uniqueValue rule");
+            logger.debug("SQL exception processing uniqueValue rule");
             e.printStackTrace();
         } finally {
             closeDb(statement, rs);
@@ -566,7 +566,7 @@ public class Rule {
             }
 
         } catch (SQLException e) {
-            throw new FimsRuntimeException("SQL exception processing uniqueValue rule", 500, e);
+            logger.debug(null, e);
         } finally {
             closeDb(statement, rs);
         }
@@ -695,7 +695,7 @@ public class Rule {
             }
 
         } catch (SQLException e) {
-            throw new FimsRuntimeException("minimumMaximumCheck exception", 500, e);
+            logger.debug("minimumMaximumCheck exception", e);
         }
     }
 
@@ -895,8 +895,7 @@ public class Rule {
                 }
                 fieldListArrayList.add(listField.toString());
             } catch (Exception e) {
-                //TODO should we be catching Exception?
-                logger.warn("Exception", e);
+                logger.debug(null, e);
                 // do nothing
             }
         }
@@ -944,7 +943,7 @@ public class Rule {
             }
 
         } catch (SQLException e) {
-            throw new FimsRuntimeException("SQL exception processing requiredValueFromOtherColumn rule", 500, e);
+            logger.debug(null, e);
         } finally {
             try {
                 if (statement != null)
@@ -952,7 +951,7 @@ public class Rule {
                 if (resultSet != null)
                     resultSet.close();
             } catch (SQLException e) {
-                logger.warn("SQLException", e);
+                logger.debug("SQLException", e);
             }
         }
     }
@@ -1026,7 +1025,6 @@ public class Rule {
                     addMessage("Bad Column Number " + colNo + " (must be between 01 and 12).", groupMessage, row);
                 }
             } catch (NumberFormatException e) {
-                logger.warn("NumberFormatException", e);
                 addMessage("Invalid number format for Column Number", groupMessage, row);
             }
 
@@ -1074,13 +1072,7 @@ public class Rule {
                     try {
                         String strNumber = well_number96Value.substring(1, well_number96Value.length());
                         intNumber = Integer.parseInt(strNumber);
-                    } catch (NumberFormatException nme) {
-                        logger.warn("NumberFormatException", nme);
-                        // Not a valid integer
-                        addMessage("Bad Well Number " + well_number96Value, groupMessage, j);
                     } catch (Exception e) {
-                        //TODO should we be catching Exception?
-                        logger.warn("Exception", e);
                         addMessage("Bad Well Number " + well_number96Value, groupMessage, j);
                     } finally {
                         if (intNumber <= 12 && intNumber >= 1) {
@@ -1200,14 +1192,12 @@ public class Rule {
                 try {
                     Double.parseDouble(rowValue);
                 } catch (NumberFormatException nme) {
-                    logger.warn("NumberFormatException", nme);
                     return false;
                 }
             } else {
                 try {
                     Integer.parseInt(rowValue);
                 } catch (NumberFormatException nme) {
-                    logger.warn("NumberFormatException", nme);
                     return false;
                 }
             }
@@ -1365,8 +1355,6 @@ public class Rule {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
-            // Commenting out warning message here... it gets thrown way too often
-            //logger.warn("NullPointerException", e);
             // do nothing, just make it not caseInsensitive
         }
 
@@ -1395,8 +1383,7 @@ public class Rule {
                     lookupSB.append("\'" + value.replace("'", "''") + "\'");
                 count++;
             } catch (Exception e) {
-                //TODO should we be catching Exception?
-                logger.warn("Exception", e);
+                logger.debug("Exception", e);
                 // do nothing
             }
         }
@@ -1692,7 +1679,7 @@ public class Rule {
         try {
             connection.close();
         } catch (SQLException e) {
-            logger.warn(null, e);
+            logger.debug(null, e);
         }
     }
 
@@ -1715,7 +1702,7 @@ public class Rule {
                 ruleMetadata.put("value", URLDecoder.decode(this.value, "utf-8"));
             } catch (UnsupportedEncodingException e) {
                 ruleMetadata.put("value", this.value);
-                logger.warn("UnsupportedEncodingException", e);
+                logger.debug("UnsupportedEncodingException", e);
             }
         }
         // Display fields
@@ -1850,7 +1837,7 @@ public class Rule {
             if (rs != null)
                 rs.close();
         } catch (SQLException e) {
-            logger.warn(null, e);
+            logger.debug(null, e);
         }
     }
 
