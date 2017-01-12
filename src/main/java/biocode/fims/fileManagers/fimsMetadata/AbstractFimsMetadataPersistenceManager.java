@@ -1,10 +1,13 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.tools.ServerSideSpreadsheetTools;
 import biocode.fims.utils.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /**
  * Abstract FimsMetadataPersistenceManager providing common code for {@link FimsMetadataPersistenceManager} implementations
@@ -22,8 +25,12 @@ public abstract class AbstractFimsMetadataPersistenceManager implements FimsMeta
         String filename = "fims_metadata_bcid_id_" + bcidId + "." + ext;
         File outputFile = new File(settingsManager.retrieveValue("serverRoot") + filename);
 
-        ServerSideSpreadsheetTools serverSideSpreadsheetTools = new ServerSideSpreadsheetTools(sourceFile);
-        serverSideSpreadsheetTools.write(outputFile);
+        try {
+            Files.copy(sourceFile.toPath(), outputFile.toPath());
+        } catch (IOException e) {
+            throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
+        }
+
         return outputFile.getName();
     }
 
