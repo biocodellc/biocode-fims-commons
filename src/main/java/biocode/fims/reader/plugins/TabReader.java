@@ -15,6 +15,8 @@ import java.util.LinkedList;
 
 
 /**
+ * //TODO this javadoc needs to be updated. It looks like this file has never had the ability
+ * to parse CSV file, only TSV.
  * Provides the ability to parse CSV formatted files.  This implementation is
  * mostly compliant with the RFC 4180 CSV specification.  In particular, 1) each
  * record is expected to be on a single line; 2) fields may be enclosed in

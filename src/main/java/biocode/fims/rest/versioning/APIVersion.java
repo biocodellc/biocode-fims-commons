@@ -8,7 +8,8 @@ import java.util.*;
 public enum APIVersion {
     // must be declared in ascending order
     v1_0("1_0", new String[]{"v1", "v1.0"}),
-    v1_1("1_1", new String[]{"v1.1"});
+    v1_1("1_1", new String[]{"v1.1"}),
+    v2_0("2_0", new String[]{"v2", "v2.0"});
 
     public static String DEFAULT_VERSION = "v1";
 
