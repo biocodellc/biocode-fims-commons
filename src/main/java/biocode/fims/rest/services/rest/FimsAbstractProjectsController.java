@@ -128,61 +128,6 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     }
 
     /**
-     * Service used for updating a project's configuration.
-     *
-     * @param projectID
-     * @param title
-     * @param validationXML
-     * @param publicProject
-     * @return
-     */
-    @POST
-    @Authenticated
-    @Admin
-    @Path("/{projectId}/metadata/update")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response updateConfig(@PathParam("projectId") Integer projectID,
-                                 @FormParam("title") String title,
-                                 @FormParam("validationXml") String validationXML,
-                                 @FormParam("public") String publicProject) {
-        ProjectMinter p = new ProjectMinter();
-
-        if (!p.isProjectAdmin(userContext.getUser().getUserId(), projectID)) {
-            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
-        }
-
-        JSONObject metadata = p.getMetadata(projectID, userContext.getUser().getUsername());
-        Hashtable<String, String> update = new Hashtable<String, String>();
-
-        if (title != null &&
-                !metadata.get("title").equals(title)) {
-            update.put("projectTitle", title);
-        }
-        if (!metadata.containsKey("validationXml") || !metadata.get("validationXml").equals(validationXML)) {
-            update.put("validationXml", validationXML);
-        }
-        if ((publicProject != null && (publicProject.equals("on") || publicProject.equals("true")) && metadata.get("public").equals("false")) ||
-                (publicProject == null && metadata.get("public").equals("true"))) {
-            if (publicProject != null && (publicProject.equals("on") || publicProject.equals("true"))) {
-                update.put("public", "true");
-            } else {
-                update.put("public", "false");
-            }
-        }
-
-        if (!update.isEmpty()) {
-            if (p.updateMetadata(update, projectID)) {
-                return Response.ok("{\"success\": \"Successfully updated project metadata.\"}").build();
-            } else {
-                throw new BadRequestException("Project wasn't found");
-            }
-        } else {
-            return Response.ok("{\"success\": \"nothing needed to be updated\"}").build();
-        }
-    }
-
-    /**
      * Service used to remove a user as a member of a project.
      *
      * @param projectId

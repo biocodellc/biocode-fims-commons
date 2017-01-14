@@ -185,67 +185,6 @@ public class ProjectMinter {
     }
 
     /**
-     * Update the project's metadata with the values in the Hashtable.
-     *
-     * @param updateTable
-     * @param projectId
-     *
-     * @return
-     */
-    public Boolean updateMetadata(Hashtable<String, String> updateTable, Integer projectId) {
-        String updateString = "UPDATE projects SET ";
-
-        // Dynamically create our UPDATE statement depending on which fields the user wants to update
-        for (Enumeration e = updateTable.keys(); e.hasMoreElements(); ) {
-            String key = e.nextElement().toString();
-            updateString += key + " = ?";
-
-            if (e.hasMoreElements()) {
-                updateString += ", ";
-            } else {
-                updateString += " WHERE projectId =\"" + projectId + "\";";
-            }
-        }
-        PreparedStatement stmt = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            stmt = conn.prepareStatement(updateString);
-
-            // place the parametrized values into the SQL statement
-            {
-                int i = 1;
-                for (Enumeration e = updateTable.keys(); e.hasMoreElements(); ) {
-                    String key = e.nextElement().toString();
-                    if (key.equals("public")) {
-                        if (updateTable.get(key).equalsIgnoreCase("true")) {
-                            stmt.setBoolean(i, true);
-                        } else {
-                            stmt.setBoolean(i, false);
-                        }
-                    } else if (updateTable.get(key).equals("")) {
-                        stmt.setString(i, null);
-                    } else {
-                        stmt.setString(i, updateTable.get(key));
-                    }
-                    i++;
-                }
-            }
-
-            Integer result = stmt.executeUpdate();
-
-            // result should be '1', if not, an error occurred during the UPDATE statement
-            if (result == 1) {
-                return true;
-            }
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, null);
-        }
-        return false;
-    }
-
-    /**
      * retrieve the project metadata for a given projectId and userId
      *
      * @param projectId
@@ -284,34 +223,7 @@ public class ProjectMinter {
         }
         return metadata;
     }
-
-    /**
-     * Check if a user belongs to a project
-     */
-    public Boolean userProject(Integer userId, Integer projectId) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-        try {
-            String sql = "SELECT count(*) as count " +
-                    "FROM users u, projects p, userProjects uP " +
-                    "WHERE u.userId=uP.userId and uP.projectId = p.projectId and u.userId = ? and p.projectId=?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userId);
-            stmt.setInt(2, projectId);
-
-            rs = stmt.executeQuery();
-            rs.next();
-
-            // If the user belongs to this project then there will be a >=1 value and returns true, otherwise false.
-            return rs.getInt("count") >= 1;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-    }
-
+    
     public Boolean isProjectAdmin(String username, Integer projectId) {
         int userId = BcidDatabase.getUserId(username);
         return isProjectAdmin(userId, projectId);
