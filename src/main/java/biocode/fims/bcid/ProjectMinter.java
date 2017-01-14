@@ -145,43 +145,6 @@ public class ProjectMinter {
         System.out.println("datasets = \n" + project.getMyLatestGraphs("demo"));
     }
 
-    /**
-     * Return a JSON representation of the projects a user is an admin for
-     *
-     * @param username
-     *
-     * @return
-     */
-    public JSONArray getAdminProjects(String username) {
-        JSONArray projects = new JSONArray();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-        Connection conn = BcidDatabase.getConnection();
-
-        try {
-            Integer userId = BcidDatabase.getUserId(username);
-
-            String sql = "SELECT projectId, projectCode, projectTitle, projectTitle, validationXml FROM projects WHERE userId = \"" + userId + "\"";
-            stmt = conn.prepareStatement(sql);
-
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                JSONObject project = new JSONObject();
-                project.put("projectId", rs.getString("projectId"));
-                project.put("projectCode", rs.getString("projectCode"));
-                project.put("projectTitle", rs.getString("projectTitle"));
-                project.put("validationXml", rs.getString("validationXml"));
-                projects.add(project);
-            }
-
-            return projects;
-        } catch (SQLException e) {
-            throw new ServerErrorException(e);
-        } finally {
-            BcidDatabase.close(conn, stmt, rs);
-        }
-    }
 
     /**
      * return a JSON representation of the projects that a user is a member of

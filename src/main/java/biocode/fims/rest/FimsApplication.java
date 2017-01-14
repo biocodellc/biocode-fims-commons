@@ -43,6 +43,8 @@ public class FimsApplication extends ResourceConfig {
         register(ExpeditionsResource.class);
         register(UserProjectResource.class);
         register(UserProjectExpeditionsResource.class);
+        register(AdminResource.class);
+        register(AdminProjectResource.class);
     }
 
     /**

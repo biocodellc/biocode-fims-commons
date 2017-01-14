@@ -128,24 +128,6 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     }
 
     /**
-     * Return a json representation to be used for select options of the projects that a user is an admin to
-     *
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Admin
-    @Path("/admin/list")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserAdminProjects() {
-        ProjectMinter project = new ProjectMinter();
-        JSONArray projects = project.getAdminProjects(userContext.getUser().getUsername());
-
-        return Response.ok(projects.toJSONString()).build();
-    }
-
-
-    /**
      * Service used for updating a project's configuration.
      *
      * @param projectID
