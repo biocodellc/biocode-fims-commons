@@ -25,9 +25,6 @@ import java.util.stream.Collectors;
 public class UserProjectResource extends FimsService {
     private final ProjectService projectService;
 
-    @PathParam("userId")
-    private int userId;
-
     @Autowired
     public UserProjectResource(ProjectService projectService, SettingsManager settingsManager) {
         super(settingsManager);

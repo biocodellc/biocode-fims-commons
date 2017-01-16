@@ -28,9 +28,6 @@ public class ExpeditionsResource extends FimsService {
     private final ExpeditionService expeditionService;
     private final ProjectService projectService;
 
-    @PathParam("projectId")
-    private int projectId;
-
     @Autowired
     public ExpeditionsResource(ExpeditionService expeditionService, ProjectService projectService,
                                SettingsManager settingsManager) {
@@ -41,7 +38,7 @@ public class ExpeditionsResource extends FimsService {
 
     @UserEntityGraph("User.withProjectsMemberOf")
     @GET
-    public List<Expedition> listExpeditions() {
+    public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {
         Project project = projectService.getProjectWithExpeditions(projectId);
 
         if (!project.isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), project)) {

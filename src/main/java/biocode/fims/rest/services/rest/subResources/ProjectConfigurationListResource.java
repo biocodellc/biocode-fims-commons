@@ -29,8 +29,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectConfigurationListResource extends FimsService {
 
-    @PathParam("projectId")
-    protected Integer projectId;
 
 
     @Autowired
@@ -46,7 +44,8 @@ public class ProjectConfigurationListResource extends FimsService {
     @GET
     @Path("/{listName}/fields")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Field> getListFields(@PathParam("listName") String listName) {
+    public List<Field> getListFields(@PathParam("projectId") Integer projectId,
+                                     @PathParam("listName") String listName) {
 
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 

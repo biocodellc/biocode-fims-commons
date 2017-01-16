@@ -22,12 +22,6 @@ import java.util.List;
 public class UserProjectExpeditionsResource extends FimsService {
     private final ExpeditionService expeditionService;
 
-    @PathParam("projectId")
-    private int projectId;
-
-    @PathParam("userId")
-    private int userId;
-
     @Autowired
     public UserProjectExpeditionsResource(ExpeditionService expeditionService, SettingsManager settingsManager) {
         super(settingsManager);
@@ -35,7 +29,9 @@ public class UserProjectExpeditionsResource extends FimsService {
     }
 
     @GET
-    public List<Expedition> listExpeditions(@QueryParam("includePrivate") @DefaultValue("true") Boolean includePrivate) {
+    public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId,
+                                            @PathParam("userId") Integer userId,
+                                            @QueryParam("includePrivate") @DefaultValue("true") Boolean includePrivate) {
 
         // provide backwards compatibility for the deprecated v1 api
         if (userId == 0 && userContext.getUser() != null) {

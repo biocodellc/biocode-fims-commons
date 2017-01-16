@@ -16,10 +16,6 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectConfigurationResource extends FimsService {
 
-    @PathParam("projectId")
-    private Integer projectId;
-
-
     @Autowired
     public ProjectConfigurationResource(SettingsManager settingsManager) {
         super(settingsManager);
