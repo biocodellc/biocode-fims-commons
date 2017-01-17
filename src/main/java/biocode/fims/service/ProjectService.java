@@ -131,7 +131,7 @@ public class ProjectService {
 
         for (Project project : projects) {
             if ((inludePublic && project.isPublic()) ||
-                    (isUserMemberOfProject(user, project.getProjectId()) && (!project.isPublic() || (inludePublic && project.isPublic())))) {
+                    isUserMemberOfProject(user, project.getProjectId())) {
                 filteredProjects.add(project);
             }
         }

@@ -188,7 +188,6 @@ public class User {
         this.email = email;
     }
 
-    @JsonIgnore // we aren't using this property maybe in the future?
     @JsonProperty("projectAdmin")
     @Column(nullable = false)
     public boolean isAdmin() {
