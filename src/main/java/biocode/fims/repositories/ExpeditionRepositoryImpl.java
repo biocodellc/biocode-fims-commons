@@ -1,7 +1,10 @@
 package biocode.fims.repositories;
 
+import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
+import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
 import biocode.fims.repositories.customOperations.ProjectCustomOperations;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,24 +13,24 @@ import java.util.List;
 /**
  * Implementation of ProjectCustomOperations
  */
-public class ProjectRepositoryImpl implements ProjectCustomOperations {
+public class ExpeditionRepositoryImpl implements ExpeditionCustomOperations {
+    private static int BATCH_SIZE = 100;
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager em;
 
+    @Transactional
     @Override
-    public Project getProjectByProjectId(int projectId, String entityGraph) {
-        return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectId = :id", Project.class)
-                .setParameter("id", projectId)
-                .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
-                .getSingleResult();
-    }
+    public void save(List<Expedition> expeditions) {
+        int i = 0;
+        for (Expedition expedition: expeditions) {
+            em.merge(expedition);
+            i++;
 
-    @Override
-    public List<Project> getAllByProjectUrl(String projectUrl, String entityGraph) {
-        return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectUrl= :url", Project.class)
-                .setParameter("url", projectUrl)
-                .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
-                .getResultList();
-    }
+            if (i % BATCH_SIZE == 0) {
+                em.flush();
+                em.clear();
+            }
+        }
 
+    }
 }

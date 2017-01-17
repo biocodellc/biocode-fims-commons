@@ -6,7 +6,9 @@ import biocode.fims.entities.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.ExpeditionRepository;
 import biocode.fims.settings.SettingsManager;
@@ -21,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service class for handling {@link Expedition} persistence
@@ -244,5 +247,34 @@ public class ExpeditionService {
 
     public List<Expedition> getPublicExpeditions(int projectId) {
         return expeditionRepository.findByPublicTrueAndProjectProjectId(projectId);
+    }
+
+    /**
+     * bulk update expeditions for a project
+     * @param expeditions
+     */
+    public void update(List<Expedition> expeditions, int projectId) {
+        if (!expeditionsBelongToProject(expeditions, projectId)) {
+            throw new FimsRuntimeException(ProjectCode.INVALID_EXPEDITION, 400);
+        }
+
+        expeditionRepository.save(expeditions);
+    }
+
+
+    /**
+     * check that all the expeditions belong to the project
+     *
+     * @param expeditions
+     * @param projectId
+     */
+    private boolean expeditionsBelongToProject(List<Expedition> expeditions, int projectId) {
+        List<Integer> expeditionIds = expeditions
+                .stream()
+                .map(Expedition::getExpeditionId)
+                .collect(Collectors.toList());
+
+        return expeditionIds.size() == expeditionRepository.countByExpeditionIdInAndProjectProjectId(expeditionIds, projectId);
+
     }
 }

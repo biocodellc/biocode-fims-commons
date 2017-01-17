@@ -10,6 +10,7 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.versioning.APIVersion;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
@@ -36,11 +38,26 @@ public class ProjectResource extends FimsService {
         this.projectService = projectService;
     }
 
+    /**
+     * Fetch all projects available to the current user
+     *
+     * @param includePublic If we should include public projects
+     * @param admin         Flag used to request projects the authenticated user is an admin for. Note: this flag
+     *                      takes precedence over all other query params
+     */
     @JsonView(Views.Detailed.class)
-    @UserEntityGraph("User.withProjectsMemberOf")
+    @UserEntityGraph("User.withProjectsAndProjectsMemberOf")
     @GET
-    public List<Project> listProjects() {
-        return projectService.getProjects(appRoot, userContext.getUser());
+    public List<Project> listProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
+                                      @QueryParam("admin") @DefaultValue("false") Flag admin) {
+        if (admin.isPresent()) {
+            return userContext.getUser().getProjects()
+                    .stream()
+                    .filter(p -> p.getProjectUrl().equals(appRoot))
+                    .collect(Collectors.toList());
+        }
+
+        return projectService.getProjects(appRoot, userContext.getUser(), includePublic);
     }
 
     /**
@@ -57,14 +74,10 @@ public class ProjectResource extends FimsService {
             throw new NotFoundException();
         }
 
-        if (includePublic) {
-            return listProjects();
-        } else {
-            if (userContext.getUser() == null) {
-                throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
-            }
-            return resourceContext.getResource(UserProjectResource.class).listProjects();
+        if (!includePublic && userContext.getUser() == null) {
+            throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
         }
+        return listProjects(includePublic, new Flag(null));
     }
 
     /**

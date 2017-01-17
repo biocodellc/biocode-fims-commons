@@ -8,11 +8,8 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.services.rest.subResources.AdminResource;
-import biocode.fims.rest.services.rest.subResources.UserProjectResource;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONObject;
 import org.springframework.util.StringUtils;
 
@@ -31,49 +28,6 @@ public abstract class FimsAbstractUserController extends FimsService {
     FimsAbstractUserController(UserService userService, SettingsManager settingsManager) {
         super(settingsManager);
         this.userService = userService;
-    }
-
-    /**
-     *
-     * @responseType biocode.fims.rest.services.rest.subResources.UserProjectResource
-     * @resourceTag Projects
-     */
-    @Path("{userId: [0-9]+}/projects")
-    public Resource getUserProjectResource() {
-        return Resource.from(UserProjectResource.class);
-    }
-
-    /**
-     * gets the UserProjectResource, passing in the userId from the current logged in user
-     * this is to maintain backwards compatibility with api v1
-     *
-     * @responseType biocode.fims.rest.services.rest.subResources.UserProjectResource
-     */
-    @Deprecated
-    @Path("projects")
-    public Resource getUserProjectResourceDeprecated() {
-        return Resource.from(UserProjectResource.class);
-    }
-
-    /**
-     *
-     * @responseType biocode.fims.rest.services.rest.subResources.AdminResource
-     */
-    @Path("{userId: [0-9]+}/admin")
-    public Resource getAdminResource() {
-        return Resource.from(AdminResource.class);
-    }
-
-    /**
-     * gets the AdminResource, passing in the userId from the current logged in user
-     * this is to maintain backwards compatibility with api v1
-     *
-     * @responseType biocode.fims.rest.services.rest.subResources.AdminResource
-     */
-    @Deprecated
-    @Path("admin")
-    public Resource getAdminResourceDeprecated() {
-        return Resource.from(AdminResource.class);
     }
 
     /**

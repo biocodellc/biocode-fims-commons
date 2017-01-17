@@ -19,7 +19,9 @@ import java.util.Set;
         @NamedEntityGraph(name = "User.withProjectsMemberOf",
                 attributeNodes = @NamedAttributeNode("projectsMemberOf")),
         @NamedEntityGraph(name = "User.withProjects",
-                attributeNodes = @NamedAttributeNode("projects"))
+                attributeNodes = @NamedAttributeNode("projects")),
+        @NamedEntityGraph(name = "User.withProjectsAndProjectsMemberOf",
+                attributeNodes = {@NamedAttributeNode("projects"), @NamedAttributeNode("projectsMemberOf")})
 })
 @Entity
 @Table(name = "users")

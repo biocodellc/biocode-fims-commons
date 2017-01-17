@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.ProjectRepository;
@@ -12,6 +13,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnitUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -85,6 +87,9 @@ public class ProjectService {
      * @return
      */
     public boolean isProjectAdmin(User user, int projectId) {
+        if (user == null) {
+            return false;
+        }
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projects")) {
             // TODO maybe fetch user using entityGraph here?
@@ -117,14 +122,16 @@ public class ProjectService {
      *
      * @param appRoot
      * @param user
+     * @param inludePublic
      * @return
      */
-    public List<Project> getProjects(String appRoot, User user) {
+    public List<Project> getProjects(String appRoot, User user, boolean inludePublic) {
         List<Project> projects = projectRepository.findAllByProjectUrl(appRoot);
         List<Project> filteredProjects = new ArrayList<>();
 
         for (Project project : projects) {
-            if (project.isPublic() || isUserMemberOfProject(user, project)) {
+            if ((inludePublic && project.isPublic()) ||
+                    (isUserMemberOfProject(user, project) && (!project.isPublic() || (inludePublic && project.isPublic())))) {
                 filteredProjects.add(project);
             }
         }

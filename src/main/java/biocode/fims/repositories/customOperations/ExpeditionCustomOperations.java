@@ -1,14 +1,12 @@
 package biocode.fims.repositories.customOperations;
 
-import biocode.fims.entities.Project;
+import biocode.fims.entities.Expedition;
 
 import java.util.List;
 
 /**
- * defines custom ProjectRepository operations
+ * defines custom ExpeditionRepository operations
  */
-public interface ProjectCustomOperations {
-    Project getProjectByProjectId(int projectId, String entityGraph);
-
-    List<Project> getAllByProjectUrl(String projectUrl, String entityGraph);
+public interface ExpeditionCustomOperations {
+    void save(List<Expedition> expeditions);
 }

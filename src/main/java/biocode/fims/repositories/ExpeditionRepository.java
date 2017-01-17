@@ -2,6 +2,7 @@ package biocode.fims.repositories;
 
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.User;
+import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -19,7 +20,7 @@ import java.util.Set;
  * This repositories provides CRUD operations for {@link User} objects
  */
 @Transactional
-public interface ExpeditionRepository extends Repository<Expedition, Integer>, JpaSpecificationExecutor {
+public interface ExpeditionRepository extends Repository<Expedition, Integer>, JpaSpecificationExecutor, ExpeditionCustomOperations {
 
     @Modifying
     void delete(Expedition expedition);
@@ -55,4 +56,6 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
     List<Expedition> getUserProjectExpeditions(@Param("projectId") int projectId, @Param("userId") int userId, @Param("includePrivate") boolean includePrivate);
 
+
+    Long countByExpeditionIdInAndProjectProjectId(List<Integer> expeditionIds, int projectId);
 }
