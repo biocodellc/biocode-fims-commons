@@ -1,8 +1,10 @@
 package biocode.fims.entities;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
@@ -123,6 +125,7 @@ public class User {
     User() {
     }
 
+    @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getUserId() {
@@ -133,6 +136,7 @@ public class User {
         this.userId = id;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(nullable = false, unique = true)
     public String getUsername() {
         return username;
@@ -152,6 +156,7 @@ public class User {
         this.password = password;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public boolean isEnabled() {
         return enabled;
@@ -161,6 +166,7 @@ public class User {
         this.enabled = enabled;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public boolean getHasSetPassword() {
         return hasSetPassword;
@@ -170,6 +176,7 @@ public class User {
         this.hasSetPassword = hasSetPassword;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getEmail() {
         return email;
@@ -179,6 +186,7 @@ public class User {
         this.email = email;
     }
 
+    @JsonIgnore // we aren't using this property maybe in the future?
     @JsonProperty("projectAdmin")
     @Column(nullable = false)
     public boolean isAdmin() {
@@ -189,6 +197,7 @@ public class User {
         this.admin = admin;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getInstitution() {
         return institution;
@@ -198,6 +207,7 @@ public class User {
         this.institution = institution;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getFirstName() {
         return firstName;
@@ -207,6 +217,7 @@ public class User {
         this.firstName = firstName;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getLastName() {
         return lastName;
@@ -216,6 +227,7 @@ public class User {
         this.lastName = lastName;
     }
 
+    @JsonIgnore
     @Transient
     public String getFullName() {
         return firstName + " " + lastName;

@@ -1,6 +1,7 @@
 package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.entities.Project;
+import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
@@ -9,6 +10,7 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.versioning.APIVersion;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -34,6 +36,7 @@ public class ProjectResource extends FimsService {
         this.projectService = projectService;
     }
 
+    @JsonView(Views.Detailed.class)
     @UserEntityGraph("User.withProjectsMemberOf")
     @GET
     public List<Project> listProjects() {
@@ -72,6 +75,7 @@ public class ProjectResource extends FimsService {
      * @responseType biocode.fims.entities.Project
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
+    @JsonView(Views.Detailed.class)
     @POST
     @Authenticated
     @Admin

@@ -1,9 +1,14 @@
 package biocode.fims.entities;
 
+import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,7 +35,7 @@ public class Project {
     private String validationXml;
     private boolean isPublic;
     private String projectUrl;
-    private Set<Expedition> expeditions;
+    private List<Expedition> expeditions;
     private User user;
     private Set<User> projectMembers;
     private Set<TemplateConfig> templateConfigs;
@@ -83,6 +88,7 @@ public class Project {
     Project() {
     }
 
+    @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getProjectId() {
@@ -93,6 +99,7 @@ public class Project {
         this.projectId = id;
     }
 
+    @JsonView(Views.Summary.class)
     public String getProjectCode() {
         return projectCode;
     }
@@ -101,6 +108,7 @@ public class Project {
         this.projectCode = projectCode;
     }
 
+    @JsonView(Views.Summary.class)
     public String getProjectTitle() {
         return projectTitle;
     }
@@ -109,6 +117,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(name = "abstract", columnDefinition = "text null")
     public String getProjectAbstract() {
         return projectAbstract;
@@ -118,6 +127,7 @@ public class Project {
         this.projectAbstract = projectAbstract;
     }
 
+    @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTs() {
         return ts;
@@ -127,6 +137,7 @@ public class Project {
         this.ts = ts;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getValidationXml() {
         return validationXml;
@@ -146,6 +157,7 @@ public class Project {
         this.projectUrl = projectUrl;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(name = "public",
             nullable = false)
     public boolean isPublic() {
@@ -206,17 +218,20 @@ public class Project {
                 '}';
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "project",
             fetch = FetchType.LAZY
     )
-    public Set<Expedition> getExpeditions() {
+    public List<Expedition> getExpeditions() {
         return expeditions;
     }
 
-    public void setExpeditions(Set<Expedition> expeditions) {
+    public void setExpeditions(List<Expedition> expeditions) {
         this.expeditions = expeditions;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",
@@ -232,6 +247,7 @@ public class Project {
         this.user = user;
     }
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "projectsMemberOf",
             fetch = FetchType.LAZY
     )
@@ -243,6 +259,7 @@ public class Project {
         this.projectMembers = projectMembers;
     }
 
+    @JsonIgnore
     @OneToMany(mappedBy = "project",
             fetch = FetchType.LAZY
     )

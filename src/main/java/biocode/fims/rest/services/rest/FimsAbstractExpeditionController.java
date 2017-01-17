@@ -11,9 +11,11 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -57,6 +59,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
      *
      * @return
      */
+    @JsonView(Views.Detailed.class)
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)

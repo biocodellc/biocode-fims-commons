@@ -41,6 +41,8 @@ public class ProjectService {
     }
 
     public void update(Project project) {
+        Project p = getProject(project.getProjectId());
+        project.setProjectUrl(p.getProjectUrl());
         projectRepository.save(project);
     }
 
@@ -112,6 +114,7 @@ public class ProjectService {
 
     /**
      * get a list of projects for the current appRoot which are public, or the user is a member of
+     *
      * @param appRoot
      * @param user
      * @return
@@ -120,7 +123,7 @@ public class ProjectService {
         List<Project> projects = projectRepository.findAllByProjectUrl(appRoot);
         List<Project> filteredProjects = new ArrayList<>();
 
-        for (Project project: projects) {
+        for (Project project : projects) {
             if (project.isPublic() || isUserMemberOfProject(user, project)) {
                 filteredProjects.add(project);
             }

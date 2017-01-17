@@ -5,9 +5,11 @@ import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -36,6 +38,7 @@ public class ExpeditionsResource extends FimsService {
         this.projectService = projectService;
     }
 
+    @JsonView(Views.Detailed.class)
     @UserEntityGraph("User.withProjectsMemberOf")
     @GET
     public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId) {

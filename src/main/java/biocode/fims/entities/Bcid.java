@@ -3,8 +3,11 @@ package biocode.fims.entities;
 import biocode.fims.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
@@ -122,6 +125,7 @@ public class Bcid {
     Bcid() {
     }
 
+    @JsonView(Views.Detailed.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getBcidId() {
@@ -132,6 +136,7 @@ public class Bcid {
         this.bcidId = id;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(columnDefinition = "bit")
     public boolean isEzidMade() {
         return ezidMade;
@@ -141,6 +146,7 @@ public class Bcid {
         this.ezidMade = ezidMade;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(columnDefinition = "bit not null")
     public boolean isEzidRequest() {
         return ezidRequest;
@@ -150,6 +156,7 @@ public class Bcid {
         this.ezidRequest = ezidRequest;
     }
 
+    @JsonView(Views.Summary.class)
     @Convert(converter = UriPersistenceConverter.class)
     public URI getIdentifier() {
         return identifier;
@@ -160,6 +167,7 @@ public class Bcid {
             this.identifier = identifier;
     }
 
+    @JsonView(Views.Detailed.class)
     public String getDoi() {
         return doi;
     }
@@ -168,6 +176,7 @@ public class Bcid {
         this.doi = doi;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(columnDefinition = "text")
     public String getTitle() {
         return title;
@@ -177,6 +186,7 @@ public class Bcid {
         this.title = title;
     }
 
+    @JsonView(Views.Detailed.class)
     @Convert(converter = UriPersistenceConverter.class)
     public URI getWebAddress() {
         // TODO move the following to the BcidService.create after all Bcid creation is done via BcidService class
@@ -193,6 +203,7 @@ public class Bcid {
         return webAddress;
     }
 
+    @JsonView(Views.Summary.class)
     public String getSubResourceType() {
         return subResourceType;
     }
@@ -249,6 +260,7 @@ public class Bcid {
         this.webAddress = webAddress;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(nullable = false)
     public String getResourceType() {
         return resourceType;
@@ -258,6 +270,7 @@ public class Bcid {
         this.resourceType = resourceType;
     }
 
+    @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTs() {
         return ts;
@@ -267,6 +280,7 @@ public class Bcid {
         this.ts = ts;
     }
 
+    @JsonView(Views.Detailed.class)
     public String getGraph() {
         return graph;
     }
@@ -275,6 +289,7 @@ public class Bcid {
         this.graph = graph;
     }
 
+    @JsonView(Views.Detailed.class)
     public String getSourceFile() {
         return sourceFile;
     }
@@ -283,6 +298,7 @@ public class Bcid {
         this.sourceFile = sourceFile;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(columnDefinition = "bit not null")
     public boolean isFinalCopy() {
         return finalCopy;
@@ -312,6 +328,8 @@ public class Bcid {
                 '}';
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "expeditionId")
     @JsonIdentityReference(alwaysAsId = true)
@@ -329,6 +347,8 @@ public class Bcid {
         this.expedition = expedition;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
     @JsonIdentityReference(alwaysAsId = true)

@@ -1,7 +1,11 @@
 package biocode.fims.entities;
 
+import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.OAuthTokenSerializer;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.OAuthProviderService;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.persistence.*;
@@ -36,6 +40,7 @@ public class OAuthToken {
     OAuthToken() {
     }
 
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getoAuthTokenId() {
@@ -46,6 +51,7 @@ public class OAuthToken {
         this.oAuthTokenId = oAuthTokenId;
     }
 
+    @JsonView(Views.Summary.class)
     public String getToken() {
         return token;
     }
@@ -54,6 +60,7 @@ public class OAuthToken {
         this.token = token;
     }
 
+    @JsonView(Views.Summary.class)
     public String getRefreshToken() {
         return refreshToken;
     }
@@ -62,6 +69,7 @@ public class OAuthToken {
         this.refreshToken = refreshToken;
     }
 
+    @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTs() {
         return ts;
@@ -95,6 +103,8 @@ public class OAuthToken {
         return result;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
@@ -108,6 +118,8 @@ public class OAuthToken {
         this.user = user;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "clientId",
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_clientId"),
@@ -120,6 +132,7 @@ public class OAuthToken {
         this.oAuthClient = oAuthClient;
     }
 
+    @JsonView(Views.Summary.class)
     @Transient
     public String getState() {
         return state;

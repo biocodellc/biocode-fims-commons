@@ -3,8 +3,10 @@ package biocode.fims.rest.services.rest.subResources;
 import biocode.fims.entities.Expedition;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -28,6 +30,7 @@ public class UserProjectExpeditionsResource extends FimsService {
         this.expeditionService = expeditionService;
     }
 
+    @JsonView(Views.Detailed.class)
     @GET
     public List<Expedition> listExpeditions(@PathParam("projectId") Integer projectId,
                                             @PathParam("userId") Integer userId,

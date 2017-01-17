@@ -4,8 +4,10 @@ import biocode.fims.entities.Project;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,6 +48,7 @@ public class UserProjectResource extends FimsService {
      *
      * @return
      */
+    @JsonView(Views.Detailed.class)
     @UserEntityGraph("User.withProjectsMemberOf")
     @GET
     public List<Project> listProjects() {

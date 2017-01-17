@@ -1,5 +1,9 @@
 package biocode.fims.entities;
 
+import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.serializers.Views;
+import com.fasterxml.jackson.annotation.JsonView;
+
 import javax.persistence.*;
 
 /**
@@ -18,6 +22,7 @@ public class TemplateConfig {
 
     TemplateConfig() {}
 
+    @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     public int getTemplateConfigId() {
@@ -28,6 +33,7 @@ public class TemplateConfig {
         this.templateConfigId = id;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(nullable = false)
     public String getConfigName() {
         return configName;
@@ -37,6 +43,7 @@ public class TemplateConfig {
         this.configName = configName;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(name="public")
     public boolean getIsPublic() {
         return isPublic;
@@ -46,6 +53,7 @@ public class TemplateConfig {
         this.isPublic = isPublic;
     }
 
+    @JsonView(Views.Detailed.class)
     @Column(columnDefinition = "mediumtext not null")
     public String getConfig() {
         return config;
@@ -94,6 +102,8 @@ public class TemplateConfig {
                 '}';
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "projectId",
             referencedColumnName = "projectId",
@@ -108,6 +118,8 @@ public class TemplateConfig {
         this.project = project;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",

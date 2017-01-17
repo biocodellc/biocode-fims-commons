@@ -1,8 +1,8 @@
 package biocode.fims.entities;
 
+import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -67,6 +67,7 @@ public class Expedition {
     // needed for hibernate
     Expedition() {}
 
+    @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getExpeditionId() {
@@ -77,6 +78,7 @@ public class Expedition {
         this.expeditionId = id;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(nullable = false)
     public String getExpeditionCode() {
         return expeditionCode;
@@ -86,6 +88,7 @@ public class Expedition {
         this.expeditionCode = expeditionCode;
     }
 
+    @JsonView(Views.Summary.class)
     public String getExpeditionTitle() {
         return expeditionTitle;
     }
@@ -94,6 +97,7 @@ public class Expedition {
         this.expeditionTitle = expeditionTitle;
     }
 
+    @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getTs() {
         return ts;
@@ -103,6 +107,7 @@ public class Expedition {
         this.ts = ts;
     }
 
+    @JsonView(Views.Summary.class)
     @Column(name = "public",
             nullable = false)
     public boolean isPublic() {
@@ -169,9 +174,11 @@ public class Expedition {
         this.bcids = bcids;
     }
 
-    @JsonProperty(value = "projectId")
+//    @JsonProperty(value = "projectId")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "projectId")
-    @JsonIdentityReference(alwaysAsId = true)
+//    @JsonIdentityReference(alwaysAsId = true)
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "projectId",
             referencedColumnName = "projectId",
@@ -186,9 +193,11 @@ public class Expedition {
     }
 
 
-    @JsonProperty(value = "userId")
+//    @JsonProperty(value = "userId")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
-    @JsonIdentityReference(alwaysAsId = true)
+//    @JsonIdentityReference(alwaysAsId = true)
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
@@ -202,9 +211,11 @@ public class Expedition {
         this.user = user;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @Transient
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
-    @JsonIdentityReference(alwaysAsId = true)
+//    @JsonIdentityReference(alwaysAsId = true)
     public Bcid getExpeditionBcid() {
         return expeditionBcid;
     }
@@ -213,6 +224,8 @@ public class Expedition {
         expeditionBcid = bcid;
     }
 
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
     @Transient
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
     public List<Bcid> getEntityBcids() {

@@ -5,8 +5,10 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.AuthenticatedUserResource;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -35,6 +37,7 @@ public class AdminProjectResource extends FimsService {
     /**
      * Get a list of projects where the user is an admin
      */
+    @JsonView(Views.Detailed.class)
     @UserEntityGraph("User.withProjects")
     @GET
     public List<Project> listProjects() {
