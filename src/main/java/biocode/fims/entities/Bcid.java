@@ -331,8 +331,6 @@ public class Bcid {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "expeditionId")
-    @JsonIdentityReference(alwaysAsId = true)
     @JoinTable(name = "expeditionBcids",
             joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
             inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
@@ -350,8 +348,6 @@ public class Bcid {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
-    @JsonIdentityReference(alwaysAsId = true)
     @JoinColumn(name = "userId",
             referencedColumnName = "userId",
             foreignKey = @ForeignKey(name = "FK_bcids_userId"),

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 
 import java.io.IOException;
 
@@ -13,7 +14,7 @@ import java.io.IOException;
  * view of a parent object.
  * @author RJ Ewing
  */
-public class JsonViewOverrideSerializer extends JsonSerializer implements ContextualSerializer {
+public class JsonViewOverrideSerializer extends JsonSerializer implements ContextualSerializer, ResolvableSerializer {
     private final JsonSerializer beanSerializer;
     private final Class overrideView;
 
@@ -59,5 +60,14 @@ public class JsonViewOverrideSerializer extends JsonSerializer implements Contex
         }
 
         return serializer;
+    }
+
+    @Override
+    public void resolve(SerializerProvider provider) throws JsonMappingException {
+        if ((beanSerializer != null)
+                && (beanSerializer instanceof ResolvableSerializer)) {
+            ((ResolvableSerializer) beanSerializer).resolve(provider);
+        }
+
     }
 }

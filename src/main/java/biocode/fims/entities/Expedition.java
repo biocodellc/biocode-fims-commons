@@ -174,9 +174,6 @@ public class Expedition {
         this.bcids = bcids;
     }
 
-//    @JsonProperty(value = "projectId")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "projectId")
-//    @JsonIdentityReference(alwaysAsId = true)
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
@@ -193,9 +190,6 @@ public class Expedition {
     }
 
 
-//    @JsonProperty(value = "userId")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "userId")
-//    @JsonIdentityReference(alwaysAsId = true)
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
@@ -214,8 +208,6 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @Transient
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
-//    @JsonIdentityReference(alwaysAsId = true)
     public Bcid getExpeditionBcid() {
         return expeditionBcid;
     }
@@ -227,7 +219,6 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @Transient
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "identifier")
     public List<Bcid> getEntityBcids() {
         return entityBcids;
     }
