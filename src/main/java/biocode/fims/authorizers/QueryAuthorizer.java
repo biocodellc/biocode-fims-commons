@@ -92,7 +92,7 @@ public class QueryAuthorizer {
         if (user == null) {
             return project.isPublic();
         }
-        return projectService.isUserMemberOfProject(user, project);
+        return projectService.isUserMemberOfProject(user, project.getProjectId());
     }
 
     /**

@@ -37,7 +37,7 @@ public class Project {
     private String projectUrl;
     private List<Expedition> expeditions;
     private User user;
-    private Set<User> projectMembers;
+    private List<User> projectMembers;
     private Set<TemplateConfig> templateConfigs;
 
     public static class ProjectBuilder {
@@ -251,11 +251,11 @@ public class Project {
     @ManyToMany(mappedBy = "projectsMemberOf",
             fetch = FetchType.LAZY
     )
-    public Set<User> getProjectMembers() {
+    public List<User> getProjectMembers() {
         return projectMembers;
     }
 
-    public void setProjectMembers(Set<User> projectMembers) {
+    public void setProjectMembers(List<User> projectMembers) {
         this.projectMembers = projectMembers;
     }
 

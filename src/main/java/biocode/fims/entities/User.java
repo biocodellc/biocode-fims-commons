@@ -148,7 +148,7 @@ public class User {
         this.username = username;
     }
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     public String getPassword() {
         return password;

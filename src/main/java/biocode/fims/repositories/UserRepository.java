@@ -10,6 +10,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,7 +22,7 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
     @Modifying
     void delete(User user);
 
-    void save(User user);
+    User save(User user);
 
     User findByUserId(int userId);
 
@@ -30,7 +31,7 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
     @Query("select u from User u where u.passwordResetToken = :resetToken and u.passwordResetExpiration > current_timestamp")
     User findOneByResetToken(@Param("resetToken") String resetToken);
 
-    Set<User> findAll();
+    List<User> findAll();
 
     @EntityGraph(value = "User.withProjectsMemberOf", type = EntityGraph.EntityGraphType.LOAD)
     @Query("select u from User u where u.username = :username")

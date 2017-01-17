@@ -54,7 +54,7 @@ public class ProjectService {
 
 
     @Transactional(readOnly = true)
-    public boolean isUserMemberOfProject(User user, Project project) {
+    public boolean isUserMemberOfProject(User user, int projectId) {
         if (user == null) return false;
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
@@ -63,7 +63,7 @@ public class ProjectService {
         }
 
         for (Project userProject : user.getProjectsMemberOf()) {
-            if (userProject.equals(project)) {
+            if (userProject.getProjectId() == projectId) {
                 return true;
             }
         }
@@ -131,7 +131,7 @@ public class ProjectService {
 
         for (Project project : projects) {
             if ((inludePublic && project.isPublic()) ||
-                    (isUserMemberOfProject(user, project) && (!project.isPublic() || (inludePublic && project.isPublic())))) {
+                    (isUserMemberOfProject(user, project.getProjectId()) && (!project.isPublic() || (inludePublic && project.isPublic())))) {
                 filteredProjects.add(project);
             }
         }

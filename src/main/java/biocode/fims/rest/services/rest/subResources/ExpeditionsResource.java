@@ -70,7 +70,7 @@ public class ExpeditionsResource extends FimsService {
             return project.getExpeditions();
         }
 
-        if (!project.isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), project)) {
+        if (!project.isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), project.getProjectId())) {
             throw new ForbiddenRequestException("You are not a member of this private project");
         }
 

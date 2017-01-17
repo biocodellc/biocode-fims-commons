@@ -56,7 +56,7 @@ public class ExpeditionService {
         expedition.setProject(project);
         expedition.setUser(user);
 
-        if (!projectService.isUserMemberOfProject(user, project))
+        if (!projectService.isUserMemberOfProject(user, project.getProjectId()))
             throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
 
         try {

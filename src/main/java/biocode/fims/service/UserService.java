@@ -3,9 +3,12 @@ package biocode.fims.service;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.StringGenerator;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 
@@ -37,15 +41,29 @@ public class UserService {
         this.settingsManager = settingsManager;
     }
 
-    public void create(User user, int projectId) {
-        userRepository.save(user);
-        entityManager.refresh(user);
-
-        addUserToProject(user, projectId);
+    public User create(User user) {
+        return userRepository.save(user);
     }
 
-    public void update(User user) {
-        userRepository.save(user);
+    public User update(User user) {
+        User existingUser = getUser(user.getUsername());
+        if (existingUser == null) {
+            throw new FimsRuntimeException("user not found", 404);
+        }
+        updateExistingUser(existingUser, user);
+        return userRepository.save(existingUser);
+    }
+
+    private void updateExistingUser(User existingUser, User newUser) {
+        if (!StringUtils.isEmpty(newUser.getPassword())) {
+            //user is updating their password, so we need to hash it
+            existingUser.setPassword(PasswordHash.createHash(newUser.getPassword()));
+        }
+
+        existingUser.setFirstName(newUser.getFirstName());
+        existingUser.setLastName(newUser.getLastName());
+        existingUser.setEmail(newUser.getEmail());
+        existingUser.setInstitution(newUser.getInstitution());
     }
 
     @Transactional(readOnly = true)
@@ -72,12 +90,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Set<User> getUsers() {
+    public List<User> getUsers() {
         return userRepository.findAll();
     }
 
     /**
      * checks to see if the user is a member of a Project that exists for this biocode-fims instance
+     *
      * @param user
      * @return
      */
@@ -85,7 +104,7 @@ public class UserService {
     public boolean userBelongsToInstanceProject(User user) {
         String appRoot = settingsManager.retrieveValue("appRoot");
 
-        for (Project project: user.getProjectsMemberOf()) {
+        for (Project project : user.getProjectsMemberOf()) {
             if (project.getProjectUrl().equals(appRoot))
                 return true;
         }
@@ -95,19 +114,8 @@ public class UserService {
     }
 
     /**
-     * add a {@link} to a {@link Project}
-     * @param user
-     * @param projectId
-     */
-    public void addUserToProject(User user, int projectId) {
-        Project project = entityManager.getReference(Project.class, projectId);
-        user.getProjectsMemberOf().add(project);
-
-        userRepository.save(user);
-    }
-
-    /**
      * Find a user given a resetToken. A {@link User} will be returned if the resetToken exists and has not expired
+     *
      * @param resetToken
      * @return
      */
@@ -133,6 +141,7 @@ public class UserService {
 
     /**
      * checks to see if the user is an admin of any project
+     *
      * @param user
      * @return
      */

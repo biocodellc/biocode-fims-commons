@@ -8,9 +8,7 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.services.rest.subResources.ExpeditionsResource;
-import biocode.fims.rest.services.rest.subResources.ProjectConfigurationResource;
-import biocode.fims.rest.services.rest.subResources.ProjectResource;
+import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
@@ -52,7 +50,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      */
     @Path("/")
     public Resource getProjectResource() {
-        return Resource.from(ProjectResource.class);
+        return Resource.from(ProjectsResource.class);
     }
 
     /**
@@ -299,8 +297,17 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      * @resourceTag Expeditions
      */
     @Path("{projectId}/expeditions")
-    public Resource getUserProjectResource() {
+    public Resource getExpeditionsResource() {
         return Resource.from(ExpeditionsResource.class);
+    }
+
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectMemberssResource
+     */
+    @Path("{projectId}/members")
+    public Resource getProjectMembersResource() {
+        return Resource.from(ProjectMembersResource.class);
     }
 
     /**

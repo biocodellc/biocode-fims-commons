@@ -4,6 +4,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
 import biocode.fims.repositories.customOperations.ProjectCustomOperations;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -23,7 +24,7 @@ public class ExpeditionRepositoryImpl implements ExpeditionCustomOperations {
     public void save(List<Expedition> expeditions) {
         int i = 0;
         for (Expedition expedition: expeditions) {
-            em.merge(expedition);
+            persistOrMerge(persistOrMerge(expedition));
             i++;
 
             if (i % BATCH_SIZE == 0) {
@@ -32,5 +33,14 @@ public class ExpeditionRepositoryImpl implements ExpeditionCustomOperations {
             }
         }
 
+    }
+
+    private Expedition persistOrMerge(Expedition expedition) {
+        if (expedition.getExpeditionId() == 0) {
+            em.persist(expedition);
+            return expedition;
+        } else {
+            return em.merge(expedition);
+        }
     }
 }

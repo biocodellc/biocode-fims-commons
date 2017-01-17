@@ -28,12 +28,12 @@ import java.util.stream.Collectors;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ProjectResource extends FimsService {
+public class ProjectsResource extends FimsService {
     private final ProjectService projectService;
 
     @Autowired
-    public ProjectResource(ProjectService projectService,
-                           SettingsManager settingsManager) {
+    public ProjectsResource(ProjectService projectService,
+                            SettingsManager settingsManager) {
         super(settingsManager);
         this.projectService = projectService;
     }
@@ -93,7 +93,6 @@ public class ProjectResource extends FimsService {
     @Authenticated
     @Admin
     @Path("/{projectId}/")
-    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateConfig(@PathParam("projectId") Integer projectId,
                                  Project project) {

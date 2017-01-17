@@ -2,14 +2,17 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.rest.services.rest.subResources.UsersResource;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONObject;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +34,15 @@ public abstract class FimsAbstractUserController extends FimsService {
     }
 
     /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.UsersResource
+     */
+    @Path("/")
+    public Resource getProjectResource() {
+        return Resource.from(UsersResource.class);
+    }
+
+    /**
      * Service to create a new user.
      *
      * @param createUser
@@ -42,6 +54,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      * @param projectId
      * @return
      */
+    @Deprecated
     @POST
     @Authenticated
     @Admin
@@ -84,7 +97,7 @@ public abstract class FimsAbstractUserController extends FimsService {
                 .institution(institution)
                 .build();
 
-        userService.create(newUser, projectId);
+        userService.create(newUser);
 
         return Response.ok("{\"success\": \"successfully created new user\"}").build();
     }
@@ -101,6 +114,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      * @param returnTo
      * @returns either error message or the url to redirect to upon success
      */
+    @Deprecated
     @POST
     @Authenticated
     @Path("/profile/update")
