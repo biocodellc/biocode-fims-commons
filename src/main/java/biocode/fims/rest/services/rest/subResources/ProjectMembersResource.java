@@ -5,6 +5,7 @@ import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
@@ -42,6 +43,7 @@ public class ProjectMembersResource extends FimsService {
      * @param projectId
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @JsonView(Views.Summary.class)
     @GET
     @Authenticated
@@ -62,6 +64,7 @@ public class ProjectMembersResource extends FimsService {
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      * @responseMessage 404 user not found as project member `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @Path("{username}")
     @DELETE
     @Authenticated
@@ -77,18 +80,16 @@ public class ProjectMembersResource extends FimsService {
             throw new FimsRuntimeException("user not found as project member", 404);
         }
 
-        Project projectToRemove = null;
-        for (Project project : user.getProjectsMemberOf()) {
-            if (project.getProjectId() == projectId) {
-                projectToRemove = project;
-            }
+        Project project = projectService.getProjectWithMembers(projectId);
+
+        if (project != null) {
+            project.getProjectMembers().remove(user);
+            user.getProjectsMemberOf().remove(project);
+            // not sure why, but this only works by updating the user, not the project. Need to investigate the possibility
+            // of a hibernate bug. A bi-directional relationship should be able to be updated from either side
+            userService.update(user);
         }
 
-        if (projectToRemove != null) {
-            user.getProjectsMemberOf().remove(projectToRemove);
-        }
-
-        userService.update(user);
 
         return Response.noContent().build();
     }
@@ -102,6 +103,7 @@ public class ProjectMembersResource extends FimsService {
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      * @responseMessage 404 user not found `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @Path("{username}")
     @PUT
     @Authenticated
@@ -117,12 +119,11 @@ public class ProjectMembersResource extends FimsService {
             throw new FimsRuntimeException("user not found", 404);
         }
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectWithMembers(projectId);
+        project.getProjectMembers().add(user);
         user.getProjectsMemberOf().add(project);
-
         userService.update(user);
 
         return Response.noContent().build();
     }
-
 }

@@ -230,7 +230,6 @@ public class Project {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "projectsMemberOf",
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             fetch = FetchType.LAZY
     )
     public List<User> getProjectMembers() {

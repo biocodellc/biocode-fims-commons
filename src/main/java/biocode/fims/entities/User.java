@@ -290,7 +290,7 @@ public class User {
             joinColumns = @JoinColumn(name = "userId", referencedColumnName = "userId"),
             inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "projectId"),
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
-            inverseForeignKey = @ForeignKey(name = "userProjects_ibfk_1")
+            inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
     )
     public List<Project> getProjectsMemberOf() {
         return projectsMemberOf;
