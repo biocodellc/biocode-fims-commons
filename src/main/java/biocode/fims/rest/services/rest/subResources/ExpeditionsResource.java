@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,13 +46,13 @@ public class ExpeditionsResource extends FimsService {
      * @param projectId      The project to get expeditions for
      * @param admin          If present, all expeditions will be returned, regardless of the expedition owner. Note: this flag
      *                       takes precedence over all other query params
-     * @param user           If present, only the projects for the authenticated user will be returned
+     * @param user           If present, only the expeditions for the authenticated user will be returned
      * @param includePrivate Include the authenticated users private expeditions in the results
      * @responseMessage 403 Invalid request. Either using admin flag and user is not the project admin, or requesting
      * expeditions for a private project that the user is not a member of. `biocode.fims.utils.ErrorInfo
      */
     @JsonView(Views.Detailed.class)
-    @UserEntityGraph("User.withProjectsMemberOf")
+    @UserEntityGraph("User.withProjectsAndProjectsMemberOf")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -101,6 +102,7 @@ public class ExpeditionsResource extends FimsService {
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      * @responseMessage 400 A given expedition does not belong to the project `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @PUT
     @Authenticated
     @Admin
@@ -115,6 +117,26 @@ public class ExpeditionsResource extends FimsService {
         expeditionService.update(expeditions, projectId);
 
         return expeditions;
+    }
+
+    @UserEntityGraph("User.withProjectsMemberOf")
+    @JsonView(Views.Detailed.class)
+    @GET
+    @Path("/{expeditionCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Expedition getExpedition(@PathParam("projectId") Integer projectId,
+                                    @PathParam("expeditionCode") String expeditionCode) {
+        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+
+        if (expedition == null) {
+            return expedition;
+        }
+
+        if (expedition.getProject().isPublic() || !projectService.isUserMemberOfProject(userContext.getUser(), expedition.getProject().getProjectId())) {
+            throw new ForbiddenRequestException("You are not a member of this private project");
+        }
+
+        return expedition;
     }
 
 }
