@@ -3,12 +3,10 @@ package biocode.fims.service;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
-import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.StringGenerator;
-import org.apache.commons.lang.StringUtils;
+import biocode.fims.utils.StringGenerator; import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,6 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -46,24 +43,7 @@ public class UserService {
     }
 
     public User update(User user) {
-        User existingUser = getUser(user.getUsername());
-        if (existingUser == null) {
-            throw new FimsRuntimeException("user not found", 404);
-        }
-        updateExistingUser(existingUser, user);
-        return userRepository.save(existingUser);
-    }
-
-    private void updateExistingUser(User existingUser, User newUser) {
-        if (!StringUtils.isEmpty(newUser.getPassword())) {
-            //user is updating their password, so we need to hash it
-            existingUser.setPassword(PasswordHash.createHash(newUser.getPassword()));
-        }
-
-        existingUser.setFirstName(newUser.getFirstName());
-        existingUser.setLastName(newUser.getLastName());
-        existingUser.setEmail(newUser.getEmail());
-        existingUser.setInstitution(newUser.getInstitution());
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
@@ -104,6 +84,11 @@ public class UserService {
     public boolean userBelongsToInstanceProject(User user) {
         String appRoot = settingsManager.retrieveValue("appRoot");
 
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
+            user = getUserWithMemberProjects(user.getUsername());
+        }
+
         for (Project project : user.getProjectsMemberOf()) {
             if (project.getProjectUrl().equals(appRoot))
                 return true;
@@ -124,7 +109,7 @@ public class UserService {
     }
 
     public User generateResetToken(String username) {
-        User user = getUser(username);
+        User user = getUserWithMemberProjects(username);
 
         if (user != null) {
             StringGenerator sg = new StringGenerator();

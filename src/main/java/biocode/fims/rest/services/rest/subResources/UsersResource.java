@@ -3,6 +3,7 @@ package biocode.fims.rest.services.rest.subResources;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
@@ -138,13 +139,36 @@ public class UsersResource extends FimsService {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 
-        user.setUsername(username);
+        User existingUser = userService.getUser(username);
+        if (existingUser == null) {
+            throw new FimsRuntimeException("user not found", 404);
+        }
 
         if (!isValidUser(user, false)) {
             throw new BadRequestException("firstName, lastName, email, and institution are required");
         }
 
-        return userService.update(user);
+        updateExistingUser(existingUser, user);
+        return userService.update(existingUser);
+    }
+
+    /**
+     * method to transfer the updated {@link User} object to an existing {@link User}. This
+     * allows us to control which properties can be updated.
+     * Currently allows updating of the following properties : password, firstName, lastName, email, and institution
+     * @param existingUser
+     * @param newUser
+     */
+    private void updateExistingUser(User existingUser, User newUser) {
+        if (!org.apache.commons.lang.StringUtils.isEmpty(newUser.getPassword())) {
+            //user is updating their password, so we need to hash it
+            existingUser.setPassword(PasswordHash.createHash(newUser.getPassword()));
+        }
+
+        existingUser.setFirstName(newUser.getFirstName());
+        existingUser.setLastName(newUser.getLastName());
+        existingUser.setEmail(newUser.getEmail());
+        existingUser.setInstitution(newUser.getInstitution());
     }
 
     /**
