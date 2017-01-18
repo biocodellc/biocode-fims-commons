@@ -47,16 +47,21 @@ public class EmailUtils {
     public static void sendAdminEmail(String subject, String text) {
         sendEmail(
                 username,
+                null,
                 subject,
                 text
         );
 
     }
 
+    public static void sendEmail(String to, String subject, String text) {
+        sendEmail(to, null, subject, text);
+    }
+
     /**
      * send an email
      */
-    public static void sendEmail(String to, String subject, String text) {
+    public static void sendEmail(String to, String[] cc, String subject, String text) {
         new Thread(() -> {
             Session session = Session.getInstance(props,
                     new javax.mail.Authenticator() {
@@ -75,13 +80,23 @@ public class EmailUtils {
             // two lines we set the email subject and the content text.
             //
 
-            Message message = new MimeMessage(session);
             try {
+                Address[] ccAddresses = null;
+                if (cc != null) {
+                    ccAddresses = new InternetAddress[cc.length];
+
+                    for (int i = 0; i < cc.length; i++) {
+                        ccAddresses[i] = new InternetAddress(cc[i]);
+                    }
+                }
+
+                Message message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(from));
 
                 message.setRecipient(Message.RecipientType.TO,
                         new InternetAddress(to));
                 message.setSubject("[Biocode-Fims Application] " + subject);
+                message.setRecipients(Message.RecipientType.CC, ccAddresses);
                 message.setText(text);
 
                 //

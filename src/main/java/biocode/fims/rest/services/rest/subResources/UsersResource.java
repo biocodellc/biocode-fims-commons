@@ -1,25 +1,27 @@
 package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.auth.PasswordHash;
-import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author RJ Ewing
@@ -28,11 +30,13 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class UsersResource extends FimsService {
     private final UserService userService;
+    private final MessageSource messageSource;
 
     @Autowired
-    public UsersResource(UserService userService, SettingsManager settingsManager) {
+    public UsersResource(UserService userService, MessageSource messageSource, SettingsManager settingsManager) {
         super(settingsManager);
         this.userService = userService;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -40,6 +44,7 @@ public class UsersResource extends FimsService {
      *
      * @responseMessage 403 you are not a project admin `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
     @GET
     @Admin
@@ -53,6 +58,7 @@ public class UsersResource extends FimsService {
      * @responseMessage 403 you must be authenticated to access a users profile `biocode.fims.utils.ErrorInfo
      * @responseMessage 403 you must be a project admin to access another user's profile `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
     @Path("/{username}")
     @GET
@@ -66,7 +72,13 @@ public class UsersResource extends FimsService {
         return userService.getUser(username);
     }
 
+    /**
+     * create a new user, and send an email to the new user with login information
+     * @param user
+     * @responseMessage 400 invalid user object `biocode.fims.utils.ErrorInfo
+     */
     @JsonView(Views.Detailed.class)
+    @UserEntityGraph("User.withProjects")
     @POST
     @Admin
     @Authenticated
@@ -85,10 +97,26 @@ public class UsersResource extends FimsService {
             throw new BadRequestException("username already exists");
         }
 
-        // hash the users password
-        user.setPassword(PasswordHash.createHash(user.getPassword()));
+        String password = user.getPassword();
 
-        return userService.create(user);
+        // hash the users password
+        user.setPassword(PasswordHash.createHash(password));
+        user = userService.create(user);
+
+        EmailUtils.sendEmail(
+                user.getEmail(),
+                new String[] {userContext.getUser().getEmail()},
+                messageSource.getMessage(
+                        "NewUserEmail__SUBJECT",
+                        null,
+                        Locale.US),
+                messageSource.getMessage(
+                        "NewUserEmail__BODY",
+                        new Object[] {appRoot, user.getUsername(), password},
+                        Locale.US)
+        );
+
+        return user;
     }
 
     /**
@@ -99,6 +127,7 @@ public class UsersResource extends FimsService {
      * @responseMessage 403 you must be a project admin to update another user's profile `biocode.fims.utils.ErrorInfo
      */
     @JsonView(Views.Detailed.class)
+    @UserEntityGraph("User.withProjects")
     @Path("/{username}")
     @PUT
     @Authenticated
