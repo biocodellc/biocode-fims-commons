@@ -44,10 +44,6 @@ public class ProjectService {
     }
 
     public void update(Project project) {
-        if (StringUtils.isEmpty(project.getProjectUrl())) {
-            Project p = getProject(project.getProjectId());
-            project.setProjectUrl(p.getProjectUrl());
-        }
         projectRepository.save(project);
     }
 

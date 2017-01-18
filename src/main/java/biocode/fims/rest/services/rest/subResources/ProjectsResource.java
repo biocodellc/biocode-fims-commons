@@ -101,11 +101,30 @@ public class ProjectsResource extends FimsService {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
 
-        project.setProjectId(projectId);
+        Project existingProject = projectService.getProject(projectId);
 
-        projectService.update(project);
+        if (existingProject == null || !existingProject.getProjectUrl().equals(appRoot)) {
+            throw new FimsRuntimeException("project not found", 404);
+        }
 
-        return Response.ok(project).build();
+        updateExistingProject(existingProject, project);
+        projectService.update(existingProject);
 
+        return Response.ok(existingProject).build();
+
+    }
+
+    /**
+     * method to transfer the updated {@link Project} object to an existing {@link Project}. This
+     * allows us to control which properties can be updated.
+     * Currently allows updating of the following properties : projectAbstract, projectTitle, isPublic, and validationXml
+     * @param existingProject
+     * @param updatedProject
+     */
+    private void updateExistingProject(Project existingProject, Project updatedProject) {
+        existingProject.setProjectTitle(updatedProject.getProjectTitle());
+        existingProject.setProjectAbstract(updatedProject.getProjectAbstract());
+        existingProject.setValidationXml(updatedProject.getValidationXml());
+        existingProject.setPublic(updatedProject.isPublic());
     }
 }
