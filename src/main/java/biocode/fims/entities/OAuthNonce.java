@@ -36,6 +36,7 @@ public class OAuthNonce {
         this.oAuthNonceId = oAuthNonceId;
     }
 
+    @Column(nullable = false, updatable = false)
     public String getCode() {
         return code;
     }
@@ -53,6 +54,7 @@ public class OAuthNonce {
         this.ts = ts;
     }
 
+    @Column(nullable = false, updatable = false)
     public String getRedirectUri() {
         return redirectUri;
     }
@@ -68,20 +70,17 @@ public class OAuthNonce {
 
         OAuthNonce that = (OAuthNonce) o;
 
-        if (oAuthNonceId != that.oAuthNonceId) return false;
-        if (code != null ? !code.equals(that.code) : that.code != null) return false;
-        if (ts != null ? !ts.equals(that.ts) : that.ts != null) return false;
-        if (redirectUri != null ? !redirectUri.equals(that.redirectUri) : that.redirectUri != null) return false;
+        if (!code.equals(that.code)) return false;
+        if (!redirectUri.equals(that.redirectUri)) return false;
 
-        return true;
+        return oAuthClient.equals(that.oAuthClient);
     }
 
     @Override
     public int hashCode() {
-        int result = oAuthNonceId;
-        result = 31 * result + (code != null ? code.hashCode() : 0);
-        result = 31 * result + (ts != null ? ts.hashCode() : 0);
-        result = 31 * result + (redirectUri != null ? redirectUri.hashCode() : 0);
+        int result = code.hashCode();
+        result = 31 * result + redirectUri.hashCode();
+        result = 31 * result + oAuthClient.hashCode();
         return result;
     }
 
@@ -100,6 +99,7 @@ public class OAuthNonce {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clientId",
+            nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_oAuthNonces_clientId"),
             referencedColumnName = "clientId")
     public OAuthClient getoAuthClient() {

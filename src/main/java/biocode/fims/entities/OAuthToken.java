@@ -52,6 +52,7 @@ public class OAuthToken {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(nullable = false, updatable = false)
     public String getToken() {
         return token;
     }
@@ -61,6 +62,7 @@ public class OAuthToken {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(nullable = false, updatable = false)
     public String getRefreshToken() {
         return refreshToken;
     }
@@ -86,20 +88,16 @@ public class OAuthToken {
 
         OAuthToken that = (OAuthToken) o;
 
-        if (oAuthTokenId != that.oAuthTokenId) return false;
-        if (token != null ? !token.equals(that.token) : that.token != null) return false;
-        if (refreshToken != null ? !refreshToken.equals(that.refreshToken) : that.refreshToken != null) return false;
-        if (ts != null ? !ts.equals(that.ts) : that.ts != null) return false;
-
-        return true;
+        if (!token.equals(that.token)) return false;
+        if (!refreshToken.equals(that.refreshToken)) return false;
+        return oAuthClient.equals(that.oAuthClient);
     }
 
     @Override
     public int hashCode() {
-        int result = oAuthTokenId;
-        result = 31 * result + (token != null ? token.hashCode() : 0);
-        result = 31 * result + (refreshToken != null ? refreshToken.hashCode() : 0);
-        result = 31 * result + (ts != null ? ts.hashCode() : 0);
+        int result = token.hashCode();
+        result = 31 * result + refreshToken.hashCode();
+        result = 31 * result + oAuthClient.hashCode();
         return result;
     }
 
@@ -122,6 +120,7 @@ public class OAuthToken {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "clientId",
+            nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_clientId"),
             referencedColumnName = "clientId")
     public OAuthClient getoAuthClient() {

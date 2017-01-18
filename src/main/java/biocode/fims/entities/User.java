@@ -139,7 +139,7 @@ public class User {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, updatable = false)
     public String getUsername() {
         return username;
     }
@@ -285,12 +285,12 @@ public class User {
     }
 
     @JsonIgnore
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "userProjects",
             joinColumns = @JoinColumn(name = "userId", referencedColumnName = "userId"),
             inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "projectId"),
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
-            inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
+            inverseForeignKey = @ForeignKey(name = "userProjects_ibfk_1")
     )
     public List<Project> getProjectsMemberOf() {
         return projectsMemberOf;
@@ -315,43 +315,13 @@ public class User {
         if (this == o) return true;
         if (!(o instanceof User)) return false;
 
-        User user = (User) o;
-
-        if (this.getUserId() != 0 && user.getUserId() != 0)
-            return this.getUserId() == user.getUserId();
-
-        if (isEnabled() != user.isEnabled()) return false;
-        if (getHasSetPassword() != user.getHasSetPassword()) return false;
-        if (isAdmin() != user.isAdmin()) return false;
-        if (!getUsername().equals(user.getUsername())) return false;
-        if (!getPassword().equals(user.getPassword())) return false;
-        if (getEmail() != null ? !getEmail().equals(user.getEmail()) : user.getEmail() != null) return false;
-        if (getInstitution() != null ? !getInstitution().equals(user.getInstitution()) : user.getInstitution() != null)
-            return false;
-        if (getFirstName() != null ? !getFirstName().equals(user.getFirstName()) : user.getFirstName() != null)
-            return false;
-        if (getLastName() != null ? !getLastName().equals(user.getLastName()) : user.getLastName() != null)
-            return false;
-        if (getPasswordResetToken() != null ? !getPasswordResetToken().equals(user.getPasswordResetToken()) : user.getPasswordResetToken() != null)
-            return false;
-        return getPasswordResetExpiration() != null ? getPasswordResetExpiration().equals(user.getPasswordResetExpiration()) : user.getPasswordResetExpiration() == null;
-
+        User that = (User) o;
+        return getUsername().equals(that.getUsername());
     }
 
     @Override
     public int hashCode() {
-        int result = getUsername().hashCode();
-        result = 31 * result + getPassword().hashCode();
-        result = 31 * result + (isEnabled() ? 1 : 0);
-        result = 31 * result + (getHasSetPassword() ? 1 : 0);
-        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
-        result = 31 * result + (isAdmin() ? 1 : 0);
-        result = 31 * result + (getInstitution() != null ? getInstitution().hashCode() : 0);
-        result = 31 * result + (getFirstName() != null ? getFirstName().hashCode() : 0);
-        result = 31 * result + (getLastName() != null ? getLastName().hashCode() : 0);
-        result = 31 * result + (getPasswordResetToken() != null ? getPasswordResetToken().hashCode() : 0);
-        result = 31 * result + (getPasswordResetExpiration() != null ? getPasswordResetExpiration().hashCode() : 0);
-        return result;
+        return getUsername().hashCode();
     }
 
     @Override

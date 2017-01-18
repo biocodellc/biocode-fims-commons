@@ -175,31 +175,12 @@ public class Project {
 
         Project project = (Project) o;
 
-        if (getProjectId() != project.getProjectId()) return false;
-        if (isPublic() != project.isPublic()) return false;
-        if (!getProjectCode().equals(project.getProjectCode())) return false;
-        if (getProjectTitle() != null ? !getProjectTitle().equals(project.getProjectTitle()) : project.getProjectTitle() != null)
-            return false;
-        if (getProjectAbstract() != null ? !getProjectAbstract().equals(project.getProjectAbstract()) : project.getProjectAbstract() != null)
-            return false;
-        if (!getTs().equals(project.getTs())) return false;
-        if (!getValidationXml().equals(project.getValidationXml())) return false;
-        if (!getProjectUrl().equals(project.getProjectUrl())) return false;
-        return getUser().equals(project.getUser());
+        return getProjectId() != 0 && getProjectId() == project.getProjectId();
     }
 
     @Override
     public int hashCode() {
-        int result = getProjectId();
-        result = 31 * result + getProjectCode().hashCode();
-        result = 31 * result + (getProjectTitle() != null ? getProjectTitle().hashCode() : 0);
-        result = 31 * result + (getProjectAbstract() != null ? getProjectAbstract().hashCode() : 0);
-        result = 31 * result + getTs().hashCode();
-        result = 31 * result + getValidationXml().hashCode();
-        result = 31 * result + (isPublic() ? 1 : 0);
-        result = 31 * result + getProjectUrl().hashCode();
-        result = 31 * result + getUser().hashCode();
-        return result;
+        return 31;
     }
 
     @Override
@@ -249,6 +230,7 @@ public class Project {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "projectsMemberOf",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
             fetch = FetchType.LAZY
     )
     public List<User> getProjectMembers() {

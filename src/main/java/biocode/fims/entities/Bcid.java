@@ -5,10 +5,7 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -17,6 +14,7 @@ import javax.persistence.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Bcid Entity object
@@ -218,41 +216,12 @@ public class Bcid {
         if (!(o instanceof Bcid)) return false;
 
         Bcid bcid = (Bcid) o;
-
-        if (this.getBcidId() != 0 && bcid.getBcidId() != 0)
-            return this.getBcidId() == bcid.getBcidId();
-
-        if (isEzidMade() != bcid.isEzidMade()) return false;
-        if (isEzidRequest() != bcid.isEzidRequest()) return false;
-        if (isFinalCopy() != bcid.isFinalCopy()) return false;
-        if (getIdentifier() != null ? !getIdentifier().equals(bcid.getIdentifier()) : bcid.getIdentifier() != null)
-            return false;
-        if (getDoi() != null ? !getDoi().equals(bcid.getDoi()) : bcid.getDoi() != null) return false;
-        if (getTitle() != null ? !getTitle().equals(bcid.getTitle()) : bcid.getTitle() != null) return false;
-        if (getWebAddress() != null ? !getWebAddress().equals(bcid.getWebAddress()) : bcid.getWebAddress() != null)
-            return false;
-        if (getSubResourceType() != null ? !getSubResourceType().equals(bcid.getSubResourceType()) : bcid.getSubResourceType() != null)
-            return false;
-        if (!getResourceType().equals(bcid.getResourceType())) return false;
-        if (getGraph() != null ? !getGraph().equals(bcid.getGraph()) : bcid.getGraph() != null) return false;
-        return getUser().equals(bcid.getUser());
-
+        return getIdentifier() != null && Objects.equals(getIdentifier(), bcid.getIdentifier());
     }
 
     @Override
     public int hashCode() {
-        int result = (isEzidMade() ? 1 : 0);
-        result = 31 * result + (isEzidRequest() ? 1 : 0);
-        result = 31 * result + (getIdentifier() != null ? getIdentifier().hashCode() : 0);
-        result = 31 * result + (getDoi() != null ? getDoi().hashCode() : 0);
-        result = 31 * result + (getTitle() != null ? getTitle().hashCode() : 0);
-        result = 31 * result + (getWebAddress() != null ? getWebAddress().hashCode() : 0);
-        result = 31 * result + getResourceType().hashCode();
-        result = 31 * result + (getSubResourceType() != null ? getSubResourceType().hashCode() : 0);
-        result = 31 * result + (getGraph() != null ? getGraph().hashCode() : 0);
-        result = 31 * result + (isFinalCopy() ? 1 : 0);
-        result = 31 * result + getUser().hashCode();
-        return result;
+        return 31;
     }
 
     public void setWebAddress(URI webAddress) {

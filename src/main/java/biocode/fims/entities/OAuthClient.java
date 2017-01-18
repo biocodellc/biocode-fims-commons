@@ -41,6 +41,7 @@ public class OAuthClient implements Serializable {
     }
 
     @Id
+    @Column(nullable = false, updatable = false, unique = true)
     public String getClientId() {
         return clientId;
     }
@@ -72,16 +73,11 @@ public class OAuthClient implements Serializable {
 
         OAuthClient that = (OAuthClient) o;
 
-        if (!getClientId().equals(that.getClientId())) return false;
-        if (!getClientSecret().equals(that.getClientSecret())) return false;
-        return getCallback().equals(that.getCallback());
+        return getClientId().equals(that.getClientId());
     }
 
     @Override
     public int hashCode() {
-        int result = getClientId().hashCode();
-        result = 31 * result + getClientSecret().hashCode();
-        result = 31 * result + getCallback().hashCode();
-        return result;
+        return getClientId().hashCode();
     }
 }

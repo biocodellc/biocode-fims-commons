@@ -79,7 +79,7 @@ public class Expedition {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     public String getExpeditionCode() {
         return expeditionCode;
     }
@@ -125,25 +125,15 @@ public class Expedition {
 
         Expedition that = (Expedition) o;
 
-        if (this.getExpeditionId() != 0 && that.getExpeditionId() != 0)
-            return this.getExpeditionId() == that.getExpeditionId();
-
-        if (isPublic() != that.isPublic()) return false;
         if (!getExpeditionCode().equals(that.getExpeditionCode())) return false;
-        if (getExpeditionTitle() != null ? !getExpeditionTitle().equals(that.getExpeditionTitle()) : that.getExpeditionTitle() != null)
-            return false;
-        if (getProject() != null ? !getProject().equals(that.getProject()) : that.getProject() != null) return false;
-        return getUser() != null ? getUser().equals(that.getUser()) : that.getUser() == null;
+        return getProject().equals(that.getProject());
 
     }
 
     @Override
     public int hashCode() {
         int result = getExpeditionCode().hashCode();
-        result = 31 * result + (getExpeditionTitle() != null ? getExpeditionTitle().hashCode() : 0);
-        result = 31 * result + (isPublic() ? 1 : 0);
         result = 31 * result + (getProject() != null ? getProject().hashCode() : 0);
-        result = 31 * result + (getUser() != null ? getUser().hashCode() : 0);
         return result;
     }
 
@@ -179,6 +169,7 @@ public class Expedition {
     @ManyToOne
     @JoinColumn(name = "projectId",
             referencedColumnName = "projectId",
+            nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_expedtions_projectId")
     )
     public Project getProject() {

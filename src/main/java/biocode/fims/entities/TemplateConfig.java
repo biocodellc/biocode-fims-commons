@@ -34,7 +34,7 @@ public class TemplateConfig {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     public String getConfigName() {
         return configName;
     }
@@ -70,22 +70,14 @@ public class TemplateConfig {
 
         TemplateConfig that = (TemplateConfig) o;
 
-        if (this.getTemplateConfigId() != 0 && that.getTemplateConfigId() != 0)
-            return this.getTemplateConfigId() == that.getTemplateConfigId();
-
-        if (isPublic != that.isPublic) return false;
-        if (getConfigName() != null ? !getConfigName().equals(that.getConfigName()) : that.getConfigName() != null)
-            return false;
-        if (getConfig() != null ? !getConfig().equals(that.getConfig()) : that.getConfig() != null) return false;
+        if (!getConfigName().equals(that.getConfigName())) return false;
         return getProject().equals(that.getProject());
 
     }
 
     @Override
     public int hashCode() {
-        int result = getConfigName() != null ? getConfigName().hashCode() : 0;
-        result = 31 * result + (isPublic ? 1 : 0);
-        result = 31 * result + (getConfig() != null ? getConfig().hashCode() : 0);
+        int result = getConfigName().hashCode();
         result = 31 * result + getProject().hashCode();
         return result;
     }
@@ -107,7 +99,7 @@ public class TemplateConfig {
     @ManyToOne
     @JoinColumn(name = "projectId",
             referencedColumnName = "projectId",
-            nullable = false,
+            nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_templateConfigs_projectId")
     )
     public Project getProject() {
