@@ -7,6 +7,7 @@ import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.services.rest.subResources.UsersResource;
@@ -54,6 +55,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      * @param projectId
      * @return
      */
+    @UserEntityGraph("User.withProjects")
     @Deprecated
     @POST
     @Authenticated
@@ -115,6 +117,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      * @returns either error message or the url to redirect to upon success
      */
     @Deprecated
+    @UserEntityGraph("User.withProjects")
     @POST
     @Authenticated
     @Path("/profile/update")
@@ -186,6 +189,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      *
      * @return
      */
+    @UserEntityGraph("User.withProjects")
     @GET
     @Path("/profile")
     @Produces(MediaType.APPLICATION_JSON)

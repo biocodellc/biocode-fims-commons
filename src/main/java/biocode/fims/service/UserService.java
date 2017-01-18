@@ -146,13 +146,19 @@ public class UserService {
      * @return
      */
     public boolean isAProjectAdmin(User user) {
-        // TODO fetch w entity graph to issue a join. Currently this issues 2 selects
-        user = entityManager.merge(user);
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projects")) {
+            user = getUserWithProjects(user.getUsername());
+        }
         return user.getProjects().size() > 0;
     }
 
     public User getUserWithMemberProjects(String username) {
         return userRepository.getUserWithMemberProjects(username);
+    }
+
+    public User getUserWithProjects(String username) {
+        return userRepository.getUserWithProjects(username);
     }
 
     /**

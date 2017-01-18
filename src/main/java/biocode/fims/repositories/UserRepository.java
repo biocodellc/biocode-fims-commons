@@ -36,4 +36,8 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
     @EntityGraph(value = "User.withProjectsMemberOf", type = EntityGraph.EntityGraphType.LOAD)
     @Query("select u from User u where u.username = :username")
     User getUserWithMemberProjects(@Param("username") String username);
+
+    @EntityGraph(value = "User.withProjects", type = EntityGraph.EntityGraphType.LOAD)
+    @Query("select u from User u where u.username = :username")
+    User getUserWithProjects(@Param("username") String username);
 }

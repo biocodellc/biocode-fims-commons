@@ -9,6 +9,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
@@ -144,6 +145,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
      *
      * @return
      */
+    @UserEntityGraph("User.withProjects")
     @GET
     @Admin
     @Authenticated
@@ -169,6 +171,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
      *
      * @return
      */
+    @UserEntityGraph("User.withProjects")
     @POST
     @Authenticated
     @Admin

@@ -48,8 +48,8 @@ public class ProjectsResource extends FimsService {
     @JsonView(Views.Detailed.class)
     @UserEntityGraph("User.withProjectsAndProjectsMemberOf")
     @GET
-    public List<Project> listProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
-                                      @QueryParam("admin") @DefaultValue("false") Flag admin) {
+    public List<Project> getProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
+                                     @QueryParam("admin") @DefaultValue("false") Flag admin) {
         if (admin.isPresent()) {
             return userContext.getUser().getProjects()
                     .stream()
@@ -77,7 +77,7 @@ public class ProjectsResource extends FimsService {
         if (!includePublic && userContext.getUser() == null) {
             throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
         }
-        return listProjects(includePublic, new Flag(null));
+        return getProjects(includePublic, new Flag(null));
     }
 
     /**
@@ -88,14 +88,15 @@ public class ProjectsResource extends FimsService {
      * @responseType biocode.fims.entities.Project
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
+    @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
     @POST
     @Authenticated
     @Admin
     @Path("/{projectId}/")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateConfig(@PathParam("projectId") Integer projectId,
-                                 Project project) {
+    public Response updateProject(@PathParam("projectId") Integer projectId,
+                                  Project project) {
         if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }

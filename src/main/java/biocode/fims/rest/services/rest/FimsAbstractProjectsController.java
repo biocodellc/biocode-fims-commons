@@ -6,6 +6,7 @@ import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.services.rest.subResources.*;
@@ -132,6 +133,8 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      * @param userId
      * @return
      */
+    @UserEntityGraph("User.withProjects")
+    @Deprecated
     @GET
     @Authenticated
     @Admin
@@ -156,6 +159,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      * @param userId
      * @return
      */
+    @UserEntityGraph("User.withProjects")
     @POST
     @Authenticated
     @Admin

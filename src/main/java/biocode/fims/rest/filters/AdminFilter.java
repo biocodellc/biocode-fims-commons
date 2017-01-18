@@ -22,8 +22,6 @@ import java.io.IOException;
 @Admin
 @Priority(Priorities.AUTHORIZATION)
 public class AdminFilter implements ContainerRequestFilter {
-    @Context
-    HttpServletRequest webRequest;
     @Autowired
     private UserService userService;
     @Autowired
@@ -32,14 +30,7 @@ public class AdminFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext)
             throws IOException {
-        HttpSession session = webRequest.getSession();
-        Object projectAdmin = session.getAttribute("projectAdmin");
-
-        if (userContext.getUser() != null) {
-                projectAdmin = userService.isAProjectAdmin(userContext.getUser());
-        }
-
-        if (projectAdmin == null) {
+        if (userContext.getUser() == null || !userService.isAProjectAdmin(userContext.getUser())) {
             throw new ForbiddenRequestException("You must be an admin to access this service.");
         }
     }

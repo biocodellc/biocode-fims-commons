@@ -29,7 +29,7 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenCustomOperations {
 
                 String attributeName = node.getAttributeName();
                 if (attributeName != null) {
-                    user.fetch(attributeName);
+                    user.fetch(attributeName, JoinType.LEFT);
                 }
 
             }

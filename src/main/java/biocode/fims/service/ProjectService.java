@@ -4,6 +4,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.ProjectRepository;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +44,10 @@ public class ProjectService {
     }
 
     public void update(Project project) {
-        Project p = getProject(project.getProjectId());
-        project.setProjectUrl(p.getProjectUrl());
+        if (StringUtils.isEmpty(project.getProjectUrl())) {
+            Project p = getProject(project.getProjectId());
+            project.setProjectUrl(p.getProjectUrl());
+        }
         projectRepository.save(project);
     }
 
