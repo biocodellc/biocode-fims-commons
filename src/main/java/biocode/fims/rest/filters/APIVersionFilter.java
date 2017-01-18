@@ -12,6 +12,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +31,8 @@ import java.util.regex.Pattern;
  * If we use each {@link VersionUrlConfig.VersionUrlData#getVersionUrl()} regex to test against the incoming path.
  * If we find a match, we will set requestContext.requestUri using {@link VersionUrlConfig.VersionUrlData#getCurrentUrl()},
  * performing string substitution using and {@link VersionUrlConfig.VersionUrlData#getNamedGroups()} found in the
- * VersionUrlData.versionUrl
+ * VersionUrlData.versionUrl. We will then set any defaultQueryParams froun in {@link VersionUrlConfig.VersionUrlData#getDefaultQueryParams()}.
+ * These defaultQueryParams will be overridden by any incoming queryParams.
  */
 @PreMatching
 public class APIVersionFilter implements ContainerRequestFilter {
@@ -70,23 +72,54 @@ public class APIVersionFilter implements ContainerRequestFilter {
             }
         }
 
-        // check if the resource has moved locations
-        String currentPath = getCurrentPath(APIVersion.version(versionString), uriInfo.getPath());
-
-        if (currentPath!= null) {
-            try {
-                requestContext.setRequestUri(new URI(requestUri.replace(uriInfo.getPath(), currentPath)));
-            } catch (URISyntaxException e) {
-                logger.warn("error creating URI from string {}", requestUri.replace(uriInfo.getPath(), currentPath));
-            }
-
-        }
+        // update the requestUri if the resource has moved locations
+        updateRequestUriPath(requestContext, APIVersion.version(versionString), uriInfo);
 
         requestContext.getHeaders().add("Api-Version", versionString);
     }
 
+    private void updateRequestUriPath(ContainerRequestContext requestContext, APIVersion version, UriInfo requestUriInfo) {
+        VersionUrlConfig.VersionUrlData currentPathData = getCurrentPathData(version, requestUriInfo.getPath());
 
-    private String getCurrentPath(APIVersion version, String requestedPath) {
+        if (currentPathData != null) {
+            try {
+                UriBuilder builder = requestUriInfo.getBaseUriBuilder();
+                StrSubstitutor sub = new StrSubstitutor(currentPathData.getNamedGroupMap());
+
+                // add the new path
+                builder.path(sub.replace(currentPathData.getCurrentUrl()));
+
+                // add any default queryParams first
+                for (Map.Entry<String, String> pEntry : currentPathData.getDefaultQueryParams().entrySet()) {
+                    builder.replaceQueryParam(pEntry.getKey(), pEntry.getValue());
+                }
+
+                // add any request queryParams as these will override the defaults
+                for (Map.Entry<String, List<String>> pEntry : requestUriInfo.getQueryParameters().entrySet()) {
+                    if (pEntry.getValue().size() == 1) {
+                        builder.replaceQueryParam(pEntry.getKey(), pEntry.getValue().get(0));
+                    } else {
+                        for (String val: pEntry.getValue()) {
+                            builder.queryParam(pEntry.getKey(), val);
+                        }
+                    }
+                }
+
+                // update the requestUri
+                requestContext.setRequestUri(builder.build());
+            } catch (Exception e) {
+                logger.warn("error creating URI from string {}",
+                        requestUriInfo.getAbsolutePath().toString().replace(
+                                requestUriInfo.getPath(), currentPathData.getCurrentUrl()
+                        ));
+
+            }
+
+        }
+    }
+
+
+    private VersionUrlConfig.VersionUrlData getCurrentPathData(APIVersion version, String requestedPath) {
 
         Map<String, List<VersionUrlConfig.VersionUrlData>> versionMap = versionUrlConfig.getVersionMap();
 
@@ -101,9 +134,9 @@ public class APIVersionFilter implements ContainerRequestFilter {
                         paramMap.put(name, m.group(name));
                     }
 
-                    StrSubstitutor sub = new StrSubstitutor(paramMap);
+                    versionData.setNamedGroupMap(paramMap);
 
-                    return sub.replace(versionData.getCurrentUrl());
+                    return versionData;
                 }
             }
         }

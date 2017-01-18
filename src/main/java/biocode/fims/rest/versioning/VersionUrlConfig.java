@@ -27,6 +27,8 @@ public class VersionUrlConfig {
         private String versionUrl;
         private String currentUrl;
         private List<String> namedGroups = new ArrayList<>();
+        private Map<String, String> defaultQueryParams = new HashMap<>();
+        private Map<String, String> namedGroupMap;
 
         public String getVersionUrl() {
             return versionUrl;
@@ -50,6 +52,22 @@ public class VersionUrlConfig {
 
         public void setNamedGroups(List<String> namedGroups) {
             this.namedGroups = namedGroups;
+        }
+
+        public Map<String, String> getDefaultQueryParams() {
+            return defaultQueryParams;
+        }
+
+        public void setDefaultQueryParams(Map<String, String> defaultQueryParams) {
+            this.defaultQueryParams = defaultQueryParams;
+        }
+
+        public Map<String, String> getNamedGroupMap() {
+            return namedGroupMap;
+        }
+
+        public void setNamedGroupMap(Map<String, String> namedGroupMap) {
+            this.namedGroupMap = namedGroupMap;
         }
     }
 }
