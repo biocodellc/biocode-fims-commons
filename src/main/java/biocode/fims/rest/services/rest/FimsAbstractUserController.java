@@ -39,7 +39,7 @@ public abstract class FimsAbstractUserController extends FimsService {
      * @responseType biocode.fims.rest.services.rest.subResources.UsersResource
      */
     @Path("/")
-    public Resource getProjectResource() {
+    public Resource getUsersResource() {
         return Resource.from(UsersResource.class);
     }
 

@@ -60,25 +60,6 @@ public class ProjectsResource extends FimsService {
         return projectService.getProjects(appRoot, userContext.getUser(), includePublic);
     }
 
-    /**
-     * Provides backwards compatibility for v1 api
-     */
-    @UserEntityGraph("User.withProjectsMemberOf")
-    @Deprecated
-    @GET
-    @Path("/list")
-    public List<Project> fetchList(@QueryParam("includePublic") @DefaultValue("false") boolean includePublic,
-                                   @Context ResourceContext resourceContext) {
-
-        if (APIVersion.version(headers.getHeaderString("Api-Version")) != APIVersion.v1_0) {
-            throw new NotFoundException();
-        }
-
-        if (!includePublic && userContext.getUser() == null) {
-            throw new UnauthorizedRequestException("You must be logged in if you don't want to include public projects");
-        }
-        return getProjects(includePublic, new Flag(null));
-    }
 
     /**
      * Update a {@link Project}

@@ -47,10 +47,10 @@ public abstract class FimsAbstractProjectsController extends FimsService {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectResource
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectsResource
      */
     @Path("/")
-    public Resource getProjectResource() {
+    public Resource getProjectsResource() {
         return Resource.from(ProjectsResource.class);
     }
 
@@ -307,7 +307,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectMemberssResource
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectMembersResource
      */
     @Path("{projectId}/members")
     public Resource getProjectMembersResource() {
