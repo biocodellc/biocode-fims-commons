@@ -113,7 +113,7 @@ public class UsersResource extends FimsService {
                         Locale.US),
                 messageSource.getMessage(
                         "NewUserEmail__BODY",
-                        new Object[] {appRoot, user.getUsername(), password},
+                        new Object[] {user.getFirstName(), user.getLastName(), appRoot, user.getUsername(), password},
                         Locale.US)
         );
 
