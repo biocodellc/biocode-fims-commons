@@ -1,8 +1,6 @@
 package biocode.fims.elasticSearch;
 
-import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.utils.EmailUtils;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
@@ -49,7 +47,7 @@ public class ElasticSearchIndexer {
                 .source(String.valueOf(projectId))
                 .filter(QueryBuilders.termQuery("_type", TYPE))
                 .filter(
-                        QueryBuilders.matchQuery("expedition.expeditionCode", expeditionCode)
+                        QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expeditionCode)
                 ).execute().actionGet();
 
         if (deleteResponse.getBulkFailures().size() > 0) {
