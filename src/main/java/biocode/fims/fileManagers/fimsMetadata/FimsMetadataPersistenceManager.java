@@ -1,8 +1,7 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
-import biocode.fims.entities.Bcid;
 import biocode.fims.run.ProcessController;
-import org.json.simple.JSONArray;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.io.File;
 
@@ -11,7 +10,7 @@ import java.io.File;
  */
 public interface FimsMetadataPersistenceManager {
 
-    void upload(ProcessController processController, JSONArray fimsMetadata, String filename);
+    void upload(ProcessController processController, ArrayNode fimsMetadata, String filename);
 
     boolean validate(ProcessController processController);
 
@@ -21,5 +20,5 @@ public interface FimsMetadataPersistenceManager {
 
     String getGraph();
 
-    JSONArray getDataset(ProcessController processController);
+    ArrayNode getDataset(ProcessController processController);
 }

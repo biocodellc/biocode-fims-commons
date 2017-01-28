@@ -3,8 +3,10 @@ package biocode.fims.elasticSearch;
 import biocode.fims.digester.Attribute;
 import biocode.fims.fileManagers.fimsMetadata.AbstractFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.run.ProcessController;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
@@ -29,7 +31,7 @@ public class ESFimsMetadataPersistenceManager extends AbstractFimsMetadataPersis
     }
 
     @Override
-    public void upload(ProcessController processController, JSONArray fimsMetadata, String filename) {
+    public void upload(ProcessController processController, ArrayNode fimsMetadata, String filename) {
         // do nothing. all elasticsearch "uploading" is handled in FimsMetadataFileManager.index
     }
 
@@ -51,16 +53,16 @@ public class ESFimsMetadataPersistenceManager extends AbstractFimsMetadataPersis
     }
 
     @Override
-    public JSONArray getDataset(ProcessController processController) {
+    public ArrayNode getDataset(ProcessController processController) {
         List<Attribute> attributes = processController.getMapping().getDefaultSheetAttributes();
         SearchResponse response = client.prepareSearch(String.valueOf(processController.getProjectId()))
                 .setTypes(ElasticSearchIndexer.TYPE)
                 .setScroll(new TimeValue(1, TimeUnit.MINUTES))
-                .setQuery(QueryBuilders.matchQuery("expedition.expeditionCode", processController.getExpeditionCode()))
+                .setQuery(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", processController.getExpeditionCode()))
                 .setSize(1000)
                 .get();
 
-        JSONArray dataset = new JSONArray();
+        ArrayNode dataset = new SpringObjectMapper().createArrayNode();
 
         do {
             for (SearchHit hit: response.getHits()) {

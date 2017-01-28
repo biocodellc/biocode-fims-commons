@@ -7,6 +7,7 @@ import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
@@ -143,7 +144,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, JSONArray fimsMetadata) {
+    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, ArrayNode fimsMetadata) {
         PathManager pm = new PathManager();
         File processDirectory = pm.setDirectory(outputFolder);
 
@@ -231,7 +232,7 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, JSONArray fimsMetadata) {
+    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, ArrayNode fimsMetadata) {
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = worksheets.get(0);

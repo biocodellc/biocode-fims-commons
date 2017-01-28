@@ -2,7 +2,9 @@ package biocode.fims.elasticSearch;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
-import org.json.simple.JSONObject;
+import biocode.fims.rest.SpringObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.Map;
@@ -10,13 +12,14 @@ import java.util.Map;
 public class ElasticSearchUtils {
 
     /**
-     * map the elasticsource hit source to a JSONObject, transforming each attribute uri -> column
+     * map the elasticsource hit source to a ObjectNode, transforming each attribute uri -> column
      * @param source
      * @return
      */
-    public static JSONObject transformResource(Map<String, Object> source, List<Attribute> attributes) {
+    public static ObjectNode transformResource(Map<String, Object> source, List<Attribute> attributes) {
         Mapping mapping = new Mapping();
-        JSONObject transformedSource = new JSONObject();
+        ObjectMapper objectMapper = new SpringObjectMapper();
+        ObjectNode transformedSource = objectMapper.createObjectNode();
 
         for (String key: source.keySet()) {
 
@@ -26,9 +29,9 @@ public class ElasticSearchUtils {
                 transformedKey = key;
             }
 
-            transformedSource.put(
+            transformedSource.set(
                     transformedKey,
-                    source.get(key)
+                    objectMapper.valueToTree(source.get(key))
             );
 
         }

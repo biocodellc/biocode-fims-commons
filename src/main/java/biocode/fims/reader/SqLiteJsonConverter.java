@@ -8,8 +8,10 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.settings.Hasher;
 import biocode.fims.utils.SqlLiteNameCleaner;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +24,7 @@ import java.util.*;
  * SQLite Database.
  */
 public final class SqLiteJsonConverter {
-    private final JSONArray dataset;
+    private final ArrayNode dataset;
     String dest;
 
     private static Logger logger = LoggerFactory.getLogger(SqLiteJsonConverter.class);
@@ -31,7 +33,7 @@ public final class SqLiteJsonConverter {
      * @param dataset
      * @param dest    A valid SQLIte JDBC connection string.
      */
-    public SqLiteJsonConverter(JSONArray dataset, String dest) {
+    public SqLiteJsonConverter(ArrayNode dataset, String dest) {
         this.dataset = dataset;
         this.dest = dest;
     }
@@ -172,7 +174,7 @@ public final class SqLiteJsonConverter {
      * @param tName The name to use for the table in the destination Database.
      */
     private void buildTable(Connection conn, String tName) {
-        if (dataset.isEmpty()) {
+        if (dataset.size() == 0) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
@@ -203,7 +205,7 @@ public final class SqLiteJsonConverter {
             // set up the table definition query
             String query = "CREATE TABLE [" + tName + "] (";
             colcnt = 0;
-            List<String> columns = new ArrayList<>(((JSONObject) dataset.get(0)).keySet());
+            List<String> columns = Lists.newArrayList(dataset.get(0).fieldNames());
             for (String colname : columns) {
                 if (colcnt++ > 0) {
                     query += ", ";
@@ -238,12 +240,12 @@ public final class SqLiteJsonConverter {
             stmt.execute("BEGIN TRANSACTION");
 
             // populate the table with the source data
-            for (Object obj : dataset) {
-                JSONObject resource = (JSONObject) obj;
+            for (JsonNode node: dataset) {
+                ObjectNode resource = (ObjectNode) node;
                 cnt = 0;
                 StringBuilder sb = new StringBuilder();
                 for (String col : columns) {
-                    String dataval = String.valueOf(resource.get(col));
+                    String dataval = resource.get(col).asText();
                     // Ignore any data that is NA or na by setting it to blank
                     if (dataval.equalsIgnoreCase("na"))
                         dataval = "";

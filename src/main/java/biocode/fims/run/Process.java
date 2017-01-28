@@ -11,6 +11,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.slf4j.Logger;
@@ -174,7 +175,7 @@ public class Process {
         }
 
         if (esIndexer != null) {
-            JSONArray fimsMetadata = fimsMetadataFileManager.index();
+            ArrayNode fimsMetadata = fimsMetadataFileManager.index();
             for (AuxilaryFileManager fm: fileManagers) {
                 fm.index(fimsMetadata);
             }

@@ -17,8 +17,9 @@ import biocode.fims.run.ProcessController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.context.MessageSource;
 import org.springframework.util.Assert;
 
@@ -40,7 +41,7 @@ public class FimsMetadataFileManager implements FileManager {
     private final MessageSource messageSource;
     private ProcessController processController;
     private String filename;
-    private JSONArray fimsMetadata;
+    private ArrayNode fimsMetadata;
 
     public FimsMetadataFileManager(FimsMetadataPersistenceManager persistenceManager, SettingsManager settingsManager,
                                    ExpeditionService expeditionService, BcidService bcidService, MessageSource messageSource) {
@@ -157,7 +158,7 @@ public class FimsMetadataFileManager implements FileManager {
         this.processController = processController;
     }
 
-    public JSONArray getDataset() {
+    public ArrayNode getDataset() {
         if (fimsMetadata == null) {
             fimsMetadata = persistenceManager.getDataset(processController);
         }
@@ -182,8 +183,8 @@ public class FimsMetadataFileManager implements FileManager {
      *
      * @return
      */
-    public JSONArray index() {
-        JSONArray dataset = getDataset();
+    public ArrayNode index() {
+        ArrayNode dataset = getDataset();
 
         Entity rootEntity = processController.getMapping().getRootEntity();
         Bcid rootEntityBcid = expeditionService.getEntityBcid(
@@ -215,24 +216,27 @@ public class FimsMetadataFileManager implements FileManager {
      * @param rootIdentifier
      * @return
      */
-    private JSONArray prepareIndex(JSONArray dataset, String rootIdentifier) {
-        JSONArray index = new JSONArray();
+    private ArrayNode prepareIndex(ArrayNode dataset, String rootIdentifier) {
+        ArrayNode index = dataset.arrayNode();
 
         Map<String, String> columnToUriMap = getColumnToUriMap();
         String uniqueKey = processController.getMapping().getDefaultSheetUniqueKey();
 
-        for (Object o : dataset) {
-            JSONObject resource = (JSONObject) o;
-            JSONObject resourceIndex = new JSONObject();
+        for (JsonNode o : dataset) {
+            ObjectNode resource = (ObjectNode) o;
+            ObjectNode resourceIndex = dataset.objectNode();
 
-            for (Map.Entry entry : (Set<Map.Entry>) resource.entrySet()) {
-                Object key = entry.getKey();
+            Iterator<Map.Entry<String, JsonNode>> fields = resource.fields();
+
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String key = entry.getKey();
 
                 if (columnToUriMap.containsKey(entry.getKey())) {
                     key = columnToUriMap.get(entry.getKey());
                 }
 
-                resourceIndex.put(key, entry.getValue());
+                resourceIndex.set(key, entry.getValue());
 
             }
 

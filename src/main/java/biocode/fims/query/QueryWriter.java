@@ -2,16 +2,14 @@ package biocode.fims.query;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
-import biocode.fims.digester.Field;
-import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import org.apache.commons.lang.StringUtils;
+import biocode.fims.rest.SpringObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -275,16 +272,16 @@ public class QueryWriter {
     }
 
     /**
-     * This returns the query results as a JSONArray of JSONObject where each JSONObject contains "field":"value" pairs
+     * This returns the query results as a ArrayNode of ObjectNodes where each ObjectNode contains "field":"value" pairs
      *
      * @return
      */
-    public JSONArray getJSON() {
-        JSONArray dataset = new JSONArray();
+    public ArrayNode getJSON() {
+        ArrayNode dataset = new SpringObjectMapper().createArrayNode();
 
         // Iterate through the rows.
         for (Row row : sheet) {
-            JSONObject resource = new JSONObject();
+            ObjectNode resource = dataset.addObject();
 
             for (int index = 0; index < attributes.size(); index++) {
                 Cell cell = row.getCell(index, Row.CREATE_NULL_AS_BLANK);
@@ -330,7 +327,6 @@ public class QueryWriter {
 
                 resource.put(attributes.get(index).getColumn(), String.valueOf(value));
             }
-            dataset.add(resource);
         }
         return dataset;
     }

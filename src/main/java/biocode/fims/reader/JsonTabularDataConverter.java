@@ -4,8 +4,9 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.reader.plugins.TabularDataReader;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import biocode.fims.rest.SpringObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +26,8 @@ public class JsonTabularDataConverter {
     /**
      * Reads the source data and converts it to a JSONArray.
      */
-    public JSONArray convert(List<Attribute> attributes, String sheetName) {
-        JSONArray sheet = new JSONArray();
+    public ArrayNode convert(List<Attribute> attributes, String sheetName) {
+        ArrayNode sheet = new SpringObjectMapper().createArrayNode();
         source.setTable(sheetName);
 
         if (!source.tableHasNextRow()) {
@@ -43,17 +44,16 @@ public class JsonTabularDataConverter {
         }
 
         for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
-            JSONObject resource = new JSONObject();
+            ObjectNode resource = sheet.addObject();
             String[] row = source.tableGetNextRow();
 
             for (int col = 0; col < tableColumns.size(); col++) {
                 String column = tableColumns.get(col);
-                if (resource.containsKey(column)) {
+                if (resource.has(column)) {
                     throw new FimsRuntimeException(ValidationCode.DUPLICATE_COLUMNS, 400, column);
                 }
                 resource.put(column, row[col]);
             }
-            sheet.add(resource);
         }
 
         if (sheet.size() == 0) {
