@@ -241,7 +241,7 @@ public class FimsMetadataFileManager implements FileManager {
             }
 
             resourceIndex.put("expedition.expeditionCode", processController.getExpeditionCode());
-            resourceIndex.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey));
+            resourceIndex.put("bcid", String.valueOf(rootIdentifier) + resource.get(uniqueKey).asText());
 
             index.add(resourceIndex);
         }

@@ -38,7 +38,6 @@ public class ProcessController {
     private Boolean publicStatus = false;   // default to false
     private Boolean finalCopy = false;
     private String outputFolder;
-    private JSONObject fastqMetadata;
 
     public ProcessController(int projectId, String expeditionCode) {
         this.expeditionCode = expeditionCode;
@@ -269,15 +268,6 @@ public class ProcessController {
 
     public Process getProcess() {
         return process;
-    }
-
-    // hack until we get FastqFileManger.upload working
-    public void setFastqMetadata(JSONObject fastqMetadata) {
-        this.fastqMetadata = fastqMetadata;
-    }
-
-    public JSONObject getFastqMetadata() {
-        return fastqMetadata;
     }
 
     public void setExpeditionCode(String expeditionCode) {
