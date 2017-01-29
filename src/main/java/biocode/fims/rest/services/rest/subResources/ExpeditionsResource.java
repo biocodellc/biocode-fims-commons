@@ -18,8 +18,6 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -137,6 +135,55 @@ public class ExpeditionsResource extends FimsService {
         }
 
         return expedition;
+    }
+
+    /**
+     * update Expedition
+     *
+     * @param projectId      The projectId the expedition belongs to
+     * @param expeditionCode The expeditionCode of the expedition to update
+     * @param expedition     The Expedition to be updated. Note: The expedition must already belong to the projectId
+     * @responseMessage 403 not the expedition owner or the project's admin `biocode.fims.utils.ErrorInfo
+     * @responseMessage 400 A given expedition does not belong to the project `biocode.fims.utils.ErrorInfo
+     */
+    @UserEntityGraph("User.withProjects")
+    @PUT
+    @Authenticated
+    @Path("/{expeditionCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Expedition updateExpeditions(@PathParam("projectId") Integer projectId,
+                                        @PathParam("expeditionCode") String expeditionCode,
+                                        Expedition expedition) {
+        Expedition existingExpedition = expeditionService.getExpedition(expeditionCode, projectId);
+
+        if (existingExpedition == null || !existingExpedition.getProject().getProjectUrl().equals(appRoot)) {
+            throw new FimsRuntimeException("project not found", 404);
+        }
+
+        if (!existingExpedition.getUser().equals(userContext.getUser()) && !projectService.isProjectAdmin(userContext.getUser(), projectId)) {
+            throw new ForbiddenRequestException("You do not own this expedition, or you are not an admin for this project");
+        }
+
+
+        updateExistingExpedition(existingExpedition, expedition);
+        expeditionService.update(existingExpedition);
+
+        return existingExpedition;
+
+    }
+
+    /**
+     * method to transfer the updated {@link Expedition} object to an existing {@link Expedition}. This
+     * allows us to control which properties can be updated.
+     * Currently allows updating of the following properties : expeditionTitle and isPublic
+     *
+     * @param existingExpedition
+     * @param updatedExpedition
+     */
+    private void updateExistingExpedition(Expedition existingExpedition, Expedition updatedExpedition) {
+        existingExpedition.setExpeditionTitle(updatedExpedition.getExpeditionTitle());
+        existingExpedition.setPublic(updatedExpedition.isPublic());
     }
 
 }
