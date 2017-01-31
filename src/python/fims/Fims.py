@@ -16,7 +16,8 @@ def __sanitize_url(url):
     return url
 
 
-def run(rest_url, project_id, dataset, username, password, expedition_code, upload=False, create_expedition=False):
+def run(rest_url, project_id, dataset, username, password, expedition_code, upload=False,
+        create_expedition=False, is_public=False):
     sanitized_rest_url = __sanitize_url(rest_url)
 
     fims_connector = FimsConnector(sanitized_rest_url)
@@ -24,7 +25,7 @@ def run(rest_url, project_id, dataset, username, password, expedition_code, uplo
     if upload:
         fims_connector.authenticate(username, password)
 
-    r_validate = fims_connector.validate(project_id, dataset, expedition_code, upload)
+    r_validate = fims_connector.validate(project_id, dataset, expedition_code, upload, is_public)
 
     if 'continue' not in r_validate:
         __print_messages(r_validate['done'])
@@ -117,6 +118,11 @@ def main():
         dest="upload",
         action="store_true")
     parser.add_argument(
+        "--public",
+        help="set the expedition to public. defaults to false",
+        dest="is_public",
+        action="store_true")
+    parser.add_argument(
         "-e",
         "--expedition",
         help="expedition_code to upload the dataset to. required if uploading.",
@@ -146,4 +152,4 @@ def main():
             parser.error('username and password are required when uploading')
 
     run(args.rest_service, args.project_id, args.dataset, args.username, args.password, args.expedition_code,
-        args.upload, args.create_expedition)
+        args.upload, args.create_expedition, args.is_public)

@@ -27,7 +27,7 @@ class FimsConnector:
             print(r.json()['usrMessage'] or 'Server Error')
             sys.exit()
 
-    def validate(self, project_id, fims_metadata, expedition_code, upload):
+    def validate(self, project_id, fims_metadata, expedition_code, upload, is_public):
         r = self.session.post(self.rest_root + self.validate_url,
                               files={
                                   'fimsMetadata': (fims_metadata, open(fims_metadata, 'rb'))
@@ -35,7 +35,8 @@ class FimsConnector:
                               data={
                                   'upload': upload,
                                   'projectId': project_id,
-                                  'expeditionCode': expedition_code
+                                  'expeditionCode': expedition_code,
+                                  'public': is_public
                               })
 
         if r.status_code > 299:
