@@ -67,7 +67,7 @@ public final class SqLiteJsonConverter {
             buildHashes(connection, mapping, fixedtName);
         } catch (SQLException e) {
             // If we through an exception here, it could be ANYTHING that SQLlite doesn't like, including duplicate columnnames
-            throw new FimsRuntimeException(500, e);
+            throw new FimsRuntimeException(500,e);
         } finally {
             try {
                 if (connection != null)
@@ -110,7 +110,7 @@ public final class SqLiteJsonConverter {
      * @param connection
      * @param mapping
      */
-    private void buildHashes(Connection connection, Mapping mapping, String tName) {
+    private void buildHashes(Connection connection, Mapping mapping, String tName)  {
         // Loop through entities and find which ones define HASH
         Statement stmt = null;
         try {
@@ -134,7 +134,8 @@ public final class SqLiteJsonConverter {
                             sb.append(" || ");
                     }
                     sb.append(" AS toHash FROM " + tName);
-                    //System.out.println(sb.toString());
+                    System.out.println(sb.toString());
+
                     ResultSet rs = stmt.executeQuery(sb.toString());
 
                     Statement updateStatement = connection.createStatement();
@@ -152,6 +153,7 @@ public final class SqLiteJsonConverter {
                 }
             }
         } catch (SQLException e) {
+            //throw new SQLException(e);
             throw new FimsRuntimeException(500, e);
         } finally {
             try {
