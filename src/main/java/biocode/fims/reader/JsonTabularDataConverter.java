@@ -27,6 +27,7 @@ public class JsonTabularDataConverter {
      */
     public JSONArray convert(List<Attribute> attributes, String sheetName) {
         JSONArray sheet = new JSONArray();
+
         source.setTable(sheetName);
 
         if (!source.tableHasNextRow()) {
@@ -42,9 +43,12 @@ public class JsonTabularDataConverter {
             attributeColumns.add(a.getColumn());
         }
 
-        for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
+        while  (source.tableHasNextRow()) {
+        //source.tableGetNextRow()
+        //for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
             JSONObject resource = new JSONObject();
             String[] row = source.tableGetNextRow();
+           // String[] row = source.tableGetNextRow();
 
             for (int col = 0; col < tableColumns.size(); col++) {
                 String column = tableColumns.get(col);
