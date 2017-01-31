@@ -1,6 +1,11 @@
 package biocode.fims.elasticSearch;
 
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.utils.EmailUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
@@ -40,7 +45,7 @@ public class ElasticSearchIndexer {
      * @param expeditionCode
      * @param dataset
      */
-    public void indexDataset(int projectId, String expeditionCode, JSONArray dataset) {
+    public void indexDataset(int projectId, String expeditionCode, ArrayNode dataset) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         BulkIndexByScrollResponse deleteResponse = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
@@ -58,16 +63,17 @@ public class ElasticSearchIndexer {
             logger.error("Expedition dataset index may be out of sync. Old samples may be present.");
         }
 
-        for (Object obj : dataset) {
-            JSONObject resource = (JSONObject) obj;
-
-            bulkRequest.add(
-                    client.prepareIndex(String.valueOf(projectId), TYPE, String.valueOf(resource.get("bcid")))
-                            .setSource(resource)
-            );
-        }
-
         try {
+            ObjectMapper objectMapper = new SpringObjectMapper();
+            for (JsonNode node : dataset) {
+                ObjectNode resource = (ObjectNode) node;
+
+                bulkRequest.add(
+                        client.prepareIndex(String.valueOf(projectId), TYPE, resource.get("bcid").asText())
+                                .setSource(objectMapper.writeValueAsString(resource))
+                );
+            }
+
             BulkResponse response = bulkRequest.get();
 
             if (response.hasFailures()) {

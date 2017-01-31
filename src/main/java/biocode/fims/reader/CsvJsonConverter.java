@@ -7,6 +7,9 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.settings.PathManager;
 import biocode.fims.utils.DateUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -24,7 +27,7 @@ import java.util.*;
  * CSV file
  */
 public final class CsvJsonConverter {
-    private final JSONArray dataset;
+    private final ArrayNode dataset;
     private final String filenamePrefix;
     private final String outputDir;
 
@@ -37,7 +40,7 @@ public final class CsvJsonConverter {
      * @param outputDir A valid filepath for the new csv file
      * @param filenamePrefix
      */
-    public CsvJsonConverter(JSONArray dataset, String outputDir, String filenamePrefix) {
+    public CsvJsonConverter(ArrayNode dataset, String outputDir, String filenamePrefix) {
         this.dataset = dataset;
         this.outputDir = outputDir;
         this.filenamePrefix = filenamePrefix;
@@ -48,7 +51,7 @@ public final class CsvJsonConverter {
      * converts the dataset resources to a csv file
      */
     public void convert(List<Attribute> attributes) {
-        if (dataset.isEmpty()) {
+        if (dataset.size() == 0) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
@@ -59,12 +62,12 @@ public final class CsvJsonConverter {
         try {
             FileOutputStream fos = new FileOutputStream(csvFile);
 
-            for (Object s : dataset) {
-                JSONObject resource = (JSONObject) s;
+            for (JsonNode node : dataset) {
+                ObjectNode resource = (ObjectNode) node;
 
                 for (Attribute a : attributes) {
-                    if (resource.containsKey(a.getColumn())) {
-                        String value = (String) resource.get(a.getColumn());
+                    if (resource.has(a.getColumn())) {
+                        String value = resource.get(a.getColumn()).asText();
                         // convert dates to ISO 8601 format
                         if (!StringUtils.isBlank(value) && (a.getDatatype() == DataType.DATETIME || a.getDatatype() == DataType.DATE ||
                                 a.getDatatype() == DataType.TIME)) {

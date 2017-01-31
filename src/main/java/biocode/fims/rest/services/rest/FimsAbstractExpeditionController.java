@@ -42,7 +42,7 @@ import java.net.URLDecoder;
 public abstract class FimsAbstractExpeditionController extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(FimsAbstractExpeditionController.class);
-    private final ExpeditionService expeditionService;
+    protected final ExpeditionService expeditionService;
 
     @Autowired
     public FimsAbstractExpeditionController(ExpeditionService expeditionService, SettingsManager settingsManager) {

@@ -1,10 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
 import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
-import biocode.fims.repositories.customOperations.ProjectCustomOperations;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
