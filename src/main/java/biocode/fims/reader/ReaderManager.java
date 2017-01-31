@@ -15,7 +15,7 @@ import java.util.zip.ZipInputStream;
 
 
 /**
- * Provides high-level access to the Triplifier's data reader plugin system.
+ * Provides high-level access to the data reader plugin system.
  * Includes methods for opening data files and getting instances of particular
  * reader plugins.  There should generally be few situations where you might
  * need to manually instantiate plugin classes.  Using the methods in

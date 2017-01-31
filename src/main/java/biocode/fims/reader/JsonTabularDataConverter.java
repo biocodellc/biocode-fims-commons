@@ -46,6 +46,7 @@ public class JsonTabularDataConverter {
         for (int rowNum = 0; rowNum < source.getNumRows(); rowNum++) {
             ObjectNode resource = sheet.addObject();
             String[] row = source.tableGetNextRow();
+           // String[] row = source.tableGetNextRow();
 
             for (int col = 0; col < tableColumns.size(); col++) {
                 String column = tableColumns.get(col);
