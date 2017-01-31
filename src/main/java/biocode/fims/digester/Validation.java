@@ -247,14 +247,6 @@ public class Validation implements RendererInterface {
 
         connection = createSqlLite(filenamePrefix, outputFolder, sheetName, fimsMetadata);
 
-        // Attempt to build hashes
-        boolean hashErrorFree = true;
-        try {
-            sdc.buildHashes(mapping, sheetName);
-        } catch (Exception e) {
-            logger.warn("", e);
-            hashErrorFree = false;
-        }
 
         // Run validation components
         boolean processingErrorFree = true;
@@ -266,6 +258,15 @@ public class Validation implements RendererInterface {
                 boolean thisError = w.run(this);
                 if (processingErrorFree) processingErrorFree = thisError;
             }
+        }
+
+        // Attempt to build hashes
+        boolean hashErrorFree = true;
+        try {
+            sdc.buildHashes(mapping, sheetName);
+        } catch (Exception e) {
+            logger.warn("", e);
+            hashErrorFree = false;
         }
 
         if (processingErrorFree && hashErrorFree) {
