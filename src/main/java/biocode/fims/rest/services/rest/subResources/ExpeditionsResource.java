@@ -1,12 +1,17 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.rest.AcknowledgedResponse;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.run.ProcessController;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
@@ -14,28 +19,33 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
  */
+@Scope("prototype")
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
 public class ExpeditionsResource extends FimsService {
     private final ExpeditionService expeditionService;
     private final ProjectService projectService;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
 
     @Autowired
     public ExpeditionsResource(ExpeditionService expeditionService, ProjectService projectService,
-                               SettingsManager settingsManager) {
+                               SettingsManager settingsManager, FimsMetadataFileManager fimsMetadataFileManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
+        this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
 
     /**
@@ -184,6 +194,45 @@ public class ExpeditionsResource extends FimsService {
     private void updateExistingExpedition(Expedition existingExpedition, Expedition updatedExpedition) {
         existingExpedition.setExpeditionTitle(updatedExpedition.getExpeditionTitle());
         existingExpedition.setPublic(updatedExpedition.isPublic());
+    }
+
+    /**
+     * delete an expedition
+     * <p>
+     * Project Admin access only
+     *
+     * @param projectId      The projectId the expedition belongs to
+     * @param expeditionCode The expeditionCode of the expedition to delete
+     * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
+     */
+    @UserEntityGraph("User.withProjects")
+    @DELETE
+    @Authenticated
+    @Admin
+    @Path("/{expeditionCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public AcknowledgedResponse deleteExpedition(@PathParam("projectId") Integer projectId,
+                                                 @PathParam("expeditionCode") String expeditionCode) {
+        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
+            throw new ForbiddenRequestException("You are not an admin for this project");
+        }
+
+        expeditionService.delete(expeditionCode, projectId);
+
+        // delete any data for the expedition
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(configFile);
+
+        ProcessController processController = new ProcessController(projectId, expeditionCode);
+        processController.setOutputFolder(uploadPath());
+        processController.setMapping(mapping);
+        fimsMetadataFileManager.setProcessController(processController);
+        fimsMetadataFileManager.deleteDataset();
+
+        return new AcknowledgedResponse(true);
     }
 
 }

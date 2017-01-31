@@ -136,7 +136,7 @@ public class ExpeditionService {
 
         expeditions = expeditionRepository.getUserProjectExpeditions(projectId, userId, includePrivate);
 
-        for (Expedition expedition: expeditions) {
+        for (Expedition expedition : expeditions) {
             attachExpeditionBcids(expedition);
         }
 
@@ -153,9 +153,11 @@ public class ExpeditionService {
     }
 
     public void delete(int expeditionId) {
-        Expedition expedition = getExpedition(expeditionId);
-        bcidService.delete(expedition.getExpeditionBcid().getBcidId());
         expeditionRepository.deleteByExpeditionId(expeditionId);
+    }
+
+    public void delete(String expeditionCode, int projectId) {
+        expeditionRepository.deleteByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
     }
 
     /**
@@ -251,6 +253,7 @@ public class ExpeditionService {
 
     /**
      * bulk update expeditions for a project
+     *
      * @param expeditions
      */
     public void update(List<Expedition> expeditions, int projectId) {

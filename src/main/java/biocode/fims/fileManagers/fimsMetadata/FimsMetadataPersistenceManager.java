@@ -21,4 +21,6 @@ public interface FimsMetadataPersistenceManager {
     String getGraph();
 
     ArrayNode getDataset(ProcessController processController);
+
+    void deleteDataset(ProcessController processController);
 }

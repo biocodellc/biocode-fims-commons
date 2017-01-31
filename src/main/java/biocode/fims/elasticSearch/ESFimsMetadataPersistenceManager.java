@@ -7,10 +7,13 @@ import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.run.ProcessController;
 import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.search.SearchHit;
 import org.json.simple.JSONArray;
 
@@ -75,5 +78,11 @@ public class ESFimsMetadataPersistenceManager extends AbstractFimsMetadataPersis
         } while (response.getHits().getHits().length != 0);
 
         return dataset;
+    }
+
+    @Override
+    public void deleteDataset(ProcessController processController) {
+        ElasticSearchIndexer indexer = new ElasticSearchIndexer(client);
+        indexer.deleteDataset(processController.getProjectId(), processController.getExpeditionCode());
     }
 }

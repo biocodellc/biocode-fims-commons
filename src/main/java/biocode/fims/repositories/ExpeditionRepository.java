@@ -28,6 +28,9 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     @Modifying
     void deleteByExpeditionId(int expeditionId);
 
+    @Modifying
+    void deleteByExpeditionCodeAndProjectProjectId(String expeditionCode, int projectId);
+
     void save(Expedition expedition);
 
     Expedition findByExpeditionId(int expeditionId);

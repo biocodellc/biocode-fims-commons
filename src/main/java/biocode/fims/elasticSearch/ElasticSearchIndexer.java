@@ -48,20 +48,7 @@ public class ElasticSearchIndexer {
     public void indexDataset(int projectId, String expeditionCode, ArrayNode dataset) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
-        BulkIndexByScrollResponse deleteResponse = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
-                .source(String.valueOf(projectId))
-                .filter(QueryBuilders.termQuery("_type", TYPE))
-                .filter(
-                        QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expeditionCode)
-                ).execute().actionGet();
-
-        if (deleteResponse.getBulkFailures().size() > 0) {
-            logger.error("Error deleting previous indexes for expedition: {} and projectId: {}", expeditionCode, projectId);
-            for (BulkItemResponse.Failure failure : deleteResponse.getBulkFailures()) {
-                logger.error("document id: {}   message: {}", failure.getId(), failure.getMessage());
-            }
-            logger.error("Expedition dataset index may be out of sync. Old samples may be present.");
-        }
+        deleteDataset(projectId, expeditionCode);
 
         try {
             ObjectMapper objectMapper = new SpringObjectMapper();
@@ -93,6 +80,23 @@ public class ElasticSearchIndexer {
         }
 
 
+    }
+
+    public void deleteDataset(int projectId, String expeditionCode) {
+        BulkIndexByScrollResponse deleteResponse = DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
+                .source(String.valueOf(projectId))
+                .filter(QueryBuilders.termQuery("_type", TYPE))
+                .filter(
+                        QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expeditionCode)
+                ).execute().actionGet();
+
+        if (deleteResponse.getBulkFailures().size() > 0) {
+            logger.error("Error deleting previous indexes for expedition: {} and projectId: {}", expeditionCode, projectId);
+            for (BulkItemResponse.Failure failure : deleteResponse.getBulkFailures()) {
+                logger.error("document id: {}   message: {}", failure.getId(), failure.getMessage());
+            }
+            logger.error("Expedition dataset index may be out of sync. Old samples may be present.");
+        }
     }
 
     public void updateMapping(int projectId, JSONObject mapping) {

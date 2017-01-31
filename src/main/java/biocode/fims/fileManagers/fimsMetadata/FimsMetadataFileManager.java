@@ -197,6 +197,10 @@ public class FimsMetadataFileManager implements FileManager {
         return prepareIndex(dataset, String.valueOf(rootEntityBcid.getIdentifier()));
     }
 
+    public void deleteDataset() {
+        persistenceManager.deleteDataset(processController);
+    }
+
     public void close() {
         if (filename != null) {
             new File(filename).delete();
