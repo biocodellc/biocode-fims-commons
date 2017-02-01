@@ -3,6 +3,7 @@
 *.props
 *.properties
 !src/main/resources/settings-manager.properties
+!gradle/wrapper/gradle-wrapper.properties
 build/*
 classes/*
 .gradle
