@@ -54,7 +54,7 @@ public class Resolver {
                 case Expedition.EXPEDITION_RESOURCE_TYPE:
                     if (hasWebAddress)
                         resolution = bcid.getWebAddress();
-                    else {
+                    else if (mapping != null) {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
                         String expeditionForwardingAddress = mapping.getMetadata().getExpeditionForwardingAddress();
 
