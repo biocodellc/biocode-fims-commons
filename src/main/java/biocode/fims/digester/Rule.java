@@ -372,8 +372,8 @@ public class Rule {
         } catch (SQLException e) {
             // do nothing as the spreadsheet may not contain every column, thus we can get a SQLException
             // complaining about the table not existing
-            logger.debug("SQL exception processing isIntegerDataFormat rule");
-            e.printStackTrace();
+            logger.debug("SQL exception processing isIntegerDataFormat rule" + e.getLocalizedMessage());
+            //e.printStackTrace();
         } finally {
             closeDb(statement, rs);
         }
