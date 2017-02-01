@@ -1,16 +1,11 @@
 package biocode.fims.reader.plugins;
 
 
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Sheet;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.io.*;
+import java.util.*;
 
 
 /**
@@ -20,33 +15,39 @@ import java.util.NoSuchElementException;
  * double quotes; 3) double quotes inside of a double-quoted string should be
  * escaped with a double quote; 4) space and tab characters are not trimmed from
  * the beginning or end of fields.
- *
+ * <p>
  * This implementation has some additional features and/or limitations that
  * might not be supported by other CSV libraries.  First, if a field is
  * double-quoted, there should be no additional characters outside of the double
  * quotes.  Second, records must not span multiple lines.  Third, standard
  * escape sequences (e.g., "\"\t") are also supported inside of quoted fields.
  * Fourth, blank lines are ignored.
- *
+ * <p>
  * Finally, note that this class expects text to consist of simple ASCII
  * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
  * empty whitespace and ignored (unless they occur within a quoted string).
  */
-public class CSVReader implements TabularDataReader
-{
+public class CSVReader implements TabularDataReader {
     private StreamTokenizer st;
     private boolean hasnext = false;
     private LinkedList<String> reclist;
-    private int currtable;
+    //private int currtable = 1;
 
-    public CSVReader()
-    {
+    // A reference to the file that opened this reader
+    protected String fileName;
+
+    // The number of rows in the active worksheet
+    private int numRows;
+
+    List<String> colNames;
+
+    public CSVReader() {
         reclist = new LinkedList<String>();
     }
 
     @Override
     public List<String> getColNames() {
-        return null;
+        return colNames;
     }
 
     @Override
@@ -56,7 +57,49 @@ public class CSVReader implements TabularDataReader
 
     @Override
     public int getNumRows() {
-        return 0;
+        if (numRows > 0) {
+            return numRows;
+        }
+
+        try {
+            int lines = countLines(fileName);
+            // decrement by one... assumption is that we MUST have a header for FIMS to work.
+            lines--;
+            return lines;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
+     * An efficient method for counting the lines in a file
+     *
+     * @param filename
+     *
+     * @return
+     *
+     * @throws IOException
+     */
+    public static int countLines(String filename) throws IOException {
+        InputStream is = new BufferedInputStream(new FileInputStream(filename));
+        try {
+            byte[] c = new byte[1024];
+            int count = 0;
+            int readChars = 0;
+            boolean empty = true;
+            while ((readChars = is.read(c)) != -1) {
+                empty = false;
+                for (int i = 0; i < readChars; ++i) {
+                    if (c[i] == '\n') {
+                        ++count;
+                    }
+                }
+            }
+            return (count == 0 && !empty) ? 1 : count;
+        } finally {
+            is.close();
+        }
     }
 
     @Override
@@ -107,10 +150,11 @@ public class CSVReader implements TabularDataReader
 
     @Override
     public String[] getFileExtensions() {
-        return new String[] {"csv"};
+        return new String[]{"csv"};
     }
 
-    /** See if the specified file is a CSV file.  Since no "magic number" can
+    /**
+     * See if the specified file is a CSV file.  Since no "magic number" can
      * be defined for CSV files, this test is limited to seeing if the file
      * extension is "csv".  This method also tests if the file actually exists.
      *
@@ -141,14 +185,16 @@ public class CSVReader implements TabularDataReader
 
 
     public boolean openFile(String filepath, String defaultSheetName, String outputFolder) {
+        // Set the input file name
+        fileName = filepath;
+
         try {
             st = new StreamTokenizer(new FileReader(filepath));
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             return false;
         }
 
-        currtable = -1;
+        //currtable = -1;
 
         st.resetSyntax();
         st.eolIsSignificant(true);
@@ -160,6 +206,8 @@ public class CSVReader implements TabularDataReader
 
         testNext();
 
+        // Get the first row to populate Column Names
+        colNames = Arrays.asList(tableGetNextRow());
         return true;
     }
 
@@ -172,31 +220,33 @@ public class CSVReader implements TabularDataReader
         int tokentype = StreamTokenizer.TT_EOF;
 
         do {
-            try { tokentype = st.nextToken(); }
-            catch (IOException e) {}
+            try {
+                tokentype = st.nextToken();
+            } catch (IOException e) {
+            }
         } while (
                 tokentype == StreamTokenizer.TT_EOL
                 );
 
         if (tokentype != StreamTokenizer.TT_EOF) {
             hasnext = true;
-            currtable++;
-        }
-        else {
+            //currtable++;
+        } else {
             hasnext = false;
         }
     }
 
     @Override
     public boolean hasNextTable() {
-        return currtable < 0;
+        return false;
+        //return currtable < 0;
     }
 
     @Override
     public void moveToNextTable() {
-        if (hasNextTable())
-            currtable++;
-        else
+        //if (hasNextTable())
+        //    currtable++;
+        //else
             throw new NoSuchElementException();
     }
 
@@ -207,9 +257,9 @@ public class CSVReader implements TabularDataReader
 
     @Override
     public boolean tableHasNextRow() {
-        if (currtable < 0)
-            return false;
-        else
+       // if (currtable < 0)
+       //     return false;
+       // else
             return hasnext;
     }
 
@@ -223,31 +273,30 @@ public class CSVReader implements TabularDataReader
         reclist.clear();
 
         try {
-        while (st.ttype != StreamTokenizer.TT_EOL &&
-                st.ttype != StreamTokenizer.TT_EOF) {
-            if (st.ttype == ',') {
-                // See if we just passed an empty field.
-                if (prevToken == ',') {
-                    reclist.add("");
-                    fieldcnt++;
+            while (st.ttype != StreamTokenizer.TT_EOL &&
+                    st.ttype != StreamTokenizer.TT_EOF) {
+                if (st.ttype == ',') {
+                    // See if we just passed an empty field.
+                    if (prevToken == ',') {
+                        reclist.add("");
+                        fieldcnt++;
+                    }
+                } else {
+                    // See if we just passed an escaped double quote inside
+                    // of a quoted string.
+                    if (prevToken != ',')
+                        reclist.add(reclist.removeLast() + "\"" + st.sval);
+                    else {
+                        reclist.add(st.sval);
+                        fieldcnt++;
+                    }
                 }
-            }
-            else {
-                // See if we just passed an escaped double quote inside
-                // of a quoted string.
-                if (prevToken != ',')
-                    reclist.add(reclist.removeLast() + "\"" + st.sval);
-                else {
-                    reclist.add(st.sval);
-                    fieldcnt++;
-                }
-            }
 
-            prevToken = st.ttype;
-            st.nextToken();
+                prevToken = st.ttype;
+                st.nextToken();
+            }
+        } catch (IOException e) {
         }
-        }
-        catch (IOException e) {}
 
         // Test for the special case of a blank last field.
         if (prevToken == ',') {

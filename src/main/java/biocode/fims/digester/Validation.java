@@ -232,7 +232,12 @@ public class Validation implements RendererInterface {
      *
      * @return
      */
-    public boolean run(TabularDataReader tabularDataReader, String filenamePrefix, String outputFolder, Mapping mapping, ArrayNode fimsMetadata) {
+    public boolean run(
+            TabularDataReader tabularDataReader,
+            String filenamePrefix,
+            String outputFolder,
+            Mapping mapping,
+            ArrayNode fimsMetadata) {
         this.tabularDataReader = tabularDataReader;
 
         Worksheet sheet = worksheets.get(0);
@@ -263,11 +268,13 @@ public class Validation implements RendererInterface {
 
         // Attempt to build hashes
         boolean hashErrorFree = true;
-        try {
-            sdc.buildHashes(mapping, sheetName);
-        } catch (Exception e) {
-            logger.warn("", e);
-            hashErrorFree = false;
+        if (processingErrorFree) {
+            try {
+                sdc.buildHashes(mapping, sheetName);
+            } catch (Exception e) {
+                logger.warn("", e);
+                hashErrorFree = false;
+            }
         }
 
         if (processingErrorFree && hashErrorFree) {
