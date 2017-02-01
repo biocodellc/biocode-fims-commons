@@ -36,7 +36,10 @@ public class JsonTabularDataConverter {
 
         // get the columns in the order they appear in the table so we can refer to the columns by index later.
         // this is necessary in order to insert the column into the db in the order we expect
-        List<String> tableColumns = Arrays.asList(source.tableGetNextRow());
+        // NOTE: JBD-- commenting this line out and replacing with getColNames below... not sure why tableColumns
+        // were being populated with tableGetNextRow() and why it was working previously??
+        // List<String> tableColumns = Arrays.asList(source.tableGetNextRow());
+        List<String> tableColumns = source.getColNames();
         List<String> attributeColumns = new ArrayList<>();
 
         for (Attribute a : attributes) {
