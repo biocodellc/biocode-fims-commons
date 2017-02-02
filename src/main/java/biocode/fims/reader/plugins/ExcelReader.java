@@ -17,9 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * TabularDataReader for Excel-format spreadsheet files.  Both Excel 97-2003
@@ -43,6 +41,8 @@ public class ExcelReader implements TabularDataReader {
 
     // The number of columns in the active worksheet (set by the first row).
     protected int numCols;
+
+    protected List<String> colNames;
 
     // The number of rows in the active worksheet
     private int numRows;
@@ -166,15 +166,14 @@ public class ExcelReader implements TabularDataReader {
         numCols = -1;
         numRows = -1;
         testNext();
+
+        // Get the first row to populate Column Names
+        colNames = Arrays.asList(tableGetNextRow());
     }
 
     public void moveToNextTable() {
         if (hasNextTable()) {
-            Sheet exsheet = excelWb.getSheetAt(currSheet++);
-            rowIterator = exsheet.rowIterator();
-            numCols = -1;
-            numRows = -1;
-            testNext();
+            setTable(excelWb.getSheetName(currSheet++));
         } else
             throw new NoSuchElementException();
     }
@@ -212,32 +211,7 @@ public class ExcelReader implements TabularDataReader {
      * @return List of Column names
      */
     public java.util.List<String> getColNames() {
-        Sheet wsh = excelWb.getSheet(getCurrentTableName());
-
-        java.util.List<String> listColumnNames = new ArrayList<String>();
-        Iterator<Row> rows = wsh.rowIterator();
-        int count = 0;
-        while (rows.hasNext()) {
-            if (count == numHeaderRows) {
-                break;
-            }
-            rows.next();
-            count++;
-        }
-
-        //XSSFRow row = (XSSFRow) rows.next();
-        Row row = (Row) rows.next();
-
-        Iterator<Cell> cells = row.cellIterator();
-        while (cells.hasNext()) {
-            //XSSFCell cell = (XSSFCell) cells.next();
-            Cell cell = (Cell) cells.next();
-            if (cell.toString().trim() != "" && cell.toString() != null) {
-                listColumnNames.add(cell.toString());
-            }
-        }
-
-        return listColumnNames;
+        return colNames;
     }
 
     /**
@@ -480,7 +454,6 @@ public class ExcelReader implements TabularDataReader {
                     try {
                         ret[cnt] = df.formatCellValue(cell, fe);
                     } catch (Exception e) {
-                        //TODO should we be catching Exception?
                         int rowNum = cell.getRowIndex() + 1;
                         throw new FimsRuntimeException("There was an issue processing a formula on this sheet.\n" +
                                 "\tWhile standard formulas are allowed, formulas with references to external sheets cannot be read!\n" +
