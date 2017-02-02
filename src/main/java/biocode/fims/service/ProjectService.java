@@ -51,6 +51,10 @@ public class ProjectService {
         return projectRepository.findByProjectId(projectId);
     }
 
+    public Project getProject(int projectId, String projectUrl) {
+        return projectRepository.findByProjectIdAndProjectUrl(projectId, projectUrl);
+    }
+
 
     @Transactional(readOnly = true)
     public boolean isUserMemberOfProject(User user, int projectId) {

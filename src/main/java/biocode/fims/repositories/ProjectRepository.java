@@ -24,4 +24,6 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
     List<Project> findAll();
 
     List<Project> findAllByProjectUrl(String projectUrl);
+
+    Project findByProjectIdAndProjectUrl(int projectId, String projectUrl);
 }
