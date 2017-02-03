@@ -130,7 +130,7 @@ public class ResolverService extends FimsService {
                 projectAuthorizer,
                 bcidService,
                 bcidMetadataSchema,
-                appRoot,
+                appRoot
         );
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
