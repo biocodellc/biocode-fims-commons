@@ -1,7 +1,5 @@
 package biocode.fims.digester;
 
-import biocode.fims.settings.FimsPrinter;
-
 /**
  * Metadata defines metadata for this FIMS installation
  */
@@ -12,6 +10,7 @@ public class Metadata {
     private String target;
     private String queryTarget;
     private String expeditionForwardingAddress;
+    private String datasetForwardingAddress;
     private String nmnh;
     private String owlRestrictionFile;
 
@@ -86,6 +85,14 @@ public class Metadata {
         this.expeditionForwardingAddress = expeditionForwardingAddress;
     }
 
+    public String getDatasetForwardingAddress() {
+        return datasetForwardingAddress;
+    }
+
+    public void setDatasetForwardingAddress(String datasetForwardingAddress) {
+        this.datasetForwardingAddress = datasetForwardingAddress;
+    }
+
     @Override
     public String toString() {
         return "Metadata{" +
@@ -95,6 +102,7 @@ public class Metadata {
                 ", target='" + target + '\'' +
                 ", queryTarget='" + queryTarget + '\'' +
                 ", expeditionForwardingAddress='" + expeditionForwardingAddress + '\'' +
+                ", datasetForwardingAddress='" + datasetForwardingAddress + '\'' +
                 ", nmnh='" + nmnh + '\'' +
                 ", textAbstract='" + textAbstract + '\'' +
                 '}';

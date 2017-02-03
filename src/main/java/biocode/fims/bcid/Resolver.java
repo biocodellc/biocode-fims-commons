@@ -65,8 +65,17 @@ public class Resolver {
                     }
                     break;
                 case ResourceTypes.DATASET_RESOURCE_TYPE:
-                    if (hasWebAddress)
+                    if (hasWebAddress) {
                         resolution = bcid.getWebAddress();
+                    } else if (mapping != null) {
+                        // Try and get datasetForwardingAddress in Mapping.metadata
+                        String datasetForwardingAddress = mapping.getMetadata().getDatasetForwardingAddress();
+
+                        if (!StringUtils.isEmpty(datasetForwardingAddress)) {
+                            resolution = UriComponentsBuilder.fromUriString(datasetForwardingAddress)
+                                    .buildAndExpand(bcid.getIdentifier()).toUri();
+                        }
+                    }
                     break;
                 default:
                     if (identifier.hasSuffix()) {
