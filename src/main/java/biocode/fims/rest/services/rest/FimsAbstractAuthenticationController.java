@@ -75,7 +75,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
                 session.setAttribute("user", user);
 
                 // Check if the user is an admin for any projects
-                if (userService.isAProjectAdmin(user)) {
+                if (userService.isAProjectAdmin(user, appRoot)) {
                     session.setAttribute("projectAdmin", true);
                 }
 

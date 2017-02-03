@@ -66,7 +66,7 @@ public class UsersResource extends FimsService {
     @Authenticated
     public User getUser(@PathParam("username") String username) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser())) {
+                !userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 
@@ -135,7 +135,7 @@ public class UsersResource extends FimsService {
     public User updateUser(@PathParam("username") String username,
                            User user) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser())) {
+                !userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 

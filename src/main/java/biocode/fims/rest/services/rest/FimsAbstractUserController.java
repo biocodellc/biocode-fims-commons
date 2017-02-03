@@ -135,7 +135,7 @@ public abstract class FimsAbstractUserController extends FimsService {
         User userToUpdate = this.userContext.getUser();
 
         if (!userContext.getUser().getUsername().equals(updateUsername.trim())) {
-            if (!userService.isAProjectAdmin(userContext.getUser())) {
+            if (!userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
                 throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
             } else {
                 adminAccess = true;
@@ -195,7 +195,7 @@ public abstract class FimsAbstractUserController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserData() {
         if (userContext.getUser() != null) {
-            userContext.getUser().setAdmin(userService.isAProjectAdmin(userContext.getUser()));
+            userContext.getUser().setAdmin(userService.isAProjectAdmin(userContext.getUser(), appRoot));
             return Response.ok(userContext.getUser()).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");

@@ -130,12 +130,18 @@ public class UserService {
      * @param user
      * @return
      */
-    public boolean isAProjectAdmin(User user) {
+    public boolean isAProjectAdmin(User user, String appRoot) {
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projects")) {
             user = getUserWithProjects(user.getUsername());
         }
-        return user.getProjects().size() > 0;
+
+        for (Project project: user.getProjects()) {
+            if (project.getProjectUrl().equals(appRoot)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public User getUserWithMemberProjects(String username) {
