@@ -44,9 +44,9 @@ public class BcidMetadataSchema {
 
     private void setMetadataElements() {
         Expedition expedition = bcid.getExpedition();
-        if (expedition != null) {
+        if (expedition != null && expedition.getProject() != null) {
             dcPublisher.setValue(expedition.getProject().getProjectCode());
-            isPublic.setValue(String.valueOf(expedition.isPublic()));
+            isPublic.setValue(String.valueOf(expedition.getProject().isPublic()));
         }
 
         identifier.setValue(String.valueOf(bcid.getIdentifier()));

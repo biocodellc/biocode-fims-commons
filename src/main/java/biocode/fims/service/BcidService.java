@@ -144,6 +144,15 @@ public class BcidService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<Bcid> getDatasets(int projectId, String expeditionCode) {
+        return bcidRepository.findAllByResourceType(
+                projectId,
+                expeditionCode,
+                ResourceTypes.DATASET_RESOURCE_TYPE
+        );
+    }
+
     public void delete(int bcidId) {
         bcidRepository.deleteByBcidId(bcidId);
     }

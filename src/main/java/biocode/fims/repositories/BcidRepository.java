@@ -77,6 +77,12 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
                                                        @Param("resourceType") String resourceType,
                                                        @Param("subResourceType") String subResourceType);
 
+    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
+            "and b.resourceType=:resourceType order by b.ts desc ")
+    List<Bcid> findAllByResourceType(@Param("projectId") int projectId,
+                                     @Param("expeditionCode") String expeditionCode,
+                                     @Param("resourceType") String resourceType);
+
     List<Bcid> findAllByGraphIn(List<String> graph);
 
     List<Bcid> findAllByEzidRequestFalse();

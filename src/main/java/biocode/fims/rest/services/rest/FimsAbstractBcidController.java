@@ -1,9 +1,12 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.entities.Bcid;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.*;
@@ -18,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.util.Hashtable;
 
 /**
@@ -30,11 +34,13 @@ import java.util.Hashtable;
 public abstract class FimsAbstractBcidController extends FimsService {
 
     private final BcidService bcidService;
+    private final ProjectService projectService;
 
     @Autowired
-    FimsAbstractBcidController(BcidService bcidService, SettingsManager settingsManager) {
+    FimsAbstractBcidController(BcidService bcidService, ProjectService projectService, SettingsManager settingsManager) {
         super(settingsManager);
         this.bcidService = bcidService;
+        this.projectService = projectService;
     }
 
     /**
@@ -110,10 +116,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response run(@PathParam("bcidId") Integer bcidId) {
         String response;
-        String username = null;
-        if (userContext.getUser() != null) {
-            username = userContext.getUser().getUsername();
-        }
+
         try {
             Bcid bcid = bcidService.getBcid(bcidId);
             BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
@@ -125,7 +128,17 @@ public abstract class FimsAbstractBcidController extends FimsService {
                             )
             );
 
-            JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+            ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
+
+            JSONRenderer renderer = new JSONRenderer(
+                    userContext.getUser(),
+                    bcid,
+                    projectAuthorizer,
+                    bcidService,
+                    bcidMetadataSchema,
+                    appRoot
+            );
+
             response = renderer.render();
 
         } catch (EmptyResultDataAccessException e) {
@@ -220,5 +233,52 @@ public abstract class FimsAbstractBcidController extends FimsService {
             throw new BadRequestException("Bcid wasn't found");
         }
 
+    }
+
+    /**
+     * Get the dataset BCID uploaded source file.
+     *
+     * @implicitParam identifier|string|query|true||||||the identifier of the dataset to download
+     * @excludeParams identifierString
+     *
+     * @responseType java.io.File
+     */
+    @GET
+    @Path("/dataset/{identifier: .+}")
+    public Response getSource(@PathParam("identifier") String identifierString) {
+        String divider = settingsManager.retrieveValue("divider");
+        Identifier identifier = new Identifier(identifierString, divider);
+
+        Bcid bcid = null;
+        try {
+            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
+        } catch (EmptyResultDataAccessException e) {
+            throw new BadRequestException("Invalid Identifier");
+        }
+
+        if (!bcid.getResourceType().equals(ResourceTypes.DATASET_RESOURCE_TYPE)) {
+            throw new BadRequestException("BCID is not a dataset");
+        }
+
+        if (bcid.getSourceFile() == null) {
+            throw new ServerErrorException("Error downloading bcid dataset.", "Bcid sourceFile is null");
+        }
+
+        if (bcid.getExpedition() == null) {
+            throw new UnauthorizedRequestException("Talk to the project admin to download this bcid.");
+        }
+
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
+        if (!projectAuthorizer.userHasAccess(userContext.getUser(), bcid.getExpedition().getProject())) {
+            throw new UnauthorizedRequestException("You are not authorized to download this private dataset.");
+        }
+
+        File file = new File(settingsManager.retrieveValue("serverRoot") + bcid.getSourceFile());
+
+        if (!file.exists()) {
+            throw new ServerErrorException("Error downloading bcid dataset.", "can't find file");
+        }
+
+        return Response.ok(file).header("Content-Disposition", "attachment; filename=" + file.getName()).build();
     }
 }

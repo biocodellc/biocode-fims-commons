@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.id;
 
+import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Identifier;
 import biocode.fims.bcid.Renderer.JSONRenderer;
@@ -11,16 +12,20 @@ import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.services.rest.FimsAbstractBcidController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.OAuthProviderService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.net.URI;
 
@@ -32,15 +37,20 @@ import java.net.URI;
 @Path("/")
 public class ResolverService extends FimsService {
 
+    @Context
+    private UriInfo uriInfo;
+
     private final BcidService bcidService;
+    private final ProjectService projectService;
     private final SettingsManager settingsManager;
     private final Resolver resolver;
 
     @Autowired
-    ResolverService(BcidService bcidService, OAuthProviderService providerService,
+    ResolverService(BcidService bcidService, ProjectService projectService,
                     SettingsManager settingsManager, Resolver resolver) {
         super(settingsManager);
         this.bcidService = bcidService;
+        this.projectService = projectService;
         this.settingsManager = settingsManager;
         this.resolver = resolver;
     }
@@ -104,10 +114,6 @@ public class ResolverService extends FimsService {
         Bcid bcid;
         String divider = settingsManager.retrieveValue("divider");
         Identifier identifier = new Identifier(identifierString, divider);
-        String username = null;
-        if (userContext.getUser() != null) {
-            username = userContext.getUser().getUsername();
-        }
 
         try {
             bcid = bcidService.getBcid(identifier.getBcidIdentifier());
@@ -115,8 +121,17 @@ public class ResolverService extends FimsService {
             throw new BadRequestException("Invalid Identifier");
         }
 
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
         BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
-        JSONRenderer renderer = new JSONRenderer(username, bcid, bcidMetadataSchema, settingsManager);
+
+        JSONRenderer renderer = new JSONRenderer(
+                userContext.getUser(),
+                bcid,
+                projectAuthorizer,
+                bcidService,
+                bcidMetadataSchema,
+                appRoot,
+        );
 
         return Response.ok(renderer.getMetadata().toJSONString()).build();
     }

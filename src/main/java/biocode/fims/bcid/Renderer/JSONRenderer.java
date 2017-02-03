@@ -1,11 +1,14 @@
 package biocode.fims.bcid.Renderer;
 
+import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.bcid.BcidMetadataSchema.metadataElement;
-import biocode.fims.settings.SettingsManager;
+import biocode.fims.service.BcidService;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.json.simple.JSONObject;
 
@@ -16,19 +19,23 @@ import java.lang.reflect.Field;
  */
 public class JSONRenderer extends Renderer {
     private JSONObject json;
-    private Integer userId = null;
+    private User user;
 
-    private SettingsManager settingsManager;
+    private final ProjectAuthorizer projectAuthorizer;
+    private final BcidService bcidService;
+    private final String appRoot;
 
     /**
      * constructor for displaying private dataset information
-     * @param username
+     *
      */
-    public JSONRenderer(String username, Bcid bcid,
-                        BcidMetadataSchema bcidMetadataSchema, SettingsManager settingsManager) {
+    public JSONRenderer(User user, Bcid bcid, ProjectAuthorizer projectAuthorizer, BcidService bcidService,
+                        BcidMetadataSchema bcidMetadataSchema, String appRoot) {
         super(bcid, bcidMetadataSchema);
-        userId = BcidDatabase.getUserId(username);
-        this.settingsManager = settingsManager;
+        this.user = user;
+        this.projectAuthorizer = projectAuthorizer;
+        this.bcidService = bcidService;
+        this.appRoot = appRoot;
     }
 
     public void enter() {
@@ -42,7 +49,7 @@ public class JSONRenderer extends Renderer {
         outputSB.append(json.toJSONString());
     }
 
-    public boolean validIdentifier()  {
+    public boolean validIdentifier() {
         if (this.bcid == null) {
             outputSB.append("{\"Identifier\":{\"status\":\"not found\"}}");
             return false;
@@ -53,12 +60,13 @@ public class JSONRenderer extends Renderer {
 
     /**
      * get a JSONObject of the BcidMetadataSchema
+     *
      * @return
      */
     public JSONObject getMetadata() {
         json = new JSONObject();
         Field[] fields = bcidMetadataSchema.getClass().getFields();
-        for (Field field: fields) {
+        for (Field field : fields) {
             // loop through all Fields of BcidMetadataSchema that are metadataElement
             if (field.getType().equals(metadataElement.class)) {
                 try {
@@ -86,67 +94,44 @@ public class JSONRenderer extends Renderer {
 
     /**
      * check if the resource is a collection or dataset and append the dataset(s)
+     *
      * @param resource
      */
     private void appendExpeditionOrDatasetData(metadataElement resource) {
-        ResourceTypes rts = new ResourceTypes();
-        ResourceType rt = rts.get(resource.getValue());
-
         // check if the resource is a dataset or a collection
-        if (rts.get(1).equals(rt)) {
+        if (StringUtils.equals(ResourceTypes.DATASET_RESOURCE_TYPE, resource.getValue())) {
             appendDataset();
-        } else if (rts.get(38).equals(rt)) {
+        } else if (StringUtils.equals(Expedition.EXPEDITION_RESOURCE_TYPE, resource.getValue())) {
             appendExpeditionDatasets();
         }
     }
 
     private void appendExpeditionDatasets() {
-        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         Expedition expedition = bcid.getExpedition();
-        if (displayDatasets(expedition)) {
+        if (expedition == null) {
+            json.put("message", "This Expedition has been deleted. Contact the project administrator if you need access to the datasets");
+        } else if (displayDatasets(expedition)) {
             JSONObject datasets = new JSONObject();
-            datasets.put("datasets", expeditionMinter.getDatasets(expedition.getExpeditionId()));
-            datasets.put("appRoot", settingsManager.retrieveValue("appRoot"));
+            datasets.put("datasets", bcidService.getDatasets(expedition.getProject().getProjectId(), expedition.getExpeditionCode()));
+            datasets.put("appRoot", appRoot);
             json.put("datasets", datasets);
         }
     }
 
     private void appendDataset() {
         Expedition expedition = bcid.getExpedition();
-        if (displayDatasets(expedition) && bcid.getGraph() != null) {
-            JSONObject download = new JSONObject();
-            String appRoot = settingsManager.retrieveValue("appRoot");
+        if (expedition == null) {
+            json.put("message", "This dataset has been deleted. Contact the project administrator if you need access.");
+        } else if (displayDatasets(expedition)) {
 
-            // Excel option
-            download.put("graph", bcid.getGraph());
-            download.put("projectId", expedition.getProject().getProjectId());
-            download.put("appRoot", appRoot);
-
-            // n3 option
-            download.put("n3", (bcid.getWebAddress() != null) ? bcid.getWebAddress().toASCIIString() : null);
-
-            json.put("download", download);
-        } else if (bcid.getGraph() != null) {
-            JSONObject msg = new JSONObject();
-            msg.put("message", "This is listed as a private dataset, You must be logged in to download data.");
-
-            json.put("download", msg);
+            // TODO add download link when we refactor BCID to separate application
+        } else {
+            json.put("message", "This is listed as a private dataset, You must be logged in to download data.");
         }
     }
 
     private Boolean displayDatasets(Expedition expedition) {
-        ProjectMinter projectMinter = new ProjectMinter();
-
-        if (expedition != null) {
-
-            if (expedition.getProject().isPublic()) {
-                return true;
-            } else if (userId != null && projectMinter.userExistsInProject(userId, expedition.getProject().getProjectId())) {
-                    return true;
-            }
-
-        }
-        return false;
+        return expedition != null && projectAuthorizer.userHasAccess(user, expedition.getProject());
     }
 
 }
