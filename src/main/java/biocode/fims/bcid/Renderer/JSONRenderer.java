@@ -7,18 +7,24 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.bcid.BcidMetadataSchema.metadataElement;
+import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.serializers.Views;
 import biocode.fims.service.BcidService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.json.simple.JSONObject;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
 /**
  * jsonRenderer renders objects as JSON
+ * TODO migrate class to return a POJO. leave method can convert pojo to string using ObjectMapper
  */
 public class JSONRenderer extends Renderer {
-    private JSONObject json;
+    private ObjectNode json;
     private User user;
 
     private final ProjectAuthorizer projectAuthorizer;
@@ -27,7 +33,6 @@ public class JSONRenderer extends Renderer {
 
     /**
      * constructor for displaying private dataset information
-     *
      */
     public JSONRenderer(User user, Bcid bcid, ProjectAuthorizer projectAuthorizer, BcidService bcidService,
                         BcidMetadataSchema bcidMetadataSchema, String appRoot) {
@@ -46,7 +51,11 @@ public class JSONRenderer extends Renderer {
     }
 
     public void leave() {
-        outputSB.append(json.toJSONString());
+        try {
+            outputSB.append(new SpringObjectMapper().writeValueAsString(json));
+        } catch (JsonProcessingException e) {
+            throw new ServerErrorException();
+        }
     }
 
     public boolean validIdentifier() {
@@ -63,15 +72,15 @@ public class JSONRenderer extends Renderer {
      *
      * @return
      */
-    public JSONObject getMetadata() {
-        json = new JSONObject();
+    public ObjectNode getMetadata() {
+        json = new SpringObjectMapper().createObjectNode();
         Field[] fields = bcidMetadataSchema.getClass().getFields();
         for (Field field : fields) {
             // loop through all Fields of BcidMetadataSchema that are metadataElement
             if (field.getType().equals(metadataElement.class)) {
                 try {
                     metadataElement element = (metadataElement) field.get(bcidMetadataSchema);
-                    JSONObject obj = new JSONObject();
+                    ObjectNode obj = json.putObject(element.getKey());
 
                     obj.put("value", element.getValue());
                     obj.put("shortValue", element.getShortValue());
@@ -80,7 +89,6 @@ public class JSONRenderer extends Renderer {
                     UrlValidator urlValidator = new UrlValidator();
                     obj.put("isResource", (urlValidator.isValid(element.getValue())));
 
-                    json.put(element.getKey(), obj);
                 } catch (IllegalAccessException e) {
                     throw new ServerErrorException();
                 }
@@ -111,10 +119,20 @@ public class JSONRenderer extends Renderer {
         if (expedition == null) {
             json.put("message", "This Expedition has been deleted. Contact the project administrator if you need access to the datasets");
         } else if (displayDatasets(expedition)) {
-            JSONObject datasets = new JSONObject();
-            datasets.put("datasets", bcidService.getDatasets(expedition.getProject().getProjectId(), expedition.getExpeditionCode()));
+            ObjectNode datasets = json.putObject("datasets");
+            ObjectMapper objectMapper = new SpringObjectMapper();
+            try {
+                datasets.set("datasets",
+                        objectMapper.readTree(objectMapper.writerWithView(Views.Summary.class)
+                                .writeValueAsString(
+                                        bcidService.getDatasets(expedition.getProject().getProjectId(), expedition.getExpeditionCode())
+                                )
+                        )
+                );
+            } catch (IOException e) {
+                throw new ServerErrorException();
+            }
             datasets.put("appRoot", appRoot);
-            json.put("datasets", datasets);
         }
     }
 

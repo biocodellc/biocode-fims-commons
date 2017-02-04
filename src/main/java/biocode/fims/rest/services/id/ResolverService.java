@@ -12,9 +12,7 @@ import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.services.rest.FimsAbstractBcidController;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +131,6 @@ public class ResolverService extends FimsService {
                 appRoot
         );
 
-        return Response.ok(renderer.getMetadata().toJSONString()).build();
+        return Response.ok(renderer.getMetadata()).build();
     }
 }
