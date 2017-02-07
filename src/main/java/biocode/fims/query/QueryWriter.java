@@ -583,7 +583,42 @@ public class QueryWriter {
                     if (cell == null) {
                         fileOut.write((delimeter).getBytes());
                     } else {
-                        byte[] contentInBytes = cell.getStringCellValue().getBytes();
+                        byte[] contentInBytes;
+                        switch (cell.getCellType()) {
+                            case Cell.CELL_TYPE_STRING:
+                                contentInBytes = cell.getRichStringCellValue().getString().getBytes();
+                                break;
+
+                            case Cell.CELL_TYPE_NUMERIC:
+                                if (DateUtil.isCellDateFormatted(cell)) {
+                                    contentInBytes = String.valueOf(cell.getDateCellValue()).getBytes();
+                                } else {
+                                    Double value = cell.getNumericCellValue();
+                                    // excel will return numbers as double. If it is an integer, get the int contentInBytes
+                                    if (attributes.get(cn).getDatatype() == DataType.INTEGER) {
+                                        contentInBytes = String.valueOf(value.intValue()).getBytes();
+                                    } else {
+                                        contentInBytes = String.valueOf(value).getBytes();
+                                    }
+                                }
+                                break;
+
+                            case Cell.CELL_TYPE_BOOLEAN:
+                                contentInBytes = String.valueOf(cell.getBooleanCellValue()).getBytes();
+                                break;
+
+                            case Cell.CELL_TYPE_FORMULA:
+                                contentInBytes = String.valueOf(cell.getCellFormula()).getBytes();
+                                break;
+
+                            case Cell.CELL_TYPE_BLANK:
+                                contentInBytes = "".getBytes();
+                                break;
+
+                            default:
+                                contentInBytes = cell.toString().getBytes();
+
+                        }
                         fileOut.write(contentInBytes);
                         fileOut.write((delimeter).getBytes());
                     }
