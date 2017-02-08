@@ -24,8 +24,6 @@ public class RDFRenderer extends Renderer {
 
     public void printMetadata() {
         resourceAppender(bcidMetadataSchema.resource);
-        resourceAppender(bcidMetadataSchema.dcMediator);
-        resourceAppender(bcidMetadataSchema.dcHasVersion);
         resourceAppender(bcidMetadataSchema.dcIsPartOf);
         resourceAppender(bcidMetadataSchema.dcRights);
         resourceAppender(bcidMetadataSchema.dcIsReferencedBy);

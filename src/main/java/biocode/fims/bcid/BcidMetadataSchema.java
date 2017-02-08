@@ -22,11 +22,7 @@ public class BcidMetadataSchema {
     public metadataElement dcIsReferencedBy;
     public metadataElement dcIsPartOf;
     public metadataElement dcSource;
-    public metadataElement dcMediator;
-    public metadataElement dcHasVersion;
     public metadataElement dcPublisher;
-    public metadataElement forwardingResolution;
-    public metadataElement resolutionTarget;
     public metadataElement identifier;
     public metadataElement isPublic;
 
@@ -58,8 +54,6 @@ public class BcidMetadataSchema {
         dcTitle.setValue(bcid.getTitle());
         dcSource.setValue(identifierObject.getSuffix());
         dcRights.setValue(settingsManager.retrieveValue("rights"));
-        dcHasVersion.setValue(String.valueOf(bcid.getWebAddress()));
-        dcMediator.setValue(settingsManager.retrieveValue("resolverMetadataPrefix"));
 
         if (!bcid.getUser().getFullName().equals("Test Account")) {
             dcIsReferencedBy.setValue("http://n2t.net/" + bcid.getIdentifier());
@@ -70,20 +64,6 @@ public class BcidMetadataSchema {
             dcIsPartOf.setValue(doi);
         }
 
-
-        if (hasForwardingResolution()) {
-            forwardingResolution.setValue(String.valueOf(true));
-            resolutionTarget.setValue(bcid.getWebAddress() + identifierObject.getSuffix());
-        }
-
-    }
-
-    private boolean hasForwardingResolution() {
-        if (!StringUtils.isEmpty(bcid.getWebAddress()) &&
-                !StringUtils.isEmpty(identifierObject.getSuffix())) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -96,16 +76,12 @@ public class BcidMetadataSchema {
         dcDate = new metadataElement("dc:date",  "", "Date that metadata was last updated for this bcid.");
         dcCreator = new metadataElement("dc:creator", "", "Who created the group definition.");
         dcTitle = new metadataElement("dc:title", "", "Title");
-        dcSource = new metadataElement("dc:source", "", "The locally-unique bcid.");
+        dcSource = new metadataElement("dc:source", "", "The locally-unique identifier.");
         dcRights = new metadataElement("dcterms:rights", "", "Rights applied to the metadata content describing this bcid.");
         dcIsReferencedBy = new metadataElement("dcterms:isReferencedBy", "", "The group level bcid, registered with EZID.");
         dcIsPartOf = new metadataElement("dcterms:isPartOf", "", "A DOI describing the dataset which this bcid belongs to.");
-        dcHasVersion = new metadataElement("dcterms:hasVersion", "", "The redirection target for this bcid.");
-        forwardingResolution = new metadataElement("urn:forwardingResolution", "false", "Indicates that this bcid has a suffix and should be forwarded to the fowardingResolutionTarget.");
-        resolutionTarget = new metadataElement("urn:resolutionTarget", "", "The target uri for the locally-unique bcid.");
         identifier = new metadataElement("identifier", "", "The identifier this metadata represents.");
-        dcMediator = new metadataElement("dcterms:mediator", "", "Metadata mediator");
-        isPublic = new metadataElement("urn:isPublic", "false", "If this bcid is publicly viewable");
+        isPublic = new metadataElement("urn:isPublic", "false", "If the metadata represented by this bcid is publicly viewable");
     }
 
     /**
