@@ -26,7 +26,7 @@ public class ProjectAuthorizerTest {
     }
 
     @Test
-    public void userHasAccess_unAuthorizedUserPublicProject_true() {
+    public void userHasAccess_unAuthenticatedUserPublicProject_true() {
         Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
                 .isPublic(true)
                 .build();
@@ -36,7 +36,7 @@ public class ProjectAuthorizerTest {
     }
 
     @Test
-    public void userHasAccess_unAuthorizedUserPrivateProject_false() {
+    public void userHasAccess_unAuthenticatedUserPrivateProject_false() {
         Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
                 .isPublic(false)
                 .build();
@@ -46,7 +46,7 @@ public class ProjectAuthorizerTest {
     }
 
     @Test
-    public void userHasAccess_unAuthorizedUserPublicProjectDifferentProjectUrl_false() {
+    public void userHasAccess_unAuthenticatedUserPublicProjectDifferentProjectUrl_false() {
         Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", "http://example.com/test/")
                 .isPublic(true)
                 .build();
@@ -56,7 +56,7 @@ public class ProjectAuthorizerTest {
     }
 
     @Test
-    public void userHasAccess_AuthorizedMemberUserPrivateProject_true() {
+    public void userHasAccess_AuthenticatedMemberUserPrivateProject_true() {
         Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
                 .isPublic(false)
                 .build();
@@ -70,7 +70,7 @@ public class ProjectAuthorizerTest {
     }
 
     @Test
-    public void userHasAccess_AuthorizedNonMemberUserPrivateProject_false() {
+    public void userHasAccess_AuthenticatedNonMemberUserPrivateProject_false() {
         Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
                 .isPublic(false)
                 .build();
