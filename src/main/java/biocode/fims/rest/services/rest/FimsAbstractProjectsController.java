@@ -83,7 +83,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAbstract(@PathParam("projectId") int projectId) {
         JSONObject obj = new JSONObject();
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
 
         // Write the all of the checkbox definitions to a String Variable
         //obj.put("abstract", JSONValue.escape(t.printAbstract()));
@@ -326,7 +326,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @GET
     @Path("/{projectId}/config/refreshCache")
     public Response refreshCache(@PathParam("projectId") Integer projectId) {
-        new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+        new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
 
         return Response.noContent().build();
     }

@@ -221,13 +221,13 @@ public class ExpeditionsResource extends FimsService {
         expeditionService.delete(expeditionCode, projectId);
 
         // delete any data for the expedition
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
 
         ProcessController processController = new ProcessController(projectId, expeditionCode);
-        processController.setOutputFolder(uploadPath());
+        processController.setOutputFolder(defaultOutputDirectory());
         processController.setMapping(mapping);
         fimsMetadataFileManager.setProcessController(processController);
         fimsMetadataFileManager.deleteDataset();

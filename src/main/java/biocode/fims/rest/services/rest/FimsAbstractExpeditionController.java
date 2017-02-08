@@ -14,7 +14,6 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
@@ -72,7 +71,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
         URI uri;
 
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);

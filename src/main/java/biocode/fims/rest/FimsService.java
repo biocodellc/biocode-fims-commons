@@ -21,8 +21,6 @@ public abstract class FimsService {
     @Context
     public UriInfo uriInfo;
     @Context
-    protected ServletContext context;
-    @Context
     protected HttpHeaders headers;
 
     protected HttpSession session;
@@ -38,8 +36,8 @@ public abstract class FimsService {
         ignoreUser = Boolean.valueOf(settingsManager.retrieveValue("ignoreUser", "false"));
     }
 
-    protected String uploadPath() {
-        return context.getRealPath(settingsManager.retrieveValue("uploadDir")) + File.separator;
+    protected String defaultOutputDirectory() {
+        return System.getProperty("java.io.tmpdir");
     }
 
     public HttpHeaders getHeaders() { return headers; }
