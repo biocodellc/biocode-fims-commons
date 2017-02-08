@@ -351,18 +351,40 @@ public class Validation implements RendererInterface {
 
         try {
             d.parse(configFile);
-            // add default rules here
-            for (Worksheet ws: worksheets) {
-                // run the "validDataTypeFormat" Rule for every worksheet
-                Rule validDataTypeFormatRule = new Rule(mapping);
-                validDataTypeFormatRule.setLevel("error");
-                validDataTypeFormatRule.setType("validDataTypeFormat");
-                ws.addRule(validDataTypeFormatRule);
-            }
-        } catch (IOException e) {
-            throw new FimsRuntimeException(500, e);
-        } catch (SAXException e) {
+            addDefaultRulesToWorksheets(mapping);
+        } catch (IOException | SAXException e) {
             throw new FimsRuntimeException(500, e);
         }
+    }
+
+    private void addDefaultRulesToWorksheets(Mapping mapping) {
+        for (Worksheet ws: worksheets) {
+
+            if (isRootEntityWorksheet(ws.getSheetname(), mapping)) {
+                ws.addRule(createvalidForURIRule(mapping));
+            }
+
+            // run the "validDataTypeFormat" Rule for every worksheet
+            ws.addRule(createValidDataTypeFormatRule(mapping));
+        }
+    }
+
+    private Rule createValidDataTypeFormatRule(Mapping mapping) {
+        Rule validDataTypeFormatRule = new Rule(mapping);
+        validDataTypeFormatRule.setLevel("error");
+        validDataTypeFormatRule.setType("validDataTypeFormat");
+        return validDataTypeFormatRule;
+    }
+
+    private Rule createvalidForURIRule(Mapping mapping) {
+        Rule validForURIRule = new Rule(mapping);
+        validForURIRule.setLevel("error");
+        validForURIRule.setType("validForURI");
+        return validForURIRule;
+    }
+
+    private boolean isRootEntityWorksheet(String sheetName, Mapping mapping) {
+        String rootEntitySheetName = mapping.getRootEntity().getWorksheet();
+        return StringUtils.equals(sheetName, rootEntitySheetName);
     }
 }
