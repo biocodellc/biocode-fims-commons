@@ -84,7 +84,7 @@ dependencies {
 
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     server 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
-    server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.0'
+    server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.4'
 
     // aspectj
     runtime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
