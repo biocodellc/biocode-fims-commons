@@ -7,7 +7,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import java.util.Map;
 
 /**
@@ -23,7 +22,6 @@ public class AbstractRequest<T> implements Request<T> {
     private String method;
     private Map<String, Object[]> queryParams;
     private MediaType accepts;
-    private MultivaluedMap<String, String> formParams;
     private Entity httpEntity;
 
     public AbstractRequest(String method, Class<T> responseClass, Client client, String path, String baseUrl) {
