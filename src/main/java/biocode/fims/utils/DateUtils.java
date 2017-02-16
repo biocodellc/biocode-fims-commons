@@ -49,58 +49,53 @@ public class DateUtils {
      * @return
      */
     public static boolean isValidISO8601DateFormat(String format, DataType dataType) {
-        try {
-            switch (dataType) {
-                case DATE:
-                    for (String f : ISO8601_DATE_FORMATS) {
-                        if (StringUtils.equals(f, format)) {
-                            return true;
-                        }
+        switch (dataType) {
+            case DATE:
+                for (String f : ISO8601_DATE_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
                     }
-                    break;
-                case TIME:
-                    for (String f : ISO8601_TIME_FORMATS) {
-                        if (StringUtils.equals(f, format)) {
-                            return true;
-                        }
+                }
+                break;
+            case TIME:
+                for (String f : ISO8601_TIME_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
                     }
-                    break;
-                case DATETIME:
-                    String dateFormat = format.split("T")[0];
-                    String timeFormat = "";
+                }
+                break;
+            case DATETIME:
+                String dateFormat = format.split("T")[0];
+                String timeFormat = "";
 
-                    try {
-                        timeFormat = format.split("T")[1];
-                    } catch (ArrayIndexOutOfBoundsException e) {
+                try {
+                    timeFormat = format.split("T")[1];
+                } catch (ArrayIndexOutOfBoundsException e) {
                 /* In case this is specified as "DATETIME" but only has "DATE", the
                     arrayindexoutofbounds exception is thrown.  Thats OK, we can
                     still call this a proper date.
                  */
-                        for (String f : ISO8601_DATE_FORMATS) {
-                            if (StringUtils.equals(f, dateFormat)) {
+                    for (String f : ISO8601_DATE_FORMATS) {
+                        if (StringUtils.equals(f, dateFormat)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                for (String f : ISO8601_DATE_FORMATS) {
+                    if (StringUtils.equals(f, dateFormat)) {
+                        for (String tf : ISO8601_TIME_FORMATS) {
+                            if (StringUtils.equals(tf, timeFormat)) {
                                 return true;
                             }
                         }
-                        return false;
                     }
-
-                    for (String f : ISO8601_DATE_FORMATS) {
-                        if (StringUtils.equals(f, dateFormat)) {
-                            for (String tf : ISO8601_TIME_FORMATS) {
-                                if (StringUtils.equals(tf, timeFormat)) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                    break;
-            }
-
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                }
+                break;
         }
+
+        return false;
     }
 
     /**
