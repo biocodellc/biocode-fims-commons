@@ -65,7 +65,8 @@ public class CSVReader implements TabularDataReader {
             int lines = countLines(fileName);
             // decrement by one... assumption is that we MUST have a header for FIMS to work.
             lines--;
-            return lines;
+            numRows = lines;
+            return numRows;
         } catch (IOException e) {
             e.printStackTrace();
             return 0;
