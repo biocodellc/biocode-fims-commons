@@ -45,6 +45,7 @@ public class DateUtils {
      *
      * @param format
      * @param dataType
+     *
      * @return
      */
     public static boolean isValidISO8601DateFormat(String format, DataType dataType) {
@@ -65,7 +66,22 @@ public class DateUtils {
                 break;
             case DATETIME:
                 String dateFormat = format.split("T")[0];
-                String timeFormat = format.split("T")[1];
+                String timeFormat = "";
+
+                try {
+                    timeFormat = format.split("T")[1];
+                } catch (ArrayIndexOutOfBoundsException e) {
+                /* In case this is specified as "DATETIME" but only has "DATE", the
+                    arrayindexoutofbounds exception is thrown.  Thats OK, we can
+                    still call this a proper date.
+                 */
+                    for (String f : ISO8601_DATE_FORMATS) {
+                        if (StringUtils.equals(f, dateFormat)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
 
                 for (String f : ISO8601_DATE_FORMATS) {
                     if (StringUtils.equals(f, dateFormat)) {
@@ -86,6 +102,7 @@ public class DateUtils {
      * Checks to see if a date string matches one of the given formats
      *
      * @param s
+     *
      * @return
      */
     public static boolean isValidDateFormat(String s, String[] formats) {
@@ -104,6 +121,7 @@ public class DateUtils {
      * @param dateString the string to convert
      * @param newFormat  the format you would like to convert the date to
      * @param formats    possible formats for the dateString
+     *
      * @return
      */
     public static String convertDateToFormat(String dateString, String newFormat, String[] formats) {
@@ -126,7 +144,7 @@ public class DateUtils {
         try {
             DateTimeFormatter formatter = DateTimeFormat.forPattern(format);
             formatter.parseDateTime(dateString);
-        } catch (IllegalArgumentException|UnsupportedOperationException e) {
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
             return false;
         }
         return true;
