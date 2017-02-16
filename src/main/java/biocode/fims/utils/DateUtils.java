@@ -64,14 +64,18 @@ public class DateUtils {
                 }
                 break;
             case DATETIME:
-                String dateFormat = format.split("T")[0];
-                String timeFormat = format.split("T")[1];
+                String[] splitDateTime = format.split("T");
 
-                for (String f : ISO8601_DATE_FORMATS) {
-                    if (StringUtils.equals(f, dateFormat)) {
-                        for (String tf : ISO8601_TIME_FORMATS) {
-                            if (StringUtils.equals(tf, timeFormat)) {
-                                return true;
+                if (hasDateAndTime(splitDateTime)) {
+                    String dateFormat = splitDateTime[0];
+                    String timeFormat = splitDateTime[1];
+
+                    for (String f : ISO8601_DATE_FORMATS) {
+                        if (StringUtils.equals(f, dateFormat)) {
+                            for (String tf : ISO8601_TIME_FORMATS) {
+                                if (StringUtils.equals(tf, timeFormat)) {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -80,6 +84,10 @@ public class DateUtils {
         }
 
         return false;
+    }
+
+    private static boolean hasDateAndTime(String[] splitDateTime) {
+        return splitDateTime.length == 2;
     }
 
     /**
@@ -126,7 +134,7 @@ public class DateUtils {
         try {
             DateTimeFormatter formatter = DateTimeFormat.forPattern(format);
             formatter.parseDateTime(dateString);
-        } catch (IllegalArgumentException|UnsupportedOperationException e) {
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
             return false;
         }
         return true;
