@@ -4,6 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class Mapping {
     public String getConceptForwardingAddress(String identifier) {
         String forwardingAddress = null;
         for (Entity entity : entities) {
-            if (entity.getIdentifier().toString().equals(identifier)) {
+            if (StringUtils.equals(String.valueOf(entity.getIdentifier()), identifier)) {
                 forwardingAddress = entity.getConceptForwardingAddress();
                 break;
             }
