@@ -221,7 +221,7 @@ public final class SqLiteTabularDataConverter {
 
             while (it.hasNext()) {
                 Entity entity = (Entity) it.next();
-                if (entity.hasWorksheet() && entity.getUniqueKey().contains("HASH")) {
+                if (entity.hasWorksheet() && entity.isValueObject()) {
 
                     // Add this column Bcid
                     String alter = "ALTER TABLE " + tName + " ADD COLUMN " + entity.getUniqueKey() + " text";

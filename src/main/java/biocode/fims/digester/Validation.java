@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -20,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -360,13 +360,30 @@ public class Validation implements RendererInterface {
     private void addDefaultRulesToWorksheets(Mapping mapping) {
         for (Worksheet ws: worksheets) {
 
-            if (isRootEntityWorksheet(ws.getSheetname(), mapping)) {
-                ws.addRule(createvalidForURIRule(mapping));
+            // every entity uniqueKey should have the validForURI Rule run
+            for (Rule rule: createValidForURIRules(mapping, ws.getSheetname())) {
+                ws.addRule(rule);
             }
 
             // run the "validDataTypeFormat" Rule for every worksheet
             ws.addRule(createValidDataTypeFormatRule(mapping));
         }
+    }
+
+    private java.util.List<Rule> createValidForURIRules(Mapping mapping, String sheetname) {
+        java.util.List<Rule> rules = new ArrayList<>();
+
+        for (Entity entity: mapping.getEntities()) {
+            if (addValidForUriRule(sheetname, entity)) {
+                rules.add(createValidForURIRule(mapping, entity.getUniqueKey()));
+            }
+        }
+
+        return rules;
+    }
+
+    private boolean addValidForUriRule(String sheetname, Entity entity) {
+        return entity.hasWorksheet() && !entity.isValueObject() && entity.getWorksheet().equals(sheetname);
     }
 
     private Rule createValidDataTypeFormatRule(Mapping mapping) {
@@ -376,16 +393,11 @@ public class Validation implements RendererInterface {
         return validDataTypeFormatRule;
     }
 
-    private Rule createvalidForURIRule(Mapping mapping) {
+    private Rule createValidForURIRule(Mapping mapping, String column) {
         Rule validForURIRule = new Rule(mapping);
         validForURIRule.setLevel("error");
-        validForURIRule.setColumn(mapping.getRootEntity().getUniqueKey());
+        validForURIRule.setColumn(column);
         validForURIRule.setType("validForURI");
         return validForURIRule;
-    }
-
-    private boolean isRootEntityWorksheet(String sheetName, Mapping mapping) {
-        String rootEntitySheetName = mapping.getRootEntity().getWorksheet();
-        return StringUtils.equals(sheetName, rootEntitySheetName);
     }
 }

@@ -4,7 +4,7 @@ import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Entity representation
@@ -15,7 +15,6 @@ public class Entity {
     private String uniqueKey;
     private String conceptAlias;
     private String conceptURI;
-    private String entityId;
     private String conceptForwardingAddress;
     private boolean esNestedObject = false;
     private URI identifier;
@@ -33,14 +32,6 @@ public class Entity {
 
     public LinkedList<Attribute> getAttributes() {
         return attributes;
-    }
-
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
     }
 
     public String getWorksheet() {
@@ -115,11 +106,13 @@ public class Entity {
         return !StringUtils.isBlank(worksheet);
     }
 
+    public boolean hasWorksheet(String sheetName) {
+        return worksheet != null && worksheet.equals(sheetName);
+    }
     /**
      * Basic Text printer
      */
     public void print() {
-        FimsPrinter.out.println("  EntityId:" + entityId);
         FimsPrinter.out.println("    worksheet=" + worksheet);
         FimsPrinter.out.println("    uniqueKey=" + uniqueKey);
         FimsPrinter.out.println("    conceptName=" + conceptAlias);
@@ -130,5 +123,9 @@ public class Entity {
                 attribute.print();
         }
 
+    }
+
+    public boolean isValueObject() {
+        return getUniqueKey() != null && getUniqueKey().contains("HASH");
     }
 }

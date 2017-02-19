@@ -21,7 +21,6 @@ public class Attribute implements Comparable {
     private String synonyms;
     private String dataformat;
     private String delimited_by;
-    private String type;
     private Boolean displayAnnotationProperty;
 
     public String getColumn() {
@@ -75,14 +74,6 @@ public class Attribute implements Comparable {
         this.delimited_by = delimited_by;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getGroup() {
         return group;
     }
@@ -99,6 +90,7 @@ public class Attribute implements Comparable {
         this.defined_by = defined_by;
     }
 
+    // TODO move to DataType Object
     public DataType getDatatype() {
         return datatype;
     }
@@ -131,6 +123,7 @@ public class Attribute implements Comparable {
         this.synonyms = synonyms;
     }
 
+    // TODO move to DataType Object
     public String getDataformat() {
         return dataformat;
     }
@@ -168,8 +161,22 @@ public class Attribute implements Comparable {
         m.put("synonyms", (synonyms != null) ? synonyms:"");
         m.put("dataFormat", (dataformat != null) ? dataformat:"");
         m.put("delimitedBy", (delimited_by != null) ? delimited_by:"");
-        m.put("type", (type != null) ? type:"");
 
         return m;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Attribute)) return false;
+
+        Attribute attribute = (Attribute) o;
+
+        return getUri().equals(attribute.getUri());
+    }
+
+    @Override
+    public int hashCode() {
+        return getUri().hashCode();
     }
 }

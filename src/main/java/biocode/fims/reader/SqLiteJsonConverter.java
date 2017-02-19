@@ -119,7 +119,7 @@ public final class SqLiteJsonConverter {
             stmt = connection.createStatement();
 
             for (Entity entity: mapping.getEntities()) {
-                if (entity.hasWorksheet() && entity.getUniqueKey().contains("HASH")) {
+                if (entity.hasWorksheet() && entity.isValueObject()) {
 
                     // Add this column Bcid
                     String alter = "ALTER TABLE " + tName + " ADD COLUMN " + entity.getUniqueKey() + " text";

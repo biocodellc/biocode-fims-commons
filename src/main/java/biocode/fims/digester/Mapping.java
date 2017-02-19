@@ -186,14 +186,15 @@ public class Mapping {
      * @return
      */
     public ArrayList<Attribute> getAllAttributes(String worksheet) {
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+        Set<Attribute> attributes = new HashSet<>();
 
         for (Entity entity : entities) {
-            if (entity.hasWorksheet() && entity.getWorksheet().equals(worksheet))
+            if (entity.hasWorksheet(worksheet))
                 attributes.addAll(entity.getAttributes());
         }
 
-        return attributes;
+        // TODO return a Set<Attribute>
+        return new ArrayList<>(attributes);
     }
 
     /**
