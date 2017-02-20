@@ -3,16 +3,19 @@ package biocode.fims.renderers;
 /**
  * Handle messaging for
  */
-public class RowMessage extends Message implements Comparable {
+public class RowMessage {
+    public static final Integer WARNING = 0;
+    public static final Integer ERROR = 1;
+    protected String message;
+    protected Integer level;
+    protected   String groupMessage;
     private Integer row;
 
     public RowMessage(String message, String groupMessage, Integer level) {
-        this(message, groupMessage, level, null);
+        this.message = message;
+        this.level = level;
+        this.groupMessage = groupMessage;
     }
-
-    /*public RowMessage(String message, Integer level, Integer row) {
-        this(message, null, level, row);
-    } */
 
     public RowMessage(String message, String groupMessage, Integer level, Integer row) {
         this.message = message;
@@ -48,8 +51,22 @@ public class RowMessage extends Message implements Comparable {
         this.row = row;
     }
 
-    public int compareTo(Object o) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+
+    public String getLevelAsString() {
+        if (level == 0) return "Warning";
+        else return "Error";
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public   String getGroupMessage() {
+        return groupMessage;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }
 
