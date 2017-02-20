@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class ProcessControllerTest {
 
     /**
-     * temporary test used to help refactor FimsPhotoValidationMessages into a ValidationMessages class.
+     * temporary test used to help refactor current validation messages into a ValidationMessages class.
      * <p>
      * This will serve to verify that the new class returns the same json response.
      */
