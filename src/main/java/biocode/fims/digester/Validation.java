@@ -378,6 +378,7 @@ public class Validation implements RendererInterface {
 
     private Rule createvalidForURIRule(Mapping mapping) {
         Rule validForURIRule = new Rule(mapping);
+        validForURIRule.setColumn(mapping.getRootEntity().getUniqueKey());
         validForURIRule.setLevel("error");
         validForURIRule.setType("validForURI");
         return validForURIRule;
