@@ -4,6 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
+import org.apache.commons.lang.StringUtils;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class Mapping {
     public String getConceptForwardingAddress(String identifier) {
         String forwardingAddress = null;
         for (Entity entity : entities) {
-            if (entity.getIdentifier().toString().equals(identifier)) {
+            if (StringUtils.equals(String.valueOf(entity.getIdentifier()), identifier)) {
                 forwardingAddress = entity.getConceptForwardingAddress();
                 break;
             }
@@ -185,14 +186,15 @@ public class Mapping {
      * @return
      */
     public ArrayList<Attribute> getAllAttributes(String worksheet) {
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+        Set<Attribute> attributes = new HashSet<>();
 
         for (Entity entity : entities) {
-            if (entity.hasWorksheet() && entity.getWorksheet().equals(worksheet))
+            if (entity.hasWorksheet(worksheet))
                 attributes.addAll(entity.getAttributes());
         }
 
-        return attributes;
+        // TODO return a Set<Attribute>
+        return new ArrayList<>(attributes);
     }
 
     /**

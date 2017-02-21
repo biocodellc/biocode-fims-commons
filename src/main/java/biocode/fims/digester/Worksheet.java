@@ -1,6 +1,5 @@
 package biocode.fims.digester;
 
-import biocode.fims.renderers.Message;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import org.slf4j.Logger;
@@ -49,25 +48,6 @@ public class Worksheet {
      */
     public LinkedList<RowMessage> getMessages() {
         return messages;
-    }
-
-    /**
-     * Get just the unique messages
-     *
-     * @return
-     */
-    public LinkedList<String> getUniqueMessages(Integer errorLevel) {
-        LinkedList<String> stringMessage = new LinkedList<String>();
-
-        // Create just a plain Message, no row designation
-        for (RowMessage m : messages) {
-            if (m.getLevel() == errorLevel) {
-                Message newMsg = new Message(m.getMessage(), m.getLevel(), m.getGroupMessage());
-                stringMessage.add(newMsg.print());
-            }
-        }
-        LinkedList<String> newList = new LinkedList<String>(new HashSet<String>(stringMessage));
-        return newList;
     }
 
     /**

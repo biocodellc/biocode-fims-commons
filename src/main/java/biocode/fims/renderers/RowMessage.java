@@ -3,17 +3,35 @@ package biocode.fims.renderers;
 /**
  * Handle messaging for
  */
-public class RowMessage extends Message implements Comparable {
+public class RowMessage implements Message {
+    public static final Integer WARNING = 0;
+    public static final Integer ERROR = 1;
+    protected String message;
+    protected Integer level;
+    protected   String groupMessage;
     private Integer row;
 
-    public RowMessage(String message, String groupMessage, Integer level) {
-        this(message, groupMessage, level, null);
+    public RowMessage(String msg, int row) {
+        this.message = msg;
+        this.row = row;
     }
 
-    /*public RowMessage(String message, Integer level, Integer row) {
-        this(message, null, level, row);
-    } */
+    @Override
+    public String message() {
+        return "Row " +
+                row +
+                ": " +
+                this.message;
+    }
 
+    @Deprecated
+    public RowMessage(String message, String groupMessage, Integer level) {
+        this.message = message;
+        this.level = level;
+        this.groupMessage = groupMessage;
+    }
+
+    @Deprecated
     public RowMessage(String message, String groupMessage, Integer level, Integer row) {
         this.message = message;
         this.row = row;
@@ -26,6 +44,7 @@ public class RowMessage extends Message implements Comparable {
         this.level = level;
     }
 
+    @Deprecated
     public String getGroupMessageAsString() {
         return "<div id='groupMessage' class='" + getLevelAsString()+ "'>" + this.getLevelAsString() + ": " + groupMessage + "</div>";
 
@@ -34,6 +53,7 @@ public class RowMessage extends Message implements Comparable {
     /**
      * @return Message for this line
      */
+    @Deprecated
     public String print() {
         if (this.row != null) {
             return "Row " + this.row + ": " + message;
@@ -44,12 +64,19 @@ public class RowMessage extends Message implements Comparable {
     }
 
 
-    public void setRow(Integer row) {
-        this.row = row;
+    private String getLevelAsString() {
+        if (level == 0) return "Warning";
+        else return "Error";
     }
 
-    public int compareTo(Object o) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    @Deprecated
+    public Integer getLevel() {
+        return level;
+    }
+
+    @Deprecated
+    public String getGroupMessage() {
+        return groupMessage;
     }
 }
 

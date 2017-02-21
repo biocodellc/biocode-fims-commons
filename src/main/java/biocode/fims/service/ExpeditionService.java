@@ -176,6 +176,7 @@ public class ExpeditionService {
             for (Entity entity : mapping.getEntities()) {
                 if (bcid.getTitle().equals(entity.getConceptAlias())) {
                     entity.setIdentifier(bcid.getIdentifier());
+                    break;
                 }
             }
         }

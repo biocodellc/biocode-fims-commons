@@ -87,6 +87,7 @@ public class FimsMetadataFileManager implements FileManager {
             bcid.setSourceFile(persistenceManager.writeSourceFile(inputFile, bcid.getBcidId()));
             bcidService.update(bcid);
 
+            // TODO this should include all entity identifiers
             Object[] messagesArgs = new Object[] {
                     bcid.getIdentifier(),
                     processController.getExpeditionCode(),
