@@ -45,44 +45,30 @@ public class DateUtils {
      *
      * @param format
      * @param dataType
-     *
      * @return
      */
     public static boolean isValidISO8601DateFormat(String format, DataType dataType) {
-        try {
-            switch (dataType) {
-                case DATE:
-                    for (String f : ISO8601_DATE_FORMATS) {
-                        if (StringUtils.equals(f, format)) {
-                            return true;
-                        }
+        switch (dataType) {
+            case DATE:
+                for (String f : ISO8601_DATE_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
                     }
-                    break;
-                case TIME:
-                    for (String f : ISO8601_TIME_FORMATS) {
-                        if (StringUtils.equals(f, format)) {
-                            return true;
-                        }
+                }
+                break;
+            case TIME:
+                for (String f : ISO8601_TIME_FORMATS) {
+                    if (StringUtils.equals(f, format)) {
+                        return true;
                     }
-                    break;
-                case DATETIME:
-                    String dateFormat = format.split("T")[0];
-                    String timeFormat = "";
+                }
+                break;
+            case DATETIME:
+                String[] splitDateTime = format.split("T");
 
-                    try {
-                        timeFormat = format.split("T")[1];
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                /* In case this is specified as "DATETIME" but only has "DATE", the
-                    arrayindexoutofbounds exception is thrown.  Thats OK, we can
-                    still call this a proper date.
-                 */
-                        for (String f : ISO8601_DATE_FORMATS) {
-                            if (StringUtils.equals(f, dateFormat)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
+                if (hasDateAndTime(splitDateTime)) {
+                    String dateFormat = splitDateTime[0];
+                    String timeFormat = splitDateTime[1];
 
                     for (String f : ISO8601_DATE_FORMATS) {
                         if (StringUtils.equals(f, dateFormat)) {
@@ -93,21 +79,21 @@ public class DateUtils {
                             }
                         }
                     }
-                    break;
-            }
-
-            return false;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+                }
+                break;
         }
+
+        return false;
+    }
+
+    private static boolean hasDateAndTime(String[] splitDateTime) {
+        return splitDateTime.length == 2;
     }
 
     /**
      * Checks to see if a date string matches one of the given formats
      *
      * @param s
-     *
      * @return
      */
     public static boolean isValidDateFormat(String s, String[] formats) {
@@ -126,7 +112,6 @@ public class DateUtils {
      * @param dateString the string to convert
      * @param newFormat  the format you would like to convert the date to
      * @param formats    possible formats for the dateString
-     *
      * @return
      */
     public static String convertDateToFormat(String dateString, String newFormat, String[] formats) {
