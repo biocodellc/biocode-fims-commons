@@ -18,7 +18,6 @@ public class CharacterCleaner {
 
     public static void main(String[] args) throws IOException {
 
-        //File f = new File("/Users/jdeck/Google Drive/!DIPnet_DB/Repository/1-cleaned_QC2_mdfasta_files/mdfastaQC2_Eucmet_CO1_HL.txt");
         File f = new File("/Users/jdeck/IdeaProjects/biocode-fims/sampledata/test");
 
         FileInputStream fis = new FileInputStream(f);
