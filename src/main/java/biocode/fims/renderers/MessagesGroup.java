@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 /**
  * @author rjewing
  */
-public class GroupMessages {
+public class MessagesGroup {
     private final String name;
     private List<Message> messages;
 
-    public GroupMessages(String name) {
+    public MessagesGroup(String name) {
         Assert.notNull(name);
 
         this.name = name;

@@ -31,7 +31,7 @@ public class SheetMessagesTest {
         messages.addWarningMessage(group, simpleMessage1);
         messages.addWarningMessage(group2, simpleMessage2);
 
-        List<GroupMessages> warningMessages = messages.getWarningMessages();
+        List<MessagesGroup> warningMessages = messages.getWarningMessages();
 
         assertEquals(2, warningMessages.size());
     }
@@ -48,8 +48,8 @@ public class SheetMessagesTest {
         messages.addWarningMessage(group, simpleMessage1);
         messages.addWarningMessage(group2, simpleMessage2);
 
-        List<GroupMessages> warningMessages = messages.getWarningMessages();
-        List<GroupMessages> errorMessages = messages.getErrorMessages();
+        List<MessagesGroup> warningMessages = messages.getWarningMessages();
+        List<MessagesGroup> errorMessages = messages.getErrorMessages();
 
         assertEquals(2, warningMessages.size());
         assertEquals(1, errorMessages.size());
