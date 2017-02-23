@@ -1,16 +1,17 @@
-package validation;
+package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.renderers.SheetMessages;
 import biocode.fims.renderers.SimpleMessage;
 import biocode.fims.run.ProcessController;
 import org.json.simple.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import validation.SheetMessagesUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import static org.junit.Assert.fail;
 /**
  * @author rjewing
  */
-public class ValidationTest {
+public class FimsMetadataValidationTest {
 
     private Mapping mapping;
     private FimsMetadataFileManager fm;
@@ -42,11 +43,11 @@ public class ValidationTest {
         SheetMessages expected = getExpectedMessages();
         JSONObject worksheetMessages = getValidationMessages();
 
-        assertEquals(sheetMessagesToJSONObject(expected), worksheetMessages);
+        Assert.assertEquals(SheetMessagesUtils.sheetMessagesToJSONObject(expected), worksheetMessages);
     }
 
     private SheetMessages getExpectedMessages() {
-        SheetMessages sheetMessages = new SheetMessages();
+        SheetMessages sheetMessages = new SheetMessages("Samples");
 
         // validForURI rule
         sheetMessages.addErrorMessage("Non-valid URI characters",
@@ -90,12 +91,12 @@ public class ValidationTest {
 
         fm.validate();
 
-        SheetMessages expected = new SheetMessages();
+        SheetMessages expected = new SheetMessages("Samples");
         expected.addErrorMessage("Initial Spreadsheet check", new SimpleMessage("Error building hashes.  Likely a required column constraint failed."));
 
         JSONObject worksheetMessages = getValidationMessages();
 
-        assertEquals(sheetMessagesToJSONObject(expected), worksheetMessages);
+        assertEquals(SheetMessagesUtils.sheetMessagesToJSONObject(expected), worksheetMessages);
 
     }
 
@@ -106,12 +107,12 @@ public class ValidationTest {
 
         fm.validate();
 
-        SheetMessages expected = new SheetMessages();
+        SheetMessages expected = new SheetMessages("Samples");
         expected.addErrorMessage("Initial Spreadsheet check", new SimpleMessage("DUPLICATE_COLUMNS"));
 
         JSONObject worksheetMessages = getValidationMessages();
 
-        assertEquals(sheetMessagesToJSONObject(expected), worksheetMessages);
+        assertEquals(SheetMessagesUtils.sheetMessagesToJSONObject(expected), worksheetMessages);
 
     }
 
@@ -120,24 +121,6 @@ public class ValidationTest {
         return (JSONObject) worksheets.get(mapping.getDefaultSheetName());
     }
 
-
-    private JSONObject sheetMessagesToJSONObject(SheetMessages sheetMessages) {
-        JSONObject messages = new JSONObject();
-
-        JSONObject errors = new JSONObject();
-        for (MessagesGroup g: sheetMessages.errorMessages()) {
-            errors.put(g.getName(), g.messages());
-        }
-
-        JSONObject warnings = new JSONObject();
-        for (MessagesGroup g: sheetMessages.warningMessages()) {
-            warnings.put(g.getName(), g.messages());
-        }
-
-        messages.put("errors", errors);
-        messages.put("warnings", warnings);
-        return messages;
-    }
 
     private void init(File datasetFile) {
         File configFile = new File(classLoader.getResource("test.xml").getFile());

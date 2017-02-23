@@ -461,7 +461,7 @@ public class Rule {
 
 
         } catch (SQLException e) {
-            logger.debug("SQL exception processing uniqueValue rule");
+            logger.debug("SQL exception processing validForURI rule");
             e.printStackTrace();
         } finally {
             closeDb(statement, rs);
@@ -1558,29 +1558,12 @@ public class Rule {
     }
 
     /**
-     * Add a message with a given row and message
-     *
-     * @param row
-     * @param message
-     */
-    /*private void addMessage
-        (Integer row,
-        String message) {
-        messages.addLast(new RowMessage(message, getMessageLevel(), row));
-    }*/
-
-    /**
      * Add a message with just a message and no row assigned
      *
      * @param message
      */
     private void addMessage
     (String message, String groupMessage) {
-        messages.addLast(new RowMessage(message, groupMessage, getMessageLevel()));
-    }
-
-    public void addMessage(String message) {
-        String groupMessage = "Rule doesn't exist or no such Rule";
         messages.addLast(new RowMessage(message, groupMessage, getMessageLevel()));
     }
 

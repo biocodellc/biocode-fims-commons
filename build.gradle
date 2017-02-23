@@ -26,6 +26,7 @@ configurations {
     testCompile.extendsFrom server
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime
+    integrationTestOutput.extendsFrom integrationTestCompile
 }
 
 idea {
@@ -135,6 +136,15 @@ githubPages {
     pages {
         from javadoc
     }
+}
+
+task jarIntegrationTest(type: Jar, dependsOn: integrationTestClasses) {
+    from sourceSets.integrationTest.output
+    classifier = 'integration-test'
+}
+
+artifacts {
+    integrationTestOutput jarIntegrationTest
 }
 
 task integrationTest(type: Test) {
