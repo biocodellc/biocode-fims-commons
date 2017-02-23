@@ -1,70 +1,14 @@
 package biocode.fims.digester;
 
-import biocode.fims.settings.FimsPrinter;
-import org.apache.commons.lang.StringUtils;
-
 import java.net.URI;
-import java.util.*;
 
 /**
  * Entity representation
  */
-public class Entity {
+public class Entity extends AbstractEntity {
 
-    private String worksheet;
-    private String uniqueKey;
-    private String conceptAlias;
-    private String conceptURI;
-    private String conceptForwardingAddress;
     private boolean esNestedObject = false;
     private URI identifier;
-
-    private final LinkedList<Attribute> attributes = new LinkedList<Attribute>();
-
-    /**
-     * Add an Attribute to this Entity by appending to the LinkedList of attributes
-     *
-     * @param a
-     */
-    public void addAttribute(Attribute a) {
-        attributes.addLast(a);
-    }
-
-    public LinkedList<Attribute> getAttributes() {
-        return attributes;
-    }
-
-    public String getWorksheet() {
-        return worksheet;
-    }
-
-    public void setWorksheet(String worksheet) {
-        this.worksheet = worksheet;
-    }
-
-    public String getUniqueKey() {
-        return uniqueKey;
-    }
-
-    public void setUniqueKey(String uniqueKey) {
-        this.uniqueKey = uniqueKey;
-    }
-
-    public String getConceptAlias() {
-        return conceptAlias;
-    }
-
-    public void setConceptAlias(String conceptAlias) {
-        this.conceptAlias = conceptAlias.replace(" ", "_");
-    }
-
-    public String getConceptURI() {
-        return conceptURI;
-    }
-
-    public void setConceptURI(String conceptURI) {
-        this.conceptURI = conceptURI;
-    }
 
     public boolean isEsNestedObject() {
         return esNestedObject;
@@ -74,55 +18,12 @@ public class Entity {
         this.esNestedObject = esNestedObject;
     }
 
-    /**
-     * Get the table.column notation
-     * @return
-     */
-    public String getColumn() {
-        return worksheet + "." + uniqueKey;
-    }
-
-    public String getConceptForwardingAddress() {
-        return conceptForwardingAddress;
-    }
-
-    public void setConceptForwardingAddress(String conceptForwardingAddress) {
-        this.conceptForwardingAddress = conceptForwardingAddress;
-    }
-
     public URI getIdentifier() {
         return identifier;
     }
 
     public void setIdentifier(URI identifier) {
         this.identifier = identifier;
-    }
-
-    /**
-     * If this entity is represented as a worksheet
-     * @return
-     */
-    public boolean hasWorksheet() {
-        return !StringUtils.isBlank(worksheet);
-    }
-
-    public boolean hasWorksheet(String sheetName) {
-        return worksheet != null && worksheet.equals(sheetName);
-    }
-    /**
-     * Basic Text printer
-     */
-    public void print() {
-        FimsPrinter.out.println("    worksheet=" + worksheet);
-        FimsPrinter.out.println("    uniqueKey=" + uniqueKey);
-        FimsPrinter.out.println("    conceptName=" + conceptAlias);
-        FimsPrinter.out.println("    conceptURI=" + conceptURI);
-        //fimsPrinter.out.println("    Bcid=" + Bcid);
-        if (attributes.size() > 0) {
-            for (Attribute attribute : attributes)
-                attribute.print();
-        }
-
     }
 
     public boolean isValueObject() {

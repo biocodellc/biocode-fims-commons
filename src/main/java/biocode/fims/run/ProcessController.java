@@ -7,8 +7,6 @@ import biocode.fims.utils.Html2Text;
 import ch.lambdaj.group.Group;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -21,7 +19,6 @@ import static ch.lambdaj.Lambda.*;
  */
 public class ProcessController {
     private Boolean hasWarnings = false;
-    private StringBuilder commandLineWarningsSB;
     private Process process;
     private String expeditionCode;
     private String expeditionTitle;
@@ -243,9 +240,7 @@ public class ProcessController {
     }
 
     public void addMessage(String sheetName, RowMessage rowMessage) {
-        if (messages.get(sheetName) == null) {
-            messages.put(sheetName, new LinkedList<RowMessage>());
-        }
+        messages.putIfAbsent(sheetName, new LinkedList<>());
 
         messages.get(sheetName).add(rowMessage);
     }

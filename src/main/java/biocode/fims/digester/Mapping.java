@@ -156,31 +156,6 @@ public class Mapping {
     }
 
     /**
-     * Just tell us where the file is stored...
-     */
-    public void print() {
-//        FimsPrinter.out.println("\ttriple output file = " + triplifier.getTripleOutputFile());
-        //fimsPrinter.out.println("\tsparql update file = " + triplifier.getUpdateOutputFile());
-    }
-
-    /**
-     * Loop through the entities and relations we have defined...
-     */
-    public void printObject() {
-        FimsPrinter.out.println("Mapping has " + entities.size() + " entries");
-
-        for (Iterator<Entity> i = entities.iterator(); i.hasNext(); ) {
-            Entity e = i.next();
-            e.print();
-        }
-
-        for (Iterator<Relation> i = relations.iterator(); i.hasNext(); ) {
-            Relation r = i.next();
-            r.print();
-        }
-    }
-
-    /**
      * Return a list of ALL attributes defined for entities for a particular worksheet
      *
      * @return
