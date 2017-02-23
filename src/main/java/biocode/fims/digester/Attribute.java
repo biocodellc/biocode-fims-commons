@@ -172,11 +172,11 @@ public class Attribute implements Comparable {
 
         Attribute attribute = (Attribute) o;
 
-        return getUri().equals(attribute.getUri());
+        return getUri() != null ? getUri().equals(attribute.getUri()) : attribute.getUri() == null;
     }
 
     @Override
     public int hashCode() {
-        return getUri().hashCode();
+        return getUri() != null ? getUri().hashCode() : 0;
     }
 }
