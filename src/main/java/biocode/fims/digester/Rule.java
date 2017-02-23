@@ -1258,19 +1258,20 @@ public class Rule {
     }
 
     /**
-     * Duplicate of checkInXMLFields
+     * Duplicate of controlledVocabulary
      */
-    public void controlledVocabulary() {
-        checkInXMLFields();
+    @Deprecated
+    public void checkInXMLFields() {
+        controlledVocabulary();
     }
 
     /**
-     * checkInXMLFields specifies lookup list values.  There are two ways of referring to lookup, lists:
+     * controlledVocabulary specifies lookup list values.  There are two ways of referring to lookup, lists:
      * <p></p>
      * <p/>
      * 1. Listing values in XML fields, like: <br></br>
      * {@code
-     * <rule type="checkInXMLFields" name="PreparationType" level="warning">
+     * <rule type="controlledVocabulary" name="PreparationType" level="warning">
      * <field>card_mount</field>
      * <field>envelope</field>
      * <field>fluid</field>
@@ -1286,10 +1287,10 @@ public class Rule {
      * <p/>
      * 2. Refering to values in a lookup list in the configuration file list element, like: <br></br>
      * {@code
-     * <rule type="checkInXMLFields" name="relaxant" level="warning" list="list3"/>
+     * <rule type="controlledVocabulary" name="relaxant" level="warning" list="list3"/>
      * }
      */
-    public void checkInXMLFields() {
+    public void controlledVocabulary() {
         StringBuilder lookupSB = new StringBuilder();
         List<Field> listFields = null;
         String msg;

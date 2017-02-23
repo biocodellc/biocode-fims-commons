@@ -10,7 +10,6 @@
 
         <worksheet sheetname="Samples">
 
-            <rule type="duplicateColumnNames" level="error"/>
             <rule type="validForURI" column="materialSampleID" level="error"/>
 
             <rule type="uniqueValue" column="materialSampleID" level="error"/>
@@ -84,7 +83,7 @@
     </validation>
 
     <mapping>
-        <entity worksheet="Samples" uniqueKey="materialSampleId" conceptAlias="Resource"
+        <entity worksheet="Samples" uniqueKey="materialSampleID" conceptAlias="Resource"
                 conceptURI="http://www.w3.org/2000/01/rdf-schema#Resource"
                 conceptForwardingAddress="http://example.com/bcids/metadata/{ark}{suffix}">
             <attribute column="materialSampleID" group="Group 1" uri="urn:materialSampleID"
