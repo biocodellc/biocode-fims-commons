@@ -282,44 +282,6 @@ public class Rule {
     }
 
     /**
-     * Check to see if there duplicateColumn Headers on a worksheet
-     * <p></p>
-     * Example:
-     * <br></br>
-     * {@code
-     * <rule type='duplicateColumnNames' level='error'></rule>
-     * }
-     */
-    public void duplicateColumnNames() {
-        List<String> listSheetColumns = worksheet.getColNames();
-        Set<String> output = new HashSet<String>();  // Set does not allow duplicates
-
-        for (int i = 0; i < listSheetColumns.size(); i++) {
-            String columnValue = worksheet.getStringValue(i, 0);
-            for (int j = 0; j < listSheetColumns.size(); j++) {
-                if (j != i) {
-                    String columnValue2 = worksheet.getStringValue(j, 0);
-                    if (columnValue != null && columnValue2 != null) {
-                        if (columnValue.equals(columnValue2)) {
-                            output.add("row heading " + columnValue + " used more than once");
-                            // quite this if we found at least one match
-                            j = listSheetColumns.size();
-                        }
-                    }
-                }
-            }
-        }
-
-        // Loop through output set
-        Iterator outputit = output.iterator();
-        while (outputit.hasNext()) {
-            String message = (String) outputit.next();
-            messages.addLast(new RowMessage(message, "Spreadsheet check", RowMessage.WARNING));
-        }
-    }
-
-
-    /**
      * If a dataformat other then "string" is specified for an {@link Attribute}, we check that the data is of the
      * correct type ("integer", "date", etc)
      */
