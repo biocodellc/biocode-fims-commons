@@ -11,7 +11,6 @@ import java.util.Locale;
  * An abstract exception to be extended by exceptions thrown to return appropriate responses.
  */
 public abstract class FimsAbstractException extends RuntimeException {
-    private static final MessageSource messageSource = (MessageSource) SpringApplicationContext.getBean("messageSource");
     String usrMessage = "Server Error";
     Integer httpStatusCode;
     String developerMessage;
@@ -86,7 +85,14 @@ public abstract class FimsAbstractException extends RuntimeException {
     }
 
     private String getUserMessageFromErrorCode(String... messageArgs) {
-        if (errorCode == null) {
+        MessageSource messageSource = null;
+        try {
+            messageSource = (MessageSource) SpringApplicationContext.getBean("messageSource");
+        } catch (NullPointerException e) {
+
+        }
+
+        if (messageSource == null || errorCode == null) {
             return "Server Error";
         }
 
