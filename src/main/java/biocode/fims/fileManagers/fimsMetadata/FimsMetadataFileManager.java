@@ -52,6 +52,55 @@ public class FimsMetadataFileManager implements FileManager {
         this.messageSource = messageSource;
     }
 
+    public boolean validate() {
+        Assert.notNull(processController);
+
+        if (filename != null) {
+            processController.appendStatus("\nRunning fims metadata dataset validation.");
+            Mapping mapping = processController.getMapping();
+            Validation validation = processController.getValidation();
+            String outputPrefix = processController.getExpeditionCode() + "_output";
+
+            String sheetName = mapping.getDefaultSheetName();
+            // Create the tabularDataReader for reading the input file
+            ReaderManager rm = new ReaderManager();
+            rm.loadReaders();
+            TabularDataReader tdr = rm.openFile(filename, sheetName, processController.getOutputFolder());
+
+            if (tdr == null) {
+                processController.appendStatus("<br>Unable to open the file you attempted to upload.<br>");
+                return false;
+            }
+
+            try {
+                JsonTabularDataConverter tdc = new JsonTabularDataConverter(tdr);
+                fimsMetadata = tdc.convert(mapping.getDefaultSheetAttributes(), sheetName);
+
+                // Run the validation
+                validation.run(tdr, outputPrefix, processController.getOutputFolder(), mapping, fimsMetadata);
+            } catch (FimsRuntimeException e) {
+                if (e.getErrorCode() != null) {
+                    processController.addMessage(sheetName, new RowMessage(e.getUsrMessage(), "Initial Spreadsheet check", RowMessage.ERROR));
+                    return false;
+                } else {
+                    throw e;
+                }
+            } finally {
+                tdr.closeFile();
+            }
+
+            // get the Messages from each worksheet and add them to the processController
+            processController.addMessages(validation.getMessages());
+
+            if (validation.hasErrors() || !persistenceManager.validate(processController)) {
+                return false;
+            } else if (validation.hasWarnings()) {
+                processController.setHasWarnings(true);
+            }
+        }
+        return true;
+    }
+
     public void upload() {
         Assert.notNull(processController);
 
@@ -102,82 +151,6 @@ public class FimsMetadataFileManager implements FileManager {
         }
     }
 
-    public boolean isNewDataset() {
-        return filename != null;
-    }
-
-    public boolean validate() {
-        Assert.notNull(processController);
-
-        if (filename != null) {
-            processController.appendStatus("\nRunning fims metadata dataset validation.");
-            Mapping mapping = processController.getMapping();
-            Validation validation = processController.getValidation();
-            String outputPrefix = processController.getExpeditionCode() + "_output";
-
-            String sheetName = mapping.getDefaultSheetName();
-            // Create the tabularDataReader for reading the input file
-            ReaderManager rm = new ReaderManager();
-            rm.loadReaders();
-            TabularDataReader tdr = rm.openFile(filename, sheetName, processController.getOutputFolder());
-
-            if (tdr == null) {
-                processController.appendStatus("<br>Unable to open the file you attempted to upload.<br>");
-                return false;
-            }
-
-            try {
-                JsonTabularDataConverter tdc = new JsonTabularDataConverter(tdr);
-                fimsMetadata = tdc.convert(mapping.getDefaultSheetAttributes(), sheetName);
-
-                // Run the validation
-                validation.run(tdr, outputPrefix, processController.getOutputFolder(), mapping, fimsMetadata);
-            } catch (FimsRuntimeException e) {
-                if (e.getErrorCode() != null) {
-                    processController.addMessage(sheetName, new RowMessage(e.getUsrMessage(), "Initial Spreadsheet check", RowMessage.ERROR));
-                    return false;
-                } else {
-                    throw e;
-                }
-            } finally {
-                tdr.closeFile();
-            }
-
-            // get the Messages from each worksheet and add them to the processController
-            processController.addMessages(validation.getMessages());
-
-            if (validation.hasErrors() || !persistenceManager.validate(processController)) {
-                return false;
-            } else if (validation.hasWarnings()) {
-                processController.setHasWarnings(true);
-            }
-        }
-        return true;
-    }
-
-    public void setProcessController(ProcessController processController) {
-        this.processController = processController;
-    }
-
-    public ArrayNode getDataset() {
-        if (fimsMetadata == null) {
-            fimsMetadata = persistenceManager.getDataset(processController);
-        }
-
-        return fimsMetadata;
-    }
-
-    public void setFilename(String filename) {
-        if (this.filename != null) {
-            throw new FimsRuntimeException("Server Error", "You can only upload 1 fims metadata dataset at a time", 500);
-        }
-        this.filename = filename;
-    }
-
-    public String getName() {
-        return NAME;
-    }
-
     /**
      * prepares the fimsMetadata array for indexing via elasticsearch.
      * This adds the bcid and expeditionCode to each resource
@@ -198,8 +171,35 @@ public class FimsMetadataFileManager implements FileManager {
         return prepareIndex(dataset, String.valueOf(rootEntityBcid.getIdentifier()));
     }
 
+    public boolean isNewDataset() {
+        return filename != null;
+    }
+
+    public ArrayNode getDataset() {
+        if (fimsMetadata == null) {
+            fimsMetadata = persistenceManager.getDataset(processController);
+        }
+
+        return fimsMetadata;
+    }
+
     public void deleteDataset() {
         persistenceManager.deleteDataset(processController);
+    }
+
+    public String getName() {
+        return NAME;
+    }
+
+    public void setProcessController(ProcessController processController) {
+        this.processController = processController;
+    }
+
+    public void setFilename(String filename) {
+        if (this.filename != null) {
+            throw new FimsRuntimeException("Server Error", "You can only upload 1 fims metadata dataset at a time", 500);
+        }
+        this.filename = filename;
     }
 
     public void close() {
