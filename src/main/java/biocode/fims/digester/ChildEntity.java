@@ -5,13 +5,13 @@ package biocode.fims.digester;
  */
 public class ChildEntity extends AbstractEntity {
 
-    private String parentEntity;
+    private String parentEntityConceptAlias;
 
-    public String getParentEntity() {
-        return parentEntity;
+    public String getParentEntityConceptAlias() {
+        return parentEntityConceptAlias;
     }
 
-    public void setParentEntity(String parentEntity) {
-        this.parentEntity = parentEntity;
+    public void setParentEntityConceptAlias(String parentEntityConceptAlias) {
+        this.parentEntityConceptAlias = parentEntityConceptAlias;
     }
 }
