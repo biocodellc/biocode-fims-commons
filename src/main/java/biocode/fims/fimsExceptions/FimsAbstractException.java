@@ -93,7 +93,7 @@ public abstract class FimsAbstractException extends RuntimeException {
         }
 
         if (messageSource == null || errorCode == null) {
-            return "Server Error";
+            return (errorCode != null) ? errorCode.toString() : "Server Error";
         }
 
         String key = errorCode.getClass().getSimpleName() + "__" + errorCode;
