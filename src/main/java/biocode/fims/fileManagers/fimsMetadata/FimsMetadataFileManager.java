@@ -77,7 +77,7 @@ public class FimsMetadataFileManager implements FileManager {
                 fimsMetadata = tdc.convert(mapping.getDefaultSheetAttributes(), sheetName);
 
                 // Run the validation
-                validation.run(tdr, outputPrefix, processController.getOutputFolder(), mapping, fimsMetadata);
+                validation.run(tdr, outputPrefix, processController.getOutputFolder(), mapping, fimsMetadata, sheetName);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() != null) {
                     processController.addMessage(sheetName, new RowMessage(e.getUsrMessage(), "Initial Spreadsheet check", RowMessage.ERROR));

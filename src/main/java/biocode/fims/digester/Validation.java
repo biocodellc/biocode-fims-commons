@@ -97,7 +97,6 @@ public class Validation implements RendererInterface {
      * Lookup a list by its alias
      *
      * @param alias
-     *
      * @return
      */
     public List findList(String alias) {
@@ -111,6 +110,7 @@ public class Validation implements RendererInterface {
 
     /**
      * Lookup a list for a given column and worksheet
+     *
      * @param column
      * @param sheetname
      * @return
@@ -118,7 +118,7 @@ public class Validation implements RendererInterface {
     public List findListForColumn(String column, String sheetname) {
         Worksheet sheet = null;
         // Get a list of rules for the first digester.Worksheet instance
-        for (Worksheet s: worksheets) {
+        for (Worksheet s : worksheets) {
             if (s.getSheetname().equals(sheetname)) {
                 sheet = s;
             }
@@ -196,7 +196,8 @@ public class Validation implements RendererInterface {
      */
     /**
      * iterate through each {@link Worksheet} and collect the messages
-     * @return k,v map of sheetName: RowMessage list
+     *
+     * @return k, v map of sheetName: RowMessage list
      */
     public HashMap<String, LinkedList<RowMessage>> getMessages() {
         HashMap<String, LinkedList<RowMessage>> messages = new HashMap<>();
@@ -208,7 +209,7 @@ public class Validation implements RendererInterface {
     }
 
     public boolean hasErrors() {
-        for (Worksheet w: worksheets) {
+        for (Worksheet w : worksheets) {
             if (!w.errorFree()) {
                 return true;
             }
@@ -218,7 +219,7 @@ public class Validation implements RendererInterface {
     }
 
     public boolean hasWarnings() {
-        for (Worksheet w: worksheets) {
+        for (Worksheet w : worksheets) {
             if (!w.warningFree()) {
                 return true;
             }
@@ -237,15 +238,19 @@ public class Validation implements RendererInterface {
             String filenamePrefix,
             String outputFolder,
             Mapping mapping,
-            ArrayNode fimsMetadata) {
+            ArrayNode fimsMetadata,
+            String sheetName) {
         this.tabularDataReader = tabularDataReader;
 
-        Worksheet sheet = worksheets.get(0);
-        String sheetName = sheet.getSheetname();
-        tabularDataReader.setTable(sheetName);
+        Worksheet sheet = new Worksheet();
 
-        // Use the errorFree variable to control validation checking workflow
-        boolean errorFree = true;
+        for (Worksheet s : worksheets) {
+            if (s.getSheetname().equals(sheetName)) {
+                sheet = s;
+            }
+        }
+
+        tabularDataReader.setTable(sheetName);
 
         // Create the SQLLite Connection and catch any exceptions, and send to Error Message
         // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
@@ -255,39 +260,23 @@ public class Validation implements RendererInterface {
 
 
         // Run validation components
-        boolean processingErrorFree = true;
-        if (errorFree) {
-            // Loop rules to be run after connection
-            for (Iterator<Worksheet> i = worksheets.iterator(); i.hasNext(); ) {
-                Worksheet w = i.next();
-
-                boolean thisError = w.run(this);
-                if (processingErrorFree) processingErrorFree = thisError;
-            }
+        if (!sheet.run(this)) {
+            return false;
         }
 
         // Attempt to build hashes
-        boolean hashErrorFree = true;
-        if (processingErrorFree) {
-            try {
-                sdc.buildHashes(mapping, sheetName);
-            } catch (Exception e) {
-                logger.warn("", e);
-                hashErrorFree = false;
-            }
-        }
-
-        if (processingErrorFree && hashErrorFree) {
-            return true;
-        } else if (!hashErrorFree) {
+        try {
+            sdc.buildHashes(mapping, sheetName);
+        } catch (Exception e) {
+            logger.warn("", e);
             sheet.getMessages().addLast(new RowMessage(
                     "Error building hashes.  Likely a required column constraint failed.",
                     "Initial Spreadsheet check",
                     RowMessage.ERROR));
             return false;
-        } else {
-            return false;
         }
+
+        return true;
     }
 
     /**
@@ -358,10 +347,10 @@ public class Validation implements RendererInterface {
     }
 
     private void addDefaultRulesToWorksheets(Mapping mapping) {
-        for (Worksheet ws: worksheets) {
+        for (Worksheet ws : worksheets) {
 
             // every entity uniqueKey should have the validForURI Rule run
-            for (Rule rule: createValidForURIRules(mapping, ws.getSheetname())) {
+            for (Rule rule : createValidForURIRules(mapping, ws.getSheetname())) {
                 ws.addRule(rule);
             }
 
@@ -373,7 +362,7 @@ public class Validation implements RendererInterface {
     private java.util.List<Rule> createValidForURIRules(Mapping mapping, String sheetname) {
         java.util.List<Rule> rules = new ArrayList<>();
 
-        for (Entity entity: mapping.getEntities()) {
+        for (Entity entity : mapping.getEntities()) {
             if (addValidForUriRule(sheetname, entity)) {
                 rules.add(createValidForURIRule(mapping, entity.getUniqueKey()));
             }
