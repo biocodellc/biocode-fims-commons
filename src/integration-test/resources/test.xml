@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<fims>
+    <metadata doi="test" eml_location="eml_location" owlRestrictionFile="test.owl"
+              queryTarget="http://data.biscicol.org/ds" shortname="testProjectConfiguration"
+              target="http://data.biscicol.org/ds/data" expeditionForwardingAddress="http://example.com/{ark}"
+              datasetForwardingAddress="http://example.com/datasets/{ark}" nmnh="false">
+        This is for testing purposes
+    </metadata>
+    <validation>
+
+        <worksheet sheetname="Samples">
+
+            <rule type="duplicateColumnNames" level="error"/>
+            <rule type="validForURI" column="materialSampleID" level="error"/>
+
+            <rule type="uniqueValue" column="materialSampleID" level="error"/>
+
+            <rule type="RequiredColumns" column="RequiredColumns" level="error">
+                <field>materialSampleID</field>
+            </rule>
+
+            <rule type="RequiredColumns" column="RequiredColumns" level="warning">
+                <field>phylum</field>
+            </rule>
+
+            <rule type="requiredColumnInGroup" level="error">
+                <field>locality</field>
+                <field>latitude</field>
+                <field>longitude</field>
+            </rule>
+
+            <rule type="requiredValueFromOtherColumn" column="longitude" otherColumn="latitude" level="error"/>
+
+            <rule type="controlledVocabulary" column="hasLegs" list="yesNo" level="error"/>
+            <rule type="controlledVocabulary" column="phylum" list="phylum" level="error"/>
+
+        </worksheet>
+
+        <lists>
+            <list alias="phylum" caseInsensitive="true">
+                <field>Acoelomorpha
+                    <description>some type of animal classification</description>
+                </field>
+                <field>Annelida</field>
+                <field>Arthropoda</field>
+                <field>Brachiopoda</field>
+                <field>Bryozoa</field>
+                <field>Chaetognatha</field>
+                <field>Chordata</field>
+                <field>Cnidaria</field>
+                <field>Ctenophora</field>
+                <field>Cycliophora</field>
+                <field>Echinodermata</field>
+                <field>Entoprocta</field>
+                <field>Gastrotricha</field>
+                <field>Gnathostomulida</field>
+                <field>Hemichordata</field>
+                <field>Kinorhyncha</field>
+                <field>Loricifera</field>
+                <field>Micrognathozoa</field>
+                <field>Mollusca</field>
+                <field>Nematoda</field>
+                <field>Nematomorpha</field>
+                <field>Nemertea</field>
+                <field>Onychophora</field>
+                <field>Orthonectida</field>
+                <field>Phoronida</field>
+                <field>Placozoa</field>
+                <field>Platyhelminthes</field>
+                <field>Porifera</field>
+                <field>Priapulida</field>
+                <field>Rhombozoa</field>
+                <field>Rotifera</field>
+                <field>Sipuncula</field>
+                <field>Tardigrada</field>
+                <field>Xenoturbellida</field>
+            </list>
+
+            <list alias="yesNo" caseInsensitive="false">
+                <field><![CDATA[Yes]]></field>
+                <field><![CDATA[No]]></field>
+            </list>
+        </lists>
+    </validation>
+
+    <mapping>
+        <entity worksheet="Samples" uniqueKey="materialSampleId" conceptAlias="Resource"
+                conceptURI="http://www.w3.org/2000/01/rdf-schema#Resource"
+                conceptForwardingAddress="http://example.com/bcids/metadata/{ark}{suffix}">
+            <attribute column="materialSampleID" group="Group 1" uri="urn:materialSampleID"
+                       defined_by="http://rs.tdwg.org/dwc/terms/MaterialSampleID" dataType="string">
+                <![CDATA[The "local" accession number that you use for your laboratory"s database. This number should link EXACTLY to the genetic data you are providing for this sample. It must be unique among the numbers that your lab is providing.]]></attribute>
+            <attribute column="principalInvestigator" group="Group 1" uri="urn:principalInvestigator"
+                       column_internal="principal_investigator" defined_by="urn:PrincipalInvestigator">
+                <![CDATA[Firstname Lastname (the PI on the grant that generated this data)]]></attribute>
+            <attribute column="locality" group="Group 1" uri="urn:locality" synonyms="location"
+                       defined_by="http://rs.tdwg.org/dwc/terms/locality">
+                <![CDATA[Local name of site. Something that could be found by Google, e.g. city, town, ocean, etc. You must enter a value for this to the best level of precision that you are confident about. A site name like "Sanur" is good. "Indonesia" is fine if that is all you know, or "The Pacific Ocean". If you have no idea where the sample came from, please enter "Earth". Required.]]></attribute>
+            <attribute column="phylum" group="Group 2" uri="urn:phylum"
+                       defined_by="http://rs.tdwg.org/dwc/terms/phylum">
+                <![CDATA[The full scientific name of the phylum in which the taxon is classified. Required.]]></attribute>
+            <attribute column="Observation_Date" dataformat="YYYY-MM-DD" datatype="date"
+                       displayAnnotationProperty="false" uri="http://rs.tdwg.org/dwc/terms/Event">
+                <![CDATA[The date the observation took place]]>
+            </attribute>
+            <attribute column="Time Collected" dataType="time" dataformat="hh:mm:ss" uri="urn:timeCollected"/>
+            <attribute column="Collection TimeStamp" dataType="datetime" dataformat="YYYY-MM-DD hh:mm:ss"
+                       uri="urn:collectionTimestamp"/>
+            <attribute column="Elevation" dataType="integer" uri="urn:elevation"/>
+            <attribute column="hasLegs" uri="urn:hasLegs"/>
+        </entity>
+
+        <entity conceptAlias="location" conceptURI="http://purl.org/dc/terms/Location"
+                uri="http://purl.org/dc/terms/Location" worksheet="Samples" worksheetUniqueKey="locationHASH">
+            <attribute column="Latitude" datatype="float" displayAnnotationProperty="true" group="location"
+                       uri="http://rs.tdwg.org/dwc/terms/decimalLatitude">
+                <![CDATA[Decimal Latitude]]>
+            </attribute>
+            <attribute column="Longitude" datatype="float" displayAnnotationProperty="true" group="location"
+                       uri="http://rs.tdwg.org/dwc/terms/decimalLongitude">
+                <![CDATA[Decimal Longitude]]>
+            </attribute>
+        </entity>
+
+        <relation>
+            <subject>
+                Resource
+            </subject>
+            <predicate>
+                http://purl.obolibrary.org/obo/BFO_0000066
+            </predicate>
+            <object>
+                location
+            </object>
+        </relation>
+    </mapping>
+</fims>
