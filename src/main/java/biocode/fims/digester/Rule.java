@@ -266,21 +266,6 @@ public class Rule {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-    /**
-     * Warns user if the number of rows the application is looking at differs from what is on the spreadsheet
-     */
-    public void rowNumMismatch() {
-        int bVRows = worksheet.getNumRows();
-        int poiRows = worksheet.getSheet().getLastRowNum();
-        if (bVRows < poiRows) {
-            String theWarning = "bioValidator processed " + bVRows + " rows, but it appears there may be " + poiRows +
-                    " rows on your sheet. This usually occurs when cell formatting has extended below the area of data but " +
-                    "may also occur when you have left blank rows in the data.";
-            messages.addLast(new RowMessage(theWarning, "Spreadsheet check", RowMessage.WARNING));
-        }
-    }
-
     /**
      * If a dataformat other then "string" is specified for an {@link Attribute}, we check that the data is of the
      * correct type ("integer", "date", etc)
