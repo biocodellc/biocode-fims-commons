@@ -16,7 +16,14 @@ public class SheetMessagesTest {
 
     @Before
     public void setUp() throws Exception {
-        messages = new SheetMessages();
+        messages = new SheetMessages("Samples");
+    }
+
+    @Test
+    public void initialization() {
+        assertEquals("Samples", messages.sheetName());
+        assertTrue(messages.errorMessages().isEmpty());
+        assertTrue(messages.warningMessages().isEmpty());
     }
 
     @Test
@@ -31,7 +38,7 @@ public class SheetMessagesTest {
         messages.addWarningMessage(group, simpleMessage1);
         messages.addWarningMessage(group2, simpleMessage2);
 
-        List<MessagesGroup> warningMessages = messages.getWarningMessages();
+        List<MessagesGroup> warningMessages = messages.warningMessages();
 
         assertEquals(2, warningMessages.size());
     }
@@ -48,8 +55,8 @@ public class SheetMessagesTest {
         messages.addWarningMessage(group, simpleMessage1);
         messages.addWarningMessage(group2, simpleMessage2);
 
-        List<MessagesGroup> warningMessages = messages.getWarningMessages();
-        List<MessagesGroup> errorMessages = messages.getErrorMessages();
+        List<MessagesGroup> warningMessages = messages.warningMessages();
+        List<MessagesGroup> errorMessages = messages.errorMessages();
 
         assertEquals(2, warningMessages.size());
         assertEquals(1, errorMessages.size());

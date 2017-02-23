@@ -7,10 +7,12 @@ import java.util.List;
  */
 public class SheetMessages {
 
+    private String sheetName;
     private MessagesGroupCollection errorMessages;
     private MessagesGroupCollection warningMessages;
 
-    public SheetMessages() {
+    public SheetMessages(String sheetName) {
+        this.sheetName = sheetName;
         warningMessages = new MessagesGroupCollection();
         errorMessages = new MessagesGroupCollection();
     }
@@ -23,12 +25,15 @@ public class SheetMessages {
         warningMessages.addMessage(groupMessage, msg);
     }
 
-    public List<MessagesGroup> getWarningMessages() {
+    public List<MessagesGroup> warningMessages() {
         return warningMessages.allGroupMessages();
     }
 
-    public List<MessagesGroup> getErrorMessages() {
+    public List<MessagesGroup> errorMessages() {
         return errorMessages.allGroupMessages();
     }
 
+    public String sheetName() {
+        return sheetName;
+    }
 }

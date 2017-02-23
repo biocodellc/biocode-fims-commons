@@ -125,12 +125,12 @@ public class ValidationTest {
         JSONObject messages = new JSONObject();
 
         JSONObject errors = new JSONObject();
-        for (MessagesGroup g: sheetMessages.getErrorMessages()) {
+        for (MessagesGroup g: sheetMessages.errorMessages()) {
             errors.put(g.getName(), g.messages());
         }
 
         JSONObject warnings = new JSONObject();
-        for (MessagesGroup g: sheetMessages.getWarningMessages()) {
+        for (MessagesGroup g: sheetMessages.warningMessages()) {
             warnings.put(g.getName(), g.messages());
         }
 
