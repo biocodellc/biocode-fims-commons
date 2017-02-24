@@ -2,7 +2,6 @@ package biocode.fims.fileManagers.fimsMetadata;
 
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.renderers.SheetMessages;
 import biocode.fims.renderers.SimpleMessage;

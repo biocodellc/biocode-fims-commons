@@ -29,4 +29,12 @@ public class Entity extends AbstractEntity {
     public boolean isValueObject() {
         return getUniqueKey() != null && getUniqueKey().contains("HASH");
     }
+
+    /**
+     * Get the table.column notation
+     * @return
+     */
+    public String getColumn() {
+        return getWorksheet() + "." + getUniqueKey();
+    }
 }

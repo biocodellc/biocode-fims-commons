@@ -185,7 +185,7 @@ public class Mapping {
      * @return
      */
     public ArrayList<Attribute> getAllAttributes(String worksheet) {
-        Set<Attribute> attributes = new HashSet<>();
+        Set<Attribute> attributes = new LinkedHashSet<>();
 
         for (Entity entity : entities) {
             if (entity.hasWorksheet(worksheet))
