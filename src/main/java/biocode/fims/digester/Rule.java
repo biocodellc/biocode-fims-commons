@@ -2,6 +2,7 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.reader.SqLiteJsonConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
@@ -27,6 +28,7 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Rule does the heavy lift for the Validation Components.
@@ -54,8 +56,6 @@ public class Rule {
         this.mapping = mapping;
     }
 
-    // A reference to the validation object this rule belongs to
-    //private Validation validation;
     // A reference to the worksheet object this rule belongs to
     // TODO: Remove the remaining references to worksheet.  We are transitioning to using a SQLlite Database connection
     private TabularDataReader worksheet;
@@ -65,12 +65,10 @@ public class Rule {
 
     // Rules can also own their own fields
     private final LinkedList<String> fields = new LinkedList<String>();
-    //private List fields = new List();
 
     private static Logger logger = LoggerFactory.getLogger(Rule.class);
 
     // NOTE: not sure i want these values in this class, maybe define a sub-class?
-    // values for DwCLatLngChecker (optional)
     private String decimalLatitude;
     private String decimalLongitude;
     private String maxErrorInMeters;
@@ -510,6 +508,80 @@ public class Rule {
             }
             if (!values.toString().trim().equals("")) {
                 addMessage("\"" + getColumn() + "\" column is defined as unique but some values used more than once: " + values.toString(), groupMessage);
+            }
+
+        } catch (SQLException e) {
+            logger.debug(null, e);
+        } finally {
+            closeDb(statement, rs);
+        }
+    }
+
+    /**
+     * Check a particular group of columns to see if all the value combinations are unique.
+     * <p>
+     * Example:
+     * <br></br>
+     * {@code
+     * <rule type='compositeUniqueValue' level='error'>
+     * <field>eventId</field>
+     * <field>photoId</field>
+     * </rule>
+     * }
+     */
+    public void compositeUniqueValue() {
+        String groupMessage = "Unique value constraint did not pass";
+        Statement statement = null;
+        ResultSet rs = null;
+
+        // clean the field names before working with them
+        List<String> cleanFields = fields.stream()
+                .map(SqlLiteNameCleaner::fixNames)
+                .collect(Collectors.toList());
+
+        try {
+            statement = connection.createStatement();
+            // Search for non-unique values in resultSet
+
+            String fieldString = String.join(", ", cleanFields);
+
+            String sql = "select " + fieldString + ",count(*) as c from " + digesterWorksheet.getSheetname() +
+                    " group by " + fieldString +
+                    " having c > 1";
+
+            rs = statement.executeQuery(sql);
+
+            // Loop results
+            while (rs.next()) {
+
+                StringBuilder values = new StringBuilder();
+
+                values.append("(");
+
+                for (String field : cleanFields) {
+                    String val = rs.getString(field);
+                    String key = "";
+
+                    for (String f : fields) {
+                        if (field.equals(SqlLiteNameCleaner.fixNames(f))) {
+                            key = f;
+                            break;
+                        }
+                    }
+
+                    values.append("\"");
+                    values.append(key);
+                    values.append("\": \"");
+                    values.append(val);
+                    values.append("\", ");
+                }
+
+                values.deleteCharAt(values.length() - 1); // remove last space
+                values.deleteCharAt(values.length() - 1); // remove last ,
+
+                values.append(")");
+
+                addMessage("(\"" + String.join("\", \"", fields) + "\") is defined as a composite unique key, but some value combinations were used more than once: " + values.toString(), groupMessage);
             }
 
         } catch (SQLException e) {
