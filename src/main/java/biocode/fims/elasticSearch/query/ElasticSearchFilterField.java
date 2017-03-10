@@ -80,4 +80,11 @@ public class ElasticSearchFilterField {
         //TODO create an enum and use the ElasticSearch dataType
         return dataType;
     }
+
+    public String exactMatchFieled() {
+        if (DataType.STRING.equals(dataType)) {
+            return field + ".keyword";
+        }
+        return field;
+    }
 }
