@@ -3,6 +3,7 @@ package biocode.fims.application.config;
 import biocode.fims.rest.UserContext;
 import biocode.fims.rest.versioning.VersionTransformer;
 import biocode.fims.rest.versioning.VersionUrlConfig;
+import biocode.fims.tools.FileCache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,5 +44,10 @@ public class FimsWebAppConfig {
     @Scope(value="request", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public UserContext userContext() {
         return new UserContext();
+    }
+
+    @Bean
+    public FileCache fileCache() {
+        return new FileCache();
     }
 }
