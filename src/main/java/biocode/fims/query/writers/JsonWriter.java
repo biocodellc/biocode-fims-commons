@@ -1,4 +1,4 @@
-package biocode.fims.query;
+package biocode.fims.query.writers;
 
 import java.io.File;
 

@@ -1,20 +1,16 @@
-package biocode.fims.query;
+package biocode.fims.query.writers;
 
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.settings.PathManager;
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Class to write Json to a cspace file. Currently just copying this over from QueryWriter class. This currently only
