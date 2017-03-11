@@ -19,7 +19,6 @@ public class SpringObjectMapper extends ObjectMapper {
         Hibernate5Module hm = new Hibernate5Module();
         hm.configure(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION, false);
         this.registerModule(hm);
-        this.enable(SerializationFeature.INDENT_OUTPUT);
         this.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         this.registerModule(
                 new SimpleModule()
