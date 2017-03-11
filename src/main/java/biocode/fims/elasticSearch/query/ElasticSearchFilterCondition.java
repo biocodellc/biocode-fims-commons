@@ -1,5 +1,7 @@
 package biocode.fims.elasticSearch.query;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.QueryType;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -35,10 +37,10 @@ public class ElasticSearchFilterCondition {
             case LESS_THEN:
                 query = getLTQuery();
                 break;
-            case GREATER_THEN_EQUAL:
+            case GREATER_THEN_EQUALS:
                 query = getGTEQuery();
                 break;
-            case LESS_THEN_EQAUL:
+            case LESS_THEN_EQUALS:
                 query = getLTEQuery();
                 break;
             case EQUALS:
@@ -53,35 +55,49 @@ public class ElasticSearchFilterCondition {
     }
 
     private QueryBuilder getFuzzyQuery() {
+        checkValidQueryType(QueryType.FUZZY);
         return QueryBuilders.matchQuery(filterField.getField(), value);
     }
 
     private QueryBuilder getExistsQuery() {
+        checkValidQueryType(QueryType.EXISTS);
         return QueryBuilders.existsQuery(filterField.getField());
     }
 
     private QueryBuilder getGTQuery() {
+        checkValidQueryType(QueryType.GREATER_THEN);
         return QueryBuilders.rangeQuery(filterField.getField())
                 .gt(value);
     }
 
     private QueryBuilder getLTQuery() {
+        checkValidQueryType(QueryType.LESS_THEN);
         return QueryBuilders.rangeQuery(filterField.getField())
                 .lt(value);
     }
 
     private QueryBuilder getGTEQuery() {
+        checkValidQueryType(QueryType.GREATER_THEN_EQUALS);
         return QueryBuilders.rangeQuery(filterField.getField())
                 .gte(value);
     }
 
     private QueryBuilder getLTEQuery() {
+        checkValidQueryType(QueryType.LESS_THEN_EQUALS);
         return QueryBuilders.rangeQuery(filterField.getField())
                 .lte(value);
     }
 
     private QueryBuilder getEqualsQuery() {
+        checkValidQueryType(QueryType.EQUALS);
         return QueryBuilders.matchQuery(filterField.exactMatchFieled(), value);
+    }
+
+
+    private void checkValidQueryType(QueryType type) {
+        if (!type.getDataTypes().contains(filterField.getDataType())) {
+            throw new FimsRuntimeException(QueryErrorCode.INVALID_TYPE, 400, type.name(), filterField.getDisplayName());
+        }
     }
 
     private QueryBuilder nestedQuery(QueryBuilder query) {
