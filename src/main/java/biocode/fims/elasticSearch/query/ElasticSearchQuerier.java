@@ -116,7 +116,7 @@ public class ElasticSearchQuerier {
         searchRequestBuilder.setTypes(query.getTypes());
 
         searchRequestBuilder.setQuery(query.getQuery());
-        searchRequestBuilder.setFetchSource(query.getSource(), null);
+        searchRequestBuilder.setFetchSource(query.getSource().toArray(new String[]{}), null);
 
         return searchRequestBuilder;
     }
