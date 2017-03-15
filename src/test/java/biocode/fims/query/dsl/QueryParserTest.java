@@ -189,4 +189,18 @@ public class QueryParserTest {
         assertEquals(expected, result);
     }
 
+    @Test
+    public void should_parse_expeditons() {
+        String qs = "term expedition:TEST expedition:TEST2";
+
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+
+        Query expected = new Query();
+        expected.addExpedition("TEST");
+        expected.addExpedition("TEST2");
+        expected.appendQueryString("term");
+
+        assertEquals(expected, result);
+    }
+
 }

@@ -16,7 +16,6 @@ import org.parboiled.annotations.BuildParseTree;
  * @author rjewing
  */
 @SuppressWarnings("InfiniteRecursion")
-@BuildParseTree
 public class QueryParser extends BaseParser<Object> {
 
     private final QueryAction NewQuery = new QueryAction();
@@ -49,6 +48,7 @@ public class QueryParser extends BaseParser<Object> {
         return FirstOf(
                 QueryGroup(),
                 Exists(),
+                Expedition(),
                 Must(),
                 MustNot(),
                 Filter(),
@@ -104,6 +104,20 @@ public class QueryParser extends BaseParser<Object> {
                     @Override
                     public boolean run(Context context) {
                         ((Query) peek()).addExists(match());
+                        return true;
+                    }
+                }
+        );
+    }
+
+    public Rule Expedition() {
+        return Sequence(
+                ExpeditionString(),
+                Chars(),
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        ((Query) peek()).addExpedition(match());
                         return true;
                     }
                 }
@@ -237,6 +251,7 @@ public class QueryParser extends BaseParser<Object> {
                 TestNot(OpenParen()),
                 TestNot(CloseParen()),
                 TestNot(ExistsString()),
+                TestNot(ExpeditionString()),
                 TestNot(MustChar()),
                 TestNot(ValueDelim()),
                 TestNot(MustNotChar()),
@@ -250,6 +265,10 @@ public class QueryParser extends BaseParser<Object> {
 
     public Rule ExistsString() {
         return String("_exists_:");
+    }
+
+    public Rule ExpeditionString() {
+        return String("expedition:");
     }
 
     public Rule ValueDelim() {

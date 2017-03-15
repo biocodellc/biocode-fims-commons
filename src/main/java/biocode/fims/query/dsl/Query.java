@@ -14,6 +14,7 @@ public class Query {
     private List<Query> must;
     private List<Query> mustNot;
     private List<Query> should;
+    private List<String> expeditions;
 
     public Query() {
         this.queryString = new StringBuilder();
@@ -22,6 +23,7 @@ public class Query {
         this.should= new ArrayList<>();
         this.must = new ArrayList<>();
         this.mustNot = new ArrayList<>();
+        this.expeditions = new ArrayList<>();
     }
 
     public void addExists(String column) {
@@ -40,13 +42,16 @@ public class Query {
         mustNot.add(mustNotQuery);
     }
 
-
     public void addShould(Query subQuery) {
         this.should.add(subQuery);
     }
 
     public void appendQueryString(String q) {
         queryString.append(" " + q);
+    }
+
+    public void addExpedition(String expeditionCode) {
+        this.expeditions.add(expeditionCode);
     }
 
     public List<String> getExists() {
@@ -61,6 +66,10 @@ public class Query {
         return must;
     }
 
+    public List<String> getExpeditions() {
+        return expeditions;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -71,9 +80,10 @@ public class Query {
         if (!getQueryString().equals(query.getQueryString())) return false;
         if (!getExists().equals(query.getExists())) return false;
         if (!filters.equals(query.filters)) return false;
-        if (!should.equals(query.should)) return false;
         if (!getMust().equals(query.getMust())) return false;
-        return mustNot.equals(query.mustNot);
+        if (!mustNot.equals(query.mustNot)) return false;
+        if (!should.equals(query.should)) return false;
+        return getExpeditions().equals(query.getExpeditions());
     }
 
     @Override
@@ -84,6 +94,7 @@ public class Query {
         result = 31 * result + getMust().hashCode();
         result = 31 * result + mustNot.hashCode();
         result = 31 * result + should.hashCode();
+        result = 31 * result + getExpeditions().hashCode();
         return result;
     }
 }
