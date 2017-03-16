@@ -202,9 +202,10 @@ public class Worksheet {
      *
      * @param parent
      *
+     * @param mapping
      * @return
      */
-    public boolean run(Object parent) {
+    public boolean run(Object parent, Mapping mapping) {
 
         // Set a reference to the validation parent
         validation = (Validation) parent;
@@ -218,6 +219,8 @@ public class Worksheet {
 
             for (Iterator<Rule> i = rules.iterator(); i.hasNext(); ) {
                 Rule r = i.next();
+                // hack until we remove digester
+                r.setMapping(mapping);
 
                 // Run this particular rule
                 try {

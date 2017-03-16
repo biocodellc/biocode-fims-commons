@@ -260,7 +260,7 @@ public class Validation implements RendererInterface {
 
 
         // Run validation components
-        if (!sheet.run(this)) {
+        if (!sheet.run(this, mapping)) {
             return false;
         }
 
@@ -310,12 +310,8 @@ public class Validation implements RendererInterface {
         d.addSetProperties("fims/validation/worksheet");
         d.addSetNext("fims/validation/worksheet", "addWorksheet");
 
-        ObjectCreateRule ruleCreateRule = new ObjectCreateRule(Rule.class);
-        ruleCreateRule.setConstructorArgumentTypes(Mapping.class);
-        ruleCreateRule.setDefaultConstructorArguments(mapping);
-
         // Create rule objects
-        d.addRule("fims/validation/worksheet/rule", ruleCreateRule);
+        d.addObjectCreate("fims/validation/worksheet/rule", Rule.class);
         d.addSetProperties("fims/validation/worksheet/rule");
         d.addSetNext("fims/validation/worksheet/rule", "addRule");
         d.addCallMethod("fims/validation/worksheet/rule/field", "addField", 0);

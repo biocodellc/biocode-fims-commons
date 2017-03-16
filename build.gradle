@@ -78,7 +78,9 @@ dependencies {
     server 'javax.servlet:servlet-api:2.4'
     server 'org.apache.poi:poi:3.10.1'
     server 'org.apache.poi:poi-ooxml:3.10.1'
-    server 'org.apache.commons:commons-digester3:3.2'
+    server ('org.apache.commons:commons-digester3:3.2') {
+        exclude module: 'asm'
+    }
     server 'commons-validator:commons-validator:1.5.0'
     server 'commons-cli:commons-cli:1.2'
     server 'org.apache.commons:commons-dbcp2:2.1.1'
@@ -91,7 +93,7 @@ dependencies {
     server 'com.ibm.icu:icu4j:3.4.4'
     server 'com.googlecode.json-simple:json-simple:1.1.1'
     server 'mysql:mysql-connector-java:5.1.38'
-    
+
     server group: 'org.parboiled', name: 'parboiled-java', version: '1.1.8'
 
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
