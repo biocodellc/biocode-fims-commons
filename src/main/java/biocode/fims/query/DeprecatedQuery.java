@@ -6,18 +6,18 @@ import java.util.List;
 /**
  * @author rjewing
  */
-public class Query {
+public class DeprecatedQuery {
     private List<QueryCriteria> criterion;
     private List<String> expeditions;
     private List<String> source;
 
-    private Query() {
+    private DeprecatedQuery() {
         this.expeditions = new ArrayList<>();
         this.source = new ArrayList<>();
         this.criterion = new ArrayList<>();
     }
 
-    public Query(List<QueryCriteria> criterion, List<String> expeditions) {
+    public DeprecatedQuery(List<QueryCriteria> criterion, List<String> expeditions) {
         this.criterion = criterion;
         this.expeditions = expeditions;
         this.source = new ArrayList<>();
