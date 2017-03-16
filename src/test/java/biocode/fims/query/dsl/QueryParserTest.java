@@ -203,4 +203,20 @@ public class QueryParserTest {
         assertEquals(expected, result);
     }
 
+    @Test
+    public void should_parse_escaped_must_not_char_as_query_string() {
+        String qs = "decimalLatitude:<\\-10";
+
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+
+        Query f = new Query();
+        f.appendQueryString("<\\-10");
+        QueryFilter filter = new QueryFilter("decimalLatitude", f);
+
+        Query expected = new Query();
+        expected.addFilter(filter);
+
+        assertEquals(expected, result);
+    }
+
 }

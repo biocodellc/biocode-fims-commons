@@ -4,7 +4,6 @@ import org.parboiled.Action;
 import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
-import org.parboiled.annotations.BuildParseTree;
 
 /**
  * Custom fims query parser. This minimally parses an incoming query string so we can reconstruct the appropriate
@@ -143,20 +142,8 @@ public class QueryParser extends BaseParser<Object> {
     public Rule MustNot() {
         return Sequence(
                 MustNotChar(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        return true;
-                    }
-                },
                 WhiteSpace(),
                 SubQueryBreakOnWhiteSpace(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        return true;
-                    }
-                },
                 WhiteSpace(),
                 new Action() {
                     @Override
@@ -248,20 +235,38 @@ public class QueryParser extends BaseParser<Object> {
 
     public Rule Chars() {
         return OneOrMore(
-                TestNot(OpenParen()),
-                TestNot(CloseParen()),
-                TestNot(ExistsString()),
-                TestNot(ExpeditionString()),
-                TestNot(MustChar()),
-                TestNot(ValueDelim()),
-                TestNot(MustNotChar()),
-                TestNot(QuoteChar()),
-                TestNot(OpenRangeChars()),
-                TestNot(CloseRangeChars()),
-                TestNot(WhiteSpaceChars()),
+                FirstOf(
+                        EscapedReservedChars(),
+                        TestNot(ReservedChars())
+                ),
                 ANY
         );
     }
+
+    public Rule EscapedReservedChars() {
+        return Sequence(
+                EscapeChar(),
+                ReservedChars()
+        );
+    }
+
+    public Rule ReservedChars() {
+        return FirstOf(
+                OpenParen(),
+                CloseParen(),
+                ExistsString(),
+                ExpeditionString(),
+                MustChar(),
+                MustNotChar(),
+                ValueDelim(),
+                QuoteChar(),
+                OpenRangeChars(),
+                CloseRangeChars(),
+                WhiteSpaceChars()
+        );
+    }
+
+    public Rule EscapeChar() { return Ch('\\'); }
 
     public Rule ExistsString() {
         return String("_exists_:");
