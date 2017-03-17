@@ -3,7 +3,7 @@ package biocode.fims.query.dsl;
 /**
  * @author rjewing
  */
-public class SubQuery extends BoolQuery implements FieldQueryExpression {
+public class SubQuery extends Query implements FieldQueryExpression {
     private String column;
 
     @Override

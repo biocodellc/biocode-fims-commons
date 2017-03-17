@@ -116,7 +116,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((BoolQuery) peek()).addExpedition(match());
+                        ((Query) peek()).addExpedition(match());
                         return true;
                     }
                 }
@@ -132,7 +132,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((BoolQuery) peek(1)).addMust((QueryClause) pop());
+                        ((Query) peek(1)).addMust((QueryClause) pop());
                         return true;
                     }
                 }
@@ -148,7 +148,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((BoolQuery) peek(1)).addMustNot((QueryClause) pop());
+                        ((Query) peek(1)).addMustNot((QueryClause) pop());
                         return true;
                     }
                 }
