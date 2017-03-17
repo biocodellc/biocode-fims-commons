@@ -22,7 +22,13 @@ public class ExistsQuery implements QueryExpression {
 
     @Override
     public List<QueryBuilder> getQueryBuilders() {
-        ElasticSearchFilterField filterField = transformer.getFilterField(column);
+        ElasticSearchFilterField filterField;
+
+        if (transformer != null) {
+            filterField = transformer.getFilterField(column);
+        } else {
+            filterField = new ElasticSearchFilterField("_all", null, null, null);
+        }
 
         QueryBuilder qb = getQueryBuilder(filterField);
 

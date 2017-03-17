@@ -19,13 +19,19 @@ public class QueryStringQuery implements QueryExpression {
 
     public QueryStringQuery(String queryString) {
         this.queryString = queryString;
-        this.column = "";
+        this.column = "_all";
     }
 
     //TODO refactor out common code with ExistsQuery
     @Override
     public List<QueryBuilder> getQueryBuilders() {
-        ElasticSearchFilterField filterField = transformer.getFilterField(column);
+        ElasticSearchFilterField filterField;
+
+        if (transformer != null) {
+            filterField = transformer.getFilterField(column);
+        } else {
+            filterField = new ElasticSearchFilterField("_all", null, null, null);
+        }
 
         QueryBuilder qb = getQueryBuilder(filterField);
 
@@ -43,7 +49,8 @@ public class QueryStringQuery implements QueryExpression {
     private QueryBuilder getQueryBuilder(ElasticSearchFilterField filterField) {
         return QueryBuilders
                 .queryStringQuery(queryString)
-                .defaultField(filterField.getField());
+                .defaultField(filterField.getField())
+                .allowLeadingWildcard(false);
     }
 
     @Override

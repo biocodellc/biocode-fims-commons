@@ -120,7 +120,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek()).addExpedition(match());
+                        ((ExpeditionQueryContainer) peek()).addExpedition(match());
                         return true;
                     }
                 }

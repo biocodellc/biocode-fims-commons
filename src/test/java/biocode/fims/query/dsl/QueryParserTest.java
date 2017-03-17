@@ -230,7 +230,7 @@ public class QueryParserTest {
 
     @Test
     public void should_parse_bounding_box_query() {
-        String qs = "(+decimalLongitude:>170 +decimalLongitude:<=180) (+decimalLongitude:<\\-170 +decimalLongitude:>=\\-180)";
+        String qs = "(+decimalLongitude:>170 +decimalLongitude:<=180) (+decimalLongitude:<\\-170 +decimalLongitude:>=\\-180) +expedition:Panpen_COI_MI";
 
         Query result = parseRunner.run(qs).resultValue;
 
@@ -265,6 +265,10 @@ public class QueryParserTest {
         group2.addMust(group2Must2);
 
         expected.add(group2);
+
+        QueryClause must = new QueryClause();
+        must.addExpedition("Panpen_COI_MI");
+        expected.addMust(must);
 
         assertEquals(expected, result);
     }

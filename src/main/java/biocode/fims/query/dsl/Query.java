@@ -1,6 +1,7 @@
 package biocode.fims.query.dsl;
 
 import biocode.fims.elasticSearch.FieldColumnTransformer;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * @author rjewing
  */
-public class Query implements QueryExpression, QueryContainer {
+public class Query implements QueryExpression, ExpeditionQueryContainer {
     protected List<QueryClause> must;
     protected List<QueryClause> mustNot;
     protected List<QueryClause> should;
@@ -30,14 +31,17 @@ public class Query implements QueryExpression, QueryContainer {
 
     public void addMust(QueryClause q) {
         must.add(q);
+        expeditions.addAll(q.getExpeditions());
     }
 
     public void addMustNot(QueryClause q) {
         mustNot.add(q);
+        expeditions.addAll(q.getExpeditions());
     }
 
     public void addShould(QueryClause q) {
         should.add(q);
+        expeditions.addAll(q.getExpeditions());
     }
 
     public void addExpedition(String expeditionCode) {
@@ -59,7 +63,9 @@ public class Query implements QueryExpression, QueryContainer {
     }
 
     public QueryBuilder getQueryBuilder() {
-        setColumnsForQueryClauses();
+        if (needToSetQueryClauseColumn()) {
+            setColumnsForQueryClauses();
+        }
 
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
@@ -81,7 +87,10 @@ public class Query implements QueryExpression, QueryContainer {
             }
         }
 
-        queryBuilder.must(buildExpeditionsQuery());
+        if (expeditions.size() > 0) {
+            queryBuilder.must(buildExpeditionsQuery());
+            queryBuilder.minimumNumberShouldMatch(1);
+        }
 
         return queryBuilder;
     }
@@ -129,6 +138,10 @@ public class Query implements QueryExpression, QueryContainer {
         must.forEach(qc -> qc.setColumn(transformer, column));
         mustNot.forEach(qc -> qc.setColumn(transformer, column));
         should.forEach(qc -> qc.setColumn(transformer, column));
+    }
+
+    private boolean needToSetQueryClauseColumn() {
+        return transformer != null && !StringUtils.isBlank(column);
     }
 
     public List<String> getExpeditions() {
