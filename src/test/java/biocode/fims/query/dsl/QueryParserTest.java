@@ -4,11 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -17,34 +12,43 @@ import static org.junit.Assert.*;
  */
 public class QueryParserTest {
     QueryParser parser;
+    Query expected;
 
     @Before
     public void setUp() throws Exception {
         parser = Parboiled.createParser(QueryParser.class);
+        expected = new Query();
     }
 
     @Test
     public void should_return_empty_query_given_empty_string() {
-        ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run("");
-        assertEquals("", result.resultValue.getQueryString());
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run("").resultValue;
+        assertEquals(expected, result);
     }
 
     @Test
     public void should_parse_single_query_string() {
         String qs = "multiple term query \"with phrases\"";
 
-        ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(qs);
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        assertEquals(qs, result.resultValue.getQueryString());
+        expected.add(new QueryStringQuery("multiple"));
+        expected.add(new QueryStringQuery("term"));
+        expected.add(new QueryStringQuery("query"));
+        expected.add(new QueryStringQuery("\"with phrases\""));
+
+        assertEquals(expected, result);
     }
 
     @Test
     public void should_parse_exists_column() {
         String qs = " _exists_:column1";
 
-        ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(qs);
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        assertEquals(Collections.singletonList("column1"), result.resultValue.getExists());
+        expected.add(new ExistsQuery("column1"));
+
+        assertEquals(expected, result);
     }
 
     @Test
@@ -53,10 +57,14 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        List<String> expectedExists = Arrays.asList("column1", "column3");
+        expected.add(new ExistsQuery("column1"));
+        expected.add(new QueryStringQuery("this"));
+        expected.add(new QueryStringQuery("term"));
+        expected.add(new ExistsQuery("column3"));
+        expected.add(new QueryStringQuery("\"query string\""));
+        expected.add(new QueryStringQuery("phrase"));
 
-        assertEquals("this term \"query string\" phrase", result.getQueryString());
-        assertEquals(expectedExists, result.getExists());
+        assertEquals(expected, result);
 
     }
 
@@ -66,16 +74,21 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query expectedMust1 = new Query();
-        expectedMust1.appendQueryString("term1");
-        Query expectedMust2 = new Query();
-        expectedMust2.addExists("column1");
-        Query expectedMust3 = new Query();
-        expectedMust3.appendQueryString("\"phrase must\"");
+        QueryClause must = new QueryClause();
+        must.add(new QueryStringQuery("term1"));
+        expected.addMust(must);
 
+        expected.add(new QueryStringQuery("shouldTerm"));
 
-        assertEquals(Arrays.asList(expectedMust1, expectedMust2, expectedMust3), result.getMust());
-        assertEquals("shouldTerm", result.getQueryString());
+        QueryClause must2 = new QueryClause();
+        must2.add(new ExistsQuery("column1"));
+        expected.addMust(must2);
+
+        QueryClause must3 = new QueryClause();
+        must3.add(new QueryStringQuery("\"phrase must\""));
+        expected.addMust(must3);
+
+        assertEquals(expected, result);
     }
 
     @Test
@@ -84,23 +97,24 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query mustNot1 = new Query();
-        mustNot1.appendQueryString("term1");
-        Query mustNot2 = new Query();
-        Query groupQuery = new Query();
-        groupQuery.appendQueryString("shouldTerm orTerm");
-        mustNot2.addShould(groupQuery);
-        Query mustNot3 = new Query();
-        mustNot3.addExists("column1");
-        Query must = new Query();
-        must.appendQueryString("\"phrase must\"");
+        QueryClause mustNot = new QueryClause();
+        mustNot.add(new QueryStringQuery("term1"));
+        expected.addMustNot(mustNot);
 
-        Query expected = new Query();
-        expected.addMustNot(mustNot1);
+        SubQuery group = new SubQuery();
+        group.add(new QueryStringQuery("shouldTerm"));
+        group.add(new QueryStringQuery("orTerm"));
+        QueryClause mustNot2 = new QueryClause();
+        mustNot2.add(group);
         expected.addMustNot(mustNot2);
-        expected.addMustNot(mustNot3);
-        expected.addMust(must);
 
+        QueryClause mustNot3 = new QueryClause();
+        mustNot3.add(new ExistsQuery("column1"));
+        expected.addMustNot(mustNot3);
+
+        QueryClause must = new QueryClause();
+        must.add(new QueryStringQuery("\"phrase must\""));
+        expected.addMust(must);
 
         assertEquals(expected, result);
     }
@@ -109,15 +123,17 @@ public class QueryParserTest {
     public void should_parse_sub_queries() {
         String qs = "term1 ( shouldTerm ) term";
 
-        ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(qs);
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query expected = new Query();
-        expected.appendQueryString("term1 term");
-        Query subQuery = new Query();
-        subQuery.appendQueryString("shouldTerm");
-        expected.addShould(subQuery);
+        expected.add(new QueryStringQuery("term1"));
 
-        assertEquals(expected, result.resultValue);
+        SubQuery group = new SubQuery();
+        group.add(new QueryStringQuery("shouldTerm"));
+        expected.add(group);
+
+        expected.add(new QueryStringQuery("term"));
+
+        assertEquals(expected, result);
     }
 
     @Test
@@ -126,25 +142,21 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query f1 = new Query();
-        f1.appendQueryString("term1");
-        QueryFilter filter1 = new QueryFilter("column2", f1);
+        expected.add(new ExistsQuery("column1"));
 
-        Query f2 = new Query();
-        Query f2Sub = new Query();
-        f2Sub.appendQueryString("term3");
-        Query f2SubMust = new Query();
-        f2SubMust.appendQueryString("term4");
-        f2Sub.addMust(f2SubMust);
-        f2.addShould(f2Sub);
+        QueryStringQuery q = new QueryStringQuery("term1");
+        q.setColumn("column2");
+        expected.add(q);
 
-        QueryFilter filter2 = new QueryFilter("column3", f2);
+        expected.add(new QueryStringQuery("term2"));
 
-        Query expected = new Query();
-        expected.appendQueryString("term2");
-        expected.addExists("column1");
-        expected.addFilter(filter1);
-        expected.addFilter(filter2);
+        SubQuery group = new SubQuery();
+        group.setColumn("column3");
+        group.add(new QueryStringQuery("term3"));
+        QueryClause must = new QueryClause();
+        must.add(new QueryStringQuery("term4"));
+        group.addMust(must);
+        expected.add(group);
 
         assertEquals(expected, result);
     }
@@ -155,20 +167,17 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query f = new Query();
-        f.appendQueryString("[1 TO 5]");
-        QueryFilter filter = new QueryFilter("column1", f);
-        Query f2 = new Query();
-        f2.appendQueryString("<=5");
-        QueryFilter filter2 = new QueryFilter("column2", f2);
-        Query f3 = new Query();
-        f3.appendQueryString("{5 TO 10]");
-        QueryFilter filter3 = new QueryFilter("column3", f3);
+        QueryStringQuery q = new QueryStringQuery("[1 TO 5]");
+        q.setColumn("column1");
+        expected.add(q);
 
-        Query expected = new Query();
-        expected.addFilter(filter);
-        expected.addFilter(filter2);
-        expected.addFilter(filter3);
+        QueryStringQuery q2 = new QueryStringQuery("<=5");
+        q2.setColumn("column2");
+        expected.add(q2);
+
+        QueryStringQuery q3 = new QueryStringQuery("{5 TO 10]");
+        q3.setColumn("column3");
+        expected.add(q3);
 
         assertEquals(expected, result);
     }
@@ -179,12 +188,9 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query f = new Query();
-        f.appendQueryString("a");
-        QueryFilter filter = new QueryFilter("conceptAlias.\\*", f);
-
-        Query expected = new Query();
-        expected.addFilter(filter);
+        QueryStringQuery q = new QueryStringQuery("a");
+        q.setColumn("conceptAlias.\\*");
+        expected.add(q);
 
         assertEquals(expected, result);
     }
@@ -195,10 +201,10 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query expected = new Query();
+        expected.add(new QueryStringQuery("term"));
+
         expected.addExpedition("TEST");
         expected.addExpedition("TEST2");
-        expected.appendQueryString("term");
 
         assertEquals(expected, result);
     }
@@ -209,12 +215,51 @@ public class QueryParserTest {
 
         Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
 
-        Query f = new Query();
-        f.appendQueryString("<\\-10");
-        QueryFilter filter = new QueryFilter("decimalLatitude", f);
+        QueryStringQuery q = new QueryStringQuery("<\\-10");
+        q.setColumn("decimalLatitude");
 
-        Query expected = new Query();
-        expected.addFilter(filter);
+        expected.add(q);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_bounding_box_query() {
+        String qs = "(+decimalLongitude:>170 +decimalLongitude:<=180) (+decimalLongitude:<\\-170 +decimalLongitude:>=\\-180)";
+
+        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+
+        SubQuery group = new SubQuery();
+
+        QueryClause groupMust1 = new QueryClause();
+        QueryStringQuery q = new QueryStringQuery(">170");
+        q.setColumn("decimalLongitude");
+        groupMust1.add(q);
+        group.addMust(groupMust1);
+
+        QueryClause groupMust2 = new QueryClause();
+        QueryStringQuery q2 = new QueryStringQuery("<=180");
+        q2.setColumn("decimalLongitude");
+        groupMust2.add(q2);
+        group.addMust(groupMust2);
+
+        expected.add(group);
+
+        SubQuery group2 = new SubQuery();
+
+        QueryClause group2Must1 = new QueryClause();
+        QueryStringQuery q3 = new QueryStringQuery("<\\-170");
+        q3.setColumn("decimalLongitude");
+        group2Must1.add(q3);
+        group2.addMust(group2Must1);
+
+        QueryClause group2Must2 = new QueryClause();
+        QueryStringQuery q4 = new QueryStringQuery(">=\\-180");
+        q4.setColumn("decimalLongitude");
+        group2Must2.add(q4);
+        group2.addMust(group2Must2);
+
+        expected.add(group2);
 
         assertEquals(expected, result);
     }

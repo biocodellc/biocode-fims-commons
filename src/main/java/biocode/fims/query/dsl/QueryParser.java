@@ -17,11 +17,9 @@ import org.parboiled.Rule;
 @SuppressWarnings("InfiniteRecursion")
 public class QueryParser extends BaseParser<Object> {
 
-    private final QueryAction NewQuery = new QueryAction();
-
     public Rule Parse() {
         return Sequence(
-                NewQuery,
+                push(new Query()),
                 Optional(QueryExpression())
         );
     }
@@ -59,21 +57,27 @@ public class QueryParser extends BaseParser<Object> {
 
     public Rule SubQuery() {
         return Sequence(
-                NewQuery,
+                push(new SubQuery()),
                 Optional(QueryExpression())
         );
     }
 
-    public Rule SubQueryBreakOnWhiteSpace() {
+    public Rule QueryClause() {
         return Sequence(
-                NewQuery,
+                push(new QueryClause()),
+                Optional(QueryExpressionBreakOnWhiteSpace())
+        );
+    }
+
+    public Rule FilterQuery() {
+        return Sequence(
+                push(new FilterQuery()),
                 Optional(QueryExpressionBreakOnWhiteSpace())
         );
     }
 
     public Rule QueryGroup() {
         return Sequence(
-                WhiteSpace(),
                 OpenParen(),
                 WhiteSpace(),
                 SubQuery(),
@@ -82,7 +86,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek(1)).addShould((Query) pop());
+                        ((QueryContainer) peek(1)).add((QueryExpression) pop());
                         return true;
                     }
                 }
@@ -92,17 +96,13 @@ public class QueryParser extends BaseParser<Object> {
     public Rule Exists() {
         return Sequence(
                 ExistsString(),
-                ExistsColumn()
-        );
-    }
-
-    public Rule ExistsColumn() {
-        return Sequence(
                 Chars(),
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek()).addExists(match());
+                        ((QueryContainer) peek()).add(
+                                new ExistsQuery(match())
+                        );
                         return true;
                     }
                 }
@@ -116,7 +116,7 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek()).addExpedition(match());
+                        ((BoolQuery) peek()).addExpedition(match());
                         return true;
                     }
                 }
@@ -127,12 +127,12 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 MustChar(),
                 WhiteSpace(),
-                SubQueryBreakOnWhiteSpace(),
+                QueryClause(),
                 WhiteSpace(),
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek(1)).addMust((Query) pop());
+                        ((BoolQuery) peek(1)).addMust((QueryClause) pop());
                         return true;
                     }
                 }
@@ -143,12 +143,12 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 MustNotChar(),
                 WhiteSpace(),
-                SubQueryBreakOnWhiteSpace(),
+                QueryClause(),
                 WhiteSpace(),
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek(1)).addMustNot((Query) pop());
+                        ((BoolQuery) peek(1)).addMustNot((QueryClause) pop());
                         return true;
                     }
                 }
@@ -160,17 +160,8 @@ public class QueryParser extends BaseParser<Object> {
                 Chars(),
                 push(match()),
                 ValueDelim(),
-                SubQueryBreakOnWhiteSpace(),
-                WhiteSpace(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        Query filterQuery = (Query) pop();
-                        QueryFilter filter = new QueryFilter((String) pop(), filterQuery);
-                        ((Query) peek()).addFilter(filter);
-                        return true;
-                    }
-                }
+                FilterQuery(),
+                new FilterAction()
         );
     }
 
@@ -185,15 +176,7 @@ public class QueryParser extends BaseParser<Object> {
                 push(match()),
                 CloseRangeChars(),
                 push(match()),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        Query query = (Query) peek(3);
-                        swap3();
-                        query.appendQueryString("" + pop() + pop() + pop());
-                        return true;
-                    }
-                }
+                new RangeAction()
         );
     }
 
@@ -209,7 +192,8 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek(1)).appendQueryString("\"" + pop() + "\"");
+                        QueryStringQuery q = new QueryStringQuery("\"" + pop() + "\"");
+                        ((QueryContainer) peek()).add(q);
                         return true;
                     }
                 }
@@ -222,12 +206,15 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        ((Query) peek()).appendQueryString(match());
+                        QueryStringQuery q = new QueryStringQuery(match());
+                        ((QueryContainer) peek()).add(q);
                         return true;
                     }
                 }
         );
     }
+
+
 
     public Rule WhiteSpace() {
         return ZeroOrMore(WhiteSpaceChars());
@@ -266,7 +253,9 @@ public class QueryParser extends BaseParser<Object> {
         );
     }
 
-    public Rule EscapeChar() { return Ch('\\'); }
+    public Rule EscapeChar() {
+        return Ch('\\');
+    }
 
     public Rule ExistsString() {
         return String("_exists_:");
@@ -312,11 +301,29 @@ public class QueryParser extends BaseParser<Object> {
         return AnyOf(" \t\f");
     }
 
-    private class QueryAction implements Action {
 
+
+    class FilterAction implements Action {
         @Override
         public boolean run(Context context) {
-            push(new Query());
+            FilterQuery fq = (FilterQuery) pop();
+            String col = (String) pop();
+            QueryContainer qc = (QueryContainer) peek();
+            for (QueryExpression e : fq.getExpressions()) {
+                ((FieldQueryExpression) e).setColumn(col);
+                qc.add(e);
+            }
+            return true;
+        }
+    }
+
+    class RangeAction implements Action {
+        @Override
+        public boolean run(Context context) {
+            QueryContainer qc = (QueryContainer) peek(3);
+            swap3();
+            QueryStringQuery q = new QueryStringQuery("" + pop() + pop() + pop());
+            qc.add(q);
             return true;
         }
     }

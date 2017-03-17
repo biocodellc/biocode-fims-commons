@@ -6,9 +6,9 @@ package biocode.fims.query.dsl;
 public class QueryFilter {
 
     private String column;
-    private Query query;
+    private DeprecatedQuery query;
 
-    public QueryFilter(String column, Query query) {
+    public QueryFilter(String column, DeprecatedQuery query) {
         this.column = column;
         this.query = query;
     }
@@ -17,7 +17,7 @@ public class QueryFilter {
         return column;
     }
 
-    public Query getQuery() {
+    public DeprecatedQuery getQuery() {
         return query;
     }
 
