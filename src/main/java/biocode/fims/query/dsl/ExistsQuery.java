@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,6 +42,14 @@ public class ExistsQuery implements QueryExpression {
         }
 
         return Arrays.asList(qb);
+    }
+
+    @Override
+    public List<QueryExpression> getExpressions(String column) {
+        if (this.column.equals(column)) {
+            return Arrays.asList(this);
+        }
+        return Collections.emptyList();
     }
 
     private QueryBuilder getQueryBuilder(ElasticSearchFilterField filterField) {

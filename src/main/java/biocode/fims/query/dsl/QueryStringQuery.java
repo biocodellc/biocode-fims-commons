@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -60,6 +61,14 @@ public class QueryStringQuery implements QueryExpression {
     }
 
     @Override
+    public List<QueryExpression> getExpressions(String column) {
+        if (this.column.equals(column)) {
+            return Arrays.asList(this);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof QueryStringQuery)) return false;
@@ -75,5 +84,9 @@ public class QueryStringQuery implements QueryExpression {
         int result = column.hashCode();
         result = 31 * result + queryString.hashCode();
         return result;
+    }
+
+    public String getQueryString() {
+        return queryString;
     }
 }

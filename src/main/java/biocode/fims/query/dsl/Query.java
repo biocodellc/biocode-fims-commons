@@ -89,7 +89,6 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
 
         if (expeditions.size() > 0) {
             queryBuilder.must(buildExpeditionsQuery());
-            queryBuilder.minimumNumberShouldMatch(1);
         }
 
         return queryBuilder;
@@ -104,6 +103,8 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
                     QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expeditionCode)
             );
         }
+
+        queryBuilder.minimumNumberShouldMatch(1);
 
         return queryBuilder;
     }
@@ -146,5 +147,17 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
 
     public List<String> getExpeditions() {
         return expeditions;
+    }
+
+    public List<QueryExpression> getExpressions(String column) {
+        List<QueryExpression> expressions = new ArrayList<>();
+
+//        if (column.equals(this.column)) {
+            must.forEach(qc -> expressions.addAll(qc.getExpressions(column)));
+            mustNot.forEach(qc -> expressions.addAll(qc.getExpressions(column)));
+            should.forEach(qc -> expressions.addAll(qc.getExpressions(column)));
+//        }
+
+        return expressions;
     }
 }

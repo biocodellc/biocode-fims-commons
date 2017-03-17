@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,5 +86,12 @@ public class QueryClause implements ExpeditionQueryContainer, QueryExpression {
 
     public List<String> getExpeditions() {
         return expeditions;
+    }
+
+    public List<QueryExpression> getExpressions(String column) {
+        List<QueryExpression> expressions = new ArrayList<>();
+
+        this.expressions.forEach(e -> expressions.addAll(e.getExpressions(column)));
+        return expressions;
     }
 }
