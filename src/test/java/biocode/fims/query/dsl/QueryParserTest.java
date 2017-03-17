@@ -1,8 +1,10 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.parboiled.Parboiled;
+import org.parboiled.parserunners.ParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 
 import static org.junit.Assert.*;
@@ -11,18 +13,21 @@ import static org.junit.Assert.*;
  * @author rjewing
  */
 public class QueryParserTest {
-    QueryParser parser;
+    ParseRunner<Query> parseRunner;
     Query expected;
+    FieldColumnTransformer transformer;
 
     @Before
     public void setUp() throws Exception {
-        parser = Parboiled.createParser(QueryParser.class);
+        transformer = null;
+        QueryParser parser = Parboiled.createParser(QueryParser.class, transformer);
+        parseRunner = new ReportingParseRunner<>(parser.Parse());
         expected = new Query();
     }
 
     @Test
     public void should_return_empty_query_given_empty_string() {
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run("").resultValue;
+        Query result = parseRunner.run("").resultValue;
         assertEquals(expected, result);
     }
 
@@ -30,7 +35,7 @@ public class QueryParserTest {
     public void should_parse_single_query_string() {
         String qs = "multiple term query \"with phrases\"";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new QueryStringQuery("multiple"));
         expected.add(new QueryStringQuery("term"));
@@ -44,7 +49,7 @@ public class QueryParserTest {
     public void should_parse_exists_column() {
         String qs = " _exists_:column1";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new ExistsQuery("column1"));
 
@@ -55,7 +60,7 @@ public class QueryParserTest {
     public void should_parse_query_with_multiple_exists_and_query_strings() {
         String qs = " _exists_:column1 this term _exists_:column3 \"query string\" phrase";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new ExistsQuery("column1"));
         expected.add(new QueryStringQuery("this"));
@@ -72,7 +77,7 @@ public class QueryParserTest {
     public void should_parse_must_queries() {
         String qs = "+term1 shouldTerm +_exists_:column1 +\"phrase must\"";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         QueryClause must = new QueryClause();
         must.add(new QueryStringQuery("term1"));
@@ -95,13 +100,13 @@ public class QueryParserTest {
     public void should_parse_must_not_queries() {
         String qs = "-term1 -(shouldTerm orTerm) -_exists_:column1 +\"phrase must\"";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         QueryClause mustNot = new QueryClause();
         mustNot.add(new QueryStringQuery("term1"));
         expected.addMustNot(mustNot);
 
-        SubQuery group = new SubQuery();
+        Query group = new Query();
         group.add(new QueryStringQuery("shouldTerm"));
         group.add(new QueryStringQuery("orTerm"));
         QueryClause mustNot2 = new QueryClause();
@@ -123,11 +128,11 @@ public class QueryParserTest {
     public void should_parse_sub_queries() {
         String qs = "term1 ( shouldTerm ) term";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new QueryStringQuery("term1"));
 
-        SubQuery group = new SubQuery();
+        Query group = new Query();
         group.add(new QueryStringQuery("shouldTerm"));
         expected.add(group);
 
@@ -140,18 +145,18 @@ public class QueryParserTest {
     public void should_parse_filter_queries() {
         String qs = "_exists_:column1 column2:term1 term2 column3:(term3 +term4)";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new ExistsQuery("column1"));
 
         QueryStringQuery q = new QueryStringQuery("term1");
-        q.setColumn("column2");
+        q.setColumn(transformer, "column2");
         expected.add(q);
 
         expected.add(new QueryStringQuery("term2"));
 
-        SubQuery group = new SubQuery();
-        group.setColumn("column3");
+        Query group = new Query();
+        group.setColumn(transformer, "column3");
         group.add(new QueryStringQuery("term3"));
         QueryClause must = new QueryClause();
         must.add(new QueryStringQuery("term4"));
@@ -165,18 +170,18 @@ public class QueryParserTest {
     public void should_parse_range_queries() {
         String qs = "column1:[1 TO 5] column2:<=5 column3:{5 TO 10]";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         QueryStringQuery q = new QueryStringQuery("[1 TO 5]");
-        q.setColumn("column1");
+        q.setColumn(transformer, "column1");
         expected.add(q);
 
         QueryStringQuery q2 = new QueryStringQuery("<=5");
-        q2.setColumn("column2");
+        q2.setColumn(transformer, "column2");
         expected.add(q2);
 
         QueryStringQuery q3 = new QueryStringQuery("{5 TO 10]");
-        q3.setColumn("column3");
+        q3.setColumn(transformer, "column3");
         expected.add(q3);
 
         assertEquals(expected, result);
@@ -186,10 +191,10 @@ public class QueryParserTest {
     public void should_parse_filter_with_dot_notation() {
         String qs = "conceptAlias.\\*:a";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         QueryStringQuery q = new QueryStringQuery("a");
-        q.setColumn("conceptAlias.\\*");
+        q.setColumn(transformer, "conceptAlias.\\*");
         expected.add(q);
 
         assertEquals(expected, result);
@@ -199,7 +204,7 @@ public class QueryParserTest {
     public void should_parse_expeditons() {
         String qs = "term expedition:TEST expedition:TEST2";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         expected.add(new QueryStringQuery("term"));
 
@@ -213,10 +218,10 @@ public class QueryParserTest {
     public void should_parse_escaped_must_not_char_as_query_string() {
         String qs = "decimalLatitude:<\\-10";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
         QueryStringQuery q = new QueryStringQuery("<\\-10");
-        q.setColumn("decimalLatitude");
+        q.setColumn(transformer, "decimalLatitude");
 
         expected.add(q);
 
@@ -227,35 +232,35 @@ public class QueryParserTest {
     public void should_parse_bounding_box_query() {
         String qs = "(+decimalLongitude:>170 +decimalLongitude:<=180) (+decimalLongitude:<\\-170 +decimalLongitude:>=\\-180)";
 
-        Query result = new ReportingParseRunner<Query>(parser.Parse()).run(qs).resultValue;
+        Query result = parseRunner.run(qs).resultValue;
 
-        SubQuery group = new SubQuery();
+        Query group = new Query();
 
         QueryClause groupMust1 = new QueryClause();
         QueryStringQuery q = new QueryStringQuery(">170");
-        q.setColumn("decimalLongitude");
+        q.setColumn(transformer, "decimalLongitude");
         groupMust1.add(q);
         group.addMust(groupMust1);
 
         QueryClause groupMust2 = new QueryClause();
         QueryStringQuery q2 = new QueryStringQuery("<=180");
-        q2.setColumn("decimalLongitude");
+        q2.setColumn(transformer, "decimalLongitude");
         groupMust2.add(q2);
         group.addMust(groupMust2);
 
         expected.add(group);
 
-        SubQuery group2 = new SubQuery();
+        Query group2 = new Query();
 
         QueryClause group2Must1 = new QueryClause();
         QueryStringQuery q3 = new QueryStringQuery("<\\-170");
-        q3.setColumn("decimalLongitude");
+        q3.setColumn(transformer, "decimalLongitude");
         group2Must1.add(q3);
         group2.addMust(group2Must1);
 
         QueryClause group2Must2 = new QueryClause();
         QueryStringQuery q4 = new QueryStringQuery(">=\\-180");
-        q4.setColumn("decimalLongitude");
+        q4.setColumn(transformer, "decimalLongitude");
         group2Must2.add(q4);
         group2.addMust(group2Must2);
 

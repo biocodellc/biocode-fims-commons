@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -16,6 +17,9 @@ public class Query implements QueryExpression, QueryContainer {
     protected List<QueryClause> mustNot;
     protected List<QueryClause> should;
     private List<String> expeditions;
+
+    private FieldColumnTransformer transformer;
+    private String column;
 
     public Query() {
         must = new ArrayList<>();
@@ -55,6 +59,8 @@ public class Query implements QueryExpression, QueryContainer {
     }
 
     public QueryBuilder getQueryBuilder() {
+        setColumnsForQueryClauses();
+
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
         for (QueryExpression q : must) {
@@ -111,5 +117,21 @@ public class Query implements QueryExpression, QueryContainer {
         result = 31 * result + mustNot.hashCode();
         result = 31 * result + should.hashCode();
         return result;
+    }
+
+    @Override
+    public void setColumn(FieldColumnTransformer transformer, String column) {
+        this.transformer = transformer;
+        this.column = column;
+    }
+
+    private void setColumnsForQueryClauses() {
+        must.forEach(qc -> qc.setColumn(transformer, column));
+        mustNot.forEach(qc -> qc.setColumn(transformer, column));
+        should.forEach(qc -> qc.setColumn(transformer, column));
+    }
+
+    public List<String> getExpeditions() {
+        return expeditions;
     }
 }

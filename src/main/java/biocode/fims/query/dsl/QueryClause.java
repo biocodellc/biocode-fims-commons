@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.ArrayList;
@@ -9,8 +10,10 @@ import java.util.stream.Collectors;
 /**
  * @author rjewing
  */
-public class QueryClause implements QueryExpression, QueryContainer {
+public class QueryClause implements QueryContainer, QueryExpression {
     List<QueryExpression> expressions;
+    private FieldColumnTransformer transformer;
+    private String column;
 
     public QueryClause() {
         expressions = new ArrayList<>();
@@ -26,6 +29,7 @@ public class QueryClause implements QueryExpression, QueryContainer {
 
     @Override
     public List<QueryBuilder> getQueryBuilders() {
+        setColumnsForQueryExpressions();
         return expressions
                 .stream()
                 .flatMap(e -> e.getQueryBuilders().stream())
@@ -45,5 +49,15 @@ public class QueryClause implements QueryExpression, QueryContainer {
     @Override
     public int hashCode() {
         return expressions.hashCode();
+    }
+
+    @Override
+    public void setColumn(FieldColumnTransformer transformer, String column) {
+        this.transformer = transformer;
+        this.column = column;
+    }
+
+    private void setColumnsForQueryExpressions() {
+        expressions.forEach(e -> e.setColumn(transformer, column));
     }
 }

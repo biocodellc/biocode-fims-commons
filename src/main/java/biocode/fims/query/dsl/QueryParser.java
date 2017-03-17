@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.parboiled.Action;
 import org.parboiled.BaseParser;
 import org.parboiled.Context;
@@ -17,11 +18,14 @@ import org.parboiled.Rule;
 @SuppressWarnings("InfiniteRecursion")
 public class QueryParser extends BaseParser<Object> {
 
+    private FieldColumnTransformer transformer;
+
+    public QueryParser(FieldColumnTransformer transformer) {
+        this.transformer = transformer;
+    }
+
     public Rule Parse() {
-        return Sequence(
-                push(new Query()),
-                Optional(QueryExpression())
-        );
+        return Query();
     }
 
     public Rule QueryExpression() {
@@ -55,9 +59,9 @@ public class QueryParser extends BaseParser<Object> {
         );
     }
 
-    public Rule SubQuery() {
+    public Rule Query() {
         return Sequence(
-                push(new SubQuery()),
+                push(new Query()),
                 Optional(QueryExpression())
         );
     }
@@ -80,7 +84,7 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 OpenParen(),
                 WhiteSpace(),
-                SubQuery(),
+                Query(),
                 WhiteSpace(),
                 CloseParen(),
                 new Action() {
@@ -215,7 +219,6 @@ public class QueryParser extends BaseParser<Object> {
     }
 
 
-
     public Rule WhiteSpace() {
         return ZeroOrMore(WhiteSpaceChars());
     }
@@ -302,17 +305,18 @@ public class QueryParser extends BaseParser<Object> {
     }
 
 
-
     class FilterAction implements Action {
         @Override
         public boolean run(Context context) {
             FilterQuery fq = (FilterQuery) pop();
             String col = (String) pop();
             QueryContainer qc = (QueryContainer) peek();
+
             for (QueryExpression e : fq.getExpressions()) {
-                ((FieldQueryExpression) e).setColumn(col);
+                e.setColumn(transformer, col);
                 qc.add(e);
             }
+
             return true;
         }
     }

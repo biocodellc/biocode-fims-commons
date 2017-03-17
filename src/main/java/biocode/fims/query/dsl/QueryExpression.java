@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface QueryExpression {
 
     List<QueryBuilder> getQueryBuilders();
 
+    void setColumn(FieldColumnTransformer transformer, String column);
 }

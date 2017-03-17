@@ -1,5 +1,8 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.elasticSearch.FieldColumnTransformer;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
@@ -9,8 +12,9 @@ import java.util.List;
 /**
  * @author rjewing
  */
-public class QueryStringQuery implements FieldQueryExpression {
+public class QueryStringQuery implements QueryExpression {
     private String column;
+    private FieldColumnTransformer transformer;
     private String queryString;
 
     public QueryStringQuery(String queryString) {
@@ -18,17 +22,33 @@ public class QueryStringQuery implements FieldQueryExpression {
         this.column = "";
     }
 
+    //TODO refactor out common code with ExistsQuery
     @Override
     public List<QueryBuilder> getQueryBuilders() {
-        return Arrays.asList(
-                QueryBuilders
-                        .queryStringQuery(queryString)
-                        .defaultField(column)
-        );
+        ElasticSearchFilterField filterField = transformer.getFilterField(column);
+
+        QueryBuilder qb = getQueryBuilder(filterField);
+
+        if (filterField.isNested()) {
+            qb = QueryBuilders.nestedQuery(
+                    filterField.getPath(),
+                    qb,
+                    ScoreMode.None
+            );
+        }
+
+        return Arrays.asList(qb);
+    }
+
+    private QueryBuilder getQueryBuilder(ElasticSearchFilterField filterField) {
+        return QueryBuilders
+                .queryStringQuery(queryString)
+                .defaultField(filterField.getField());
     }
 
     @Override
-    public void setColumn(String column) {
+    public void setColumn(FieldColumnTransformer transformer, String column) {
+        this.transformer = transformer;
         this.column = column;
     }
 
