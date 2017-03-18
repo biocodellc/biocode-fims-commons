@@ -105,7 +105,7 @@ public class QueryParser extends BaseParser<Object> {
                     @Override
                     public boolean run(Context context) {
                         ((QueryContainer) peek()).add(
-                                new ExistsQuery(match())
+                                new ExistsQuery(transformer, match())
                         );
                         return true;
                     }

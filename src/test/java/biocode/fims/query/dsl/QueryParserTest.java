@@ -51,7 +51,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery("column1"));
+        expected.add(new ExistsQuery(transformer, "column1"));
 
         assertEquals(expected, result);
     }
@@ -62,10 +62,10 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery("column1"));
+        expected.add(new ExistsQuery(transformer, "column1"));
         expected.add(new QueryStringQuery("this"));
         expected.add(new QueryStringQuery("term"));
-        expected.add(new ExistsQuery("column3"));
+        expected.add(new ExistsQuery(transformer, "column3"));
         expected.add(new QueryStringQuery("\"query string\""));
         expected.add(new QueryStringQuery("phrase"));
 
@@ -86,7 +86,7 @@ public class QueryParserTest {
         expected.add(new QueryStringQuery("shouldTerm"));
 
         QueryClause must2 = new QueryClause();
-        must2.add(new ExistsQuery("column1"));
+        must2.add(new ExistsQuery(transformer, "column1"));
         expected.addMust(must2);
 
         QueryClause must3 = new QueryClause();
@@ -114,7 +114,7 @@ public class QueryParserTest {
         expected.addMustNot(mustNot2);
 
         QueryClause mustNot3 = new QueryClause();
-        mustNot3.add(new ExistsQuery("column1"));
+        mustNot3.add(new ExistsQuery(transformer, "column1"));
         expected.addMustNot(mustNot3);
 
         QueryClause must = new QueryClause();
@@ -147,7 +147,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery("column1"));
+        expected.add(new ExistsQuery(transformer, "column1"));
 
         QueryStringQuery q = new QueryStringQuery("term1");
         q.setColumn(transformer, "column2");

@@ -17,7 +17,8 @@ public class ExistsQuery implements QueryExpression {
     private String column;
     private FieldColumnTransformer transformer;
 
-    public ExistsQuery(String column) {
+    public ExistsQuery(FieldColumnTransformer transformer, String column) {
+        this.transformer = transformer;
         this.column = column;
     }
 
