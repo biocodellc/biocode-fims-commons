@@ -1,7 +1,7 @@
 package biocode.fims.elasticSearch.query;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.QueryType;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -96,7 +96,7 @@ public class ElasticSearchFilterCondition {
 
     private void checkValidQueryType(QueryType type) {
         if (!type.getDataTypes().contains(filterField.getDataType())) {
-            throw new FimsRuntimeException(QueryErrorCode.INVALID_TYPE, 400, type.name(), filterField.getDisplayName());
+            throw new FimsRuntimeException(QueryCode.INVALID_TYPE, 400, type.name(), filterField.getDisplayName());
         }
     }
 

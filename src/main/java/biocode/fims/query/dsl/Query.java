@@ -21,6 +21,7 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
 
     private FieldColumnTransformer transformer;
     private String column;
+    private boolean adjustMinShouldMatch = false;
 
     public Query() {
         must = new ArrayList<>();
@@ -89,6 +90,13 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
 
         if (expeditions.size() > 0) {
             queryBuilder.must(buildExpeditionsQuery());
+
+            if (adjustMinShouldMatch && must.size() == 0 && mustNot.size() == 0) {
+                // default es behavior is that if only should queries are present, at least 1 needs to match.
+                // since we add all public expeditions if no expeditions are in the query string (to prevent query results returning private expeditions),
+                // we need to mimic the default es behavior
+                queryBuilder.minimumNumberShouldMatch(1);
+            }
         }
 
         return queryBuilder;
@@ -159,5 +167,10 @@ public class Query implements QueryExpression, ExpeditionQueryContainer {
 //        }
 
         return expressions;
+    }
+
+    public void setExpeditions(List<String> expeditions) {
+        this.expeditions = expeditions;
+        this.adjustMinShouldMatch = true;
     }
 }

@@ -2,7 +2,7 @@ package biocode.fims.elasticSearch;
 
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 
 import java.util.List;
 
@@ -25,6 +25,6 @@ public class FieldColumnTransformer {
             }
         }
 
-        throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + column + " a filterable field?", 400, column);
+        throw new FimsRuntimeException(QueryCode.UNKNOWN_FILTER, "is " + column + " a filterable field?", 400, column);
     }
 }

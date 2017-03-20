@@ -3,7 +3,7 @@ package biocode.fims.elasticSearch.query;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -77,7 +77,7 @@ public class ElasticSearchQuerier {
         } while (response.getHits().getHits().length != 0);
 
         if (resources.size() == 0) {
-            throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+            throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
         }
         return resources;
     }
