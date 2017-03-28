@@ -1,2 +1,5 @@
 rootProject.name = 'biocode-fims-commons'
 
+if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
+    includeBuild gradleFimsDir
+}
