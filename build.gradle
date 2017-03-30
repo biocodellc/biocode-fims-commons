@@ -1,3 +1,5 @@
+import org.ajoberstar.grgit.Grgit
+
 buildscript {
     repositories {
         maven {
@@ -6,12 +8,14 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.ajoberstar:gradle-git:1.4.2"
         classpath "org.biocode:gradle-fims:1.0.0"
     }
 }
 
-apply plugin: "org.ajoberstar.github-pages"
+plugins {
+    id 'org.ajoberstar.git-publish' version '0.2.0'
+}
+
 apply plugin: "org.biocode.fims"
 
 repositories {
@@ -84,10 +88,10 @@ javadoc {
     failOnError = false
 }
 
-githubPages {
+gitPublish {
     repoUri = "git@github.com:biocodellc/biocode-fims-commons.git"
 
-    pages {
+    contents {
         from javadoc
     }
 }
