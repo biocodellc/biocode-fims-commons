@@ -20,6 +20,12 @@ plugins {
 
 apply plugin: "org.biocode.fims"
 
+repositories {
+    mavenCentral()
+    jcenter()
+    mavenLocal()
+}
+
 dependencies {
     server 'jstl:jstl:1.2'
 
@@ -77,10 +83,6 @@ dependencies {
     testCompile 'org.powermock:powermock-api-mockito:1.5.6'
 }
 
-fims {
-    mavenUser mavenUser
-    mavenPass mavenPass
-}
 
 //=============================
 //= github pages javadoc configuration
@@ -100,6 +102,15 @@ gitPublish {
 }
 
 publishing {
+    repositories {
+        maven {
+            url "http://www.repo.biocodellc.com/repository/maven-${project.version.toString().contains('dev') ? 'dev-releases' : 'releases'}"
+            credentials {
+                username mavenUser
+                password mavenPass
+            }
+        }
+    }
     publications {
         mavenJava(MavenPublication) {
             from components.java
