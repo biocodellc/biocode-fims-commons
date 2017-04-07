@@ -1,7 +1,6 @@
 package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;

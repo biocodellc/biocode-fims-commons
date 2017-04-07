@@ -21,11 +21,18 @@ public class JsonFieldTransform {
      * @param uri       the uri of the field
      * @param dataType  the {@link DataType} of the field
      */
-    public JsonFieldTransform(String fieldName, String uri, DataType dataType) {
+    public JsonFieldTransform(String fieldName, String uri, DataType dataType, boolean childObject) {
         this.fieldName = fieldName;
         this.uri = uri;
         this.dataType = dataType;
-        this.path = JsonPointer.compile("/" + uri.replaceAll("\\.", "/"));
+        String pointerPath = "/" + uri.replaceAll("~", "~0")
+                        .replaceAll("/", "~1");
+
+        if (childObject) {
+            pointerPath = pointerPath.replaceAll("\\.", "/");
+        }
+
+        this.path = JsonPointer.compile(pointerPath);
     }
 
     public String getFieldName() {

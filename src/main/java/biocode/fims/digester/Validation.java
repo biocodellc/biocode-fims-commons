@@ -9,7 +9,6 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.digester3.Digester;
-import org.apache.commons.digester3.ObjectCreateRule;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
