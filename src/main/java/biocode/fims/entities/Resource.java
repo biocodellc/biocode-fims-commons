@@ -2,7 +2,6 @@ package biocode.fims.entities;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ResourceCode;
-import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +15,7 @@ public class Resource {
 
     private String bcid;
     private ObjectNode resource;
-    private ObjectMapper objectMapper = new SpringObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public Resource(String bcid, ObjectNode resource) {
         this.bcid = bcid;
@@ -59,5 +58,23 @@ public class Resource {
         } catch (JsonProcessingException e) {
             throw new FimsRuntimeException(ResourceCode.INVALID_SERIALIZATION, 500);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Resource)) return false;
+
+        Resource resource1 = (Resource) o;
+
+        if (getBcid() != null ? !getBcid().equals(resource1.getBcid()) : resource1.getBcid() != null) return false;
+        return resource != null ? resource.equals(resource1.resource) : resource1.resource == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getBcid() != null ? getBcid().hashCode() : 0;
+        result = 31 * result + (resource != null ? resource.hashCode() : 0);
+        return result;
     }
 }

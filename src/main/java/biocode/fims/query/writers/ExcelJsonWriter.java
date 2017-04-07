@@ -1,4 +1,4 @@
-package biocode.fims.query;
+package biocode.fims.query.writers;
 
 import biocode.fims.digester.DataType;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;

@@ -10,6 +10,7 @@ public class ElasticSearchFilterField {
     private final String field;
     private final String displayName;
     private final DataType dataType;
+    private final String group;
     private boolean nested = false;
     private String path;
 
@@ -17,10 +18,11 @@ public class ElasticSearchFilterField {
      * @param field       how this ElasticSearch property is accessed
      * @param displayName how we should display this Filter to the user
      */
-    public ElasticSearchFilterField(String field, String displayName, DataType dataType) {
+    public ElasticSearchFilterField(String field, String displayName, DataType dataType, String group) {
         this.field = field;
         this.displayName = displayName;
         this.dataType = dataType;
+        this.group = group;
     }
 
     /**
@@ -79,5 +81,16 @@ public class ElasticSearchFilterField {
     public DataType getDataType() {
         //TODO create an enum and use the ElasticSearch dataType
         return dataType;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public String exactMatchFieled() {
+        if (DataType.STRING.equals(dataType)) {
+            return field + ".keyword";
+        }
+        return field;
     }
 }

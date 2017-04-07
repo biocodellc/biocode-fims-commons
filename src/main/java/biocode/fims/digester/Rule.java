@@ -51,10 +51,15 @@ public class Rule {
     private String otherColumn;
 
     private Mapping mapping;
+    public Rule() {}
 
     public Rule(Mapping mapping) {
         this.mapping = mapping;
     }
+
+    // hack until we get rid of digester. passing this in as a constructor argument was causing dependency conflicts
+    // with asm libs
+    public void setMapping(Mapping mapping) {this.mapping = mapping;}
 
     // A reference to the worksheet object this rule belongs to
     // TODO: Remove the remaining references to worksheet.  We are transitioning to using a SQLlite Database connection

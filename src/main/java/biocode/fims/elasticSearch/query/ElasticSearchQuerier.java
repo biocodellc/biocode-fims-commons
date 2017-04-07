@@ -3,6 +3,7 @@ package biocode.fims.elasticSearch.query;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -75,6 +76,9 @@ public class ElasticSearchQuerier {
             response = getResponse(client.prepareSearchScroll(response.getScrollId()).setScroll(DEFAULT_TIME_VALUE));
         } while (response.getHits().getHits().length != 0);
 
+        if (resources.size() == 0) {
+            throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
+        }
         return resources;
     }
 
@@ -112,7 +116,7 @@ public class ElasticSearchQuerier {
         searchRequestBuilder.setTypes(query.getTypes());
 
         searchRequestBuilder.setQuery(query.getQuery());
-        searchRequestBuilder.setFetchSource(query.getSource(), null);
+        searchRequestBuilder.setFetchSource(query.getSource().toArray(new String[]{}), null);
 
         return searchRequestBuilder;
     }
