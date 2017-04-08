@@ -4,13 +4,12 @@ import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
-import ch.lambdaj.group.Group;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static ch.lambdaj.Lambda.*;
 
 /**
  * Tracks status of data validation.  Helpful especially in a stateless environment.
@@ -172,10 +171,14 @@ public class ProcessController {
         while (it.hasNext()) {
             String sheetName = (String) it.next();
 
-            // Group all Messages using lambdaj jar library
-            Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessageAsString()));
-            for (String key : rowGroup.keySet()) {
-                java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
+            Map<String, List<RowMessage>> groupedRowMessages = messages.get(sheetName)
+                    .stream()
+                    .collect(
+                            Collectors.groupingBy(RowMessage::getGroupMessage)
+                    );
+
+            for (String key : groupedRowMessages.keySet()) {
+                java.util.List<RowMessage> rowMessageList = groupedRowMessages.get(key);
 
                 // Parse the Row Messages that are meant for HTML display
                 commandLineWarningSB.append(htmlParser.convert(key) + "\n");
@@ -206,12 +209,16 @@ public class ProcessController {
             JSONObject warningMessages = new JSONObject();
             JSONObject errorMessages = new JSONObject();
 
-            // Group all Messages using lambdaj jar library
-            Group<RowMessage> rowGroup = group(messages.get(sheetName), by(on(RowMessage.class).getGroupMessage()));
-            for (String key : rowGroup.keySet()) {
+            Map<String, List<RowMessage>> groupedRowMessages = messages.get(sheetName)
+                    .stream()
+                    .collect(
+                            Collectors.groupingBy(RowMessage::getGroupMessage)
+                    );
+
+            for (String key : groupedRowMessages.keySet()) {
                 JSONArray warningGroupArray = new JSONArray();
                 JSONArray errorGroupArray = new JSONArray();
-                java.util.List<RowMessage> rowMessageList = rowGroup.find(key);
+                List<RowMessage> rowMessageList = groupedRowMessages.get(key);
 
                 for (RowMessage m : rowMessageList) {
                     if (m.getLevel() == RowMessage.ERROR) {

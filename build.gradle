@@ -59,7 +59,6 @@ dependencies {
     server 'commons-lang:commons-lang:2.6'
     server 'com.sun.mail:javax.mail:1.5.5'
     server 'joda-time:joda-time:2.1'
-    server 'com.googlecode.lambdaj:lambdaj:2.3.3' //need 2.4, but not hosted in maven. trying this
     server 'org.apache.httpcomponents:httpcore:4.2.1'
     server 'org.apache.httpcomponents:httpclient:4.2.1'
     server 'com.ibm.icu:icu4j:3.4.4'
