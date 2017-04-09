@@ -54,6 +54,9 @@ public class ConfigurationFileEsMapper {
 
         }
 
+        // TODO enable this after updating all existing configs
+//        properties.put("expedition.expeditionCode", getExpeditionCodeInfo());
+
         JSONObject esMapping = new JSONObject();
         esMapping.put("properties", properties);
 
@@ -109,6 +112,12 @@ public class ConfigurationFileEsMapper {
         propertyInfo.put("type", "date");
         propertyInfo.put("format", attribute.getDataformat().replaceAll(",", "||"));
         propertyInfo.put("ignore_malformed", true);
+        return propertyInfo;
+    }
+
+    private static JSONObject getExpeditionCodeInfo() {
+        JSONObject propertyInfo = new JSONObject();
+        propertyInfo.put("type", "keyword");
         return propertyInfo;
     }
 }

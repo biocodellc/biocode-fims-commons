@@ -331,7 +331,10 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Response.noContent().build();
     }
 
-    @Scheduled(cron = "0 0 2 * * *")
+    // TODO commenting this out for now. we don't want to keep updating the index mapping and recieving emails every night
+    // since we are moving away from xml config file, this will be easier to resolve when the config is updated, and we
+    // don't need to run nightly
+//    @Scheduled(cron = "0 0 2 * * *")
     @GET
     @Path("/config/refreshCache")
     public Response refreshAllCache() {

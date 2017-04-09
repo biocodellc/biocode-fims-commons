@@ -116,7 +116,7 @@ public class ElasticSearchIndexer {
 
             } else {
 
-                client.admin().indices().preparePutMapping(index)
+                client.admin().indices().preparePutMapping(indexAlias)
                         .setType(TYPE)
                         .setSource(mapping).get();
 
