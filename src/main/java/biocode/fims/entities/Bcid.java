@@ -31,10 +31,10 @@ public class Bcid {
     private URI webAddress;
     private String resourceType;
     private String subResourceType;
-    private Date ts;
+    private Date created;
+    private Date modified;
     private String graph;
     private String sourceFile;
-    private boolean finalCopy;
     private Expedition expedition;
     private User user;
 
@@ -52,7 +52,6 @@ public class Bcid {
         private URI webAddress;
         private String graph;
         private String sourceFile;
-        private boolean finalCopy = false;
 
         public BcidBuilder(String resourceType) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
@@ -90,11 +89,6 @@ public class Bcid {
             return this;
         }
 
-        public BcidBuilder finalCopy(boolean finalCopy) {
-            this.finalCopy = finalCopy;
-            return this;
-        }
-
         public BcidBuilder subResourceType(String subResourceType) {
             this.subResourceType = subResourceType;
             return this;
@@ -115,7 +109,6 @@ public class Bcid {
         webAddress = builder.webAddress;
         graph = builder.graph;
         sourceFile = builder.sourceFile;
-        finalCopy = builder.finalCopy;
         subResourceType = builder.subResourceType;
     }
 
@@ -241,12 +234,22 @@ public class Bcid {
 
     @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getTs() {
-        return ts;
+    public Date getModified() {
+        return modified;
     }
 
-    public void setTs(Date ts) {
-        this.ts = ts;
+    public void setModified(Date modified) {
+        this.modified = modified;
+    }
+
+    @JsonView(Views.Summary.class)
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getCreated() {
+        return created;
+    }
+
+    private void setCreated(Date created) {
+        this.created = created;
     }
 
     @JsonView(Views.Detailed.class)
@@ -267,16 +270,6 @@ public class Bcid {
         this.sourceFile = sourceFile;
     }
 
-    @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "bit not null")
-    public boolean isFinalCopy() {
-        return finalCopy;
-    }
-
-    public void setFinalCopy(boolean finalCopy) {
-        this.finalCopy = finalCopy;
-    }
-
     @Override
     public String toString() {
         return "Bcid{" +
@@ -289,9 +282,9 @@ public class Bcid {
                 ", webAddress='" + webAddress + '\'' +
                 ", resourceType='" + resourceType + '\'' +
                 ", subResourceType='" + subResourceType + '\'' +
-                ", ts=" + ts +
+                ", created=" + created +
+                ", modified=" + modified +
                 ", graph='" + graph + '\'' +
-                ", finalCopy=" + finalCopy +
                 ", expedition=" + expedition +
                 ", user=" + user +
                 '}';

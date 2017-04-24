@@ -12,7 +12,7 @@ public class OAuthNonce {
     private int oAuthNonceId;
 
     private String code;
-    private Date ts;
+    private Date created;
     private String redirectUri;
     private User user;
     private OAuthClient oAuthClient;
@@ -46,12 +46,12 @@ public class OAuthNonce {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getTs() {
-        return ts;
+    public Date getCreated() {
+        return created;
     }
 
-    public void setTs(Date ts) {
-        this.ts = ts;
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
     @Column(nullable = false, updatable = false)

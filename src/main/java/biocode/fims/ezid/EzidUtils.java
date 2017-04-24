@@ -69,7 +69,7 @@ public class EzidUtils {
                 creator,
                 bcid.getTitle(),
                 publisher,
-                String.valueOf(bcid.getTs()),
+                String.valueOf(bcid.getModified()),
                 bcid.getResourceType());
     }
 

@@ -104,7 +104,6 @@ public class ProjectsResource extends FimsService {
      */
     private void updateExistingProject(Project existingProject, Project updatedProject) {
         existingProject.setProjectTitle(updatedProject.getProjectTitle());
-        existingProject.setProjectAbstract(updatedProject.getProjectAbstract());
         existingProject.setValidationXml(updatedProject.getValidationXml());
         existingProject.setPublic(updatedProject.isPublic());
     }

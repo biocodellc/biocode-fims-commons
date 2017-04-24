@@ -115,7 +115,6 @@ public class FimsMetadataFileManager implements FileManager {
                     .webAddress(webaddress)
                     .graph(persistenceManager.getGraph())
                     .subResourceType(DATASET_RESOURCE_SUB_TYPE)
-                    .finalCopy(processController.getFinalCopy())
                     .build();
 
             bcidService.create(bcid, processController.getUserId());

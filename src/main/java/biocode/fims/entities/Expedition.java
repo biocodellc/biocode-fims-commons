@@ -20,7 +20,8 @@ public class Expedition {
     private int expeditionId;
     private String expeditionCode;
     private String expeditionTitle;
-    private Date ts;
+    private Date created;
+    private Date modified;
     private boolean isPublic;
     private Set<Bcid> bcids;
     private Project project;
@@ -99,12 +100,22 @@ public class Expedition {
 
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getTs() {
-        return ts;
+    public Date getCreated() {
+        return created;
     }
 
-    private void setTs(Date ts) {
-        this.ts = ts;
+    private void setCreated(Date created) {
+        this.created = created;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getModified() {
+        return modified;
+    }
+
+    private void setModified(Date modified) {
+        this.modified = modified;
     }
 
     @JsonView(Views.Summary.class)
@@ -143,7 +154,8 @@ public class Expedition {
                 "expeditionId=" + expeditionId +
                 ", expeditionCode='" + expeditionCode + '\'' +
                 ", expeditionTitle='" + expeditionTitle + '\'' +
-                ", ts=" + ts +
+                ", created=" + created +
+                ", modified=" + modified +
                 ", isPublic=" + isPublic +
                 ", project=" + project +
                 ", user=" + user +

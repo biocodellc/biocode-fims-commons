@@ -25,7 +25,7 @@ public class OAuthToken {
     private String token;
     private String refreshToken;
     private String state;
-    private Date ts;
+    private Date created;
     private OAuthClient oAuthClient;
 
     private User user;
@@ -73,12 +73,12 @@ public class OAuthToken {
 
     @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getTs() {
-        return ts;
+    public Date getCreated() {
+        return created;
     }
 
-    public void setTs(Date ts) {
-        this.ts = ts;
+    public void setCreated(Date created) {
+        this.created = created;
     }
 
     @Override

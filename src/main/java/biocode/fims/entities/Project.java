@@ -3,7 +3,6 @@ package biocode.fims.entities;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
@@ -30,8 +29,8 @@ public class Project {
     private int projectId;
     private String projectCode;
     private String projectTitle;
-    private String projectAbstract;
-    private Date ts;
+    private Date created;
+    private Date modified;
     private String validationXml;
     private boolean isPublic;
     private String projectUrl;
@@ -49,7 +48,6 @@ public class Project {
         private String projectUrl;
 
         // Optional
-        private String projectAbstract;
         private boolean isPublic = true;
 
         public ProjectBuilder(String projectCode, String projectTitle, String validationXml, String projectUrl) {
@@ -64,11 +62,6 @@ public class Project {
             return this;
         }
 
-        public ProjectBuilder projectAbstract(String projectAbstract) {
-            this.projectAbstract = projectAbstract;
-            return this;
-        }
-
         public Project build() {
             return new Project(this);
         }
@@ -80,7 +73,6 @@ public class Project {
         projectTitle = builder.projectTitle;
         validationXml = builder.validationXml;
         projectUrl = builder.projectUrl;
-        projectAbstract = builder.projectAbstract;
         isPublic = builder.isPublic;
     }
 
@@ -118,23 +110,23 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(name = "abstract", columnDefinition = "text null")
-    public String getProjectAbstract() {
-        return projectAbstract;
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date getCreated() {
+        return created;
     }
 
-    public void setProjectAbstract(String projectAbstract) {
-        this.projectAbstract = projectAbstract;
+    private void setCreated(Date created) {
+        this.created = created;
     }
 
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getTs() {
-        return ts;
+    public Date getModified() {
+        return modified;
     }
 
-    public void setTs(Date ts) {
-        this.ts = ts;
+    public void setModified(Date modified) {
+        this.modified = modified;
     }
 
     @JsonView(Views.Detailed.class)
@@ -189,8 +181,8 @@ public class Project {
                 "projectId=" + projectId +
                 ", projectCode='" + projectCode + '\'' +
                 ", projectTitle='" + projectTitle + '\'' +
-                ", projectAbstract='" + projectAbstract + '\'' +
-                ", ts=" + ts +
+                ", created=" + created +
+                ", modified=" + modified +
                 ", validationXml='" + validationXml + '\'' +
                 ", isPublic=" + isPublic +
                 ", projectUrl='" + projectUrl + '\'' +

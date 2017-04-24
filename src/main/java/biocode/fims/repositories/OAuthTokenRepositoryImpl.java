@@ -36,14 +36,14 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenCustomOperations {
         }
 
         Expression<Time> timeDiff = builder.function(
-                "TIMEDIFF",
+                "age",
                 Time.class,
                 builder.currentTimestamp(),
-                root.<Date>get("ts")
+                root.<Date>get("created")
         );
 
         Expression<Integer> timeToSec = builder.function(
-                "TIME_TO_SEC",
+                "time_to_sec",
                 Integer.class,
                 timeDiff
         );

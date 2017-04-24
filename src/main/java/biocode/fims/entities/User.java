@@ -30,7 +30,6 @@ public class User {
     private int userId;
     private String username;
     private String password;
-    private boolean enabled;
     private boolean hasSetPassword;
     private String email;
     private boolean admin;
@@ -56,8 +55,6 @@ public class User {
 
         // Optional
         private boolean hasSetPassword = false;
-        private boolean enabled = true;
-        private boolean admin = false;
 
         public UserBuilder(String username, String password) {
             this.username = username;
@@ -85,16 +82,6 @@ public class User {
             return this;
         }
 
-        public UserBuilder enabled(boolean enabled) {
-            this.enabled = enabled;
-            return this;
-        }
-
-        public UserBuilder admin(boolean admin) {
-            this.admin = admin;
-            return this;
-        }
-
         private boolean validUser() {
             if (StringUtils.isEmpty(email) || StringUtils.isEmpty(institution) || StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName))
                 return false;
@@ -119,8 +106,6 @@ public class User {
         firstName = builder.firstName;
         lastName = builder.lastName;
         hasSetPassword = builder.hasSetPassword;
-        enabled = builder.enabled;
-        admin = builder.admin;
     }
 
     // needed for hibernate
@@ -160,16 +145,6 @@ public class User {
 
     @JsonView(Views.Detailed.class)
     @Column(nullable = false)
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @JsonView(Views.Detailed.class)
-    @Column(nullable = false)
     public boolean getHasSetPassword() {
         return hasSetPassword;
     }
@@ -188,8 +163,8 @@ public class User {
         this.email = email;
     }
 
+    @Transient
     @JsonProperty("projectAdmin")
-    @Column(nullable = false)
     public boolean isAdmin() {
         return admin;
     }
@@ -330,10 +305,8 @@ public class User {
                 "userId=" + userId +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", enabled=" + enabled +
                 ", getHasSetPassword=" + hasSetPassword +
                 ", email='" + email + '\'' +
-                ", admin=" + admin +
                 ", institution='" + institution + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +

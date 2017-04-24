@@ -32,7 +32,6 @@ public class ProcessController {
     private StringBuilder successfullUploadSB = new StringBuilder();
     private String accessionNumber;
     private Boolean publicStatus = false;   // default to false
-    private Boolean finalCopy = false;
     private String outputFolder;
 
     public ProcessController(int projectId, String expeditionCode) {
@@ -122,15 +121,6 @@ public class ProcessController {
 
     public String getAccessionNumber() {
         return accessionNumber;
-    }
-
-
-    public void setFinalCopy(Boolean finalCopy) {
-        this.finalCopy = finalCopy;
-    }
-
-    public boolean getFinalCopy() {
-        return finalCopy;
     }
 
     public Mapping getMapping() {

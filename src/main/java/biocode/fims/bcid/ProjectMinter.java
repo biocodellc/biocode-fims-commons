@@ -417,7 +417,6 @@ public class ProjectMinter {
                     "b.ts as ts, " +
                     "b.identifier as identifier, " +
                     "b.bcidId as id, " +
-                    "b.finalCopy as finalCopy, " +
                     "e.projectId as projectId, " +
                     "p.projectTitle as projectTitle \n" +
                     "from bcids b, expeditions e,  expeditionBcids eB, projects p\n" +
@@ -445,7 +444,6 @@ public class ProjectMinter {
                 dataset.put("ts", rs.getString("ts"));
                 dataset.put("bcidId", rs.getString("id"));
                 dataset.put("identifier", rs.getString("identifier"));
-                dataset.put("finalCopy", rs.getString("finalCopy"));
 
                 JSONObject p = (JSONObject) projectMap.get(projectTitle);
 

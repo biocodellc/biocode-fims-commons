@@ -16,7 +16,7 @@
 
     <bean id="dataSource"
           class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="${bcidClass}" />
+        <property name="driverClassName" value="org.postgresql.Driver" />
         <property name="url" value="${bcidUrl}" />
         <property name="username" value="${bcidUser}" />
         <property name="password" value="${bcidPassword}" />

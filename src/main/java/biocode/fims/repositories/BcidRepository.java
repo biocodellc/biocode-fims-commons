@@ -26,8 +26,8 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
     void save(Bcid bcid);
 
     @Modifying
-    @Query(value = "update bcids set ts=CURRENT_TIMESTAMP where bcidId=:bcidId", nativeQuery = true)
-    void updateTs(@Param("bcidId") int bcidId);
+    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where bcidId=:bcidId", nativeQuery = true)
+    void updateModifiedTs(@Param("bcidId") int bcidId);
 
     /**
      * This method invokes the SQL query that is configured by using the {@code @Query} annotation.
@@ -35,15 +35,7 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
      * @param identifier the identifier of the {@link Bcid} to fetch
      * @return the {@link Bcid} with the provided identifier
      */
-    @Query(value =
-            "SELECT b.bcidId, b.ezidMade, b.ezidRequest, b.identifier, b.userId, b.doi, b.title, " +
-                    "b.webAddress, b.resourceType, b.ts, b.graph, b.finalCopy, eb.expeditionId, b.sourceFile, b.subResourceType " +
-                    "FROM bcids AS b " +
-                    "LEFT OUTER JOIN expeditionBcids AS eb " +
-                    "ON b.bcidId=eb.bcidId " +
-                    "WHERE BINARY identifier=:identifier",
-            nativeQuery = true)
-    Bcid findByIdentifier(@Param("identifier") String identifier);
+    Bcid findOneByIdentifier(@Param("identifier") String identifier);
 
     Bcid findByBcidId(int bcidId);
 
@@ -71,14 +63,14 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
     Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
 
     @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
-            "and b.resourceType=:resourceType and b.subResourceType=:subResourceType order by b.ts desc ")
+            "and b.resourceType=:resourceType and b.subResourceType=:subResourceType order by b.created desc ")
     List<Bcid> findAllByResourceTypeAndSubResourceType(@Param("projectId") int projectId,
                                                        @Param("expeditionCode") String expeditionCode,
                                                        @Param("resourceType") String resourceType,
                                                        @Param("subResourceType") String subResourceType);
 
     @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
-            "and b.resourceType=:resourceType order by b.ts desc ")
+            "and b.resourceType=:resourceType order by b.created desc ")
     List<Bcid> findAllByResourceType(@Param("projectId") int projectId,
                                      @Param("expeditionCode") String expeditionCode,
                                      @Param("resourceType") String resourceType);
