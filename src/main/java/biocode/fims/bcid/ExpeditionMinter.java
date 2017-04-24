@@ -27,7 +27,7 @@ public class ExpeditionMinter {
     public void attachReferenceToExpedition(String expeditionCode, String identifier, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
         BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
-        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
+        biocode.fims.entities.Bcid bcid = bcidRepository.findOneByIdentifier(identifier);
 
         attachReferenceToExpedition(expeditionId, bcid.getBcidId());
     }
@@ -235,7 +235,6 @@ public class ExpeditionMinter {
                 metadata.put("timestamp", rs.getString("timestamp"));
                 metadata.put("identifier", rs.getString("b.identifier"));
                 metadata.put("resourceType", rs.getString("resourceType"));
-                metadata.put("finalCopy", rs.getBoolean("finalCopy"));
                 metadata.put("isPublic", rs.getBoolean("public"));
                 metadata.put("expeditionCode", rs.getString("expeditionCode"));
                 metadata.put("expeditionTitle", rs.getString("expeditionTitle"));

@@ -93,7 +93,7 @@ public class BcidService {
 
     @Transactional(readOnly = true)
     public Bcid getBcid(String identifier) {
-        return bcidRepository.findByIdentifier(identifier);
+        return bcidRepository.findOneByIdentifier(identifier);
     }
 
     @Transactional(readOnly = true)
@@ -128,9 +128,9 @@ public class BcidService {
     }
 
     @Transactional
-    public void updateTs(Bcid bcid) {
+    public void updateModifiedTs(Bcid bcid) {
         if (bcid != null) {
-            bcidRepository.updateTs(bcid.getBcidId());
+            bcidRepository.updateModifiedTs(bcid.getBcidId());
         }
     }
 

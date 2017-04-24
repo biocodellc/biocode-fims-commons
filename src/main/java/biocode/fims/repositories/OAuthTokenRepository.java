@@ -16,7 +16,4 @@ public interface OAuthTokenRepository extends Repository<OAuthToken, Integer>, O
 
     @Modifying
     void delete(OAuthToken oAuthToken);
-
-//    @Query(nativeQuery = true)
-//    OAuthToken getOAuthToken(@Param("refreshToken") String refreshToken, @Param("expirationInterval") long expirationInteval);
 }

@@ -61,8 +61,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
                          @FormParam("graph") String graph,
                          @FormParam("title") String title,
                          @FormParam("resourceType") String resourceTypeString,
-                         @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
-                         @FormParam("finalCopy") @DefaultValue("false") Boolean finalCopy) {
+                         @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset) {
 
         // If resourceType is specified by an integer, then use that to set the String resourceType.
         // If the user omits
@@ -89,8 +88,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
                 .ezidRequest(Boolean.valueOf(settingsManager.retrieveValue("ezidRequests")))
                 .doi(doi)
                 .title(title)
-                .graph(graph)
-                .finalCopy(finalCopy);
+                .graph(graph);
 
         if (!StringUtils.isEmpty(webAddress)) {
             UriComponents webAddressComponents = UriComponentsBuilder.fromUriString(webAddress).build();

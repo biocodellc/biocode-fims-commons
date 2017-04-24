@@ -1,182 +1,254 @@
 /**
-* SQL for Fims mysql tables
+* SQL for Fims postgresql tables
 */
 
-SET FOREIGN_KEY_CHECKS = 0;
+CREATE OR REPLACE FUNCTION update_modified_column()
+  RETURNS TRIGGER AS $$
+BEGIN
+  IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+    NEW.modified = now();
+    RETURN NEW;
+  ELSE
+    RETURN OLD;
+  END IF;
+END;
+$$ language 'plpgsql';
 
-DROP TABLE IF EXISTS `users`;
+CREATE OR REPLACE FUNCTION set_created_column()
+  RETURNS TRIGGER AS $$
+BEGIN
+  NEW.created = now();
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
 
-CREATE TABLE `users` (
-  `userId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) not null primary key,
-  `password` varchar(110) not null,
-  `enabled` boolean not null DEFAULT '1',
-  `email` varchar(64) DEFAULT NULL,
-  `firstName` varchar(60) DEFAULT NULL,
-  `lastName` varchar(60) DEFAULT NULL,
-  `institution` varchar(128) DEFAULT NULL,
-  `hasSetPassword` boolean not null DEFAULT '0',
-  `admin` boolean not null,
-  `passwordResetToken` char(20) DEFAULT NULL COMMENT 'Unique token used to reset a users password',
-  `passwordResetExpiration` datetime DEFAULT NULL COMMENT 'time when the reset token expires',
-   KEY (`userId`)
-) ENGINE=Innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS users;
 
-DROP TABLE IF EXISTS `bcids`;
+CREATE TABLE users (
+  userId SERIAL PRIMARY KEY NOT NULL,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  email TEXT DEFAULT NULL,
+  firstName TEXT DEFAULT NULL,
+  lastName TEXT DEFAULT NULL,
+  institution TEXT DEFAULT NULL,
+  hasSetPassword BOOLEAN NOT NULL DEFAULT '0',
+  passwordResetToken TEXT DEFAULT NULL,
+  passwordResetExpiration TIMESTAMP DEFAULT NULL
+);
 
-CREATE TABLE `bcids` (
-  `bcidId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `ezidMade` boolean NOT NULL DEFAULT '0' COMMENT 'indicates if EZID has been made',
-  `ezidRequest` boolean NOT NULL DEFAULT '1' COMMENT 'indicates if we want system to request EZID, all bcids by default get an EZID request',
-  `finalCopy` boolean NOT NULL DEFAULT '0' COMMENT 'indicates if this is the final copy of a particular dataset for nmnh projects',
-#   `internalId` char(36) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'The internal ID for this dataset',
-  `identifier` varchar(255) NULL COMMENT 'ark:/1234/ab1',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'who created this data',
-  `doi` varchar(36) COMMENT 'DOI linked to this dataset identifier',
-  `title` text COMMENT 'title for this dataset',
-  `webAddress` varchar(2083) COLLATE utf8_bin COMMENT 'the target URL for this dataset',
-  `graph` varchar(2083) COMMENT 'A reference to a graph, used by the biocode-fims expedition for storing graph references for a particular dataset',
-  `sourceFile` varchar(255) COMMENT 'The name of the source file for this bcid. This is useful for dataset backups.',
-  `resourceType` varchar(2083) NOT NULL COMMENT 'default resource type for this dataset, stored as a URI',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp of insertion',
-  PRIMARY KEY `bcids_bcidId` (`bcidId`),
-  KEY `bcids_identifier` (`identifier`),
-  KEY `bcids_userId` (`userId`),
-  CONSTRAINT `FK_bcids_userId`  FOREIGN KEY (`userId`) REFERENCES `users` (`userId`)
-) ENGINE=Innodb DEFAULT CHARSET=utf8;
+COMMENT ON COLUMN users.passwordResetToken is 'Unique token used to reset a users password';
+COMMENT ON COLUMN users.passwordResetExpiration is 'time when the reset token expires';
 
-DROP TABLE IF EXISTS `expeditions`;
+DROP TABLE IF EXISTS bcids;
 
-CREATE TABLE `expeditions` (
-  `expeditionId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique, internal key for this expedition',
-  `projectId` int(11) UNSIGNED NOT NULL,
-#   `internalId` char(36) COLLATE utf8_bin NOT NULL DEFAULT '' COMMENT 'The internal ID for this expedition',
-  `expeditionCode` varchar(20) NOT NULL COMMENT 'The short name for this expedition',
-  `expeditionTitle` varchar(128) NULL COMMENT 'Title for this expedition, will be used to populate group title',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'who created this data',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp of insertion',
-  `public` boolean NOT NULL DEFAULT '1' COMMENT 'Whether or not this is a public expedition',
-  PRIMARY KEY `expeditions_expeditionId_idx` (`expeditionId`),
-  UNIQUE KEY `expeditions_expeditionCode_projectIdx` (`expeditionCode`,`projectId`),
-  KEY `expeditions_projectId_idx` (`projectId`),
-  CONSTRAINT `FK_expeditions_userId`  FOREIGN KEY (`userId`) REFERENCES `users` (`userId`),
-  CONSTRAINT `FK_expeditions_projectId`  FOREIGN KEY (`projectId`) REFERENCES `projects` (`projectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE bcids (
+  bcidId SERIAL PRIMARY KEY NOT NULL,
+  ezidMade BOOLEAN NOT NULL DEFAULT '0',
+  ezidRequest BOOLEAN NOT NULL DEFAULT '1',
+  identifier TEXT NULL,
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  doi TEXT,
+  title TEXT,
+  webAddress TEXT,
+  graph TEXT,
+  sourceFile TEXT,
+  resourceType TEXT NOT NULL,
+  subResourceType TEXT NOT NULL,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-DROP TABLE IF EXISTS `expeditionBcids`;
+CREATE INDEX bcids_identifier_idx on bcids (identifier);
+CREATE INDEX bcids_userId_idx on bcids (userId);
+CREATE INDEX bcids_resourceType_idx on bcids (resourceType);
 
-CREATE TABLE `expeditionBcids` (
-  `expeditionBcidId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique, internal key for this element',
-  `expeditionId` int(11) UNSIGNED NOT NULL COMMENT 'The expeditionId',
-  `bcidId` int(11) UNSIGNED NOT NULL COMMENT 'The bcidId',
-  UNIQUE KEY `expeditionBcids_expeditionBcidId` (`expeditionBcidId`),
-  KEY `expeditionBcids_expeditionId` (`expeditionId`),
-  KEY `bcidId` (`bcidId`),
-  CONSTRAINT `FK_expeditionBcids_bcidId` FOREIGN KEY(`bcidId`) REFERENCES `bcids` (`bcidId`),
-  CONSTRAINT `FK_expeditionBcids_expeditionId` FOREIGN KEY(`expeditionId`) REFERENCES `expeditions` (`expeditionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TRIGGER update_bcids_modtime BEFORE UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER set_bcids_createdtime BEFORE INSERT ON bcids FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
-SET FOREIGN_KEY_CHECKS = 1;
+COMMENT ON COLUMN bcids.ezidMade is 'indicates if EZID has been made';
+COMMENT ON COLUMN bcids.ezidRequest is 'indicates if we want system to request EZID, all bcids by default get an EZID request';
+COMMENT ON COLUMN bcids.identifier is 'ark:/1234/ab1';
+COMMENT ON COLUMN bcids.userId is 'who created this data';
+COMMENT ON COLUMN bcids.title is 'title for this bcid';
+COMMENT ON COLUMN bcids.webAddress is 'the target URL for this bcid';
+COMMENT ON COLUMN bcids.webAddress is 'A reference to a graph, used by the biocode-fims expedition for storing graph references for a particular bcid';
+COMMENT ON COLUMN bcids.sourceFile is 'The name of the source file for this bcid. This is useful for dataset backups.';
+COMMENT ON COLUMN bcids.resourceType is 'resource type for this bcid, stored as a URI';
+COMMENT ON COLUMN bcids.subResourceType is 'sub resource type for this bcid, stored as a URI';
+COMMENT ON COLUMN bcids.created is 'timestamp of insertion';
+COMMENT ON COLUMN bcids.modified is 'timestamp of last update';
+
+DROP TABLE IF EXISTS projects;
+
+CREATE TABLE projects (
+  projectId SERIAL PRIMARY KEY NOT NULL,
+  projectCode TEXT NOT NULL,
+  projectTitle TEXT NULL,
+  projectUrl TEXT NOT NULL,
+  validationXml TEXT NOT NULL,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  public BOOLEAN NOT NULL DEFAULT '1'
+);
+
+CREATE INDEX projects_userId_idx ON projects (userId);
+CREATE INDEX projects_public_idx ON projects (public);
+CREATE INDEX projects_projectUrl_idx ON projects (projectUrl);
+
+CREATE TRIGGER update_projects_modtime BEFORE UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+COMMENT ON COLUMN projects.projectCode is 'The short name for this project';
+COMMENT ON COLUMN projects.projectUrl is 'Where this project is located on the web';
+COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
+
+DROP TABLE IF EXISTS userProjects;
+
+CREATE TABLE userProjects (
+  userProjectId SERIAL PRIMARY KEY NOT NULL,
+  projectId INTEGER NOT NULL REFERENCES projects (projectId),
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  CONSTRAINT userProjects_userId_projectId_uniq UNIQUE (userId, projectId)
+);
+
+CREATE INDEX userProjects_projectId_idx ON projects (projectId);
+CREATE INDEX userProjects_userId_idx ON projects (userId);
+
+DROP TABLE IF EXISTS expeditions;
+
+CREATE TABLE expeditions (
+  expeditionId SERIAL NOT NULL PRIMARY KEY,
+  projectId INTEGER NOT NULL REFERENCES projects (projectId),
+  expeditionCode TEXT NOT NULL, -- change to code
+  expeditionTitle TEXT NULL, -- change to title
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  public BOOLEAN NOT NULL DEFAULT '1',
+  CONSTRAINT expeditions_code_projectId_uniq UNIQUE (expeditionCode, projectId)
+);
+
+CREATE INDEX expeditions_projectId_idx ON expeditions (projectId);
+
+CREATE TRIGGER update_expeditions_modtime BEFORE UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+COMMENT ON COLUMN expeditions.expeditionCode is 'The short name for this expedition';
+COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedition';
+
+DROP TABLE IF EXISTS expeditionBcids;
+
+CREATE TABLE expeditionBcids (
+  expeditionBcidId SERIAL NOT NULL PRIMARY KEY,
+  expeditionId INTEGER NOT NULL REFERENCES expeditions (expeditionId),
+  bcidId INTEGER NOT NULL REFERENCES bcids (bcidId)
+);
+
+CREATE INDEX expeditionBcids_expeditionId_idx ON expeditionBcids (expeditionId);
+CREATE INDEX expeditionBcids_bcidId_idx ON expeditionBcids (bcidId);
+
+DROP TABLE IF EXISTS oAuthClients;
+
+CREATE TABLE oAuthClients (
+  clientId TEXT NOT NULL PRIMARY KEY,
+  clientSecret TEXT NOT NULL,
+  callback TEXT NOT NULL
+);
+
+COMMENT ON COLUMN oAuthClients.clientId is 'the public unique client id';
+COMMENT ON COLUMN oAuthClients.clientSecret is 'the private shared secret';
+COMMENT ON COLUMN oAuthClients.callback is 'The callback url of the client app';
+
+DROP TABLE IF EXISTS oAuthNonces;
+
+CREATE TABLE oAuthNonces (
+  oAuthNonceId SERIAL NOT NULL PRIMARY KEY,
+  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
+  code TEXT NOT NULL,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  redirectUri TEXT NOT NULL,
+  CONSTRAINT oAuthNonces_code_clientId_uniq UNIQUE (clientId, code)
+);
+
+CREATE INDEX oAuthNonces_code_idx ON oAuthNonces (code);
+
+CREATE TRIGGER set_oAuthNonces_createdtime BEFORE INSERT ON oAuthNonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+COMMENT ON COLUMN oAuthNonces.code is 'The generated code the client app can exchange for an access token';
+COMMENT ON COLUMN oAuthNonces.redirectUri is 'The redirectUri associated with this code';
+
+DROP TABLE IF EXISTS oAuthTokens;
+
+CREATE TABLE oAuthTokens (
+  oAuthTokenId SERIAL NOT NULL PRIMARY KEY,
+  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
+  token TEXT NOT NULL UNIQUE,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  refreshToken TEXT NOT NULL
+);
+
+CREATE INDEX oAuthTokens_token_idx on oAuthTokens (token);
+CREATE INDEX oAuthTokens_refreshToken_idx on oAuthTokens (refreshToken);
+
+CREATE TRIGGER set_oAuthTokens_createdtime BEFORE INSERT ON oAuthTokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+COMMENT ON COLUMN oAuthTokens.token is 'The generated token used by the client app';
+COMMENT ON COLUMN oAuthTokens.refreshToken is 'The generated token used to gain a new access_token';
+
+CREATE OR REPLACE FUNCTION delete_expired_oAuthTokens()
+  RETURNS TRIGGER AS $$
+BEGIN
+  DELETE FROM oAuthTokens WHERE created < now() - INTERVAL '2 DAYS';
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER delete_expired_oAuthTokens AFTER INSERT ON oAuthTokens EXECUTE PROCEDURE delete_expired_oAuthTokens();
+
+CREATE OR REPLACE FUNCTION time_to_sec(t INTERVAL)
+  RETURNS integer AS
+$BODY$
+DECLARE
+  s INTEGER;
+BEGIN
+  SELECT (EXTRACT (EPOCH FROM t)) INTO s;
+  RETURN s;
+END;
+$BODY$
+LANGUAGE 'plpgsql';
 
 
-DROP TABLE IF EXISTS `projects`;
+-- DROP TABLE IF EXISTS ldapNonces;
+--
+-- CREATE TABLE ldapNonces (
+--   ldapNonceId SERIAL NOT NULL PRIMARY KEY,
+--   username TEXT NOT NULL UNIQUE ,
+--   s TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'timestamp of the ldap user lockout or when the users first login attempt was',
+--   attempts int(11) UNSIGNED NOT NULL DEFAULT '1' COMMENT 'the number of ldap login attempts',
+--   PRIMARY KEY (ldapNonceId),
+--   UNIQUE KEY ldapNonces_usernamex (username)
+-- );
+--
+-- COMMENT ON COLUMN ldapNonces.username is 'The username of the login attempt';
 
-CREATE TABLE `projects` (
-  `projectId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique, internal key for this projects',
-  `projectCode` varchar(6) NOT NULL COMMENT 'The short name for this project',
-  `projectTitle` varchar(128) NULL COMMENT 'Title for this project',
-  `projectUrl` varchar(2083) NOT NULL COMMENT 'Where this project is located on the web',
-  `validationXml` varchar(2083) NOT NULL COMMENT 'The bioValidator XML Validation Specification, published under the id/schemas webservice',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp of insertion',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The userId of the project admin',
-  `public` boolean NOT NULL DEFAULT '1' COMMENT 'Whether or not this is a public project?',
-  PRIMARY KEY `projects_projectId_idx` (`projectId`),
-  KEY `projects_userId_idx` (`userId`),
-  KEY `projects_publicx` (`public`),
-  CONSTRAINT `FK_projects_userId`  FOREIGN KEY (`userId`) REFERENCES `users` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS templateConfigs;
 
+CREATE TABLE templateConfigs (
+  templateConfigId SERIAL NOT NULL PRIMARY KEY,
+  userId INTEGER NOT NULL REFERENCES users (userId),
+  projectId INTEGER NOT NULL REFERENCES projects (projectId),
+  configName TEXT NOT NULL,
+  public BOOLEAN NOT NULL DEFAULT '0',
+  config TEXT NOT NULL,
+  CONSTRAINT templateConfigs_configName_projectId_uniq UNIQUE (configName, projectId)
+);
 
-DROP TABLE IF EXISTS `userProjects`;
+CREATE INDEX templateConfigs_projectId_idx ON templateConfigs (projectId);
 
-CREATE TABLE `userProjects` (
-  `userProjectId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique internal key',
-  `projectId` int(11) UNSIGNED NOT NULL COMMENT 'The project Id',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The users id',
-  PRIMARY KEY `usersProjects_userProjectId` (`userProjectId`),
-  UNIQUE KEY `usersProjects_userId_projectId_idx` (`userId`, `projectId`),
-  KEY `usersProjects_projectId` (`projectId`),
-  KEY `usersProjects_userId` (`userId`),
-  CONSTRAINT `FK_usersProjects_userId`  FOREIGN KEY (`userId`) REFERENCES `users` (`userId`),
-  CONSTRAINT `FK_usersProjects_projectId` FOREIGN KEY(`projectId`) REFERENCES `projects` (`projectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `oAuthClients`;
-
-CREATE TABLE `oAuthClients` (
-  `clientId` char(20) NOT NULL COMMENT 'the public unique client id',
-  `clientSecret` char(75) NOT NULL COMMENT 'the private shared secret',
-  `callback` varchar(2083) NOT NULL COMMENT 'The callback url of the client app',
-  PRIMARY KEY (`oAuthClientId`),
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `oAuthNonces`;
-
-CREATE TABLE `oAuthNonces` (
-  `oAuthNonceId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `clientId` char(20) NOT NULL COMMENT 'The clientId of the oAuth client app',
-  `code` char(20) NOT NULL COMMENT 'The generated code the client app can exchange for an access token',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'timestamp of the nonce creation',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The userId this Nonce represents',
-  `redirectUri` varchar(2083) NOT NULL COMMENT 'The redirectUri associated with this code',
-  PRIMARY KEY (`oAuthNonceId`),
-  UNIQUE KEY `oAuthNonces_code_clientIdx` (`clientId`,`code`),
-  KEY `oAuthNonces_userIdx` (`userId`),
-  CONSTRAINT `FK_oAuthNonces_clientId` FOREIGN KEY (`clientId`) REFERENCES `oAuthClients` (`clientId`),
-  CONSTRAINT `FK_oAuthNonces_userId` FOREIGN KEY (`userId`) REFERENCES `users` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `oAuthTokens`;
-
-CREATE TABLE `oAuthTokens` (
-  `oAuthTokenId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `clientId` char(20) NOT NULL COMMENT 'The clientId the token belongs to',
-  `token` char(20) NOT NULL COMMENT 'The generated token used by the client app',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The ts when the token was issued',
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The userId that this token represents',
-  `refreshToken` char(20) NOT NULL COMMENT 'The generated token used to gain a new access_token',
-  PRIMARY KEY (`oAuthTokenId`),
-  UNIQUE KEY `oAuthTokens_oAuthTokenx` (`token`),
-  KEY `oAuthTokens_clientId` (`clientId`),
-  KEY `oAuthTokens_userId` (`userId`),
-  CONSTRAINT `FK_oAuthTokens_userId` FOREIGN KEY (`userId`) REFERENCES `users` (`userId`),
-  CONSTRAINT `FK_oAuthTokens_clientId` FOREIGN KEY (`clientId`) REFERENCES `oAuthClients` (`clientId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `ldapNonces`;
-
-CREATE TABLE `ldapNonces` (
-  `ldapNonceId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL COMMENT 'The username of the login attempt',
-  `ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'timestamp of the ldap user lockout or when the users first login attempt was',
-  `attempts` int(11) UNSIGNED NOT NULL DEFAULT '1' COMMENT 'the number of ldap login attempts',
-  PRIMARY KEY (`ldapNonceId`),
-  UNIQUE KEY `ldapNonces_usernamex` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `templateConfigs`;
-
-CREATE TABLE `templateConfigs` (
-  `templateConfigId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `userId` int(11) UNSIGNED NOT NULL COMMENT 'The users id',
-  `projectId` int(11) UNSIGNED NOT NULL COMMENT 'The project Id',
-  `configName` varchar(100) NOT NULL COMMENT 'The name of the config',
-  `public` boolean NOT NULL DEFAULT '0' COMMENT 'Whether or not this is a public template config?',
-  `config` MEDIUMTEXT NOT NULL COMMENT 'The array of uris to be checked when generating a template',
-  UNIQUE KEY `templateConfigs_configName_projectId` (`configName`, `projectId`),
-  KEY `templateConfigs_projectId` (`projectId`),
-  KEY `templateConfigs_userId` (`userId`),
-  CONSTRAINT `FK_templateConfigs_userId`  FOREIGN KEY (`userId`) REFERENCES `users` (`userId`),
-  CONSTRAINT `FK_templateConfigs_projectId` FOREIGN KEY(`projectId`) REFERENCES `projects` (`projectId`),
-  PRIMARY KEY (`templateConfigId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+COMMENT ON COLUMN templateConfigs.configName is 'The name of the config';
+COMMENT ON COLUMN templateConfigs.public is 'Whether or not this is a public template config?';
+COMMENT ON COLUMN templateConfigs.config is 'The array of uris to be checked when generating a template';

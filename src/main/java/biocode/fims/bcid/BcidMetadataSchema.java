@@ -3,7 +3,6 @@ package biocode.fims.bcid;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
 import biocode.fims.settings.SettingsManager;
-import org.springframework.util.StringUtils;
 
 /**
  * Metadata Schema for Describing a Bcid--
@@ -49,7 +48,7 @@ public class BcidMetadataSchema {
         about.setValue(settingsManager.retrieveValue("resolverTargetPrefix") + identifierObject.getIdentifier());
         resource.setValue(bcid.getResourceType());
 
-        dcDate.setValue(String.valueOf(bcid.getTs()));
+        dcDate.setValue(String.valueOf(bcid.getModified()));
         dcCreator.setValue(bcid.getUser().getFullName());
         dcTitle.setValue(bcid.getTitle());
         dcSource.setValue(identifierObject.getSuffix());

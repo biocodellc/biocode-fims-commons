@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class BcidTsFixer {
         for (Bcid bcid : bcids) {
             if (resourceType != null) {
                 if (resourceType.equals(bcid.getResourceType())) {
-                    bcid.setTs(now.getTime());
+                    bcid.setModified(now.getTime());
 
                     bcidService.update(bcid);
 
@@ -49,7 +48,7 @@ public class BcidTsFixer {
                 }
             } else {
 
-                bcid.setTs(now.getTime());
+                bcid.setModified(now.getTime());
 
                 bcidService.update(bcid);
 
