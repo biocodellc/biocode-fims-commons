@@ -3,6 +3,7 @@ package biocode.fims.service;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.ProjectRepository;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
