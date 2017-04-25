@@ -28,13 +28,13 @@ CREATE TABLE users (
   userId SERIAL PRIMARY KEY NOT NULL,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  email TEXT DEFAULT NULL,
-  firstName TEXT DEFAULT NULL,
-  lastName TEXT DEFAULT NULL,
-  institution TEXT DEFAULT NULL,
+  email TEXT,
+  firstName TEXT,
+  lastName TEXT,
+  institution TEXT,
   hasSetPassword BOOLEAN NOT NULL DEFAULT '0',
-  passwordResetToken TEXT DEFAULT NULL,
-  passwordResetExpiration TIMESTAMP DEFAULT NULL
+  passwordResetToken TEXT,
+  passwordResetExpiration TIMESTAMP
 );
 
 COMMENT ON COLUMN users.passwordResetToken is 'Unique token used to reset a users password';
@@ -46,7 +46,7 @@ CREATE TABLE bcids (
   bcidId SERIAL PRIMARY KEY NOT NULL,
   ezidMade BOOLEAN NOT NULL DEFAULT '0',
   ezidRequest BOOLEAN NOT NULL DEFAULT '1',
-  identifier TEXT NULL,
+  identifier TEXT,
   userId INTEGER NOT NULL REFERENCES users (userId),
   doi TEXT,
   title TEXT,
@@ -84,7 +84,7 @@ DROP TABLE IF EXISTS projects;
 CREATE TABLE projects (
   projectId SERIAL PRIMARY KEY NOT NULL,
   projectCode TEXT NOT NULL,
-  projectTitle TEXT NULL,
+  projectTitle TEXT,
   projectUrl TEXT NOT NULL,
   validationXml TEXT NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -107,7 +107,6 @@ COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
 DROP TABLE IF EXISTS userProjects;
 
 CREATE TABLE userProjects (
-  userProjectId SERIAL PRIMARY KEY NOT NULL,
   projectId INTEGER NOT NULL REFERENCES projects (projectId),
   userId INTEGER NOT NULL REFERENCES users (userId),
   CONSTRAINT userProjects_userId_projectId_uniq UNIQUE (userId, projectId)
@@ -121,8 +120,8 @@ DROP TABLE IF EXISTS expeditions;
 CREATE TABLE expeditions (
   expeditionId SERIAL NOT NULL PRIMARY KEY,
   projectId INTEGER NOT NULL REFERENCES projects (projectId),
-  expeditionCode TEXT NOT NULL, -- change to code
-  expeditionTitle TEXT NULL, -- change to title
+  expeditionCode TEXT NOT NULL,
+  expeditionTitle TEXT,
   userId INTEGER NOT NULL REFERENCES users (userId),
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -141,7 +140,6 @@ COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedit
 DROP TABLE IF EXISTS expeditionBcids;
 
 CREATE TABLE expeditionBcids (
-  expeditionBcidId SERIAL NOT NULL PRIMARY KEY,
   expeditionId INTEGER NOT NULL REFERENCES expeditions (expeditionId),
   bcidId INTEGER NOT NULL REFERENCES bcids (bcidId)
 );
