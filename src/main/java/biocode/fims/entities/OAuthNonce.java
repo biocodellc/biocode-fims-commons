@@ -8,8 +8,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "oAuthNonces")
-public class OAuthNonce {
-    private int oAuthNonceId;
+public class OAuthNonce extends BaseModel {
 
     private String code;
     private Date created;
@@ -25,16 +24,6 @@ public class OAuthNonce {
     }
 
     OAuthNonce() {};
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getoAuthNonceId() {
-        return oAuthNonceId;
-    }
-
-    public void setoAuthNonceId(int oAuthNonceId) {
-        this.oAuthNonceId = oAuthNonceId;
-    }
 
     @Column(nullable = false, updatable = false)
     public String getCode() {
@@ -87,7 +76,7 @@ public class OAuthNonce {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
-            referencedColumnName = "userId"
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;

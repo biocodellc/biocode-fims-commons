@@ -96,7 +96,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         }
 
         Bcid bcid = builder.build();
-        bcidService.create(bcid, userContext.getUser().getUserId());
+        bcidService.create(bcid, userContext.getUser().getId());
 
         // TODO return the bcid object here
         return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
@@ -196,7 +196,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         if (identifier == null || identifier.isEmpty()) {
             throw new BadRequestException("You must include an identifier.");
         }
-        if (!bcidMinter.userOwnsBcid(identifier, userContext.getUser().getUserId())) {
+        if (!bcidMinter.userOwnsBcid(identifier, userContext.getUser().getId())) {
             throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
         }
 

@@ -33,7 +33,7 @@ public class ExpeditionRepositoryImpl implements ExpeditionCustomOperations {
     }
 
     private Expedition persistOrMerge(Expedition expedition) {
-        if (expedition.getExpeditionId() == 0) {
+        if (expedition.getId() == 0) {
             em.persist(expedition);
             return expedition;
         } else {

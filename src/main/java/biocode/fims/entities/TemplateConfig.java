@@ -11,9 +11,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "templateConfigs")
-public class TemplateConfig {
+public class TemplateConfig extends BaseModel {
 
-    private int templateConfigId;
     private String configName;
     private boolean isPublic;
     private String config;
@@ -21,17 +20,6 @@ public class TemplateConfig {
     private User user;
 
     TemplateConfig() {}
-
-    @JsonView(Views.Summary.class)
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    public int getTemplateConfigId() {
-        return templateConfigId;
-    }
-
-    public void setTemplateConfigId(int id) {
-        this.templateConfigId = id;
-    }
 
     @JsonView(Views.Summary.class)
     @Column(nullable = false, updatable = false)
@@ -54,7 +42,7 @@ public class TemplateConfig {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "mediumtext not null")
+    @Column(nullable = false)
     public String getConfig() {
         return config;
     }
@@ -85,7 +73,7 @@ public class TemplateConfig {
     @Override
     public String toString() {
         return "TemplateConfig{" +
-                "templateConfigId=" + templateConfigId +
+                "id=" + id +
                 ", configName='" + configName + '\'' +
                 ", isPublic=" + isPublic +
                 ", config='" + config + '\'' +
@@ -98,7 +86,7 @@ public class TemplateConfig {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "projectId",
-            referencedColumnName = "projectId",
+            referencedColumnName = "id",
             nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_templateConfigs_projectId")
     )
@@ -114,7 +102,7 @@ public class TemplateConfig {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
+            referencedColumnName = "id",
             nullable = false,
             foreignKey = @ForeignKey(name = "FK_templateConfigs_userId")
     )

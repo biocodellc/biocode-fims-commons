@@ -24,16 +24,16 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     void delete(Expedition expedition);
 
     @Modifying
-    void deleteByExpeditionId(int expeditionId);
+    void deleteById(int id);
 
     @Modifying
-    void deleteByExpeditionCodeAndProjectProjectId(String expeditionCode, int projectId);
+    void deleteByExpeditionCodeAndProjectId(String expeditionCode, int projectId);
 
     void save(Expedition expedition);
 
-    Expedition findByExpeditionId(int expeditionId);
+    Expedition findById(int id);
 
-    Expedition findByExpeditionCodeAndProjectProjectId(String expeditionCode, int projectId);
+    Expedition findByExpeditionCodeAndProjectId(String expeditionCode, int projectId);
 
     /**
      * return a paginated result of Expeditions
@@ -42,9 +42,9 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      * @param pageRequest
      * @return
      */
-    Page<Expedition> findByProjectProjectIdAndProjectUserUserId(int projectId, int userId, Pageable pageRequest);
+    Page<Expedition> findByProjectIdAndProjectUserId(int projectId, int userId, Pageable pageRequest);
 
-    List<Expedition> findByPublicTrueAndProjectProjectId(int projectId);
+    List<Expedition> findByPublicTrueAndProjectId(int projectId);
 
 
     /**
@@ -58,5 +58,5 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     List<Expedition> getUserProjectExpeditions(@Param("projectId") int projectId, @Param("userId") int userId, @Param("includePrivate") boolean includePrivate);
 
 
-    Long countByExpeditionIdInAndProjectProjectId(List<Integer> expeditionIds, int projectId);
+    Long countByIdInAndProjectId(List<Integer> expeditionIds, int projectId);
 }

@@ -17,11 +17,10 @@ import java.util.Date;
 @JsonSerialize(using = OAuthTokenSerializer.class)
 @Entity
 @Table(name = "oAuthTokens")
-public class OAuthToken {
+public class OAuthToken extends BaseModel {
     public final static String TOKEN_TYPE = "bearer";
     public final static long EXPIRES_IN = OAuthProviderService.ACCESS_TOKEN_EXPIRATION_INTEVAL;
 
-    private int oAuthTokenId;
     private String token;
     private String refreshToken;
     private String state;
@@ -38,17 +37,6 @@ public class OAuthToken {
     }
 
     OAuthToken() {
-    }
-
-    @JsonIgnore
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getoAuthTokenId() {
-        return oAuthTokenId;
-    }
-
-    public void setoAuthTokenId(int oAuthTokenId) {
-        this.oAuthTokenId = oAuthTokenId;
     }
 
     @JsonView(Views.Summary.class)
@@ -106,7 +94,7 @@ public class OAuthToken {
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
-            referencedColumnName = "userId"
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;

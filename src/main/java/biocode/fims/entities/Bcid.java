@@ -21,8 +21,8 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "bcids")
-public class Bcid {
-    private int bcidId;
+public class Bcid extends BaseModel {
+
     private boolean ezidMade;
     private boolean ezidRequest;
     private URI identifier;
@@ -117,18 +117,6 @@ public class Bcid {
     }
 
     @JsonView(Views.Detailed.class)
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getBcidId() {
-        return bcidId;
-    }
-
-    private void setBcidId(int id) {
-        this.bcidId = id;
-    }
-
-    @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "bit")
     public boolean isEzidMade() {
         return ezidMade;
     }
@@ -138,7 +126,6 @@ public class Bcid {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(columnDefinition = "bit not null")
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -168,7 +155,6 @@ public class Bcid {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "text")
     public String getTitle() {
         return title;
     }
@@ -273,7 +259,7 @@ public class Bcid {
     @Override
     public String toString() {
         return "Bcid{" +
-                "bcidId=" + bcidId +
+                "id=" + getId() +
                 ", ezidMade=" + ezidMade +
                 ", ezidRequest=" + ezidRequest +
                 ", identifier='" + identifier + '\'' +
@@ -293,11 +279,9 @@ public class Bcid {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinTable(name = "expeditionBcids",
-            joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
-            inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
-            foreignKey = @ForeignKey(name = "FK_expeditionBcids_bcidId"),
-            inverseForeignKey = @ForeignKey(name = "FK_expeditionBcids_expedition_id")
+    @JoinTable(name = "expeditionbcids",
+            joinColumns = @JoinColumn(name = "bcidid", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "id")
     )
     public Expedition getExpedition() {
         return expedition;
@@ -311,7 +295,7 @@ public class Bcid {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
+            referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_bcids_userId"),
             nullable = false
     )

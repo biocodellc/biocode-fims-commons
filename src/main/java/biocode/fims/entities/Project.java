@@ -24,9 +24,8 @@ import java.util.Set;
                 attributeNodes = {@NamedAttributeNode("projectMembers"), @NamedAttributeNode("expeditions")}
         )
 })
-public class Project {
+public class Project extends BaseModel {
 
-    private int projectId;
     private String projectCode;
     private String projectTitle;
     private Date created;
@@ -78,17 +77,6 @@ public class Project {
 
     // needed for hibernate
     Project() {
-    }
-
-    @JsonView(Views.Summary.class)
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(int id) {
-        this.projectId = id;
     }
 
     @JsonView(Views.Summary.class)
@@ -167,7 +155,7 @@ public class Project {
 
         Project project = (Project) o;
 
-        return getProjectId() != 0 && getProjectId() == project.getProjectId();
+        return getId() != 0 && getId() == project.getId();
     }
 
     @Override
@@ -178,7 +166,7 @@ public class Project {
     @Override
     public String toString() {
         return "Project{" +
-                "projectId=" + projectId +
+                "id=" + id +
                 ", projectCode='" + projectCode + '\'' +
                 ", projectTitle='" + projectTitle + '\'' +
                 ", created=" + created +
@@ -207,7 +195,7 @@ public class Project {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
+            referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_projects_userId"),
             nullable = false
 

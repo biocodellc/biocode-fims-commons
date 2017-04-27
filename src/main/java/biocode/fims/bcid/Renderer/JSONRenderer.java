@@ -125,7 +125,7 @@ public class JSONRenderer extends Renderer {
                 datasets.set("datasets",
                         objectMapper.readTree(objectMapper.writerWithView(Views.Summary.class)
                                 .writeValueAsString(
-                                        bcidService.getDatasets(expedition.getProject().getProjectId(), expedition.getExpeditionCode())
+                                        bcidService.getDatasets(expedition.getProject().getId(), expedition.getExpeditionCode())
                                 )
                         )
                 );

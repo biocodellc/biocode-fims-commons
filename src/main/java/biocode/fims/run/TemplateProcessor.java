@@ -707,7 +707,7 @@ public class TemplateProcessor {
         //Fetch the project title from the BCID system
         // NOTE, getting this particular name from the BCID system throws a connection exception
         /* AvailableProjectsFetcher fetcher = new AvailableProjectsFetcher();
-        AvailableProject aP = fetcher.getProjectId(projectId);
+        AvailableProject aP = fetcher.getId(projectId);
         String projectTitle = aP.getProjectTitle();
         */
         // Use the shortName

@@ -84,7 +84,7 @@ public class Resolver {
                         else {
                             if (bcid.getExpedition() != null) {
                                 expeditionService.setEntityIdentifiers(mapping, bcid.getExpedition().getExpeditionCode(),
-                                        bcid.getExpedition().getProject().getProjectId());
+                                        bcid.getExpedition().getProject().getId());
                                 String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcid.getIdentifier()));
 
                                 if (!StringUtils.isEmpty(conceptForwardingAddress)) {

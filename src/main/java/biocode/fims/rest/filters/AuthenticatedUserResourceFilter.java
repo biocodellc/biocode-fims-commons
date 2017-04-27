@@ -10,8 +10,6 @@ import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
@@ -39,7 +37,7 @@ public class AuthenticatedUserResourceFilter implements ContainerRequestFilter {
 
         if (!uriInfo.getPathParameters().containsKey("userId")) {
             logger.debug("missing {userId} path param");
-        } else if (userContext.getUser().getUserId() != Integer.parseInt(uriInfo.getPathParameters().get("userId").get(0))) {
+        } else if (userContext.getUser().getId() != Integer.parseInt(uriInfo.getPathParameters().get("userId").get(0))) {
             throw new UnauthorizedRequestException("The path {userId} does not match the logged in userId");
 
         }

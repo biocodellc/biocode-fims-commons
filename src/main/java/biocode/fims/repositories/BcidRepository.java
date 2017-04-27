@@ -26,8 +26,8 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
     void save(Bcid bcid);
 
     @Modifying
-    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where bcidId=:bcidId", nativeQuery = true)
-    void updateModifiedTs(@Param("bcidId") int bcidId);
+    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where id=:id", nativeQuery = true)
+    void updateModifiedTs(@Param("id") int id);
 
     /**
      * This method invokes the SQL query that is configured by using the {@code @Query} annotation.
@@ -37,39 +37,40 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
      */
     Bcid findOneByIdentifier(@Param("identifier") String identifier);
 
-    Bcid findByBcidId(int bcidId);
+    Bcid findById(int id);
 
     Set<Bcid> findAllByEzidRequestTrue();
 
-    Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
+//    @Query(value = "select b from Bcid b where b.expedition.expeditionId=:expeditionId and b.resourceType in :resourceTypes")
+    Bcid findByExpeditionIdAndResourceTypeIn(@Param("expeditionId") int expeditionId, @Param("resourceTypes") String... resourceType);
 
     @Query(value =
-            "select b from Bcid b where b.bcidId in \n" +
-                    "(select max(b2.bcidId) from Bcid b2 where " +
-                    "b2.expedition.project.projectId=:projectId and " +
+            "select b from Bcid b where b.id in \n" +
+                    "(select max(b2.id) from Bcid b2 where " +
+                    "b2.expedition.project.id=:projectId and " +
                     "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' and " +
                     "b2.subResourceType='" + FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE + "' " +
-                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
+                    "and b.expedition.id=b2.expedition.id" +
                     ")"
     )
     Set<Bcid> findLatestFimsMetadataDatasets(@Param("projectId") int projectId);
 
-    void deleteByBcidId(int bcidId);
+    void deleteById(int id);
 
-    List<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
+    List<Bcid> findByExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
 
-    Bcid findOneByTitleAndExpeditionExpeditionId(String title, int expeditionId);
+    Bcid findOneByTitleAndExpeditionId(String title, int expeditionId);
 
     Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
 
-    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
+    @Query("select b from Bcid b where b.expedition.project.id=:projectId and b.expedition.expeditionCode=:expeditionCode " +
             "and b.resourceType=:resourceType and b.subResourceType=:subResourceType order by b.created desc ")
     List<Bcid> findAllByResourceTypeAndSubResourceType(@Param("projectId") int projectId,
                                                        @Param("expeditionCode") String expeditionCode,
                                                        @Param("resourceType") String resourceType,
                                                        @Param("subResourceType") String subResourceType);
 
-    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
+    @Query("select b from Bcid b where b.expedition.project.id=:projectId and b.expedition.expeditionCode=:expeditionCode " +
             "and b.resourceType=:resourceType order by b.created desc ")
     List<Bcid> findAllByResourceType(@Param("projectId") int projectId,
                                      @Param("expeditionCode") String expeditionCode,

@@ -103,7 +103,7 @@ public class ResolverTest {
     @Test
     public void should_return_default_conceptForwardingAddress_plus_suffix_for_concept_no_webAddress() throws Exception {
         Project project = new Project.ProjectBuilder("DEMO", "DEMO Project", "http://example.com", "http://example.com/").build();
-        project.setProjectId(1);
+        project.setId(1);
         Expedition expedition = new Expedition.ExpeditionBuilder("DEMO").build();
         expedition.setProject(project);
         Bcid bcid = new Bcid.BcidBuilder("Resource").build();
@@ -115,7 +115,7 @@ public class ResolverTest {
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
-        Mockito.doNothing().when(expeditionService).setEntityIdentifiers(mapping, expedition.getExpeditionCode(), project.getProjectId());
+        Mockito.doNothing().when(expeditionService).setEntityIdentifiers(mapping, expedition.getExpeditionCode(), project.getId());
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 

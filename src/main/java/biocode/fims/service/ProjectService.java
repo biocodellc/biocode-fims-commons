@@ -45,11 +45,11 @@ public class ProjectService {
     }
 
     public Project getProject(int projectId) {
-        return projectRepository.findByProjectId(projectId);
+        return projectRepository.findById(projectId);
     }
 
     public Project getProject(int projectId, String projectUrl) {
-        return projectRepository.findByProjectIdAndProjectUrl(projectId, projectUrl);
+        return projectRepository.findByIdAndProjectUrl(projectId, projectUrl);
     }
 
 
@@ -63,7 +63,7 @@ public class ProjectService {
         }
 
         for (Project userProject : user.getProjectsMemberOf()) {
-            if (userProject.getProjectId() == projectId) {
+            if (userProject.getId() == projectId) {
                 return true;
             }
         }
@@ -97,7 +97,7 @@ public class ProjectService {
         }
 
         for (Project p : user.getProjects()) {
-            if (p.getProjectId() == projectId) {
+            if (p.getId() == projectId) {
                 return true;
             }
         }
@@ -131,7 +131,7 @@ public class ProjectService {
 
         for (Project project : projects) {
             if ((inludePublic && project.isPublic()) ||
-                    isUserMemberOfProject(user, project.getProjectId())) {
+                    isUserMemberOfProject(user, project.getId())) {
                 filteredProjects.add(project);
             }
         }

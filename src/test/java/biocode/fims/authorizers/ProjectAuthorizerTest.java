@@ -63,7 +63,7 @@ public class ProjectAuthorizerTest {
 
         User user = getUser();
 
-        Mockito.when(projectService.isUserMemberOfProject(user, project.getProjectId())).thenReturn(true);
+        Mockito.when(projectService.isUserMemberOfProject(user, project.getId())).thenReturn(true);
 
         ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), true);
@@ -77,7 +77,7 @@ public class ProjectAuthorizerTest {
 
         User user = getUser();
 
-        Mockito.when(projectService.isUserMemberOfProject(user, project.getProjectId())).thenReturn(false);
+        Mockito.when(projectService.isUserMemberOfProject(user, project.getId())).thenReturn(false);
 
         ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), false);

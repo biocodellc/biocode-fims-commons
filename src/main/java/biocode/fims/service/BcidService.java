@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
@@ -62,7 +63,7 @@ public class BcidService {
 
         // generate the identifier
         try {
-            bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), naan));
+            bcid.setIdentifier(generateBcidIdentifier(bcid.getId(), naan));
         } catch (URISyntaxException e) {
             throw new ServerErrorException("Server Error", String.format(
                     "URISyntaxException while generating identifier for bcid: %s", bcid),
@@ -98,7 +99,7 @@ public class BcidService {
 
     @Transactional(readOnly = true)
     public Bcid getBcid(int bcidId) {
-        return bcidRepository.findByBcidId(bcidId);
+        return bcidRepository.findById(bcidId);
     }
 
     @Transactional(readOnly = true)
@@ -108,7 +109,7 @@ public class BcidService {
 
     @Transactional(readOnly = true)
     public Bcid getBcidByTitle(int expeditionId, String title) {
-        return bcidRepository.findOneByTitleAndExpeditionExpeditionId(title, expeditionId);
+        return bcidRepository.findOneByTitleAndExpeditionId(title, expeditionId);
     }
 
     /**
@@ -119,7 +120,7 @@ public class BcidService {
      */
     @Transactional(readOnly = true)
     public Bcid getBcid(int expeditionId, String... resourceType) {
-        return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
+        return bcidRepository.findByExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 
     @Transactional(readOnly = true)
@@ -130,7 +131,7 @@ public class BcidService {
     @Transactional
     public void updateModifiedTs(Bcid bcid) {
         if (bcid != null) {
-            bcidRepository.updateModifiedTs(bcid.getBcidId());
+            bcidRepository.updateModifiedTs(bcid.getId());
         }
     }
 
@@ -154,7 +155,7 @@ public class BcidService {
     }
 
     public void delete(int bcidId) {
-        bcidRepository.deleteByBcidId(bcidId);
+        bcidRepository.deleteById(bcidId);
     }
 
     /**
@@ -165,7 +166,7 @@ public class BcidService {
      */
     @Transactional(readOnly = true)
     public List<Bcid> getEntityBcids(int expeditionId) {
-        return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeNotIn(expeditionId,
+        return bcidRepository.findByExpeditionIdAndResourceTypeNotIn(expeditionId,
                 ResourceTypes.DATASET_RESOURCE_TYPE, Expedition.EXPEDITION_RESOURCE_TYPE);
     }
 

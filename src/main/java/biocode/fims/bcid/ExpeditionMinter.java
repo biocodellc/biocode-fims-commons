@@ -29,7 +29,7 @@ public class ExpeditionMinter {
         BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
         biocode.fims.entities.Bcid bcid = bcidRepository.findOneByIdentifier(identifier);
 
-        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
+        attachReferenceToExpedition(expeditionId, bcid.getId());
     }
 
     private void attachReferenceToExpedition(Integer expeditionId, Integer bcidId) {

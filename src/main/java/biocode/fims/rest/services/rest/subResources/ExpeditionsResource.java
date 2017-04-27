@@ -79,7 +79,7 @@ public class ExpeditionsResource extends FimsService {
             return project.getExpeditions();
         }
 
-        if (!project.isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), project.getProjectId())) {
+        if (!project.isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), project.getId())) {
             throw new ForbiddenRequestException("You are not a member of this private project");
         }
 
@@ -140,7 +140,7 @@ public class ExpeditionsResource extends FimsService {
             return expedition;
         }
 
-        if (!expedition.getProject().isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), expedition.getProject().getProjectId())) {
+        if (!expedition.getProject().isPublic() && !projectService.isUserMemberOfProject(userContext.getUser(), expedition.getProject().getId())) {
             throw new ForbiddenRequestException("You are not a member of this private project");
         }
 

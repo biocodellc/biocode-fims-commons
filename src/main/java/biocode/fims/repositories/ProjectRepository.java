@@ -19,11 +19,11 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
 
     void save(Project project);
 
-    Project findByProjectId(int projectId);
+    Project findById(int id);
 
     List<Project> findAll();
 
     List<Project> findAllByProjectUrl(String projectUrl);
 
-    Project findByProjectIdAndProjectUrl(int projectId, String projectUrl);
+    Project findByIdAndProjectUrl(int id, String projectUrl);
 }

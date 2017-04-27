@@ -7,7 +7,7 @@
     <named-native-query name="OAuthToken.getOAuthToken" result-set-mapping="OAuthToken">
         <query>SELECT t.*, c.*, u.*
             from oAuthTokens t
-            inner join users u on t.userId = u.userId
+            inner join users u on t.userId = u.id
             inner join oAuthClients c on c.clientId = t.clientId
             where t.refreshToken = :refreshToken and EXTRACT( EPOCH FROM age(now(), t.created) ) &lt;= :expirationInterval
         </query>
@@ -17,7 +17,7 @@
         <query>
             SELECT n.*, u.*
             from oAuthNonces n
-            inner join users u on n.userId = u.userId
+            inner join users u on n.userId = u.id
             where n.code = :code and n.redirectUri = :redirectUri and n.clientId = :clientId and EXTRACT( EPOCH FROM age(now(), n.created) ) &lt;= :expirationInterval
         </query>
     </named-native-query>

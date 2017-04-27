@@ -27,7 +27,7 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 
-    private int userId;
+    private int id;
     private String username;
     private String password;
     private boolean hasSetPassword;
@@ -115,12 +115,12 @@ public class User {
     @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getUserId() {
-        return userId;
+    public int getId() {
+        return id;
     }
 
-    private void setUserId(int id) {
-        this.userId = id;
+    private void setId(int id) {
+        this.id = id;
     }
 
     @JsonView(Views.Summary.class)
@@ -210,7 +210,6 @@ public class User {
     }
 
     @JsonIgnore
-    @Column(columnDefinition = "char(20) null")
     public String getPasswordResetToken() {
         return passwordResetToken;
     }
@@ -262,8 +261,8 @@ public class User {
     @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "userProjects",
-            joinColumns = @JoinColumn(name = "userId", referencedColumnName = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "projectId"),
+            joinColumns = @JoinColumn(name = "userId", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "id"),
             foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
             inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
     )
@@ -302,7 +301,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "userId=" + userId +
+                "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", getHasSetPassword=" + hasSetPassword +

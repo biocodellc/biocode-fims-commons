@@ -14,10 +14,9 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "expeditions")
-public class Expedition {
+public class Expedition extends BaseModel {
     public static final String EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection";
 
-    private int expeditionId;
     private String expeditionCode;
     private String expeditionTitle;
     private Date created;
@@ -67,17 +66,6 @@ public class Expedition {
 
     // needed for hibernate
     Expedition() {}
-
-    @JsonView(Views.Summary.class)
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int getExpeditionId() {
-        return expeditionId;
-    }
-
-    private void setExpeditionId(int id) {
-        this.expeditionId = id;
-    }
 
     @JsonView(Views.Summary.class)
     @Column(nullable = false, updatable = false)
@@ -151,7 +139,7 @@ public class Expedition {
     @Override
     public String toString() {
         return "Expedition{" +
-                "expeditionId=" + expeditionId +
+                "id=" + getId()+
                 ", expeditionCode='" + expeditionCode + '\'' +
                 ", expeditionTitle='" + expeditionTitle + '\'' +
                 ", created=" + created +
@@ -180,7 +168,7 @@ public class Expedition {
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "projectId",
-            referencedColumnName = "projectId",
+            referencedColumnName = "id",
             nullable = false, updatable = false,
             foreignKey = @ForeignKey(name = "FK_expedtions_projectId")
     )
@@ -198,7 +186,7 @@ public class Expedition {
     @ManyToOne
     @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
-            referencedColumnName = "userId"
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;

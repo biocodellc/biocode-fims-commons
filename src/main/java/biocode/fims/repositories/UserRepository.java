@@ -24,7 +24,7 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     User save(User user);
 
-    User findByUserId(int userId);
+    User findById(int id);
 
     User findByUsername(String username);
 

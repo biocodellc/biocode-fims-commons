@@ -72,7 +72,7 @@ public class QueryAuthorizer {
             boolean foundProject = false;
 
             for (Project project : projects) {
-                if (project.getProjectId() == projectId) {
+                if (project.getId() == projectId) {
                     foundProject = true;
 
                     if (!authorizedUserForProject(project, user))
@@ -92,7 +92,7 @@ public class QueryAuthorizer {
         if (user == null) {
             return project.isPublic();
         }
-        return projectService.isUserMemberOfProject(user, project.getProjectId());
+        return projectService.isUserMemberOfProject(user, project.getId());
     }
 
     /**
@@ -113,7 +113,7 @@ public class QueryAuthorizer {
         for (Project project : projects) {
 
             // if the project is in the projectIds list, then we need to check if there is an expedition in the expeditionCodes list
-            if (projectIds.contains(project.getProjectId())) {
+            if (projectIds.contains(project.getId())) {
 
                 boolean userMemberOfProject = authorizedUserForProject(project, user);
                 boolean foundExpeditionForProject = false;

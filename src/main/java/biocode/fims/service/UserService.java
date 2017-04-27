@@ -47,7 +47,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUser(int userId) {
-        return userRepository.findByUserId(userId);
+        return userRepository.findById(userId);
     }
 
     @Transactional(readOnly = true)
@@ -165,7 +165,7 @@ public class UserService {
 
             String attributeName = node.getAttributeName();
             if (attributeName != null && !unitUtil.isLoaded(user, attributeName)) {
-                return userRepository.getUser(user.getUserId(), userEntityGraph);
+                return userRepository.getUser(user.getId(), userEntityGraph);
             }
 
         }

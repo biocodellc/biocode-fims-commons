@@ -25,7 +25,7 @@ $$ language 'plpgsql';
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
-  userId SERIAL PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   email TEXT,
@@ -43,7 +43,7 @@ COMMENT ON COLUMN users.passwordResetExpiration is 'time when the reset token ex
 DROP TABLE IF EXISTS bcids;
 
 CREATE TABLE bcids (
-  bcidId SERIAL PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   ezidMade BOOLEAN NOT NULL DEFAULT '0',
   ezidRequest BOOLEAN NOT NULL DEFAULT '1',
   identifier TEXT,
@@ -54,7 +54,7 @@ CREATE TABLE bcids (
   graph TEXT,
   sourceFile TEXT,
   resourceType TEXT NOT NULL,
-  subResourceType TEXT NOT NULL,
+  subResourceType TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -82,7 +82,7 @@ COMMENT ON COLUMN bcids.modified is 'timestamp of last update';
 DROP TABLE IF EXISTS projects;
 
 CREATE TABLE projects (
-  projectId SERIAL PRIMARY KEY NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   projectCode TEXT NOT NULL,
   projectTitle TEXT,
   projectUrl TEXT NOT NULL,
@@ -118,7 +118,7 @@ CREATE INDEX userProjects_userId_idx ON projects (userId);
 DROP TABLE IF EXISTS expeditions;
 
 CREATE TABLE expeditions (
-  expeditionId SERIAL NOT NULL PRIMARY KEY,
+  id SERIAL NOT NULL PRIMARY KEY,
   projectId INTEGER NOT NULL REFERENCES projects (projectId),
   expeditionCode TEXT NOT NULL,
   expeditionTitle TEXT,
@@ -162,7 +162,7 @@ COMMENT ON COLUMN oAuthClients.callback is 'The callback url of the client app';
 DROP TABLE IF EXISTS oAuthNonces;
 
 CREATE TABLE oAuthNonces (
-  oAuthNonceId SERIAL NOT NULL PRIMARY KEY,
+  id SERIAL NOT NULL PRIMARY KEY,
   clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
   code TEXT NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -181,7 +181,7 @@ COMMENT ON COLUMN oAuthNonces.redirectUri is 'The redirectUri associated with th
 DROP TABLE IF EXISTS oAuthTokens;
 
 CREATE TABLE oAuthTokens (
-  oAuthTokenId SERIAL NOT NULL PRIMARY KEY,
+  id SERIAL NOT NULL PRIMARY KEY,
   clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
   token TEXT NOT NULL UNIQUE,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -236,7 +236,7 @@ LANGUAGE 'plpgsql';
 DROP TABLE IF EXISTS templateConfigs;
 
 CREATE TABLE templateConfigs (
-  templateConfigId SERIAL NOT NULL PRIMARY KEY,
+  id SERIAL NOT NULL PRIMARY KEY,
   userId INTEGER NOT NULL REFERENCES users (userId),
   projectId INTEGER NOT NULL REFERENCES projects (projectId),
   configName TEXT NOT NULL,

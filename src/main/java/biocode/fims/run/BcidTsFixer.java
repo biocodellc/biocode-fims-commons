@@ -33,7 +33,7 @@ public class BcidTsFixer {
         List<Bcid> bcids = bcidService.getBcidsWithOutEzidRequest();
 
         // sort on bcidId desc
-        bcids.sort(Comparator.comparingInt(Bcid::getBcidId).reversed());
+        bcids.sort(Comparator.comparingInt(Bcid::getId).reversed());
 
         Calendar now = Calendar.getInstance();
 

@@ -13,7 +13,6 @@ import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.service.ExpeditionService;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.InvalidPropertyException;
@@ -163,7 +162,7 @@ public class Process {
                 throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, processController.getExpeditionCode());
             }
         } else if (!ignoreUser) {
-            if (expedition.getUser().getUserId() != processController.getUserId()) {
+            if (expedition.getUser().getId() != processController.getUserId()) {
                 throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, processController.getExpeditionCode());
             }
         }

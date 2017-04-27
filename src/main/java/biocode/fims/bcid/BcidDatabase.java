@@ -55,7 +55,7 @@ public final class BcidDatabase extends Database {
             }
         } catch (SQLException e) {
             throw new ServerErrorException("Server Error",
-                    "SQLException attempting to getUserId when given the username: {}", e);
+                    "SQLException attempting to getId when given the username: {}", e);
         } finally {
             close(conn, stmt, rs);
         }

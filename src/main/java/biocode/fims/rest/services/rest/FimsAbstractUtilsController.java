@@ -41,7 +41,7 @@ public abstract class FimsAbstractUtilsController extends FimsService {
     @Path("/file")
     @Produces("application/file")
     public Response getFile(@QueryParam("id") String id) {
-        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
+        int userId = userContext.getUser() != null ? userContext.getUser().getId() : 0;
         CachedFile cf = fileCache.getFile(id, userId);
 
         if (cf != null) {

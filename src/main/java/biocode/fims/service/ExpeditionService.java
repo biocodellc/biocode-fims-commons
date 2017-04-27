@@ -56,7 +56,7 @@ public class ExpeditionService {
         expedition.setProject(project);
         expedition.setUser(user);
 
-        if (!projectService.isUserMemberOfProject(user, project.getProjectId()))
+        if (!projectService.isUserMemberOfProject(user, project.getId()))
             throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
 
         try {
@@ -71,7 +71,7 @@ public class ExpeditionService {
 
         Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
         expedition.setExpeditionBcid(bcid);
-        createEntityBcids(mapping, expedition.getExpeditionId(), userId, ezidRequest);
+        createEntityBcids(mapping, expedition.getId(), userId, ezidRequest);
     }
 
     public void update(Expedition expedition) {
@@ -80,7 +80,7 @@ public class ExpeditionService {
 
     @Transactional(readOnly = true)
     public Expedition getExpedition(String expeditionCode, int projectId) {
-        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
+        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectId(expeditionCode, projectId);
         if (expedition != null) {
             attachExpeditionBcids(expedition);
         }
@@ -115,14 +115,14 @@ public class ExpeditionService {
 
         // conceptAlias is the Bcid title
         return bcidService.getBcidByTitle(
-                expedition.getExpeditionId(),
+                expedition.getId(),
                 conceptAlias
         );
     }
 
     @Transactional(readOnly = true)
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
-        Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
+        Page<Expedition> expeditions = expeditionRepository.findByProjectIdAndProjectUserId(projectId, userId, pageRequest);
 
         for (Expedition expedition : expeditions) {
             attachExpeditionBcids(expedition);
@@ -145,7 +145,7 @@ public class ExpeditionService {
 
     @Transactional(readOnly = true)
     public Expedition getExpedition(int expeditionId) {
-        Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
+        Expedition expedition = expeditionRepository.findById(expeditionId);
         if (expedition != null) {
             attachExpeditionBcids(expedition);
         }
@@ -153,11 +153,11 @@ public class ExpeditionService {
     }
 
     public void delete(int expeditionId) {
-        expeditionRepository.deleteByExpeditionId(expeditionId);
+        expeditionRepository.deleteById(expeditionId);
     }
 
     public void delete(String expeditionCode, int projectId) {
-        expeditionRepository.deleteByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
+        expeditionRepository.deleteByExpeditionCodeAndProjectId(expeditionCode, projectId);
     }
 
     /**
@@ -170,7 +170,7 @@ public class ExpeditionService {
     @Transactional(readOnly = true)
     public void setEntityIdentifiers(Mapping mapping, String expeditionCode, int projectId) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
-        List<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
+        List<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getId());
 
         for (Bcid bcid : expeditionEntityBcids) {
             for (Entity entity : mapping.getEntities()) {
@@ -198,8 +198,8 @@ public class ExpeditionService {
                 .ezidRequest(ezidRequest)
                 .build();
 
-        bcidService.create(expditionBcid, expedition.getUser().getUserId());
-        bcidService.attachBcidToExpedition(expditionBcid, expedition.getExpeditionId());
+        bcidService.create(expditionBcid, expedition.getUser().getId());
+        bcidService.attachBcidToExpedition(expditionBcid, expedition.getId());
         return expditionBcid;
     }
 
@@ -242,14 +242,14 @@ public class ExpeditionService {
     private void attachExpeditionBcids(Expedition expedition) {
         expedition.setExpeditionBcid(
                 bcidService.getBcid(
-                        expedition.getExpeditionId(),
+                        expedition.getId(),
                         Expedition.EXPEDITION_RESOURCE_TYPE
                 ));
-        expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getExpeditionId()));
+        expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getId()));
     }
 
     public List<Expedition> getPublicExpeditions(int projectId) {
-        return expeditionRepository.findByPublicTrueAndProjectProjectId(projectId);
+        return expeditionRepository.findByPublicTrueAndProjectId(projectId);
     }
 
     /**
@@ -275,10 +275,10 @@ public class ExpeditionService {
     private boolean expeditionsBelongToProject(List<Expedition> expeditions, int projectId) {
         List<Integer> expeditionIds = expeditions
                 .stream()
-                .map(Expedition::getExpeditionId)
+                .map(Expedition::getId)
                 .collect(Collectors.toList());
 
-        return expeditionIds.size() == expeditionRepository.countByExpeditionIdInAndProjectProjectId(expeditionIds, projectId);
+        return expeditionIds.size() == expeditionRepository.countByIdInAndProjectId(expeditionIds, projectId);
 
     }
 }

@@ -86,7 +86,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         } else {
             uri = null;
         }
-        expeditionService.create(expedition, userContext.getUser().getUserId(), projectId, uri, mapping);
+        expeditionService.create(expedition, userContext.getUser().getId(), projectId, uri, mapping);
 
         return Response.ok(expedition).build();
     }
@@ -215,7 +215,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
 
         // Update the expedition public status for what was just passed in
 
-        if (e.updateExpeditionPublicStatus(userContext.getUser().getUserId(), expeditionCode, projectId, publicStatus)) {
+        if (e.updateExpeditionPublicStatus(userContext.getUser().getId(), expeditionCode, projectId, publicStatus)) {
             return Response.ok("{\"success\": \"successfully updated.\"}").build();
         } else {
             return Response.ok("{\"success\": \"nothing to update.\"}").build();
@@ -261,7 +261,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         ProjectMinter projectMinter = new ProjectMinter();
 
         //Check that the user exists in this project
-        if (!projectMinter.userExistsInProject(userContext.getUser().getUserId(), projectId)) {
+        if (!projectMinter.userExistsInProject(userContext.getUser().getId(), projectId)) {
             // If the user isn't in the project, then we can't update or create a new expedition
             throw new ForbiddenRequestException("User is not authorized to update/create expeditions in this project.");
         }
@@ -277,7 +277,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
 
         // Else, pay attention to what user owns the initial project
         else {
-            if (expeditionMinter.userOwnsExpedition(userContext.getUser().getUserId(), expeditionCode, projectId)) {
+            if (expeditionMinter.userOwnsExpedition(userContext.getUser().getId(), expeditionCode, projectId)) {
                 // If the user already owns the expedition, then great--- this is an update
                 return Response.ok("{\"update\": \"user owns this expedition\"}").build();
                 // If the expedition exists in the project but the user does not own the expedition then this means we can't

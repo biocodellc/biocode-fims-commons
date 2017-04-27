@@ -19,7 +19,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -222,13 +221,13 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         ProjectMinter projectMinter = new ProjectMinter();
 
         if (projectMinter.templateConfigExists(configName, projectId)) {
-            if (projectMinter.usersTemplateConfig(configName, projectId, userContext.getUser().getUserId())) {
-                projectMinter.updateTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
+            if (projectMinter.usersTemplateConfig(configName, projectId, userContext.getUser().getId())) {
+                projectMinter.updateTemplateConfig(configName, projectId, userContext.getUser().getId(), checkedOptions);
             } else {
                 return Response.ok("{\"error\": \"A configuration with that name already exists, and you are not the owner.\"}").build();
             }
         } else {
-            projectMinter.saveTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
+            projectMinter.saveTemplateConfig(configName, projectId, userContext.getUser().getId(), checkedOptions);
         }
 
         return Response.ok("{\"success\": \"Successfully saved template configuration.\"}").build();
@@ -286,7 +285,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         }
 
         ProjectMinter p = new ProjectMinter();
-        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, userContext.getUser().getUserId())) {
+        if (p.templateConfigExists(configName, projectId) && p.usersTemplateConfig(configName, projectId, userContext.getUser().getId())) {
             p.removeTemplateConfig(configName, projectId);
         } else {
             return Response.ok("{\"error\": \"Only the owners of a configuration can remove the configuration.\"}").build();
@@ -342,7 +341,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         List<Project> projects = projectService.getProjects(settingsManager.retrieveValue("appRoot"));
 
         for (Project p: projects) {
-            refreshCache(p.getProjectId());
+            refreshCache(p.getId());
         }
 
         return Response.noContent().build();

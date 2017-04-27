@@ -17,8 +17,8 @@ public class UserRepositoryImpl implements UserCustomOperations {
 
     @Override
     public User getUser(int userId, String entityGraph) {
-        return em.createQuery("SELECT DISTINCT u FROM User u WHERE u.userId=:userId", User.class)
-                .setParameter("userId", userId)
+        return em.createQuery("SELECT DISTINCT u FROM User u WHERE u.id=:id", User.class)
+                .setParameter("id", userId)
                 .setHint(QueryHints.HINT_FETCHGRAPH, em.getEntityGraph(entityGraph))
                 .getSingleResult();
     }

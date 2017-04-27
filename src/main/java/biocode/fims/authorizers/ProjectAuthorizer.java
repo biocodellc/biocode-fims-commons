@@ -34,7 +34,7 @@ public class ProjectAuthorizer {
             return project.isPublic();
         }
 
-        return project.isPublic() || projectService.isUserMemberOfProject(user, project.getProjectId());
+        return project.isPublic() || projectService.isUserMemberOfProject(user, project.getId());
     }
 
     /**

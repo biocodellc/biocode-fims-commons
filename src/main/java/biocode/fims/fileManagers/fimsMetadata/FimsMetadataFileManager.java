@@ -126,13 +126,13 @@ public class FimsMetadataFileManager implements FileManager {
 
             bcidService.attachBcidToExpedition(
                     bcid,
-                    expedition.getExpeditionId()
+                    expedition.getId()
             );
 
             // save the spreadsheet on the server
             File inputFile = new File(filename);
 
-            bcid.setSourceFile(persistenceManager.writeSourceFile(inputFile, bcid.getBcidId()));
+            bcid.setSourceFile(persistenceManager.writeSourceFile(inputFile, bcid.getId()));
             bcidService.update(bcid);
 
             // TODO this should include all entity identifiers
