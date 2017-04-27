@@ -71,6 +71,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     user = userService.loadUserEntityGraph(user, userEntityGraph);
                 }
                 userContext.setUser(user);
+            } else {
+                userContext.setUser(null);
             }
         }
     }

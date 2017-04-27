@@ -6,6 +6,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
+import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
@@ -14,6 +15,7 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
@@ -42,11 +44,14 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(FimsAbstractExpeditionController.class);
     protected final ExpeditionService expeditionService;
+    protected final ProjectService projectService;
 
     @Autowired
-    public FimsAbstractExpeditionController(ExpeditionService expeditionService, SettingsManager settingsManager) {
+    public FimsAbstractExpeditionController(ExpeditionService expeditionService, ProjectService projectService,
+                                            SettingsManager settingsManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
+        this.projectService = projectService;
     }
 
     /**
@@ -144,6 +149,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
      *
      * @return
      */
+    @Deprecated
     @UserEntityGraph("User.withProjects")
     @GET
     @Admin
@@ -152,7 +158,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getExpeditions(@PathParam("projectId") Integer projectId) {
         ProjectMinter projectMinter = new ProjectMinter();
-        if (!projectMinter.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
+        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 
