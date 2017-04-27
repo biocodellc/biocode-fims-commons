@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author rjewing
  */
-@PreMatching
 @Priority(Integer.MIN_VALUE)
 public class RequestLoggingFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final String LOGGING_ID_PROPERTY = "RequestLoggingFilter.request.id";
@@ -132,9 +131,15 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         final byte[] entity = new byte[MAX_ENTITY_SIZE + 1];
         final int entitySize = stream.read(entity);
         b.append("\"Entity: ");
-        b.append(new String(entity, 0, Math.min(entitySize, MAX_ENTITY_SIZE), charset));
-        if (entitySize > MAX_ENTITY_SIZE) {
-            b.append("...more...");
+
+        String e = new String(entity, 0, Math.min(entitySize, MAX_ENTITY_SIZE), charset);
+        if (e.toLowerCase().contains("password")) {
+            b.append("entity contains password, not logging");
+        } else {
+            b.append(e);
+            if (entitySize > MAX_ENTITY_SIZE) {
+                b.append("...more...");
+            }
         }
         b.append("\" ");
         stream.reset();
