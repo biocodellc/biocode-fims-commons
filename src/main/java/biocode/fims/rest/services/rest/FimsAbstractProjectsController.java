@@ -19,7 +19,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -186,16 +185,16 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     /**
      * Service used to retrieve a JSON representation of the project's a user is a member of.
      *
+     * use /projects?includePublic=false
      * @return
      */
+    @Deprecated
     @GET
     @Authenticated
     @Path("/user/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserProjects() {
-        ProjectMinter p = new ProjectMinter();
-        JSONArray projects = p.listUsersProjects(userContext.getUser().getUsername());
-        return Response.ok(projects.toJSONString()).build();
+    public List<Project> getUserProjects() {
+        return projectService.getProjects(appRoot, userContext.getUser(), false);
     }
 
     /**

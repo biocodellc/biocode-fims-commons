@@ -300,6 +300,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
     public Response logout() {
         // Invalidate the session
         session.invalidate();
+        userContext.setUser(null);
         try {
             return Response.seeOther(new URI(appRoot)).build();
         } catch (URISyntaxException e) {

@@ -75,10 +75,6 @@ public class VersionTransformer {
         return returnValue;
     }
 
-    private void transformResource(LinkedHashMap<String, Object> argMap, APIVersion version, String classShortName) {
-
-    }
-
     private Object transformResponse(Object returnVal, Transformer transformer, String methodName) {
         if (transformer != null) {
             Object obj = transformer.updateResponseData(returnVal, methodName);
