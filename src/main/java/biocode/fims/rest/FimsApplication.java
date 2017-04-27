@@ -34,6 +34,7 @@ public class FimsApplication extends ResourceConfig {
         register(APIVersionFilter.class);
         register(AuthenticationFilter.class);
         register(AuthenticatedUserResourceFilter.class);
+        register(RequestLoggingFilter.class);
 
         // need to manually register all subResources. This is so they get registered with the SpringComponentProvider
         // otherwise, the VersionTransformer advice will not register with the subResource method
