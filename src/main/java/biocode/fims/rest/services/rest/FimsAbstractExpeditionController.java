@@ -6,7 +6,6 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.Bcid;
 import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;

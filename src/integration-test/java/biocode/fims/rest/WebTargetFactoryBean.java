@@ -1,9 +1,11 @@
 package biocode.fims.rest;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -76,6 +78,7 @@ public class WebTargetFactoryBean implements FactoryBean<WebTarget>, Initializin
 
         // init WebTarget instance
         target = jerseyTest.target();
+        target.property(ClientProperties.FOLLOW_REDIRECTS, false);
     }
 
     @Override

@@ -113,7 +113,6 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
     }
 
     protected void logException(Exception e) {
-        e.printStackTrace();
         // don't log BadRequestexceptions or UnauthorizedRequestExceptions or ForbiddenRequestExceptions
         if (!(e instanceof BadRequestException || e instanceof UnauthorizedRequestException ||
                 e instanceof ForbiddenRequestException)) {
