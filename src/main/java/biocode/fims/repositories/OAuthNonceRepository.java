@@ -1,8 +1,7 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.OAuthNonce;
+import biocode.fims.models.OAuthNonce;
 import biocode.fims.repositories.customOperations.OAuthNonceCustomOperations;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;

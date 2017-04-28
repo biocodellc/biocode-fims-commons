@@ -1,8 +1,8 @@
 package biocode.fims.bcid;
 
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
+import biocode.fims.models.Bcid;
+import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;

@@ -2,8 +2,8 @@ package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
+import biocode.fims.models.Expedition;
+import biocode.fims.models.Project;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.AcknowledgedResponse;

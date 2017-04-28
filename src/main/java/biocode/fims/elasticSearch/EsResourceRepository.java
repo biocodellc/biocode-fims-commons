@@ -1,6 +1,6 @@
 package biocode.fims.elasticSearch;
 
-import biocode.fims.entities.Resource;
+import biocode.fims.models.Resource;
 import biocode.fims.repositories.ResourceRepository;
 import biocode.fims.utils.EmailUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;

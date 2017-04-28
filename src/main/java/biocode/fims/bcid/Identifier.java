@@ -2,7 +2,7 @@ package biocode.fims.bcid;
 
 /**
  * Class for decoding an identifier. An identifier consists of the schema, naan, shoulder, and suffix.
- * This class decodes an identifier in order to get the {@link biocode.fims.entities.Bcid} identifier value
+ * This class decodes an identifier in order to get the {@link biocode.fims.models.Bcid} identifier value
  */
 public class Identifier {
     private String identifier;
@@ -21,7 +21,7 @@ public class Identifier {
 
 
     /**
-     * get the {@link biocode.fims.entities.Bcid} identifier
+     * get the {@link biocode.fims.models.Bcid} identifier
      * @return
      */
     public String getBcidIdentifier() {

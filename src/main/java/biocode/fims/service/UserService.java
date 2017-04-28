@@ -1,8 +1,8 @@
 package biocode.fims.service;
 
 import biocode.fims.auth.PasswordHash;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.StringGenerator;

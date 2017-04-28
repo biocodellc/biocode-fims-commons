@@ -1,7 +1,7 @@
 package biocode.fims.ezid;
 
-import biocode.fims.entities.Bcid;
-import biocode.fims.entities.User;
+import biocode.fims.models.Bcid;
+import biocode.fims.models.User;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import org.apache.commons.lang.StringUtils;

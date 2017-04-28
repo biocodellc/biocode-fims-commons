@@ -1,8 +1,8 @@
 package biocode.fims.authorizers;
 
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.Expedition;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.service.ProjectService;

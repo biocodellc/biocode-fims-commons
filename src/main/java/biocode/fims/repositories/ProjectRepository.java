@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.Project;
+import biocode.fims.models.Project;
 import biocode.fims.repositories.customOperations.ProjectCustomOperations;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.Repository;

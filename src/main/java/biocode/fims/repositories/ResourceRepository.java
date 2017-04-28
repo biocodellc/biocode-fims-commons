@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.Resource;
+import biocode.fims.models.Resource;
 
 import java.util.List;
 

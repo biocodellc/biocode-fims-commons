@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.OAuthToken;
+import biocode.fims.models.OAuthToken;
 import biocode.fims.repositories.customOperations.OAuthTokenCustomOperations;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.Repository;

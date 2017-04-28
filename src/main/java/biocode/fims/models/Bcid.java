@@ -1,4 +1,4 @@
-package biocode.fims.entities;
+package biocode.fims.models;
 
 import biocode.fims.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;

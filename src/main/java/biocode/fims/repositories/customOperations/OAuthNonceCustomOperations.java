@@ -1,6 +1,6 @@
 package biocode.fims.repositories.customOperations;
 
-import biocode.fims.entities.OAuthNonce;
+import biocode.fims.models.OAuthNonce;
 
 /**
  * @author RJ Ewing

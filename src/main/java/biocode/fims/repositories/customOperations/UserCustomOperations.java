@@ -1,6 +1,6 @@
 package biocode.fims.repositories.customOperations;
 
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 
 /**
  * @author RJ Ewing

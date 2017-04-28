@@ -1,7 +1,7 @@
 package biocode.fims.authorizers;
 
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.service.ProjectService;
 import org.apache.commons.lang.StringUtils;
 

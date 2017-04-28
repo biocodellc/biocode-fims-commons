@@ -1,7 +1,7 @@
 package biocode.fims.run;
 
 import biocode.fims.application.config.FimsAppConfig;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.cli.*;

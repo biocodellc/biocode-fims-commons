@@ -1,13 +1,13 @@
 package biocode.fims.service;
 
 import biocode.fims.bcid.*;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.entities.*;
+import biocode.fims.models.*;
 import biocode.fims.repositories.BcidRepository;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -112,9 +112,9 @@ public class BcidService {
     }
 
     /**
-     * @param expeditionId the {@link biocode.fims.entities.Expedition} the bcids are associated with
+     * @param expeditionId the {@link biocode.fims.models.Expedition} the bcids are associated with
      * @param resourceType the resourceType(s) of the Bcids to find
-     * @return the {@link Bcid} associated with the provided {@link biocode.fims.entities.Expedition}, containing
+     * @return the {@link Bcid} associated with the provided {@link biocode.fims.models.Expedition}, containing
      * the provided resourceType(s)
      */
     @Transactional(readOnly = true)

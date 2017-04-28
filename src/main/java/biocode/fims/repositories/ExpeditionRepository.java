@@ -1,7 +1,7 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.User;
+import biocode.fims.models.Expedition;
+import biocode.fims.models.User;
 import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

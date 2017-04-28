@@ -2,8 +2,8 @@ package biocode.fims.service;
 
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.*;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.*;
+import biocode.fims.models.Bcid;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;

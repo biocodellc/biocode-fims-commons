@@ -1,13 +1,12 @@
 package biocode.fims.rest.services.rest.subResources;
 
-import biocode.fims.entities.Project;
+import biocode.fims.models.Project;
 import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.versioning.APIVersion;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Flag;
@@ -16,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
-import javax.ws.rs.container.ResourceContext;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -66,7 +63,7 @@ public class ProjectsResource extends FimsService {
      *
      * @param project   The updated project object
      * @param projectId The id of the project to update
-     * @responseType biocode.fims.entities.Project
+     * @responseType biocode.fims.models.Project
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
     @UserEntityGraph("User.withProjects")

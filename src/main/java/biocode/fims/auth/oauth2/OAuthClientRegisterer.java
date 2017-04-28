@@ -1,12 +1,11 @@
 package biocode.fims.auth.oauth2;
 
 import biocode.fims.application.config.FimsAppConfig;
-import biocode.fims.entities.OAuthClient;
+import biocode.fims.models.OAuthClient;
 import biocode.fims.service.OAuthProviderService;
 import org.apache.commons.cli.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * This is a convenience class for registering new OAuth clients

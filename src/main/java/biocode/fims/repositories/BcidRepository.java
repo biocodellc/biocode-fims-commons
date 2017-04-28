@@ -1,7 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.bcid.ResourceTypes;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import org.springframework.data.jpa.repository.Modifying;

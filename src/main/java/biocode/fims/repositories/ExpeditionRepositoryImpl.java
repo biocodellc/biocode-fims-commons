@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.Expedition;
+import biocode.fims.models.Expedition;
 import biocode.fims.repositories.customOperations.ExpeditionCustomOperations;
 import org.springframework.transaction.annotation.Transactional;
 

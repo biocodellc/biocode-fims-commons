@@ -3,7 +3,7 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;

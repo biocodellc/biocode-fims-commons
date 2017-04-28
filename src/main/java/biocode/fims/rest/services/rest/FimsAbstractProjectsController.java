@@ -2,7 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.entities.Project;
+import biocode.fims.models.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;

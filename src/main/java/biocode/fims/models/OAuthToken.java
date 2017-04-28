@@ -1,4 +1,4 @@
-package biocode.fims.entities;
+package biocode.fims.models;
 
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.OAuthTokenSerializer;

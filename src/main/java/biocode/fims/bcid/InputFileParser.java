@@ -1,6 +1,6 @@
 package biocode.fims.bcid;
 
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,28 +1,22 @@
 package biocode.fims.service;
 
 import biocode.fims.auth.PasswordHash;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
-import org.hibernate.jpa.internal.EntityManagerFactoryImpl;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.*;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceUnitUtil;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link UserService}

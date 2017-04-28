@@ -1,7 +1,7 @@
 package biocode.fims.bcid.Renderer;
 
 import biocode.fims.bcid.BcidMetadataSchema;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 
 /**
  * Renders a BCID as RDF.  This is for machine negotiation of an Bcid

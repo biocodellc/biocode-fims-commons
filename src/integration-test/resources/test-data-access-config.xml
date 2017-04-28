@@ -22,7 +22,7 @@
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="jpaVendorAdapter" ref="jpaVendorAdapter"/>
-        <property name="packagesToScan" value="biocode.fims.entities"/>
+        <property name="packagesToScan" value="biocode.fims.models"/>
         <property name="mappingResources" value="sql-results-mappings.xml, named-queries.xml"/>
         <property name="jpaProperties">
             <props>

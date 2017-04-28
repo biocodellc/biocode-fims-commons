@@ -1,10 +1,9 @@
-package biocode.fims.entities;
+package biocode.fims.models;
 
 import biocode.fims.utils.StringGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * OAuthClient entity object

@@ -1,4 +1,4 @@
-package biocode.fims.entities;
+package biocode.fims.models;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ResourceCode;

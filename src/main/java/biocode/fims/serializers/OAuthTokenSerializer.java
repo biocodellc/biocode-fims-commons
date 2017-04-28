@@ -1,6 +1,6 @@
 package biocode.fims.serializers;
 
-import biocode.fims.entities.OAuthToken;
+import biocode.fims.models.OAuthToken;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;

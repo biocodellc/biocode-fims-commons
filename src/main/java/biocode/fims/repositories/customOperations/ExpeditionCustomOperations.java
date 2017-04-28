@@ -1,6 +1,6 @@
 package biocode.fims.repositories.customOperations;
 
-import biocode.fims.entities.Expedition;
+import biocode.fims.models.Expedition;
 
 import java.util.List;
 

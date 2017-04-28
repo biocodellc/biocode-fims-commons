@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest.subResources;
 
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;

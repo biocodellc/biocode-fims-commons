@@ -5,14 +5,14 @@
                  version="2.1">
 
     <sql-result-set-mapping name="OAuthToken">
-        <entity-result entity-class="biocode.fims.entities.OAuthToken"/>
-        <entity-result entity-class="biocode.fims.entities.OAuthClient"/>
-        <entity-result entity-class="biocode.fims.entities.User"/>
+        <entity-result entity-class="biocode.fims.models.OAuthToken"/>
+        <entity-result entity-class="biocode.fims.models.OAuthClient"/>
+        <entity-result entity-class="biocode.fims.models.User"/>
     </sql-result-set-mapping>
 
     <sql-result-set-mapping name="OAuthNonce">
-        <entity-result entity-class="biocode.fims.entities.OAuthNonce"/>
-        <entity-result entity-class="biocode.fims.entities.User"/>
+        <entity-result entity-class="biocode.fims.models.OAuthNonce"/>
+        <entity-result entity-class="biocode.fims.models.User"/>
     </sql-result-set-mapping>
 
 </entity-mappings>

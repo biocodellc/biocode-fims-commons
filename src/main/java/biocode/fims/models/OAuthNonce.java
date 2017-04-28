@@ -1,4 +1,4 @@
-package biocode.fims.entities;
+package biocode.fims.models;
 
 import javax.persistence.*;
 import java.util.Date;

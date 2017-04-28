@@ -2,9 +2,9 @@ package biocode.fims.bcid.Renderer;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
-import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.User;
+import biocode.fims.models.Bcid;
+import biocode.fims.models.Expedition;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.bcid.BcidMetadataSchema.metadataElement;
 import biocode.fims.rest.SpringObjectMapper;

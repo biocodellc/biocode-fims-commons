@@ -1,6 +1,6 @@
 package biocode.fims.service;
 
-import biocode.fims.entities.*;
+import biocode.fims.models.*;
 import biocode.fims.repositories.OAuthClientRepository;
 import biocode.fims.repositories.OAuthNonceRepository;
 import biocode.fims.repositories.OAuthTokenRepository;

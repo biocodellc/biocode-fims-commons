@@ -1,10 +1,10 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.BasicAuthDecoder;
-import biocode.fims.entities.OAuthClient;
-import biocode.fims.entities.OAuthNonce;
-import biocode.fims.entities.OAuthToken;
-import biocode.fims.entities.User;
+import biocode.fims.models.OAuthClient;
+import biocode.fims.models.OAuthNonce;
+import biocode.fims.models.OAuthToken;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;

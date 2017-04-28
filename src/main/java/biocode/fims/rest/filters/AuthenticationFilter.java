@@ -1,6 +1,6 @@
 package biocode.fims.rest.filters;
 
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 import biocode.fims.rest.UserContext;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.service.OAuthProviderService;

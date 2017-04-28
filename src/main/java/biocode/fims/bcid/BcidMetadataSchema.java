@@ -1,7 +1,7 @@
 package biocode.fims.bcid;
 
-import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
+import biocode.fims.models.Bcid;
+import biocode.fims.models.Expedition;
 import biocode.fims.settings.SettingsManager;
 
 /**

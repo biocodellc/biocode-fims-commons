@@ -1,7 +1,7 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.OAuthToken;
-import biocode.fims.entities.User;
+import biocode.fims.models.OAuthToken;
+import biocode.fims.models.User;
 import biocode.fims.repositories.customOperations.OAuthTokenCustomOperations;
 
 import javax.persistence.*;

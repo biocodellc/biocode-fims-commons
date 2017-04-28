@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 import biocode.fims.repositories.customOperations.UserCustomOperations;
 import org.hibernate.jpa.QueryHints;
 

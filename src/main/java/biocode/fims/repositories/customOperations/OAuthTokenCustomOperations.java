@@ -1,7 +1,7 @@
 package biocode.fims.repositories.customOperations;
 
-import biocode.fims.entities.OAuthToken;
-import biocode.fims.entities.User;
+import biocode.fims.models.OAuthToken;
+import biocode.fims.models.User;
 
 /**
  * defines custom OAuthTokenRepository operations

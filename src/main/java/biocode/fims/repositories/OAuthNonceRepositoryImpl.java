@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.OAuthNonce;
+import biocode.fims.models.OAuthNonce;
 import biocode.fims.repositories.customOperations.OAuthNonceCustomOperations;
 
 import javax.persistence.EntityManager;

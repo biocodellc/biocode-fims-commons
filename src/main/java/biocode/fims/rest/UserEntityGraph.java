@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface UserEntityGraph {
     /**
-     * the name of the {@link NamedEntityGraph} to fetch for the authenticated user {@link biocode.fims.entities.User}
+     * the name of the {@link NamedEntityGraph} to fetch for the authenticated user {@link biocode.fims.models.User}
      * @return
      */
     String value();

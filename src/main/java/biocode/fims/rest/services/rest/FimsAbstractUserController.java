@@ -2,8 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;

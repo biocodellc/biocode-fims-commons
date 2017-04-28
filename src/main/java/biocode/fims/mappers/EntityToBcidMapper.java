@@ -1,7 +1,7 @@
 package biocode.fims.mappers;
 
 import biocode.fims.digester.Entity;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 
 /**
  * Class to map {@link Entity} to {@link Bcid}

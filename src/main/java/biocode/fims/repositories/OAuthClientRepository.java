@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.entities.OAuthClient;
+import biocode.fims.models.OAuthClient;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

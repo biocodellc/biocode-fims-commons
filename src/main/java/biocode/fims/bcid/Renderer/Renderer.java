@@ -1,6 +1,6 @@
 package biocode.fims.bcid.Renderer;
 
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 import biocode.fims.bcid.BcidMetadataSchema;
 
 /**

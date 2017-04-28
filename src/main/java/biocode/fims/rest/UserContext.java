@@ -1,6 +1,6 @@
 package biocode.fims.rest;
 
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 
 
 /**
