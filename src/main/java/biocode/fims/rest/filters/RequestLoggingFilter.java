@@ -60,7 +60,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         requestContext.setProperty(LOGGING_ID_PROPERTY, id);
 
         final StringBuilder b = new StringBuilder();
-        b.append(servletRequest.getRemoteAddr()).append(" ");
+        b.append(getRemoteIp(requestContext)).append(" ");
 
         b.append(requestContext.getMethod())
                 .append(" ")
@@ -144,5 +144,16 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         b.append("\" ");
         stream.reset();
         return stream;
+    }
+
+    private String getRemoteIp(ContainerRequestContext context) {
+        String forwardedFor = context.getHeaderString("x-forwarded-for");
+
+        if (forwardedFor != null) {
+            return forwardedFor.split(",")[0];
+        } else {
+            return servletRequest.getRemoteAddr();
+        }
+
     }
 }
