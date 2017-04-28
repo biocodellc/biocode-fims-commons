@@ -144,6 +144,19 @@ public class ExpeditionService {
     }
 
     @Transactional(readOnly = true)
+    public List<Expedition> getExpeditions(int projectId, boolean includePrivate) {
+        List<Expedition> expeditions;
+
+        expeditions = expeditionRepository.getProjectExpeditions(projectId, includePrivate);
+
+        for (Expedition expedition : expeditions) {
+            attachExpeditionBcids(expedition);
+        }
+
+        return expeditions;
+    }
+
+    @Transactional(readOnly = true)
     public Expedition getExpedition(int expeditionId) {
         Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
         if (expedition != null) {

@@ -59,4 +59,8 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
 
 
     Long countByExpeditionIdInAndProjectProjectId(List<Integer> expeditionIds, int projectId);
+
+    @Query("select e from Expedition e where projectId=:projectId and (public=true or public!=:includePrivate)")
+    List<Expedition> getProjectExpeditions(@Param("projectId") int projectId, @Param("includePrivate") boolean includePrivate);
+
 }
