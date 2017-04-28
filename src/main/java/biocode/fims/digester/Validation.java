@@ -7,6 +7,7 @@ import biocode.fims.renderers.RendererInterface;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;
@@ -33,12 +34,17 @@ public class Validation implements RendererInterface {
     // Loop all the lists associated with the validation element
     private final LinkedList<List> lists = new LinkedList<List>();
     // Create a tabularDataReader for reading the data source associated with the validation element
+    @JsonIgnore
     private TabularDataReader tabularDataReader = null;
     // A SQL Lite connection is mainted by the validation class so we can run through the various rules
+    @JsonIgnore
     private java.sql.Connection connection = null;
+    @JsonIgnore
     private static Logger logger = LoggerFactory.getLogger(Validation.class);
     // File reference for a sqlite Database
+    @JsonIgnore
     private File sqliteFile;
+    @JsonIgnore
     private SqLiteJsonConverter sdc;
 
     /**
@@ -198,6 +204,7 @@ public class Validation implements RendererInterface {
      *
      * @return k, v map of sheetName: RowMessage list
      */
+    @JsonIgnore
     public HashMap<String, LinkedList<RowMessage>> getMessages() {
         HashMap<String, LinkedList<RowMessage>> messages = new HashMap<>();
         for (Iterator<Worksheet> w = worksheets.iterator(); w.hasNext(); ) {
@@ -384,5 +391,24 @@ public class Validation implements RendererInterface {
         validForURIRule.setColumn(column);
         validForURIRule.setType("validForURI");
         return validForURIRule;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Validation)) return false;
+
+        Validation that = (Validation) o;
+
+        if (getWorksheets() != null ? !getWorksheets().equals(that.getWorksheets()) : that.getWorksheets() != null)
+            return false;
+        return getLists() != null ? getLists().equals(that.getLists()) : that.getLists() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getWorksheets() != null ? getWorksheets().hashCode() : 0;
+        result = 31 * result + (getLists() != null ? getLists().hashCode() : 0);
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package biocode.fims.digester;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.LinkedList;
@@ -76,7 +77,36 @@ public abstract class AbstractEntity {
         return !StringUtils.isBlank(worksheet);
     }
 
+    @JsonIgnore
     public boolean hasWorksheet(String sheetName) {
         return worksheet != null && worksheet.equals(sheetName);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractEntity)) return false;
+
+        AbstractEntity that = (AbstractEntity) o;
+
+        if (getWorksheet() != null ? !getWorksheet().equals(that.getWorksheet()) : that.getWorksheet() != null)
+            return false;
+        if (getUniqueKey() != null ? !getUniqueKey().equals(that.getUniqueKey()) : that.getUniqueKey() != null)
+            return false;
+        if (getConceptAlias() != null ? !getConceptAlias().equals(that.getConceptAlias()) : that.getConceptAlias() != null)
+            return false;
+        if (getConceptURI() != null ? !getConceptURI().equals(that.getConceptURI()) : that.getConceptURI() != null)
+            return false;
+        return getConceptForwardingAddress() != null ? getConceptForwardingAddress().equals(that.getConceptForwardingAddress()) : that.getConceptForwardingAddress() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getWorksheet() != null ? getWorksheet().hashCode() : 0;
+        result = 31 * result + (getUniqueKey() != null ? getUniqueKey().hashCode() : 0);
+        result = 31 * result + (getConceptAlias() != null ? getConceptAlias().hashCode() : 0);
+        result = 31 * result + (getConceptURI() != null ? getConceptURI().hashCode() : 0);
+        result = 31 * result + (getConceptForwardingAddress() != null ? getConceptForwardingAddress().hashCode() : 0);
+        return result;
     }
 }

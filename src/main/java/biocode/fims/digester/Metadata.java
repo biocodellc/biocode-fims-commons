@@ -107,4 +107,45 @@ public class Metadata {
                 ", textAbstract='" + textAbstract + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Metadata)) return false;
+
+        Metadata metadata = (Metadata) o;
+
+        if (getDoi() != null ? !getDoi().equals(metadata.getDoi()) : metadata.getDoi() != null) return false;
+        if (getShortname() != null ? !getShortname().equals(metadata.getShortname()) : metadata.getShortname() != null)
+            return false;
+        if (getEml_location() != null ? !getEml_location().equals(metadata.getEml_location()) : metadata.getEml_location() != null)
+            return false;
+        if (getTarget() != null ? !getTarget().equals(metadata.getTarget()) : metadata.getTarget() != null)
+            return false;
+        if (getQueryTarget() != null ? !getQueryTarget().equals(metadata.getQueryTarget()) : metadata.getQueryTarget() != null)
+            return false;
+        if (getExpeditionForwardingAddress() != null ? !getExpeditionForwardingAddress().equals(metadata.getExpeditionForwardingAddress()) : metadata.getExpeditionForwardingAddress() != null)
+            return false;
+        if (getDatasetForwardingAddress() != null ? !getDatasetForwardingAddress().equals(metadata.getDatasetForwardingAddress()) : metadata.getDatasetForwardingAddress() != null)
+            return false;
+        if (getNmnh() != null ? !getNmnh().equals(metadata.getNmnh()) : metadata.getNmnh() != null) return false;
+        if (getOwlRestrictionFile() != null ? !getOwlRestrictionFile().equals(metadata.getOwlRestrictionFile()) : metadata.getOwlRestrictionFile() != null)
+            return false;
+        return getTextAbstract() != null ? getTextAbstract().equals(metadata.getTextAbstract()) : metadata.getTextAbstract() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getDoi() != null ? getDoi().hashCode() : 0;
+        result = 31 * result + (getShortname() != null ? getShortname().hashCode() : 0);
+        result = 31 * result + (getEml_location() != null ? getEml_location().hashCode() : 0);
+        result = 31 * result + (getTarget() != null ? getTarget().hashCode() : 0);
+        result = 31 * result + (getQueryTarget() != null ? getQueryTarget().hashCode() : 0);
+        result = 31 * result + (getExpeditionForwardingAddress() != null ? getExpeditionForwardingAddress().hashCode() : 0);
+        result = 31 * result + (getDatasetForwardingAddress() != null ? getDatasetForwardingAddress().hashCode() : 0);
+        result = 31 * result + (getNmnh() != null ? getNmnh().hashCode() : 0);
+        result = 31 * result + (getOwlRestrictionFile() != null ? getOwlRestrictionFile().hashCode() : 0);
+        result = 31 * result + (getTextAbstract() != null ? getTextAbstract().hashCode() : 0);
+        return result;
+    }
 }

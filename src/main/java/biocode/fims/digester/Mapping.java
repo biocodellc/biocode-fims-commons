@@ -1,6 +1,7 @@
 package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +32,7 @@ public class Mapping {
         metadata = m;
     }
 
+    @JsonIgnore
     public Metadata getMetadata() {
         return metadata;
     }
@@ -40,6 +42,7 @@ public class Mapping {
      *
      * @return
      */
+    @JsonIgnore
     public String getDefaultSheetName() {
         return getRootEntity().getWorksheet();
     }
@@ -48,6 +51,7 @@ public class Mapping {
      * the root entity is the first entity
      * @return
      */
+    @JsonIgnore
     public Entity getRootEntity() {
         return entities.getFirst();
     }
@@ -57,6 +61,7 @@ public class Mapping {
      *
      * @return
      */
+    @JsonIgnore
     public String getConceptForwardingAddress(String identifier) {
         String forwardingAddress = null;
         for (Entity entity : entities) {
@@ -73,6 +78,7 @@ public class Mapping {
      *
      * @return
      */
+    @JsonIgnore
     public String getDefaultSheetUniqueKey() {
         return getRootEntity().getUniqueKey();
     }
@@ -82,6 +88,7 @@ public class Mapping {
      *
      * @return LinkedList<String> of columnNames
      */
+    @JsonIgnore
     public LinkedList<String> getColumnNames() {
         LinkedList<String> columnNames = new LinkedList<>();
         for (Entity entity : entities) {
@@ -92,6 +99,7 @@ public class Mapping {
         return columnNames;
     }
 
+    @JsonIgnore
     public java.util.List<String> getColumnNamesForWorksheet(String sheetName) {
         List<String> columnNames = new ArrayList<>();
         for (Attribute a : getAllAttributes(sheetName)) {
@@ -117,6 +125,7 @@ public class Mapping {
         childEntities.addLast(e);
     }
 
+    @JsonIgnore
     public LinkedList<ChildEntity> getChildEntities() {
         return childEntities;
     }
@@ -183,6 +192,7 @@ public class Mapping {
      *
      * @return
      */
+    @JsonIgnore
     public ArrayList<Attribute> getAllAttributes(String worksheet) {
         Set<Attribute> attributes = new LinkedHashSet<>();
 
@@ -200,6 +210,7 @@ public class Mapping {
      *
      * @return
      */
+    @JsonIgnore
     public ArrayList<Attribute> getDefaultSheetAttributes() {
         return getAllAttributes(getDefaultSheetName());
     }
@@ -210,6 +221,7 @@ public class Mapping {
      * @param uri
      * @return
      */
+    @JsonIgnore
     public ArrayList<Entity> getEntititesWithAttributeUri(String uri) {
         ArrayList<Entity> entities = new ArrayList<>();
 
@@ -342,5 +354,24 @@ public class Mapping {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Mapping)) return false;
+
+        Mapping mapping = (Mapping) o;
+
+        if (getEntities() != null ? !getEntities().equals(mapping.getEntities()) : mapping.getEntities() != null)
+            return false;
+        return getRelations() != null ? getRelations().equals(mapping.getRelations()) : mapping.getRelations() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getEntities() != null ? getEntities().hashCode() : 0;
+        result = 31 * result + (getRelations() != null ? getRelations().hashCode() : 0);
+        return result;
     }
 }

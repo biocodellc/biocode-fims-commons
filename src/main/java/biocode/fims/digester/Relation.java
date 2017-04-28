@@ -6,6 +6,7 @@ import biocode.fims.settings.FimsPrinter;
  * Relation representation
  */
 public class Relation {
+
     private String subject;
     private String predicate;
     private String object;
@@ -46,5 +47,27 @@ public class Relation {
         FimsPrinter.out.println("    subject=" + subject.toString());
         FimsPrinter.out.println("    predicate=" + predicate.toString());
         FimsPrinter.out.println("    object=" + object.toString());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Relation)) return false;
+
+        Relation relation = (Relation) o;
+
+        if (getSubject() != null ? !getSubject().equals(relation.getSubject()) : relation.getSubject() != null)
+            return false;
+        if (getPredicate() != null ? !getPredicate().equals(relation.getPredicate()) : relation.getPredicate() != null)
+            return false;
+        return getObject() != null ? getObject().equals(relation.getObject()) : relation.getObject() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getSubject() != null ? getSubject().hashCode() : 0;
+        result = 31 * result + (getPredicate() != null ? getPredicate().hashCode() : 0);
+        result = 31 * result + (getObject() != null ? getObject().hashCode() : 0);
+        return result;
     }
 }

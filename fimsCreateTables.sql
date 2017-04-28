@@ -87,6 +87,7 @@ CREATE TABLE projects (
   projectTitle TEXT,
   projectUrl TEXT NOT NULL,
   validationXml TEXT NOT NULL,
+  projectConfig JSONB,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   userId INTEGER NOT NULL REFERENCES users (userId),
@@ -107,8 +108,8 @@ COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
 DROP TABLE IF EXISTS userProjects;
 
 CREATE TABLE userProjects (
-  projectId INTEGER NOT NULL REFERENCES projects (projectId),
-  userId INTEGER NOT NULL REFERENCES users (userId),
+  projectId INTEGER NOT NULL REFERENCES projects (projectId) ON DELETE CASCADE,
+  userId INTEGER NOT NULL REFERENCES users (userId) ON DELETE CASCADE,
   CONSTRAINT userProjects_userId_projectId_uniq UNIQUE (userId, projectId)
 );
 
@@ -119,7 +120,7 @@ DROP TABLE IF EXISTS expeditions;
 
 CREATE TABLE expeditions (
   expeditionId SERIAL NOT NULL PRIMARY KEY,
-  projectId INTEGER NOT NULL REFERENCES projects (projectId),
+  projectId INTEGER NOT NULL REFERENCES projects (projectId) ON DELETE CASCADE,
   expeditionCode TEXT NOT NULL,
   expeditionTitle TEXT,
   userId INTEGER NOT NULL REFERENCES users (userId),
@@ -140,7 +141,7 @@ COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedit
 DROP TABLE IF EXISTS expeditionBcids;
 
 CREATE TABLE expeditionBcids (
-  expeditionId INTEGER NOT NULL REFERENCES expeditions (expeditionId),
+  expeditionId INTEGER NOT NULL REFERENCES expeditions (expeditionId) ON DELETE CASCADE,
   bcidId INTEGER NOT NULL REFERENCES bcids (bcidId)
 );
 
@@ -163,10 +164,10 @@ DROP TABLE IF EXISTS oAuthNonces;
 
 CREATE TABLE oAuthNonces (
   oAuthNonceId SERIAL NOT NULL PRIMARY KEY,
-  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
+  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId) ON DELETE CASCADE,
   code TEXT NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  userId INTEGER NOT NULL REFERENCES users (userId),
+  userId INTEGER NOT NULL REFERENCES users (userId) ON DELETE CASCADE,
   redirectUri TEXT NOT NULL,
   CONSTRAINT oAuthNonces_code_clientId_uniq UNIQUE (clientId, code)
 );
@@ -182,10 +183,10 @@ DROP TABLE IF EXISTS oAuthTokens;
 
 CREATE TABLE oAuthTokens (
   oAuthTokenId SERIAL NOT NULL PRIMARY KEY,
-  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId),
+  clientId TEXT NOT NULL REFERENCES oAuthClients (clientId) ON DELETE CASCADE,
   token TEXT NOT NULL UNIQUE,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  userId INTEGER NOT NULL REFERENCES users (userId),
+  userId INTEGER NOT NULL REFERENCES users (userId) ON DELETE CASCADE,
   refreshToken TEXT NOT NULL
 );
 
@@ -237,8 +238,8 @@ DROP TABLE IF EXISTS templateConfigs;
 
 CREATE TABLE templateConfigs (
   templateConfigId SERIAL NOT NULL PRIMARY KEY,
-  userId INTEGER NOT NULL REFERENCES users (userId),
-  projectId INTEGER NOT NULL REFERENCES projects (projectId),
+  userId INTEGER NOT NULL REFERENCES users (userId) ON DELETE CASCADE,
+  projectId INTEGER NOT NULL REFERENCES projects (projectId) ON DELETE CASCADE,
   configName TEXT NOT NULL,
   public BOOLEAN NOT NULL DEFAULT '0',
   config TEXT NOT NULL,

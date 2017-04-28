@@ -1,9 +1,13 @@
 package biocode.fims.models;
 
+import biocode.fims.converters.JsonBinaryType;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,6 +17,7 @@ import java.util.Set;
 /**
  * Project Entity object
  */
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "projects")
 @NamedEntityGraphs({
@@ -32,6 +37,7 @@ public class Project {
     private Date created;
     private Date modified;
     private String validationXml;
+    private ProjectConfig projectConfig;
     private boolean isPublic;
     private String projectUrl;
     private List<Expedition> expeditions;
@@ -44,6 +50,7 @@ public class Project {
         // Required
         private String projectCode;
         private String projectTitle;
+        // TODO figure out how we want to set the projectConfig
         private String validationXml;
         private String projectUrl;
 
@@ -137,6 +144,17 @@ public class Project {
 
     public void setValidationXml(String validationXml) {
         this.validationXml = validationXml;
+    }
+
+    @JsonIgnore
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
+    public ProjectConfig getProjectConfig() {
+        return projectConfig;
+    }
+
+    public void setProjectConfig(ProjectConfig projectConfig) {
+        this.projectConfig = projectConfig;
     }
 
     @JsonIgnore

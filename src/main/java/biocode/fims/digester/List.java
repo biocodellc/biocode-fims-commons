@@ -64,4 +64,25 @@ public class List {
     public void run(Object o) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof List)) return false;
+
+        List list = (List) o;
+
+        if (getAlias() != null ? !getAlias().equals(list.getAlias()) : list.getAlias() != null) return false;
+        if (getCaseInsensitive() != null ? !getCaseInsensitive().equals(list.getCaseInsensitive()) : list.getCaseInsensitive() != null)
+            return false;
+        return getFields().equals(list.getFields());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getAlias() != null ? getAlias().hashCode() : 0;
+        result = 31 * result + (getCaseInsensitive() != null ? getCaseInsensitive().hashCode() : 0);
+        result = 31 * result + getFields().hashCode();
+        return result;
+    }
 }

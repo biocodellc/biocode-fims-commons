@@ -1,6 +1,7 @@
 package biocode.fims.digester;
 
 import biocode.fims.settings.FimsPrinter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
  * Attribute representation
  */
 public class Attribute implements Comparable {
+    @JsonIgnore
     private String isDefinedByURIString = "http://www.w3.org/2000/01/rdf-schema#isDefinedBy";
 
     private String group;
@@ -18,7 +20,7 @@ public class Attribute implements Comparable {
     private String defined_by;
     private DataType datatype = DataType.STRING;  // string is default type
     private String definition;
-    private String synonyms;
+    private String synonyms;  // searched all config files and found no usage of this on 4.28.17. can be removed
     private String dataformat;
     private String delimited_by;
     private Boolean displayAnnotationProperty;
@@ -115,6 +117,7 @@ public class Attribute implements Comparable {
         this.definition = definition;
     }
 
+    @JsonIgnore
     public String getSynonyms() {
         return synonyms;
     }
@@ -148,6 +151,7 @@ public class Attribute implements Comparable {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @JsonIgnore
     public Map getMap() {
         Map m = new HashMap();
         m.put("isDefinedByUriString", (isDefinedByURIString != null) ? isDefinedByURIString:"");

@@ -2,6 +2,7 @@ package biocode.fims.digester;
 
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,12 +26,16 @@ public class Worksheet {
     // Store the rules associated with this worksheet
     private final List<Rule> rules = new ArrayList<Rule>();
     // Store the validation object, passed into the run method
+    @JsonIgnore
     private Validation validation = null;
     // Store all messages related to this Worksheet
+    @JsonIgnore
     private LinkedList<RowMessage> messages = new LinkedList<RowMessage>();
     // Store the reference for the columns associated with this worksheet
+    @JsonIgnore
     private final List<ColumnTrash> columns = new ArrayList<ColumnTrash>();
 
+    @JsonIgnore
     private static Logger logger = LoggerFactory.getLogger(Worksheet.class);
     /**
      * Add columns element to the worksheet element
@@ -298,5 +303,24 @@ public class Worksheet {
                 return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Worksheet)) return false;
+
+        Worksheet worksheet = (Worksheet) o;
+
+        if (getSheetname() != null ? !getSheetname().equals(worksheet.getSheetname()) : worksheet.getSheetname() != null)
+            return false;
+        return getRules() != null ? getRules().equals(worksheet.getRules()) : worksheet.getRules() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getSheetname() != null ? getSheetname().hashCode() : 0;
+        result = 31 * result + (getRules() != null ? getRules().hashCode() : 0);
+        return result;
     }
 }

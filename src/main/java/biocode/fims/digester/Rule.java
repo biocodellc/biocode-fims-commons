@@ -10,6 +10,7 @@ import biocode.fims.utils.DateUtils;
 import biocode.fims.utils.EncodeURIcomponent;
 import biocode.fims.utils.RegEx;
 import biocode.fims.utils.SqlLiteNameCleaner;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -84,10 +85,12 @@ public class Rule {
 
     private LinkedList<RowMessage> messages = new LinkedList<RowMessage>();
 
+    @JsonIgnore
     public LinkedList<RowMessage> getMessages() {
         return messages;
     }
 
+    @JsonIgnore
     public Worksheet getDigesterWorksheet() {
         return digesterWorksheet;
     }
@@ -100,6 +103,7 @@ public class Rule {
         this.connection = connection;
     }
 
+    @JsonIgnore
     public TabularDataReader getWorksheet() {
         return worksheet;
     }
@@ -111,6 +115,7 @@ public class Rule {
         worksheet.setTable(digesterWorksheet.getSheetname());
     }
 
+    @JsonIgnore
     public String getDecimalLatitude() {
         return decimalLatitude;
     }
@@ -119,6 +124,7 @@ public class Rule {
         this.decimalLatitude = decimalLatitude;
     }
 
+    @JsonIgnore
     public String getDecimalLongitude() {
         return decimalLongitude;
     }
@@ -127,6 +133,7 @@ public class Rule {
         this.decimalLongitude = decimalLongitude;
     }
 
+    @JsonIgnore
     public String getMaxErrorInMeters() {
         return maxErrorInMeters;
     }
@@ -135,6 +142,7 @@ public class Rule {
         this.maxErrorInMeters = maxErrorInMeters;
     }
 
+    @JsonIgnore
     public String getHorizontalDatum() {
         return horizontalDatum;
     }
@@ -143,6 +151,7 @@ public class Rule {
         this.horizontalDatum = horizontalDatum;
     }
 
+    @JsonIgnore
     public String getPlateName() {
         return plateName;
     }
@@ -151,6 +160,7 @@ public class Rule {
         this.plateName = plateName;
     }
 
+    @JsonIgnore
     public String getWellNumber() {
         return wellNumber;
     }
@@ -205,6 +215,7 @@ public class Rule {
      *
      * @return
      */
+    @JsonIgnore
     public String getCleanedColumn() {
         // replace spaces with underscores....
         if (column == null) {
@@ -230,6 +241,7 @@ public class Rule {
         }
     }
 
+    @JsonIgnore
     public String getOtherColumnWorksheetName() {
         return otherColumn;
     }
@@ -1871,5 +1883,34 @@ public class Rule {
         } catch (SQLException e) {
             // do nothing. Most likely the function was already created
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Rule)) return false;
+
+        Rule rule = (Rule) o;
+
+        if (getLevel() != null ? !getLevel().equals(rule.getLevel()) : rule.getLevel() != null) return false;
+        if (getType() != null ? !getType().equals(rule.getType()) : rule.getType() != null) return false;
+        if (getColumn() != null ? !getColumn().equals(rule.getColumn()) : rule.getColumn() != null) return false;
+        if (getList() != null ? !getList().equals(rule.getList()) : rule.getList() != null) return false;
+        if (getValue() != null ? !getValue().equals(rule.getValue()) : rule.getValue() != null) return false;
+        if (getOtherColumn() != null ? !getOtherColumn().equals(rule.getOtherColumn()) : rule.getOtherColumn() != null)
+            return false;
+        return getFields() != null ? getFields().equals(rule.getFields()) : rule.getFields() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getLevel() != null ? getLevel().hashCode() : 0;
+        result = 31 * result + (getType() != null ? getType().hashCode() : 0);
+        result = 31 * result + (getColumn() != null ? getColumn().hashCode() : 0);
+        result = 31 * result + (getList() != null ? getList().hashCode() : 0);
+        result = 31 * result + (getValue() != null ? getValue().hashCode() : 0);
+        result = 31 * result + (getOtherColumn() != null ? getOtherColumn().hashCode() : 0);
+        result = 31 * result + (getFields() != null ? getFields().hashCode() : 0);
+        return result;
     }
 }
