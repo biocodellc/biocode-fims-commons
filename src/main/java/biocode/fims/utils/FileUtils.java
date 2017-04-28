@@ -85,7 +85,7 @@ public class FileUtils {
             zout.close();
             return zipFile;
         } catch (IOException e) {
-            throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
+            throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500, e);
         }
     }
 

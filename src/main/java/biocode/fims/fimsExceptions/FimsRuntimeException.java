@@ -1,7 +1,10 @@
 package biocode.fims.fimsExceptions;
 
 import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import org.json.simple.JSONObject;
+
+import java.io.IOException;
 
 /**
  * An exception class to wrap exceptions thrown by the biocode-fims system.
@@ -40,4 +43,7 @@ public class FimsRuntimeException extends FimsAbstractException {
         super(response);
     }
 
+    public FimsRuntimeException(FileCode writeError, int httpStatusCode, Throwable cause) {
+        super(writeError, httpStatusCode, cause);
+    }
 }
