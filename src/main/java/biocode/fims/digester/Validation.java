@@ -307,6 +307,7 @@ public class Validation implements RendererInterface {
      *
      * @param mapping
      */
+    @Deprecated
     public synchronized void addValidationRules(File configFile, Mapping mapping) {
         Digester d = new Digester();
         d.push(this);

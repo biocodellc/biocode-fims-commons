@@ -209,44 +209,6 @@ public class QueryWriter {
     }
 
     /**
-     * Sample usage for the QueryWriter class
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-
-        // Setup columns -- construct these in XML and use Digester to populate
-        ArrayList attributes = new ArrayList();
-        Attribute a = new Attribute();
-        a.setColumn("Specimen_num_collector");
-        attributes.add(a);
-        a = new Attribute();
-        a.setColumn("Phylum");
-        attributes.add(a);
-        a = new Attribute();
-        a.setColumn("IdentifiedBy");
-        attributes.add(a);
-
-        // Data Values
-        QueryWriter queryWriter = new QueryWriter(attributes, "myworksheet");
-
-        Row r = queryWriter.createRow(1);
-        queryWriter.createCell(r, "Specimen_num_collector", "MBIO57");
-        queryWriter.createCell(r, "Phylum", "Chordata");
-        queryWriter.createCell(r, "IdentifiedBy", "Meyer");
-        queryWriter.createCell(r, "SomeNewValue", "fungal attack!");
-
-
-        try {
-            System.out.println("file output : " + queryWriter.writeTAB(new File("tripleOutput/output.tab"), true));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
-    /**
      * Write output to a file
      */
     public String writeExcel(File file) {

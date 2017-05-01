@@ -291,6 +291,7 @@ public class Mapping {
     /**
      * Process mapping component rules
      */
+    @Deprecated
     public synchronized void addMappingRules(File configFile) {
         ConvertUtils.register(new EnumConverter(), DataType.class);
         Digester d = new Digester();

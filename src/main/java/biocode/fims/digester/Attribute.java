@@ -25,6 +25,11 @@ public class Attribute implements Comparable {
     private String delimited_by;
     private Boolean displayAnnotationProperty;
 
+    public Attribute(String column, String uri) {
+        this.column = column;
+        this.uri = uri;
+    }
+
     public String getColumn() {
         return column;
     }
