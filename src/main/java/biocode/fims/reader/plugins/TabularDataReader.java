@@ -14,7 +14,8 @@ import java.io.File;
  * methods tableHasNextRow() and tableGetNextRow() are used to iterate through
  * all rows in the active table.
  */
-public interface TabularDataReader {
+@Deprecated
+public interface TabularDataReader extends DataReader {
     public java.util.List<String> getColNames();
 
     public Sheet getSheet();

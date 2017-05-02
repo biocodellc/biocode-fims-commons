@@ -1,7 +1,10 @@
 package biocode.fims.reader.plugins;
 
+import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.models.records.RecordSet;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
@@ -82,6 +85,21 @@ public class ExcelReader implements TabularDataReader {
 
     public String[] getFileExtensions() {
         return new String[]{"xls", "xlsx"};
+    }
+
+    @Override
+    public List<RecordSet> getRecordSets() {
+        return null;
+    }
+
+    @Override
+    public boolean handlesExtension(String ext) {
+        return false;
+    }
+
+    @Override
+    public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
+        return null;
     }
 
     /**

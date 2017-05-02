@@ -8,5 +8,5 @@ import java.io.File;
  * @author RJ Ewing
  */
 public enum FileCode implements ErrorCode {
-    WRITE_ERROR
+    READ_ERROR, WRITE_ERROR
 }
