@@ -1,6 +1,6 @@
 package biocode.fims.models;
 
-import biocode.fims.converters.JsonBinaryType;
+import biocode.fims.models.dataTypes.JsonBinaryType;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;

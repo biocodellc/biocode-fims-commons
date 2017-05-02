@@ -1,6 +1,6 @@
 package biocode.fims.models;
 
-import biocode.fims.converters.UriPersistenceConverter;
+import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.serializers.JsonViewOverride;

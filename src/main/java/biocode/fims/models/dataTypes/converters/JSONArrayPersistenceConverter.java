@@ -1,4 +1,4 @@
-package biocode.fims.converters;
+package biocode.fims.models.dataTypes.converters;
 
 import biocode.fims.fimsExceptions.ServerErrorException;
 import com.fasterxml.jackson.core.JsonProcessingException;

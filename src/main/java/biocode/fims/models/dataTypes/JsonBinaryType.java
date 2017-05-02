@@ -1,4 +1,4 @@
-package biocode.fims.converters;
+package biocode.fims.models.dataTypes;
 
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;

@@ -1,4 +1,4 @@
-package biocode.fims.converters;
+package biocode.fims.models.dataTypes;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.hibernate.type.descriptor.ValueBinder;

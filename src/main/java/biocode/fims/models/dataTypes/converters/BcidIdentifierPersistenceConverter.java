@@ -1,11 +1,10 @@
-package biocode.fims.converters;
+package biocode.fims.models.dataTypes.converters;
 
 import org.springframework.util.StringUtils;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**

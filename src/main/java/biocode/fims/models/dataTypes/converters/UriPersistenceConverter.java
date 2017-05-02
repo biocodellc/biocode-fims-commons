@@ -1,4 +1,4 @@
-package biocode.fims.converters;
+package biocode.fims.models.dataTypes.converters;
 
 import org.springframework.util.StringUtils;
 
