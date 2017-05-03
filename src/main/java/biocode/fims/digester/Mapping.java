@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Mapping builds the D2RQ structure for converting between relational format to RDF.
@@ -49,6 +51,7 @@ public class Mapping {
 
     /**
      * the root entity is the first entity
+     *
      * @return
      */
     @JsonIgnore
@@ -174,11 +177,12 @@ public class Mapping {
 
     /**
      * find entity with the given conceptUri
+     *
      * @param conceptUri
      * @return
      */
     public Entity findEntityByConceptUri(String conceptUri) {
-        for (Entity entity: entities) {
+        for (Entity entity : entities) {
             if (conceptUri.equals(entity.getConceptURI())) {
                 return entity;
             }
@@ -256,6 +260,7 @@ public class Mapping {
         }
         return null;
     }
+
     /**
      * Lookup the column associated with a uri from a list of attributes
      *
@@ -263,7 +268,7 @@ public class Mapping {
      * @return
      */
     public String lookupColumnForUri(String uri, List<Attribute> attributes) {
-        for (Attribute attribute: attributes) {
+        for (Attribute attribute : attributes) {
             if (attribute.getUri().equalsIgnoreCase(uri)) {
                 return attribute.getColumn();
             }
@@ -279,7 +284,7 @@ public class Mapping {
      * @return
      */
     public String lookupUriForColumn(String columnName, List<Attribute> attributes) {
-        for (Attribute attribute: attributes) {
+        for (Attribute attribute : attributes) {
             if (attribute.getColumn().equalsIgnoreCase(columnName)) {
                 return attribute.getUri();
             }
@@ -348,7 +353,7 @@ public class Mapping {
     }
 
     public Attribute lookupAttribute(String columnName, String sheetName) {
-        for (Attribute a: getAllAttributes(sheetName)) {
+        for (Attribute a : getAllAttributes(sheetName)) {
             if (a.getColumn().equals(columnName)) {
                 return a;
             }
@@ -374,5 +379,12 @@ public class Mapping {
         int result = getEntities() != null ? getEntities().hashCode() : 0;
         result = 31 * result + (getRelations() != null ? getRelations().hashCode() : 0);
         return result;
+    }
+
+    public List<Entity> getEntitiesForSheet(String sheetName) {
+        Assert.notNull(sheetName);
+        return entities.stream()
+                .filter(e -> sheetName.equals(e.getWorksheet()))
+                .collect(Collectors.toList());
     }
 }
