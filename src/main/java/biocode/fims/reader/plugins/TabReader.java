@@ -1,17 +1,21 @@
 package biocode.fims.reader.plugins;
 
+import biocode.fims.digester.Entity;
+import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
+import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.reader.CharacterCleaner;
 import biocode.fims.settings.PathManager;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -35,140 +39,32 @@ import java.util.LinkedList;
  * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
  * empty whitespace and ignored (unless they occur within a quoted string).
  */
-public class TabReader extends ExcelReader {
-    private StreamTokenizer st;
-    private boolean hasNext = false;
-    private LinkedList<String> recList;
-    private int currTable;
+public class TabReader extends DelimitedTextReader {
+    private static final List<String> EXTS = Arrays.asList("tsv", "txt");
+    private static final char DELIMITER = '\t';
 
-    private static Logger logger = LoggerFactory.getLogger(TabReader.class);
 
-    private String sheetName = "Samples";
-
-    public TabReader() {
-        recList = new LinkedList<String>();
-    }
-
-    public String getFormatString() {
-        return "Txt";
-    }
-
-    public String getShortFormatDesc() {
-        return "Txt";
-    }
-
-    public String getFormatDescription() {
-        return "tab-separated values";
-    }
-
-    public String[] getFileExtensions() {
-        return new String[]{"txt"};
+    /**
+     * This is only to be used for passing the class into the DataReaderFactory
+     */
+    TabReader() {
+        super(DELIMITER);
     }
 
     /**
-     * See if the specified file is a TAb Text file.  Since no "magic number" can
-     * be defined for Tab files, this encodeURIcomponent is limited to seeing if the file
-     * extension is "txt".  This method also tests if the file actually exists.
-     *
-     * @param filepath The file to encodeURIcomponent.
-     *
-     * @return True if the specified file exists and appears to be a txt file,
-     *         false otherwise.
+     * @param file
+     * @param mapping
+     * @param recordMetadata must contain the key SHEET_NAME_KEY declaring the {@link Entity#getWorksheet()} of the csv file
      */
-    public boolean testFile(String filepath) {
-        // encodeURIcomponent if the file exists
-        File file = new File(filepath);
-        if (!file.exists())
-            return false;
-
-        int index = filepath.lastIndexOf('.');
-
-        if (index != -1 && index != (filepath.length() - 1)) {
-            // get the extension
-            String ext = filepath.substring(index + 1);
-
-            if (ext.equals("txt"))
-                return true;
-        }
-
-        return false;
+    public TabReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
+        super(file, mapping, recordMetadata, DELIMITER);
     }
 
-
-
-    public boolean openFile(String filepath, String defaultSheetName, String outputFolder) {
-        if (defaultSheetName != null) {
-            this.sheetName = defaultSheetName;
-        }
-        if (outputFolder == null) {
-            throw new FimsRuntimeException("No outputfolder specified for tab format conversion", 500);
-        }
-
-        excelWb = new HSSFWorkbook();
-        Sheet sheet1 = excelWb.createSheet(this.sheetName);
-        currSheet = 0;
-
-        int i = 0;
-        int field = 0;
-        int rowNum = 0;
-        Row row = sheet1.createRow(rowNum);
-
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(filepath));
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                // Clean input according to rules in the CharacterCleaner class
-                line = CharacterCleaner.getOnlyGoodChars(line);
-                row = sheet1.createRow(rowNum);
-                String[] vals = line.split("\t");
-                for (int j = 0; j < vals.length; j++) {
-                    row.createCell(j).setCellValue(vals[j]);
-                }
-                rowNum++;
-            }
-            try {
-                br.close();
-            } catch (IOException e) {
-                logger.warn("exception closing BufferedReader", e);
-            }
-
-        } catch (FileNotFoundException e) {
-            throw new FimsRuntimeException("Trouble converting TAB format", 500, e);
-        } catch (IOException e) {
-            throw new FimsRuntimeException(500, e);
-        }
-        currTable = -1;
-
-        // Create a new DataFormatter and FormulaEvaluator to use for cells with
-        // formulas.
-        df = new DataFormatter();
-        fe = excelWb.getCreationHelper().createFormulaEvaluator();
-
-        // Write the output to a file
-        try {
-
-            inputFile = PathManager.createUniqueFile("temporaryWorkbook.xls", outputFolder);
-               System.out.println("writing to " + inputFile.getAbsolutePath());
-            FileOutputStream fileOut = new FileOutputStream(inputFile);
-
-            excelWb.write(fileOut);
-
-            try {
-                fileOut.close();
-            } catch (IOException e) {
-                logger.warn("error closing FileOutputStream", e);
-            }
-
-        } catch (FileNotFoundException e) {
-            throw new FimsRuntimeException("Trouble saving file", 500, e);
-        } catch (IOException e) {
-            throw new FimsRuntimeException("Trouble saving file", 500, e);
-        }
-
-        return true;
+    @Override
+    public boolean handlesExtension(String ext) {
+        return EXTS.contains(ext.toLowerCase());
     }
 
-
+    @Override
+    void configureTokenizer() {}
 }

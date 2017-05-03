@@ -15,7 +15,7 @@ import java.io.File;
  * all rows in the active table.
  */
 @Deprecated
-public interface TabularDataReader extends DataReader {
+public interface TabularDataReader {
     public java.util.List<String> getColNames();
 
     public Sheet getSheet();

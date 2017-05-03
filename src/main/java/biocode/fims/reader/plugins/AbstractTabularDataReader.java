@@ -24,6 +24,8 @@ abstract class AbstractTabularDataReader implements DataReader {
     protected List<Entity> sheetEntities;
     protected List<String> colNames;
 
+    private List<RecordSet> recordSets;
+
     AbstractTabularDataReader() {
     }
 
@@ -40,10 +42,13 @@ abstract class AbstractTabularDataReader implements DataReader {
     @Override
     public List<RecordSet> getRecordSets() {
 
-        init();
-        instantiateRecords();
+        if (recordSets == null) {
+            init();
+            instantiateRecords();
+            recordSets = generateRecordSets();
+        }
 
-        return generateRecordSets();
+        return recordSets;
     }
 
     private List<RecordSet> generateRecordSets() {
