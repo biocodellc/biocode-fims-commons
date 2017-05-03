@@ -23,6 +23,7 @@ import java.util.*;
  * Takes a data source represented by a JsonArray and converts it to a
  * SQLite Database.
  */
+@Deprecated
 public final class SqLiteJsonConverter {
     private final ArrayNode dataset;
     String dest;

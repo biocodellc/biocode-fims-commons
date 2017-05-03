@@ -15,6 +15,7 @@ import java.util.List;
 /**
  * Takes a data source represented by a TabularDataReader and converts it to JSON
  */
+@Deprecated
 public class JsonTabularDataConverter {
     private TabularDataReader source;
 

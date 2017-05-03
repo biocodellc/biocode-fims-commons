@@ -10,7 +10,21 @@ import java.io.*;
 import java.util.*;
 
 /**
- * @author rjewing
+ * Provides the ability to parse delimited text files.
+ * <p>
+ * 1) each record is expected to be on a single line;
+ * 2) fields may be enclosed in double quotes;
+ * 3) double quotes inside of a double-quoted string should be escaped with a double quote;
+ * 4) space characters are not trimmed from the beginning or end of fields.
+ * <p>
+ * If a field is double-quoted, there should be no additional characters outside of the double quotes.
+ * Records must not span multiple lines.
+ * Standard escape sequences (e.g., "\"\t") are also supported inside of quoted fields.
+ * Blank lines are ignored.
+ * <p>
+ * Finally, note that this class expects text to consist of simple ASCII
+ * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
+ * empty whitespace and ignored (unless they occur within a quoted string).
  */
 abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
@@ -77,7 +91,7 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
     }
 
     @Override
-    void  instantiateRecords() {
+    void instantiateRecords() {
         while (hasNext) {
             instantiateRecordsFromRow(nextRow());
         }

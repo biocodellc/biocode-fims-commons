@@ -26,6 +26,7 @@ import java.util.*;
  * Takes a data source represented by a JSONArray and converts it to a
  * CSV file
  */
+@Deprecated
 public final class CsvJsonConverter {
     private final ArrayNode dataset;
     private final String filenamePrefix;
