@@ -3,6 +3,8 @@ package biocode.fims.reader.plugins;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
@@ -52,7 +54,6 @@ public class CSVReaderTest {
         }
 
     }
-
 
     @Test
     public void should_return_all_records_for_single_entity_mappping() {
@@ -119,6 +120,22 @@ public class CSVReaderTest {
                 default:
                     fail("Should only contain \"samples\" and \"events\" RecordSets");
             }
+        }
+    }
+
+    @Test
+    public void should_throw_exception_with_duplicate_columns() {
+        File csvFile = new File(classLoader.getResource("duplicateColumnDataset.csv").getFile());
+
+        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        rm.add(CSVReader.SHEET_NAME_KEY, "sheet1");
+        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+
+        try {
+            List<RecordSet> recordSets = reader.getRecordSets();
+            fail();
+        } catch (FimsRuntimeException e) {
+            assertEquals(DataReaderCode.DUPLICATE_COLUMNS, e.getErrorCode());
         }
     }
 

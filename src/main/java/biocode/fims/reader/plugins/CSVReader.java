@@ -7,6 +7,7 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
@@ -115,13 +116,23 @@ public class CSVReader implements DataReader {
         st.ordinaryChar(',');
 
         setHasNext();
+        setColumnNames();
 
+        recordEntites = mapping.getEntitiesForSheet(sheetName);
+    }
+
+    private void setColumnNames() {
         // Get the first row to populate Column Names
         colNames = nextRow();
 
-        recordEntites = mapping.getEntities().stream()
-                .filter(e -> sheetName.equals(e.getWorksheet()))
-                .collect(Collectors.toList());
+        Set<String> colSet = new HashSet<>();
+
+        for (String col : colNames) {
+            if (!colSet.add(col)) {
+                throw new FimsRuntimeException(DataReaderCode.DUPLICATE_COLUMNS, 400, "csv file", col);
+            }
+        }
+
     }
 
     private void instantiateRecords() {
