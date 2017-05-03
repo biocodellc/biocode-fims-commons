@@ -48,8 +48,8 @@ dependencies {
     server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.25'
     server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.25'
     server 'javax.servlet:javax.servlet-api:3.1.0'
-    server 'org.apache.poi:poi:3.10.1'
-    server 'org.apache.poi:poi-ooxml:3.10.1'
+    server 'org.apache.poi:poi:3.16'
+    server 'org.apache.poi:poi-ooxml:3.16'
     server('org.apache.commons:commons-digester3:3.2') {
         exclude module: 'asm'
     }

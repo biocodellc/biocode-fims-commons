@@ -2,28 +2,23 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.*;
 
 /**
- * TabularDataReader for Excel-format spreadsheet files.  Both Excel 97-2003
+ * DataReader implementation for Excel-format workbook files.  Both Excel 97-2003
  * format (*.xls) and Excel XML (*.xlsx) format files are supported.  The reader
  * attempts to infer if cells containing numerical values actually contain dates
  * by checking if the cell is date-formatted.  It so, the numerical value is
@@ -33,389 +28,120 @@ import java.util.*;
  * contain the column headers for the data and determines how many columns are
  * examined for all subsequent rows.
  */
-public class ExcelReader implements TabularDataReader {
-    // iterator for moving through the active worksheet
-    protected Iterator<Row> rowIterator = null;
-    protected boolean hasNext = false;
+public class ExcelReader extends AbstractTabularDataReader {
+    private static final List<String> EXTS = Arrays.asList("xlsx", "xls");
 
-    private static Logger logger = LoggerFactory.getLogger(ExcelReader.class);
+    protected DataFormatter dataFormatter;
+    protected FormulaEvaluator formulaEvaluator;
 
-    protected Row nextRow;
-
-    // The number of columns in the active worksheet (set by the first row).
-    protected int numCols;
-
-    protected List<String> colNames;
-
-    // The number of rows in the active worksheet
-    private int numRows;
-
-    // The index for the active worksheet.
-    protected int currSheet;
-
-    // The entire workbook (e.g., spreadsheet file).
     protected Workbook excelWb;
 
-    // DataFormatter and FormulaEvaluator for dealing with cells with formulas.
-    protected DataFormatter df;
-    protected FormulaEvaluator fe;
+    private Sheet currSheet;
+    protected Iterator<Row> rowIterator = null;
+    protected int numCols;
 
-    // The row # that the header values are on
-    // TODO: make this adjustable in case header rows appear on another line besides the first (see bioValidator code)
-    protected int numHeaderRows = 0;
-
-    // A reference to the file that opened this reader
-    protected File inputFile;
-
-    public String getShortFormatDesc() {
-        return "Microsoft Excel";
+    ExcelReader() {
     }
 
-    public File getInputFile() {
-        return inputFile;
-    }
+    public ExcelReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
+        super(file, mapping, recordMetadata);
 
-    public String getFormatString() {
-        return "EXCEL";
-    }
-
-    public String getFormatDescription() {
-        return "Microsoft Excel 97-2003, 2007+";
-    }
-
-    public String[] getFileExtensions() {
-        return new String[]{"xls", "xlsx"};
-    }
-
-    @Override
-    public List<RecordSet> getRecordSets() {
-        return null;
+        this.entityRecords = new HashMap<>();
+        this.dataFormatter = new DataFormatter();
     }
 
     @Override
     public boolean handlesExtension(String ext) {
-        return false;
+        return EXTS.contains(ext.toLowerCase());
     }
 
     @Override
     public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        return null;
+        return new ExcelReader(file, mapping, recordMetadata);
     }
 
-    /**
-     * See if the specified file is an Excel file.  As currently implemented,
-     * this method simply tests if the file extension is "xls" or "xlsx".  A
-     * better approach would be to actually encodeURIcomponent for a specific "magic number."
-     * This method also tests if the file actually exists.
-     *
-     * @param filepath The file to encodeURIcomponent.
-     *
-     * @return True if the specified file exists and appears to be an Excel
-     *         file, false otherwise.
-     */
-    public boolean testFile(String filepath) {
-        // encodeURIcomponent if the file exists
-        File file = new File(filepath);
-        if (!file.exists())
-            return false;
-
-        int index = filepath.lastIndexOf('.');
-
-        if (index != -1 && index != (filepath.length() - 1)) {
-            // get the extension
-            String ext = filepath.substring(index + 1);
-            if (ext.equals("xls") || ext.equals("xlsx"))
-                return true;
-        }
-
-        return false;
-    }
-
-    public boolean openFile(String filepath, String defaultSheetName, String outputFolder) {
-
-        //fimsPrinter.out.println(filepath);
-        FileInputStream is;
-
+    @Override
+    void init() {
         try {
-            is = new FileInputStream(filepath);
-        } catch (FileNotFoundException e) {
-            logger.warn("File not found: {}", filepath, e);
-            return false;
+            excelWb = WorkbookFactory.create(file);
+            formulaEvaluator = excelWb.getCreationHelper().createFormulaEvaluator();
+        } catch (InvalidFormatException | IOException e) {
+            throw new FimsRuntimeException(DataReaderCode.READ_ERROR, 500);
         }
-
-        try {
-            excelWb = WorkbookFactory.create(is);
-
-            currSheet = 0;
-        } catch (InvalidFormatException e) {
-            logger.warn("invalid format", e);
-            return false;
-        } catch (IOException e) {
-            logger.warn("IOException", e);
-            return false;
-        }
-
-        // Create a new DataFormatter and FormulaEvaluator to use for cells with
-        // formulas.
-        df = new DataFormatter();
-        fe = excelWb.getCreationHelper().createFormulaEvaluator();
-
-        // Set the input file
-        inputFile = new File(filepath);
-
-        return true;
     }
 
-    public boolean hasNextTable() {
-        if (excelWb == null)
-            return false;
-        else
-            return (currSheet < excelWb.getNumberOfSheets());
+    @Override
+    void instantiateRecords() {
+
+        for (Sheet sheet : excelWb) {
+            currSheet = sheet;
+            colNames = null;
+            numCols = -1;
+            sheetEntities = mapping.getEntitiesForSheet(currSheet.getSheetName());
+
+            if (sheetEntities.size() > 0) {
+                instantiateRecordsForCurrentSheet();
+            }
+
+        }
     }
 
-    public void setTable(String worksheet) {
-        Sheet exsheet = excelWb.getSheet(worksheet);
+    private void instantiateRecordsForCurrentSheet() {
 
-        if (exsheet == null) {
-            throw new FimsRuntimeException(ValidationCode.INVALID_SHEET, 400, worksheet);
+        rowIterator = currSheet.rowIterator();
+
+        if (rowIterator.hasNext()) {
+            setColumnNames();
+
+            while (rowIterator.hasNext()) {
+                instantiateRecordsFromRow(nextRow());
+            }
         }
-        currSheet = excelWb.getSheetIndex(worksheet) + 1;
-        rowIterator = exsheet.rowIterator();
-        numCols = -1;
-        numRows = -1;
-        testNext();
 
+    }
+
+    private void setColumnNames() {
         // Get the first row to populate Column Names
-        colNames = Arrays.asList(tableGetNextRow());
-    }
+        colNames = nextRow();
 
-    public void moveToNextTable() {
-        if (hasNextTable()) {
-            setTable(excelWb.getSheetName(currSheet++));
-        } else
-            throw new NoSuchElementException();
-    }
+        Set<String> colSet = new HashSet<>();
 
-    public String getCurrentTableName() {
-        return excelWb.getSheetName(currSheet - 1);
-    }
-
-    public boolean tableHasNextRow() {
-        if (rowIterator == null)
-            return false;
-        else
-            return hasNext;
-    }
-
-    /**
-     * Internal method to see if there is another line with data remaining in
-     * the current table.  Any completely blank lines will be skipped.  This
-     * method is necessary because the POI row iterator does not always reliably
-     * end with the last data-containing row.
-     */
-    protected void testNext() {
-        int lastcellnum = 0;
-        while (rowIterator.hasNext() && lastcellnum < 1) {
-            nextRow = rowIterator.next();
-            lastcellnum = nextRow.getLastCellNum();
-        }
-
-        hasNext = lastcellnum > 0;
-    }
-
-    /**
-     * Get the column names associated with a particular sheet
-     *
-     * @return List of Column names
-     */
-    public java.util.List<String> getColNames() {
-        return colNames;
-    }
-
-    /**
-     * get a particular sheet
-     *
-     * @return
-     */
-    public Sheet getSheet() {
-        return excelWb.getSheet(getCurrentTableName());
-    }
-
-    /**
-     * Secure way to count number of rows in spreadsheet --- this method finds the first blank row and then returns the
-     * count--- this
-     * means there can be no blank rows.
-     *
-     * @return a count of number of rows
-     */
-    public int getNumRows() {
-
-        if (numRows > 0) {
-            return numRows;
-        }
-
-        Sheet wsh = excelWb.getSheet(getCurrentTableName());
-
-        Iterator it = wsh.rowIterator();
-        int count = 0;
-        while (it.hasNext()) {
-            Row row = (Row) it.next();
-            Iterator cellit = row.cellIterator();
-            String rowContents = "";
-            while (cellit.hasNext()) {
-                Cell cell = (Cell) cellit.next();
-                if (cell.getCellType() == Cell.CELL_TYPE_STRING || cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                    rowContents += cell.toString();
-                }
-            }
-            if (rowContents.equals("")) {
-                // The count to return should be minus 1 to account for title
-                numRows = count - 1 - numHeaderRows;
-                return numRows;
-            }
-            count++;
-        }
-        // The count to return should be minus 1 to account for title
-        numRows = count - 1 - numHeaderRows;
-
-        return numRows;
-    }
-
-
-    /**
-     * Get the value of a particular row for a particular column
-     *
-     * @param column
-     * @param row
-     *
-     * @return value of this cell
-     */
-    public String getStringValue(String column, int row) {
-        String strValue = getStringValue(getColumnPosition(column), row);
-        return strValue;
-    }
-
-    /**
-     * Returns string values for all cells regardless of whether they are cast as numeric or
-     * String.  Does not handle boolean cell types currently.
-     *
-     * @param col
-     * @param row
-     *
-     * @return
-     */
-    public String getStringValue(int col, int row) {
-        Sheet wsh = excelWb.getSheet(getCurrentTableName());
-        row = row + this.numHeaderRows;
-
-        Row hrow = wsh.getRow(row);
-        Cell cell = hrow.getCell(col);
-        try {
-            if (cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-                return null;
-            } else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-                if (cell.getStringCellValue().trim().equals("")) {
-                    return null;
-                } else {
-                    return cell.toString();
-                }
-                // Handle Numeric Cell values--- this is a bit strange since we have no way of
-                // knowing if the numeric cell value is integer or double.  Thus, "5.0" gets interpreted
-                // as "5"... this is probably preferable to "5" getting displayed as "5.0", which is the
-                // default HSSFCell value behaviour
-            } else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                if (new Double(cell.getNumericCellValue()).toString().trim().equals("")) {
-                    return null;
-                } else {
-                    String value = Double.toString(cell.getNumericCellValue()); //toString();
-                    if (value.indexOf(".0") == value.length() - 2) {
-                        Double D = (Double.parseDouble(value));
-                        Integer I = D.intValue();
-                        return I.toString();
-                    } else {
-                        return value;
-                    }
-                }
-            } else {
-                return null;
-            }
-        } catch (NullPointerException e) {
-            logger.warn("NullPointerException", e);
-            return null;
-            // case where this may be a numeric cell lets still try and return a string
-        } catch (IllegalStateException e) {
-            logger.warn("IllegalStateException", e);
-            return null;
-        }
-    }
-
-    /**
-     * Get the value of a cell as a double
-     *
-     * @param column
-     * @param row
-     *
-     * @return double value in this cell
-     */
-    public Double getDoubleValue(String column, int row) {
-        Double dblValue = null;
-        String strValue = getStringValue(column, row);
-
-        if (strValue != null) {
-            dblValue = Double.parseDouble(strValue);
-        }
-        return dblValue;
-    }
-
-    /**
-     * find the position of a column as an integer
-     *
-     * @param colName
-     *
-     * @return integer of the column position
-     */
-    public Integer getColumnPosition(String colName) {
-        java.util.List<String> listColumns = this.getColNames();
-        for (int i = 0; i < listColumns.size(); i++) {
-            //fimsPrinter.out.println("\tarray val = " + this.getColNames().toArray()[i].toString());
-            if (this.getColNames().toArray()[i].toString().equals(colName)) {
-                return i;
+        for (String col : colNames) {
+            if (!colSet.add(col)) {
+                throw new FimsRuntimeException(DataReaderCode.DUPLICATE_COLUMNS, 400, currSheet.getSheetName() + " worksheet", col);
             }
         }
-        // if not found then throw exception
-        return null;
     }
 
-    public String[] tableGetNextRow() {
-        if (!tableHasNextRow())
-            throw new NoSuchElementException();
+    private LinkedList<String> nextRow() {
+        LinkedList<String> retRow = new LinkedList<>();
 
-        Row row = nextRow;
+        if (!rowIterator.hasNext()) {
+            return retRow;
+        }
+
         Cell cell;
+        Row row = rowIterator.next();
 
         // If this is the first row in the sheet, use it to determine how many
-        // columns this sheet has.  This is necessary to make sure that all rows
-        // have the same number of cells for SQLite.
+        // columns this sheet has.
         if (numCols < 0)
             numCols = getNumCols(row);
 
-        String[] ret = new String[numCols];
 
         // Unfortunately, we can't use a cell iterator here because, as
         // currently implemented in POI, iterating over cells in a row will
         // silently skip blank cells.
-        for (int cnt = 0; cnt < numCols; cnt++) {
-            cell = row.getCell(cnt, Row.CREATE_NULL_AS_BLANK);
-            // inspect the data type of this cell and act accordingly
-            switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_STRING:
-                    // Always trim spaces from before and after data, makes data processing easier later
-                    ret[cnt] = cell.getStringCellValue().trim();
+        for (int colNum = 0; colNum < numCols; colNum++) {
+            cell = row.getCell(colNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
+            switch (cell.getCellTypeEnum()) {
+                case STRING:
+                    retRow.add(cell.getStringCellValue().trim());
                     break;
-                case Cell.CELL_TYPE_NUMERIC:
+                case NUMERIC:
                     // There is no date data type in Excel, so we have to check
                     // if this cell contains a date-formatted value.
-                    //if (HSSFDateUtil.isCellDateFormatted(cell)) {
                     if (DateUtil.isCellDateFormatted(cell)) {
                         // Convert the value to ISO 8601 format using Joda-Time.
                         // Since excel stores date, time, and datetime as a numeric cell, we need to do our best
@@ -432,71 +158,50 @@ public class ExcelReader implements TabularDataReader {
                             value = date.toString();
                         }
 
-                        ret[cnt] = value;
+                        retRow.add(value);
                     } else {
-                        // TODO: Fix this rendering.  They both are bad!!!
-
-                        // This one works for BCID buts messes up latitude / longitude values
-                        // Set celltype back to String here since this is a more reliable rendering of the input data,
-                        // as Excel actually sees it.  The Numeric type adds additional ".0"'s on the end...
-                        //cell.setCellType(Cell.CELL_TYPE_STRING);
-                        //ret[cnt] = cell.getStringCellValue();
-
-
-                        // This one works for latitude/longitude values rendering appropriately
-                        // but adds a .0 to BCID in the output-- BAD
-                        //ret[cnt] = cell.toString();
-
-                        // This option, using Decimal Format seems to work for everything
-                        cell.setCellType(Cell.CELL_TYPE_STRING);
+                        cell.setCellType(CellType.STRING);
                         DecimalFormat pattern = new DecimalFormat("#,#,#,#,#,#,#,#,#,#");
-                        Number n = null;
                         try {
-                            n = pattern.parse(cell.getStringCellValue());
+                            Number n = pattern.parse(cell.getStringCellValue());
+                            retRow.add(String.valueOf(n));
                         } catch (ParseException e) {
-                            e.printStackTrace();
+                            retRow.add(cell.getStringCellValue());
                         }
-                        ret[cnt] = n.toString();
                     }
                     break;
-                case Cell.CELL_TYPE_BOOLEAN:
+                case BOOLEAN:
                     if (cell.getBooleanCellValue())
-                        ret[cnt] = "true";
+                        retRow.add("true");
                     else
-                        ret[cnt] = "false";
+                        retRow.add("false");
                     break;
-                case Cell.CELL_TYPE_FORMULA:
-                    // Use the FormulaEvaluator to determine the result of the
-                    // cell's formula, then convert the result to a String.
-                    // The following was throwing an error...
+                case FORMULA:
                     try {
-                        ret[cnt] = df.formatCellValue(cell, fe);
+                        retRow.add(dataFormatter.formatCellValue(cell, formulaEvaluator));
                     } catch (Exception e) {
                         int rowNum = cell.getRowIndex() + 1;
                         throw new FimsRuntimeException("There was an issue processing a formula on this sheet.\n" +
                                 "\tWhile standard formulas are allowed, formulas with references to external sheets cannot be read!\n" +
-                                "\tCell = " + CellReference.convertNumToColString(cnt) + rowNum + "\n" +
+                                "\tCell = " + CellReference.convertNumToColString(colNum) + rowNum + "\n" +
                                 "\tUnreadable Formula = " + cell + "\n" +
                                 "\t(There may be additional formulas you may need to fix)", "Exception", 400, e
                         );
                     }
-                    //ret[cnt] = df.formatCellValue(cell);
                     break;
                 default:
-                    ret[cnt] = "";
+                    retRow.add("");
             }
         }
-        //System.out.println(ret);
-        // Determine if another row is available after this one.
-        testNext();
 
-        return ret;
+        return retRow;
     }
 
     /**
      * This method returns the number of cells in the given {@link Row}. After 10 blank columns, this function assumes
      * that there are no more columns in the {@link Row}. If there is a possibility that there are more then 10 blank
      * cells in a {@link Row}, DO NOT USE THIS METHOD. Try {@link Row}'s .getLastCellNum
+     *
      * @param headerRow
      * @return The number of columns in the {@link Row}
      */
@@ -505,7 +210,7 @@ public class ExcelReader implements TabularDataReader {
         int cellCount = 0;
         Cell cell;
         for (int col = 0; col < headerRow.getLastCellNum(); col++) {
-            cell = headerRow.getCell(col, Row.RETURN_BLANK_AS_NULL);
+            cell = headerRow.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
             if (cell == null) {
                 consecutiveBlankCells++;
             } else {
@@ -520,8 +225,5 @@ public class ExcelReader implements TabularDataReader {
             }
         }
         return cellCount;
-    }
-
-    public void closeFile() {
     }
 }

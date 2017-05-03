@@ -1,21 +1,15 @@
 package biocode.fims.reader.plugins;
 
 
-import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
-import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
-import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
-import org.springframework.util.Assert;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -37,22 +31,14 @@ import java.util.stream.Collectors;
  * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
  * empty whitespace and ignored (unless they occur within a quoted string).
  */
-public class CSVReader implements DataReader {
+public class CSVReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
 
     private static final List<String> EXTS = Collections.singletonList("csv");
     private String sheetName;
 
-    private File file;
-    private Mapping mapping;
-    private RecordMetadata recordMetadata;
-
     private StreamTokenizer st;
     private boolean hasNext = false;
-
-    private Map<String, List<Record>> entityRecords;
-    private List<Entity> recordEntites;
-    private List<String> colNames;
 
     /**
      * This is only to be used for passing the class into the DataReaderFactory
@@ -66,13 +52,7 @@ public class CSVReader implements DataReader {
      * @param recordMetadata must contain the key SHEET_NAME_KEY declaring the {@link Entity#getWorksheet()} of the csv file
      */
     public CSVReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        Assert.notNull(file);
-        Assert.notNull(mapping);
-        Assert.notNull(recordMetadata);
-        this.file = file;
-        this.mapping = mapping;
-        this.recordMetadata = recordMetadata;
-        this.entityRecords = new HashMap<>();
+        super(file, mapping, recordMetadata);
 
         if (!recordMetadata.has(SHEET_NAME_KEY)) {
             throw new FimsRuntimeException(DataReaderCode.MISSING_METADATA, 500);
@@ -92,15 +72,7 @@ public class CSVReader implements DataReader {
     }
 
     @Override
-    public List<RecordSet> getRecordSets() {
-
-        init();
-        instantiateRecords();
-
-        return generateRecordSets();
-    }
-
-    private void init() {
+    protected void init() {
         try {
             st = new StreamTokenizer(new FileReader(file));
         } catch (FileNotFoundException e) {
@@ -118,7 +90,7 @@ public class CSVReader implements DataReader {
         setHasNext();
         setColumnNames();
 
-        recordEntites = mapping.getEntitiesForSheet(sheetName);
+        sheetEntities = mapping.getEntitiesForSheet(sheetName);
     }
 
     private void setColumnNames() {
@@ -135,44 +107,11 @@ public class CSVReader implements DataReader {
 
     }
 
-    private void instantiateRecords() {
+    @Override
+    void  instantiateRecords() {
         while (hasNext) {
-            LinkedList<String> row = nextRow();
-
-            for (Entity e : recordEntites) {
-                try {
-                    Record r = recordMetadata.type().newInstance();
-
-                    for (Attribute a : e.getAttributes()) {
-                        if (colNames.contains(a.getColumn())) {
-                            String val = row.get(
-                                    colNames.indexOf(a.getColumn())
-                            );
-
-                            r.set(a.getUri(), val);
-                        }
-                    }
-
-                    entityRecords.computeIfAbsent(e.getConceptAlias(), k -> new ArrayList<>()).add(r);
-
-                } catch (InstantiationException | IllegalAccessException e1) {
-                    throw new FimsRuntimeException("", 500);
-                }
-            }
-
+            instantiateRecordsFromRow(nextRow());
         }
-    }
-
-    private List<RecordSet> generateRecordSets() {
-        List<RecordSet> recordSets = new ArrayList<>();
-
-        for (Map.Entry<String, List<Record>> e : entityRecords.entrySet()) {
-            recordSets.add(
-                    new RecordSet(e.getKey(), e.getValue())
-            );
-        }
-
-        return recordSets;
     }
 
     private LinkedList<String> nextRow() {

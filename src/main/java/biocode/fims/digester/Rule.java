@@ -2,7 +2,6 @@ package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.reader.SqLiteJsonConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.settings.FimsPrinter;
