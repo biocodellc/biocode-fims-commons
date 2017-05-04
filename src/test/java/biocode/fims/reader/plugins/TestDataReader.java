@@ -14,6 +14,8 @@ import java.util.Map;
  * @author rjewing
  */
 public class TestDataReader implements DataReader {
+    public static final DataReaderType READER_TYPE = new DataReaderType("TEST");
+
     private Map<String, List<RecordSet>> recordSets;
     private String filename;
 
@@ -39,5 +41,10 @@ public class TestDataReader implements DataReader {
     public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
         this.filename = file.getName();
         return this;
+    }
+
+    @Override
+    public DataReaderType readerType() {
+        return READER_TYPE;
     }
 }

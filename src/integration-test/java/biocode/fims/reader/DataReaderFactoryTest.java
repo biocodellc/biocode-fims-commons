@@ -9,6 +9,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.DataReader;
+import biocode.fims.reader.plugins.TabularDataReaderType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class DataReaderFactoryTest {
         DataReaderFactory rf = new DataReaderFactory(new HashMap<>());
 
         try {
-            rf.getReader(classLoader.getResource("testDataset.csv").getFile(), null, new RecordMetadata(GenericRecord.class));
+            rf.getReader(classLoader.getResource("testDataset.csv").getFile(), null, new RecordMetadata(TabularDataReaderType.READER_TYPE));
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NOT_FOUND, e.getErrorCode());
@@ -63,12 +64,12 @@ public class DataReaderFactoryTest {
 
     @Test
     public void should_return_csv_reader() {
-        Map<Class<? extends Record>, List<DataReader>> recordReaders = new HashMap<>();
-        recordReaders.put(GenericRecord.class, Collections.singletonList(new CSVReader()));
+        Map<DataReader.DataReaderType, List<DataReader>> dataReaders = new HashMap<>();
+        dataReaders.put(TabularDataReaderType.READER_TYPE, Collections.singletonList(new CSVReader()));
 
-        DataReaderFactory rf = new DataReaderFactory(recordReaders);
+        DataReaderFactory rf = new DataReaderFactory(dataReaders);
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add("sheetName", "test");
 
         DataReader reader = rf.getReader(classLoader.getResource("testDataset.csv").getFile(), new Mapping(), rm);

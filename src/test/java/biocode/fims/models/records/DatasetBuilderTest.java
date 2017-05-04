@@ -75,7 +75,7 @@ public class DatasetBuilderTest {
         DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
-        RecordMetadata samplesMetadata = new RecordMetadata(GenericRecord.class);
+        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
         builder.addDatasource("samples.csv", samplesMetadata);
 
@@ -103,7 +103,7 @@ public class DatasetBuilderTest {
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord1());
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
 
-        RecordMetadata samplesMetadata = new RecordMetadata(GenericRecord.class);
+        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
 
         List<RecordSet> recordSets = new DatasetBuilder(

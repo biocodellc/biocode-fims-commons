@@ -3,7 +3,6 @@ package biocode.fims.reader.plugins;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
-import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
@@ -57,7 +56,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(GenericRecord.class));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -70,7 +69,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping_xls_file() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xls").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(GenericRecord.class));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -103,7 +102,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_single_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMapping(), new RecordMetadata(GenericRecord.class));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -138,7 +137,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_multi_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("multiSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetMapping(), new RecordMetadata(GenericRecord.class));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 

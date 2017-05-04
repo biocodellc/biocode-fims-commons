@@ -38,4 +38,7 @@ public class GenericRecord implements Record {
     public List<Record> all() {
         return Arrays.asList(new GenericRecord(), new GenericRecord());
     }
+
+    @Override
+    public void setMetadata(RecordMetadata recordMetadata) {}
 }

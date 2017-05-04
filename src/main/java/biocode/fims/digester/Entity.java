@@ -1,5 +1,7 @@
 package biocode.fims.digester;
 
+import biocode.fims.models.records.GenericRecord;
+import biocode.fims.models.records.Record;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.net.URI;
 
@@ -10,6 +12,7 @@ public class Entity extends AbstractEntity {
 
     private String parentEntity;
     private boolean esNestedObject = false;
+    private Class<? extends Record> recordType = GenericRecord.class;
     private URI identifier;
 
     public String getParentEntity() {
@@ -26,6 +29,14 @@ public class Entity extends AbstractEntity {
 
     public void setEsNestedObject(boolean esNestedObject) {
         this.esNestedObject = esNestedObject;
+    }
+
+    public Class<? extends Record> getRecordType() {
+        return recordType;
+    }
+
+    public void setRecordType(Class recordType) {
+        this.recordType = recordType;
     }
 
     @JsonIgnore

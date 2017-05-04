@@ -13,4 +13,6 @@ public interface Record {
     void set(String property, String value);
 
     List<Record> all();
+
+    void setMetadata(RecordMetadata recordMetadata);
 }

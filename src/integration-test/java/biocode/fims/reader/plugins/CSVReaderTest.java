@@ -3,7 +3,6 @@ package biocode.fims.reader.plugins;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
-import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_single_entity_mappping() {
         File csvFile = new File(classLoader.getResource("testDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
 
@@ -56,7 +55,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_multiple_entity_mappping() {
         File csvFile = new File(classLoader.getResource("testDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getMultipleEntityMapping(), rm);
 
@@ -67,7 +66,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_throw_exception_with_duplicate_columns() {
         File csvFile = new File(classLoader.getResource("duplicateColumnDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
 

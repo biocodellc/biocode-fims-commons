@@ -1,7 +1,6 @@
 package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Mapping;
-import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.RecordMetadata;
 import org.junit.Test;
 
@@ -40,7 +39,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_single_entity_mappping() {
         File tsvFile = new File(classLoader.getResource("testDataset.txt").getFile());
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new TabReader(tsvFile, getSingleEntityMapping(), rm);
 
@@ -51,7 +50,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_multiple_entity_mappping() {
         File tsvFile = new File(classLoader.getResource("testDataset.txt").getFile());
 
-        RecordMetadata rm = new RecordMetadata(GenericRecord.class);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new TabReader(tsvFile, getMultipleEntityMapping(), rm);
 

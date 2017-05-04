@@ -1,5 +1,6 @@
 package biocode.fims.models.records;
 
+import biocode.fims.reader.plugins.DataReader;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.util.Assert;
 
@@ -15,19 +16,19 @@ import java.util.Map;
  * @author rjewing
  */
 public class RecordMetadata {
-    private final Class<? extends Record> recordType;
+    private DataReader.DataReaderType readerType;
     private final Map<String, Object> metadata;
 
-    public RecordMetadata(Class<? extends Record> recordType) {
-        Assert.notNull(recordType);
-        this.recordType = recordType;
+    public RecordMetadata(DataReader.DataReaderType readerType) {
+        Assert.notNull(readerType);
+        this.readerType = readerType;
         this.metadata = new HashMap();
     }
 
-    public RecordMetadata(Class<? extends Record> recordType, Map<String, Object> metadata) {
-        Assert.notNull(recordType);
+    public RecordMetadata(DataReader.DataReaderType readerType, Map<String, Object> metadata) {
+        Assert.notNull(readerType);
         Assert.notNull(metadata);
-        this.recordType = recordType;
+        this.readerType = readerType;
         this.metadata = metadata;
     }
 
@@ -47,7 +48,7 @@ public class RecordMetadata {
         return metadata.keySet().contains(key);
     }
 
-    public Class<? extends Record> type() {
-        return recordType;
+    public DataReader.DataReaderType readerType() {
+        return readerType;
     }
 }

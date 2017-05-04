@@ -68,7 +68,8 @@ abstract class AbstractTabularDataReader implements DataReader {
 
             for (Entity e : sheetEntities) {
                 try {
-                    Record r = recordMetadata.type().newInstance();
+                    Record r = e.getRecordType().newInstance();
+                    r.setMetadata(recordMetadata);
 
                     for (Attribute a : e.getAttributes()) {
                         if (colNames.contains(a.getColumn())) {
@@ -99,4 +100,9 @@ abstract class AbstractTabularDataReader implements DataReader {
 
     abstract void init();
     abstract void instantiateRecords();
+
+    @Override
+    public DataReaderType readerType() {
+        return TabularDataReaderType.READER_TYPE;
+    }
 }

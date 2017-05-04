@@ -18,10 +18,10 @@ import java.util.Map;
  * @author rjewing
  */
 public class DataReaderFactory {
-    private final Map<Class<? extends Record>, List<DataReader>> recordTypeReaders;
+    private Map<DataReader.DataReaderType, List<DataReader>> dataReaders;
 
-    public DataReaderFactory(Map<Class<? extends Record>, List<DataReader>> recordTypeReaders) {
-        this.recordTypeReaders = recordTypeReaders;
+    public DataReaderFactory(Map<DataReader.DataReaderType, List<DataReader>> dataReaders) {
+        this.dataReaders = dataReaders;
     }
 
     public DataReader getReader(String filepath, Mapping mapping, RecordMetadata recordMetadata) {
@@ -33,7 +33,7 @@ public class DataReaderFactory {
             throw new FimsRuntimeException(FileCode.READ_ERROR, 400);
         }
 
-        for (DataReader reader : recordTypeReaders.getOrDefault(recordMetadata.type(), Collections.emptyList())) {
+        for (DataReader reader : dataReaders.getOrDefault(recordMetadata.readerType(), Collections.emptyList())) {
 
             if (reader.handlesExtension(ext)) {
                 return reader.newInstance(file, mapping, recordMetadata);

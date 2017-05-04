@@ -9,6 +9,7 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.plugins.DataReader;
 import biocode.fims.reader.plugins.ExcelReader;
+import biocode.fims.reader.plugins.TabularDataReaderType;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
 
@@ -93,7 +94,7 @@ public class DatasetBuilder {
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            DataReader reader = dataReaderFactory.getReader(file, config.getMapping(), new RecordMetadata(GenericRecord.class));
+            DataReader reader = dataReaderFactory.getReader(file, config.getMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
             recordSets.addAll(reader.getRecordSets());
         }
