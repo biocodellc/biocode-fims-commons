@@ -67,6 +67,40 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_entity_parent_doesnt_exist() {
+        Mapping mapping = new Mapping();
+        Entity e1 = entity1();
+        e1.setParentEntity("non_existant_concept_alias");
+        mapping.addEntity(e1);
+
+        ProjectConfig config = new ProjectConfig(mapping, null, null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource1\" specifies a parent entity that does not exist"), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_entity_parent_no_unique_key() {
+        Mapping mapping = new Mapping();
+
+        Entity e1 = entity1();
+        e1.setWorksheet("");
+        e1.setUniqueKey("");
+        mapping.addEntity(e1);
+
+        Entity e2 = entity2();
+        e2.setParentEntity(e1.getConceptAlias());
+        mapping.addEntity(e2);
+
+        ProjectConfig config = new ProjectConfig(mapping, null, null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity that is missing a uniqueKey"), validator.errors());
+    }
+
+    @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
         Mapping mapping = new Mapping();
 
@@ -95,8 +129,21 @@ public class ProjectConfigValidatorTest {
         e.setConceptAlias("resource1");
         e.setConceptForwardingAddress("http://example.com");
         e.setConceptURI(RESOURCE_URI);
-        e.setUniqueKey("uniqueKey");
+        e.setUniqueKey("column1");
         e.setWorksheet("worksheet1");
+
+        attributesList1().forEach(e::addAttribute);
+
+        return e;
+    }
+
+    private Entity entity2() {
+        Entity e = new Entity();
+
+        e.setConceptAlias("resource2");
+        e.setConceptURI(RESOURCE_URI);
+        e.setUniqueKey("column2");
+        e.setWorksheet("worksheet2");
 
         attributesList1().forEach(e::addAttribute);
 

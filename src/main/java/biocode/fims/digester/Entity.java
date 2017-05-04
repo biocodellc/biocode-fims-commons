@@ -8,8 +8,17 @@ import java.net.URI;
  */
 public class Entity extends AbstractEntity {
 
+    private String parentEntity;
     private boolean esNestedObject = false;
     private URI identifier;
+
+    public String getParentEntity() {
+        return parentEntity;
+    }
+
+    public void setParentEntity(String parentEntity) {
+        this.parentEntity = parentEntity;
+    }
 
     public boolean isEsNestedObject() {
         return esNestedObject;
@@ -33,6 +42,11 @@ public class Entity extends AbstractEntity {
         return getUniqueKey() != null && getUniqueKey().contains("HASH");
     }
 
+    @JsonIgnore
+    public boolean isChildEntity() {
+        return getParentEntity() != null;
+    }
+
     /**
      * Get the table.column notation
      * @return
@@ -52,6 +66,8 @@ public class Entity extends AbstractEntity {
         if (isEsNestedObject() != entity.isEsNestedObject()) return false;
         if (getIdentifier() != null ? !getIdentifier().equals(entity.getIdentifier()) : entity.getIdentifier() != null)
             return false;
+        if (getParentEntity() != null ? !getParentEntity().equals(entity.getParentEntity()) : entity.getParentEntity() != null)
+            return false;
         return super.equals(o);
     }
 
@@ -59,6 +75,7 @@ public class Entity extends AbstractEntity {
     public int hashCode() {
         int result = (isEsNestedObject() ? 1 : 0);
         result = 31 * result + (getIdentifier() != null ? getIdentifier().hashCode() : 0);
+        result = 31 * result + (getParentEntity() != null ? getParentEntity().hashCode() : 0);
         return result * super.hashCode();
     }
 }

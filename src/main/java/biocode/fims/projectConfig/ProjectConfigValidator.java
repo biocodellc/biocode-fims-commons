@@ -34,19 +34,18 @@ public class ProjectConfigValidator {
     private void validateMapping() {
         allEntitiesHaveUniqueConceptAlias();
         entityWithWorksheetHasUniqueKey();
+        allChildEntitiesHaveValidParent();
         dateTimeAttributesHaveDataFormat();
     }
 
-    private void dateTimeAttributesHaveDataFormat() {
-        List<DataType> dataTimeDataTypes = Arrays.asList(DataType.DATE, DataType.DATETIME, DataType.TIME);
+    private void allEntitiesHaveUniqueConceptAlias() {
+        Set<String> uniqueConceptAlias = new HashSet<>();
 
         for (Entity e : config.getMapping().getEntities()) {
-            for (Attribute a : e.getAttributes()) {
-                if (dataTimeDataTypes.contains(a.getDatatype())
-                        && StringUtils.isEmpty(a.getDataformat())) {
-                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies an attribute \""
-                            + a.getUri() + "\" with dataType \"" + a.getDatatype() + "\" but is missing a dataFormat");
-                }
+            if (StringUtils.isEmpty(e.getConceptAlias())) {
+                errorMessages.add("Entity is missing a conceptAlias");
+            } else if (!uniqueConceptAlias.add(e.getConceptAlias())) {
+                errorMessages.add("Duplicate entity conceptAlias detected \"" + e.getConceptAlias() + "\"");
             }
         }
     }
@@ -59,14 +58,29 @@ public class ProjectConfigValidator {
         }
     }
 
-    private void allEntitiesHaveUniqueConceptAlias() {
-        Set<String> uniqueConceptAlias = new HashSet<>();
+    private void allChildEntitiesHaveValidParent() {
+        for (Entity e: config.getMapping().getEntities()) {
+            if (e.isChildEntity()) {
+                Entity parentEntity = config.getMapping().getEntity(e.getParentEntity());
+                if (parentEntity == null) {
+                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that does not exist");
+                } else if (StringUtils.isBlank(parentEntity.getUniqueKey())) {
+                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
+                }
+            }
+        }
+    }
+
+    private void dateTimeAttributesHaveDataFormat() {
+        List<DataType> dataTimeDataTypes = Arrays.asList(DataType.DATE, DataType.DATETIME, DataType.TIME);
 
         for (Entity e : config.getMapping().getEntities()) {
-            if (StringUtils.isEmpty(e.getConceptAlias())) {
-                errorMessages.add("Entity is missing a conceptAlias");
-            } else if (!uniqueConceptAlias.add(e.getConceptAlias())) {
-                errorMessages.add("Duplicate entity conceptAlias detected \"" + e.getConceptAlias() + "\"");
+            for (Attribute a : e.getAttributes()) {
+                if (dataTimeDataTypes.contains(a.getDatatype())
+                        && StringUtils.isEmpty(a.getDataformat())) {
+                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies an attribute \""
+                            + a.getUri() + "\" with dataType \"" + a.getDatatype() + "\" but is missing a dataFormat");
+                }
             }
         }
     }

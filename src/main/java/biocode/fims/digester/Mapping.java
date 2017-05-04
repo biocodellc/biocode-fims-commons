@@ -387,4 +387,11 @@ public class Mapping {
                 .filter(e -> sheetName.equals(e.getWorksheet()))
                 .collect(Collectors.toList());
     }
+
+    public Entity getEntity(String conceptAlias) {
+        return entities.stream()
+                .filter(e -> e.getConceptAlias().equals(conceptAlias))
+                .findFirst()
+                .orElse(null);
+    }
 }
