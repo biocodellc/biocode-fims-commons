@@ -97,7 +97,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 
-        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
+        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 
-        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
+        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
 
     @Test
@@ -215,7 +215,7 @@ public class ResolverTest {
 
         URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
 
-        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER), location);
+        Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
 
     @Test
