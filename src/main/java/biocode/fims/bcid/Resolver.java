@@ -102,7 +102,7 @@ public class Resolver {
             }
             // if resolution is still null, then resolve to the default metadata service
             if (StringUtils.isEmpty(resolution)) {
-                resolution = new URI(resolverMetadataPrefix + bcid.getIdentifier());
+                resolution = new URI(resolverMetadataPrefix + identifier.getIdentifier());
             }
         } catch(URISyntaxException e) {
             throw new ServerErrorException("Server Error", "Syntax exception thrown for metadataTargetPrefix: \"" +
