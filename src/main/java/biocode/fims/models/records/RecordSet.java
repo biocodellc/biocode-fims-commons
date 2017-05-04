@@ -13,27 +13,15 @@ import java.util.List;
 public class RecordSet {
 
     private List<Record> records;
-    private String conceptAlias; //TODO should this be the Entity itself?
     private Entity entity;
 
     public RecordSet(Entity entity) {
         this.entity = entity;
-        this.conceptAlias = entity.getConceptAlias();
         this.records = new ArrayList<>();
     }
 
     public RecordSet(Entity entity, List<Record> records) {
         this(entity);
-        this.records.addAll(records);
-    }
-
-    public RecordSet(String conceptAlias) {
-        this.conceptAlias = conceptAlias;
-        this.records = new ArrayList<>();
-    }
-
-    public RecordSet(String conceptAlias, List<Record> records) {
-        this(conceptAlias);
         this.records.addAll(records);
     }
 
@@ -50,7 +38,11 @@ public class RecordSet {
     }
 
     public String conceptAlias() {
-        return conceptAlias;
+        return entity.getConceptAlias();
+    }
+
+    public Entity entity() {
+        return entity;
     }
 
     public void merge(List<Record> records) {
@@ -64,7 +56,7 @@ public class RecordSet {
     }
 
     private boolean addRecord(Record record) {
-        String uniqueKey = entity.getUniqueKey();
+        String uniqueKey = entity.getUniqueKeyURI();
 
         return records.stream()
                 .noneMatch(r -> record.get(uniqueKey).equals(r.get(uniqueKey)));

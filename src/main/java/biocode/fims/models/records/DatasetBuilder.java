@@ -1,0 +1,160 @@
+package biocode.fims.models.records;
+
+import biocode.fims.digester.Entity;
+import biocode.fims.digester.Mapping;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.FileCode;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.reader.plugins.DataReader;
+import biocode.fims.reader.plugins.ExcelReader;
+import biocode.fims.repositories.RecordRepository;
+import biocode.fims.utils.FileUtils;
+
+import java.util.*;
+
+/**
+ * This class is responsible for taking the input data files and assembling datasets.
+ * If there are child entities, we will merge the stored parent records with any records included during the upload.
+ * The returned list of RecordSets includes everything needed for validation. All Child and Parent RecordSets
+ * will be present
+ *
+ * @author rjewing
+ */
+public class DatasetBuilder {
+
+    private final DataReaderFactory dataReaderFactory;
+    private final RecordRepository recordRepository;
+    private ProjectConfig config;
+    private final int projectId;
+    private final String expeditionCode;
+
+    private boolean isUpdate = true;
+    private final ArrayList<String> workbooks;
+    private final ArrayList<DataSource> dataSources;
+    private final ArrayList<RecordSet> recordSets;
+
+    public DatasetBuilder(DataReaderFactory dataReaderFactory, RecordRepository repository, ProjectConfig config,
+                          int projectId, String expeditionCode) {
+        this.dataReaderFactory = dataReaderFactory;
+        this.recordRepository = repository;
+        this.config = config;
+        this.projectId = projectId;
+        this.expeditionCode = expeditionCode;
+
+        this.workbooks = new ArrayList<>();
+        this.dataSources = new ArrayList<>();
+        this.recordSets = new ArrayList<>();
+    }
+
+    public DatasetBuilder addWorkbook(String workbookFile) {
+        String ext = FileUtils.getExtension(workbookFile, "");
+
+        if (!ExcelReader.EXTS.contains(ext.toLowerCase())) {
+            throw new FimsRuntimeException(FileCode.INVALID_FILE, "File ext is not a valid excel workbook file extension", 400, ext);
+        }
+
+        this.workbooks.add(workbookFile);
+
+        return this;
+    }
+
+    public DatasetBuilder addDatasource(String dataFile, RecordMetadata recordMetadata) {
+        this.dataSources.add(new DataSource(dataFile, recordMetadata));
+        return this;
+    }
+
+    public DatasetBuilder reload(boolean reload) {
+        this.isUpdate = !reload;
+        return this;
+    }
+
+    public List<RecordSet> build() {
+
+        instantiateWorkbookRecords();
+        instantiateDataSourceRecords();
+        addParentRecords();
+
+        if (recordSets.isEmpty()) {
+            throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
+        }
+
+        return recordSets;
+    }
+
+    private void instantiateDataSourceRecords() {
+        for (DataSource dataSource : dataSources) {
+            DataReader reader = dataReaderFactory.getReader(dataSource.dataFile, config.getMapping(), dataSource.metadata);
+
+            recordSets.addAll(reader.getRecordSets());
+        }
+    }
+
+    private void instantiateWorkbookRecords() {
+        for (String file : workbooks) {
+            DataReader reader = dataReaderFactory.getReader(file, config.getMapping(), new RecordMetadata(GenericRecord.class));
+
+            recordSets.addAll(reader.getRecordSets());
+        }
+    }
+
+    private void addParentRecords() {
+        Set<Entity> parentEntities = getChildRecordSetParentEntities();
+
+        for (Entity e : parentEntities) {
+
+            if (fetchRecordSet(e)) {
+                List<Record> records = recordRepository.getRecords(projectId, expeditionCode, e.getConceptAlias());
+
+                mergeRecords(e, records);
+            }
+        }
+    }
+
+    private Set<Entity> getChildRecordSetParentEntities() {
+        Set<Entity> parentEntities = new HashSet<>();
+        Mapping mapping = config.getMapping();
+
+        for (RecordSet r : recordSets) {
+
+            Entity e = r.entity();
+
+            if (e.isChildEntity()) {
+                parentEntities.add(mapping.getEntity(e.getParentEntity()));
+            }
+        }
+
+        return parentEntities;
+    }
+
+    private boolean fetchRecordSet(Entity entity) {
+        return isUpdate || recordSets.stream()
+                .noneMatch(r -> r.entity().equals(entity));
+    }
+
+    private void mergeRecords(Entity entity, List<Record> records) {
+        RecordSet recordSet = recordSets.stream()
+                .filter(rs -> rs.entity().equals(entity))
+                .findFirst()
+                .orElse(null);
+
+        if (recordSet == null) {
+            recordSet = new RecordSet(entity);
+            recordSets.add(recordSet);
+        }
+
+        recordSet.merge(records);
+
+    }
+
+    private static class DataSource {
+        private String dataFile;
+        private RecordMetadata metadata;
+
+        private DataSource(String dataFile, RecordMetadata metadata) {
+            this.dataFile = dataFile;
+            this.metadata = metadata;
+        }
+    }
+}

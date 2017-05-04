@@ -1,5 +1,6 @@
 package biocode.fims.models.records;
 
+import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import org.junit.Test;
 
@@ -52,7 +53,7 @@ public class RecordSetTest {
 
         assertEquals(2, recordSet.records().size());
 
-        String uniqueKey = entity().getUniqueKey();
+        String uniqueKey = entity().getUniqueKeyURI();
 
         List<Record> records = recordSet.records();
         assertEquals(1,
@@ -83,13 +84,13 @@ public class RecordSetTest {
 
     private Record record1() {
         GenericRecord r = new GenericRecord();
-        r.set("column1", "1");
+        r.set("urn:column1", "1");
         return r;
     }
 
     private Record record2() {
         GenericRecord r = new GenericRecord();
-        r.set("column1", "2");
+        r.set("urn:column1", "2");
         return r;
     }
 
@@ -97,6 +98,9 @@ public class RecordSetTest {
         Entity entity = new Entity();
         entity.setConceptAlias("resource");
         entity.setUniqueKey("column1");
+
+        Attribute a = new Attribute("column1", "urn:column1");
+        entity.addAttribute(a);
         return entity;
     }
 

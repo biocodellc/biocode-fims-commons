@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -85,12 +86,14 @@ public class ReaderManager implements Iterable<TabularDataReader> {
             try {
                 // load the class file and instantiate the class
                 newClass = cl.loadClass(getClassNameWithReaderPluginsPackage(className));
-                newReader = newClass.newInstance();
+                if (!Modifier.isAbstract(newClass.getModifiers())) {
+                    newReader = newClass.newInstance();
 
-                // make sure this class implements the reader interface
-                if (newReader instanceof TabularDataReader) {
-                    // add it to the list of valid readers
-                    readers.add((TabularDataReader) newReader);
+                    // make sure this class implements the reader interface
+                    if (newReader instanceof TabularDataReader) {
+                        // add it to the list of valid readers
+                        readers.add((TabularDataReader) newReader);
+                    }
                 }
             } catch (ClassNotFoundException e) {
                 throw new FimsRuntimeException(500, e);

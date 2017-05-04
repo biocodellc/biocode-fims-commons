@@ -20,7 +20,7 @@ abstract class AbstractTabularDataReader implements DataReader {
     protected File file;
     protected Mapping mapping;
     private RecordMetadata recordMetadata;
-    protected Map<String, List<Record>> entityRecords;
+    protected Map<Entity, List<Record>> entityRecords;
     protected List<Entity> sheetEntities;
     protected List<String> colNames;
 
@@ -54,7 +54,7 @@ abstract class AbstractTabularDataReader implements DataReader {
     private List<RecordSet> generateRecordSets() {
         List<RecordSet> recordSets = new ArrayList<>();
 
-        for (Map.Entry<String, List<Record>> e : entityRecords.entrySet()) {
+        for (Map.Entry<Entity, List<Record>> e : entityRecords.entrySet()) {
             recordSets.add(
                     new RecordSet(e.getKey(), e.getValue())
             );
@@ -80,7 +80,7 @@ abstract class AbstractTabularDataReader implements DataReader {
                         }
                     }
 
-                    entityRecords.computeIfAbsent(e.getConceptAlias(), k -> new ArrayList<>()).add(r);
+                    entityRecords.computeIfAbsent(e, k -> new ArrayList<>()).add(r);
 
                 } catch (InstantiationException | IllegalAccessException e1) {
                     throw new FimsRuntimeException("", 500);

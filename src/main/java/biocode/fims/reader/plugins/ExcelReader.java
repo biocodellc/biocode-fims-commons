@@ -29,7 +29,7 @@ import java.util.*;
  * examined for all subsequent rows.
  */
 public class ExcelReader extends AbstractTabularDataReader {
-    private static final List<String> EXTS = Arrays.asList("xlsx", "xls");
+    public static final List<String> EXTS = Arrays.asList("xlsx", "xls");
 
     protected DataFormatter dataFormatter;
     protected FormulaEvaluator formulaEvaluator;
