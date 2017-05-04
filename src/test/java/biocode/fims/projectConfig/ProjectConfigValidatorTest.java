@@ -115,6 +115,26 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_no_attribute_for_entity_parent_unique_key() {
+        Mapping mapping = new Mapping();
+
+        Entity e1 = entity1();
+        e1.setUniqueKey("uniqueColumn");
+        e1.addAttribute(new Attribute("uniqueColumn", "urn:uniqueColumn"));
+        mapping.addEntity(e1);
+
+        Entity e2 = entity2();
+        e2.setParentEntity(e1.getConceptAlias());
+        mapping.addEntity(e2);
+
+        ProjectConfig config = new ProjectConfig(mapping, null, null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey"), validator.errors());
+    }
+
+    @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
         Mapping mapping = new Mapping();
 
