@@ -33,7 +33,8 @@ public class ProjectConfigValidator {
 
     private void validateMapping() {
         allEntitiesHaveUniqueConceptAlias();
-        entityWithWorksheetHasUniqueKey();
+        entityWithWorksheetHaveUniqueKey();
+        entityUniqueKeysHaveMatchingAttribute();
         allChildEntitiesHaveValidParent();
         dateTimeAttributesHaveDataFormat();
     }
@@ -50,7 +51,7 @@ public class ProjectConfigValidator {
         }
     }
 
-    private void entityWithWorksheetHasUniqueKey() {
+    private void entityWithWorksheetHaveUniqueKey() {
         for (Entity e : config.getMapping().getEntities()) {
             if (!StringUtils.isEmpty(e.getWorksheet()) && StringUtils.isEmpty(e.getUniqueKey())) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a worksheet but is missing a uniqueKey");
@@ -58,8 +59,23 @@ public class ProjectConfigValidator {
         }
     }
 
+    private void entityUniqueKeysHaveMatchingAttribute() {
+        for (Entity e : config.getMapping().getEntities()) {
+
+            if (!StringUtils.isBlank(e.getUniqueKey())
+                    && e.getAttributes().stream()
+                    .noneMatch(a -> e.getUniqueKey().equals(a.getColumn()))
+                    ) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a uniqueKey but can not find an Attribute with a matching column");
+
+            }
+
+        }
+
+    }
+
     private void allChildEntitiesHaveValidParent() {
-        for (Entity e: config.getMapping().getEntities()) {
+        for (Entity e : config.getMapping().getEntities()) {
             if (e.isChildEntity()) {
                 Entity parentEntity = config.getMapping().getEntity(e.getParentEntity());
                 if (parentEntity == null) {

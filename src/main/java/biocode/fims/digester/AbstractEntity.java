@@ -41,6 +41,28 @@ public abstract class AbstractEntity {
         return uniqueKey;
     }
 
+    /**
+     * returns the uri for the column that designates unique records for this entity
+     *
+     * @return
+     */
+    public String getUniqueKeyURI() {
+        if (StringUtils.isBlank(uniqueKey)) {
+            return uniqueKey;
+        }
+
+        return attributes.stream()
+                .filter(a -> uniqueKey.equals(a.getColumn()))
+                .findFirst()
+                .orElse(new Attribute(null, null))
+                .getUri();
+    }
+
+    /**
+     * column of the {@link Attribute} that designates unique records for this entity
+     *
+     * @param uniqueKey
+     */
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
     }
@@ -71,6 +93,7 @@ public abstract class AbstractEntity {
 
     /**
      * If this entity is represented as a worksheet
+     *
      * @return
      */
     public boolean hasWorksheet() {

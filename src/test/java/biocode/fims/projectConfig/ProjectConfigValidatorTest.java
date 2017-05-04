@@ -53,6 +53,20 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_entity_unique_key_missing_attribute() {
+        Mapping mapping = new Mapping();
+        Entity entity = entity1();
+        entity.setUniqueKey("column_non_exist");
+        mapping.addEntity(entity);
+
+        ProjectConfig config = new ProjectConfig(mapping, null, null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource1\" specifies a uniqueKey but can not find an Attribute with a matching column"), validator.errors());
+    }
+
+    @Test
     public void invalid_if_entity_has_worksheet_no_unique_key() {
         Mapping mapping = new Mapping();
         Entity e = entity1();
