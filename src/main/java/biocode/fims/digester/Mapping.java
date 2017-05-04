@@ -281,6 +281,7 @@ public class Mapping {
      */
     public synchronized void addMappingRules(File configFile) {
         ConvertUtils.register(new EnumConverter(), DataType.class);
+        ConvertUtils.register(new URIConverter(), URI.class);
         Digester d = new Digester();
         d.push(this);
 
