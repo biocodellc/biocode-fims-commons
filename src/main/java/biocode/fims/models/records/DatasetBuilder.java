@@ -76,6 +76,7 @@ public class DatasetBuilder {
         instantiateWorkbookRecords();
         instantiateDataSourceRecords();
         addParentRecords();
+        setRecordSetParent();
 
         if (recordSets.isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
@@ -147,6 +148,27 @@ public class DatasetBuilder {
 
         recordSet.merge(records);
 
+    }
+
+    private void setRecordSetParent() {
+        for (RecordSet r : recordSets) {
+
+            Entity e = r.entity();
+
+            if (e.isChildEntity()) {
+                r.setParent(getRecordSet(e.getParentEntity()));
+            }
+        }
+    }
+
+    private RecordSet getRecordSet(String conceptAlias) {
+        for (RecordSet r : recordSets) {
+            if (r.conceptAlias().equals(conceptAlias)) {
+                return r;
+            }
+        }
+
+        return new RecordSet(config.getMapping().findEntity(conceptAlias));
     }
 
     private static class DataSource {

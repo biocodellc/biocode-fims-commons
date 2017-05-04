@@ -9,6 +9,7 @@ import java.util.Map;
  * @author rjewing
  */
 public class GenericRecord implements Record {
+    public static String VALIDATOR = "TEST";
     private Map<String, String> properties;
 
     public GenericRecord(Map<String, String> properties) {

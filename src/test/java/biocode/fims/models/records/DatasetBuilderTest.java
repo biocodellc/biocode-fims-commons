@@ -127,6 +127,7 @@ public class DatasetBuilderTest {
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
+        assertEquals(eventsSet.get(), samplesSet.get().parent());
     }
 
     @Test
@@ -159,6 +160,7 @@ public class DatasetBuilderTest {
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
+        assertEquals(eventsSet.get(), samplesSet.get().parent());
     }
 
     @Test
@@ -195,6 +197,7 @@ public class DatasetBuilderTest {
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
+        assertEquals(eventsSet.get(), samplesSet.get().parent());
     }
 
     @Test
@@ -228,6 +231,7 @@ public class DatasetBuilderTest {
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
+        assertEquals(eventsSet.get(), samplesSet.get().parent());
     }
 
 

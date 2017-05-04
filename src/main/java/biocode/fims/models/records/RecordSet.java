@@ -13,6 +13,7 @@ import java.util.List;
 public class RecordSet {
 
     private List<Record> records;
+    private RecordSet parent;
     private Entity entity;
 
     public RecordSet(Entity entity) {
@@ -23,6 +24,14 @@ public class RecordSet {
     public RecordSet(Entity entity, List<Record> records) {
         this(entity);
         this.records.addAll(records);
+    }
+
+    public void setParent(RecordSet parent) {
+        this.parent = parent;
+    }
+
+    public RecordSet parent() {
+        return parent;
     }
 
     public boolean isEmpty() {
