@@ -1,7 +1,6 @@
 package biocode.fims.models.records;
 
-import biocode.fims.reader.plugins.DataReader;
-import org.apache.commons.collections.map.HashedMap;
+import biocode.fims.reader.DataReader;
 import org.springframework.util.Assert;
 
 import java.util.HashMap;
@@ -10,7 +9,7 @@ import java.util.Map;
 /**
  * Class to store generic properties used when constructing {@link Record} instances.
  * <p>
- * Record classes each require their own unique metadata, as well as {@link biocode.fims.reader.plugins.DataReader}
+ * Record classes each require their own unique metadata, as well as {@link DataReader}
  * which need metadata to be able to create the Records from a data file. This class is a container for this information
  *
  * @author rjewing

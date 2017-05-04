@@ -1,4 +1,4 @@
-package biocode.fims.reader.plugins;
+package biocode.fims.reader;
 
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;

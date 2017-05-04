@@ -9,7 +9,7 @@ import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.plugins.CSVReader;
-import biocode.fims.reader.plugins.DataReader;
+import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
 import org.junit.Test;

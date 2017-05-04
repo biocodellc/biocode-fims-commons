@@ -4,9 +4,7 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
-import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.reader.plugins.DataReader;
 import biocode.fims.utils.FileUtils;
 
 import java.io.File;

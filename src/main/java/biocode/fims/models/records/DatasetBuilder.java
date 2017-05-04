@@ -7,9 +7,9 @@ import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
-import biocode.fims.reader.plugins.DataReader;
+import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.ExcelReader;
-import biocode.fims.reader.plugins.TabularDataReaderType;
+import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
 

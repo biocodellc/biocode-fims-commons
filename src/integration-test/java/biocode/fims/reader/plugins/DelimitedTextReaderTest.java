@@ -5,6 +5,7 @@ import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.reader.DataReader;
 import org.junit.Before;
 
 import java.util.List;

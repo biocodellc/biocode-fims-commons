@@ -3,6 +3,7 @@ package biocode.fims.reader.plugins;
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.reader.DataReader;
 
 import java.io.File;
 import java.util.ArrayList;

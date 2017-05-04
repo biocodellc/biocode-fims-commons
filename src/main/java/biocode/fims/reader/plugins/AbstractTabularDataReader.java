@@ -7,6 +7,8 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.reader.DataReader;
+import biocode.fims.reader.TabularDataReaderType;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 

@@ -2,6 +2,8 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.reader.DataReader;
+import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Test;
 
 import java.io.File;

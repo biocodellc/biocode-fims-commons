@@ -1,4 +1,4 @@
-package biocode.fims.reader.plugins;
+package biocode.fims.reader;
 
 /**
  * @author rjewing
@@ -8,4 +8,5 @@ public class TabularDataReaderType {
     public static final DataReader.DataReaderType READER_TYPE = new DataReader.DataReaderType(READER_TYPE_STRING);
 
     private TabularDataReaderType() {}
+
 }
