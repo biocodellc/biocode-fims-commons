@@ -1,4 +1,4 @@
-package biocode.fims.validators;
+package biocode.fims.validation;
 
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;

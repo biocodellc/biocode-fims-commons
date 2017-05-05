@@ -1,8 +1,9 @@
-package biocode.fims.validators;
+package biocode.fims.validation;
 
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
+import org.springframework.util.Assert;
 
 /**
  * @author rjewing
@@ -18,8 +19,10 @@ public class GenericRecordValidator implements RecordValidator {
 
     @Override
     public boolean validate(RecordSet recordSet) {
-        this.messages = new EntityMessages(recordSet.conceptAlias());
-        return false;
+        Assert.notNull(config);
+        Assert.notNull(recordSet);
+        this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
+        return true;
     }
 
     @Override

@@ -1,7 +1,6 @@
-package biocode.fims.validators;
+package biocode.fims.validation;
 
 import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import org.springframework.util.Assert;
 
