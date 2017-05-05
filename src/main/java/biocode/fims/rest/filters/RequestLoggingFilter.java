@@ -1,5 +1,6 @@
 package biocode.fims.rest.filters;
 
+import biocode.fims.reader.plugins.ExcelReader;
 import org.glassfish.jersey.message.MessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,40 +57,48 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        final long id = _id.incrementAndGet();
-        requestContext.setProperty(LOGGING_ID_PROPERTY, id);
+        try {
+            final long id = _id.incrementAndGet();
+            requestContext.setProperty(LOGGING_ID_PROPERTY, id);
 
-        final StringBuilder b = new StringBuilder();
-        b.append(getRemoteIp(requestContext)).append(" ");
+            final StringBuilder b = new StringBuilder();
+            b.append(getRemoteIp(requestContext)).append(" ");
 
-        b.append(requestContext.getMethod())
-                .append(" ")
-                .append(requestContext.getUriInfo().getRequestUri().toASCIIString())
-                .append(" ");
+            b.append(requestContext.getMethod())
+                    .append(" ")
+                    .append(requestContext.getUriInfo().getRequestUri().toASCIIString())
+                    .append(" ");
 
-        logHeader(b, "Referer", requestContext);
-        logHeader(b, "User-Agent", requestContext);
-        logHeader(b, "Fims-App", requestContext);
+            logHeader(b, "Referer", requestContext);
+            logHeader(b, "User-Agent", requestContext);
+            logHeader(b, "Fims-App", requestContext);
 
-        if (requestContext.hasEntity() && isReadable(requestContext.getMediaType())) {
-            requestContext.setEntityStream(
-                    logInboundEntity(b, requestContext.getEntityStream(), MessageUtils.getCharset(requestContext.getMediaType())));
+            if (requestContext.hasEntity() && isReadable(requestContext.getMediaType())) {
+                requestContext.setEntityStream(
+                        logInboundEntity(b, requestContext.getEntityStream(), MessageUtils.getCharset(requestContext.getMediaType())));
+            }
+
+            toLog.put(id, b);
+        } catch (Exception e) {
+            logger.warn("", e);
         }
-
-        toLog.put(id, b);
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        final Object requestId = requestContext.getProperty(LOGGING_ID_PROPERTY);
+        try {
+            final Object requestId = requestContext.getProperty(LOGGING_ID_PROPERTY);
 
-        if (requestId != null) {
-            StringBuilder logBuilder = toLog.remove(requestId);
-            logBuilder.append("\"Status: ");
-            logBuilder.append(responseContext.getStatus());
-            logBuilder.append("\"\n");
+            if (requestId != null) {
+                StringBuilder logBuilder = toLog.remove(requestId);
+                logBuilder.append("\"Status: ");
+                logBuilder.append(responseContext.getStatus());
+                logBuilder.append("\"\n");
 
-            logger.info(logBuilder.toString());
+                logger.info(logBuilder.toString());
+            }
+        } catch (Exception e) {
+            logger.warn("", e);
         }
 
     }
