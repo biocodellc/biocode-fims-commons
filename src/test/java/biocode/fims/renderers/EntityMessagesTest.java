@@ -10,13 +10,13 @@ import static org.junit.Assert.*;
 /**
  * @author rjewing
  */
-public class SheetMessagesTest {
+public class EntityMessagesTest {
 
-    private SheetMessages messages;
+    private EntityMessages messages;
 
     @Before
     public void setUp() throws Exception {
-        messages = new SheetMessages("Samples");
+        messages = new EntityMessages("Samples", "Samples");
     }
 
     @Test
