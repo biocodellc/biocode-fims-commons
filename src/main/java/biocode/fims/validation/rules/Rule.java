@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.renderers.MessagesGroup;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
@@ -11,4 +12,12 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 public interface Rule {
 
     String name();
+
+    void setColumn(String column);
+
+    void setLevel(RuleLevel level);
+
+    RuleLevel level();
+
+    MessagesGroup messages();
 }

@@ -1,0 +1,86 @@
+package biocode.fims.validation.rules;
+
+import biocode.fims.models.records.RecordSet;
+import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.SimpleMessage;
+import org.springframework.util.Assert;
+
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+/**
+ * Checks that characters in a string can become a portion of a valid URI
+ * This is necessary for cases where data is constructed as a URI, such as uniqueKey values.
+ * One approach is to encode all characters, however, this creates a mis-leading ARK identifier.
+ * <p/>
+ * Characters that are disallowed are: %$&+,/:;=?@<>#%\
+ * <p/>
+ * Note that this rule does not check if this a valid URI in its entirety, only that the portion of
+ * the string, when appended onto other valid URI syntax, will not break the URI itself
+ *
+ * @author rjewing
+ */
+public class ValidForURIRule implements Rule {
+    private static final String NAME = "validForURI";
+    private static final String GROUP_MESSAGE = "Non-valid URI characters";
+    private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
+
+    private String column;
+    private RuleLevel level;
+    private MessagesGroup messages;
+
+    public ValidForURIRule() {
+        this.messages = new MessagesGroup(GROUP_MESSAGE);
+    }
+
+    public boolean run(RecordSet recordSet) {
+        Assert.notNull(recordSet);
+
+        String uri = recordSet.entity().getAttributeUri(column);
+
+        List<String> invalidValues = recordSet.records()
+                .stream()
+                .map(r -> r.get(uri))
+                .filter(v -> !pattern.matcher(v).matches())
+                .collect(Collectors.toList());
+
+        if (invalidValues.size() == 0) {
+            return true;
+        }
+
+        setMessages(invalidValues);
+        return false;
+    }
+
+    private void setMessages(List<String> invalidValues) {
+        messages.add(new SimpleMessage(
+                "\"" + column + "\" contains some invalid URI characters: " + String.join("\", \"", invalidValues)
+        ));
+    }
+
+    @Override
+    public String name() {
+        return NAME;
+    }
+
+    @Override
+    public void setColumn(String column) {
+        this.column = column;
+    }
+
+    @Override
+    public void setLevel(RuleLevel level) {
+        this.level = level;
+    }
+
+    @Override
+    public RuleLevel level() {
+        return level;
+    }
+
+    @Override
+    public MessagesGroup messages() {
+        return messages;
+    }
+}

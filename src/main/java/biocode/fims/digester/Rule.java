@@ -438,6 +438,7 @@ public class Rule {
      * Note that this rule does not check if this a valid URI in its entirety, only that the portion of
      * the string, when appended onto other valid URI syntax, will not break the URI itself
      */
+    @Deprecated
     public void validForURI() {
         String sql = "";
         Statement statement = null;

@@ -1,5 +1,7 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.renderers.MessagesGroup;
+
 /**
  * tmp Rule while creating the RuleTypeIdResolver
  * @author rjewing
@@ -20,5 +22,23 @@ public class TestRule implements Rule {
     @Override
     public String name() {
         return RULE_NAME;
+    }
+
+    @Override
+    public void setColumn(String column) {
+    }
+
+    @Override
+    public void setLevel(RuleLevel level) {
+    }
+
+    @Override
+    public RuleLevel level() {
+        return null;
+    }
+
+    @Override
+    public MessagesGroup messages() {
+        return null;
     }
 }

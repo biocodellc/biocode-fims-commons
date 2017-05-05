@@ -91,6 +91,14 @@ public abstract class AbstractEntity {
         this.conceptForwardingAddress = conceptForwardingAddress;
     }
 
+    public String getAttributeUri(String column) {
+        return attributes.stream()
+                .filter(a -> a.getColumn().equals(column))
+                .findFirst()
+                .map(Attribute::getUri)
+                .orElse(null);
+    }
+
     /**
      * If this entity is represented as a worksheet
      *
