@@ -34,4 +34,22 @@ public class MessagesGroup {
                 .map(Message::message)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MessagesGroup)) return false;
+
+        MessagesGroup that = (MessagesGroup) o;
+
+        if (!getName().equals(that.getName())) return false;
+        return messages.equals(that.messages);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName().hashCode();
+        result = 31 * result + messages.hashCode();
+        return result;
+    }
 }

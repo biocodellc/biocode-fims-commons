@@ -53,4 +53,19 @@ public class MessagesGroupCollection {
         }
         return new MessagesGroup(name);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MessagesGroupCollection)) return false;
+
+        MessagesGroupCollection that = (MessagesGroupCollection) o;
+
+        return messages.equals(that.messages);
+    }
+
+    @Override
+    public int hashCode() {
+        return messages.hashCode();
+    }
 }

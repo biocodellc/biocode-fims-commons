@@ -46,4 +46,26 @@ public class EntityMessages {
     public String conceptAlias() {
         return conceptAlias;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EntityMessages)) return false;
+
+        EntityMessages that = (EntityMessages) o;
+
+        if (!conceptAlias.equals(that.conceptAlias)) return false;
+        if (sheetName != null ? !sheetName.equals(that.sheetName) : that.sheetName != null) return false;
+        if (!errorMessages.equals(that.errorMessages)) return false;
+        return warningMessages.equals(that.warningMessages);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = conceptAlias.hashCode();
+        result = 31 * result + (sheetName != null ? sheetName.hashCode() : 0);
+        result = 31 * result + errorMessages.hashCode();
+        result = 31 * result + warningMessages.hashCode();
+        return result;
+    }
 }
