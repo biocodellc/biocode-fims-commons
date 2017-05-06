@@ -5,6 +5,8 @@ import biocode.fims.renderers.EntityMessages;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 
+import java.util.List;
+
 /**
  * @author rjewing
  */
@@ -35,5 +37,15 @@ public class RuleInWrongPackage implements Rule {
     @Override
     public RuleLevel level() {
         return null;
+    }
+
+    @Override
+    public boolean validConfiguration(List<String> messages) {
+        return true;
+    }
+
+    @Override
+    public boolean hasError() {
+        return false;
     }
 }

@@ -43,6 +43,7 @@ public class ValidForURIRule extends AbstractRule {
         }
 
         setMessages(invalidValues, messages);
+        setError();
         return false;
     }
 

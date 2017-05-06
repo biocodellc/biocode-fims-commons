@@ -51,7 +51,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         rule.setLevel(RuleLevel.ERROR);
 
         assertFalse(rule.run(recordSet, messages));
-        assertEquals(RuleLevel.ERROR, rule.level());
+        assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(

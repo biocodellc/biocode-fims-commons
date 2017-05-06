@@ -1,10 +1,13 @@
 package biocode.fims.validation.rules;
 
+import java.util.List;
+
 /**
  * @author rjewing
  */
 abstract class AbstractRule implements Rule {
     protected String column;
+    protected boolean hasError = false;
     private RuleLevel level;
 
     @Override
@@ -27,4 +30,17 @@ abstract class AbstractRule implements Rule {
         return level;
     }
 
+    @Override
+    public boolean validConfiguration(List<String> messages) {
+        return true;
+    }
+
+    @Override
+    public boolean hasError() {
+        return hasError;
+    }
+
+    protected void setError() {
+        hasError = RuleLevel.ERROR == level;
+    }
 }

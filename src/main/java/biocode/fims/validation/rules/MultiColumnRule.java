@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author rjewing
@@ -12,6 +13,7 @@ import java.util.LinkedList;
 abstract class MultiColumnRule implements Rule {
     @JsonProperty
     protected LinkedList<String> columns;
+    protected boolean hasError;
     private RuleLevel level;
 
     public MultiColumnRule() {
@@ -45,6 +47,20 @@ abstract class MultiColumnRule implements Rule {
     @Override
     public RuleLevel level() {
         return level;
+    }
+
+    @Override
+    public boolean validConfiguration(List<String> messages) {
+        return true;
+    }
+
+    @Override
+    public boolean hasError() {
+        return hasError;
+    }
+
+    protected void setError() {
+        hasError = RuleLevel.ERROR == level;
     }
 
     protected LinkedList<String> getColumnUris(Entity entity) {

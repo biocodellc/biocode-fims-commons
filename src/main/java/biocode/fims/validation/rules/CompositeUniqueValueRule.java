@@ -44,6 +44,7 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         }
 
         setMessages(messages, duplicateValues);
+        setError();
         return false;
     }
 

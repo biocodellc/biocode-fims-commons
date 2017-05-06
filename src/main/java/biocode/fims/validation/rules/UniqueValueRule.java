@@ -44,6 +44,7 @@ public class UniqueValueRule extends AbstractRule {
         }
 
         setMessages(duplicateValues, messages);
+        setError();
         return false;
     }
 

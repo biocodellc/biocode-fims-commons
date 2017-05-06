@@ -1,11 +1,14 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfigValidator;
 import biocode.fims.renderers.EntityMessages;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+
+import java.util.List;
 
 /**
  * @author rjewing
@@ -31,4 +34,20 @@ public interface Rule {
 
     @JsonProperty
     RuleLevel level();
+
+    /**
+     * Method to be called in {@link ProjectConfigValidator}. This allows Rule implementations to specify any
+     * additional validation.
+     *
+     * @param messages error messages to be presented to user
+     */
+    @JsonIgnore
+    boolean validConfiguration(List<String> messages);
+
+    /**
+     * if {@link Rule#run(RecordSet, EntityMessages)} has failed, this tells us if it was an {@link RuleLevel#ERROR}.
+     * @return
+     */
+    @JsonIgnore
+    boolean hasError();
 }
