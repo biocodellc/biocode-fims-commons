@@ -28,6 +28,14 @@ public class GenericRecordTest {
     }
 
     @Test
+    public void should_return_trimmed_property_if_property_exists() {
+        GenericRecord record = new GenericRecord();
+        record.set("property1", " test_value ");
+
+        assertEquals("test_value", record.get("property1"));
+    }
+
+    @Test
     public void should_load_properties_in_constructor() {
         Map<String, String> properties = new HashMap<>();
         properties.put("property1", "test_value");

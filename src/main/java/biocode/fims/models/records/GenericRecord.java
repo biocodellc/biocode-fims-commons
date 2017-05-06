@@ -9,7 +9,6 @@ import java.util.Map;
  * @author rjewing
  */
 public class GenericRecord implements Record {
-    public static String VALIDATOR = "TEST";
     private Map<String, String> properties;
 
     public GenericRecord(Map<String, String> properties) {
@@ -22,7 +21,7 @@ public class GenericRecord implements Record {
 
     @Override
     public String get(String property) {
-        return properties.getOrDefault(property, "");
+        return properties.getOrDefault(property, "").trim();
     }
 
     @Override
