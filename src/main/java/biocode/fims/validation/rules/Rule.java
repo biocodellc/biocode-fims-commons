@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.MessagesGroup;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 public interface Rule {
 
     String name();
+
+    boolean run(RecordSet recordSet);
 
     void setColumn(String column);
 

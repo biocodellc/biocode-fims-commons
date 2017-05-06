@@ -1,5 +1,6 @@
 package biocode.fims.validation;
 
+import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
@@ -11,6 +12,11 @@ public class RuleInWrongPackage implements Rule {
     @Override
     public String name() {
         return "wrongPackageRule";
+    }
+
+    @Override
+    public boolean run(RecordSet recordSet) {
+        return false;
     }
 
     @Override

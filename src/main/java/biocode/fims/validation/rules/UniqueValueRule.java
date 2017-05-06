@@ -5,32 +5,29 @@ import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Checks that characters in a string can become a portion of a valid URI
- * This is necessary for cases where data is constructed as a URI, such as uniqueKey values.
- * One approach is to encode all characters, however, this creates a mis-leading ARK identifier.
- * <p/>
- * Characters that are disallowed are: %$&+,/:;=?@<>#%\
- * <p/>
- * Note that this rule does not check if this a valid URI in its entirety, only that the portion of
- * the string, when appended onto other valid URI syntax, will not break the URI itself
+ * Check a particular column to see if all the values are unique.
+ * This rule is strongly encouraged for at least one column in the spreadsheet
+ * <p>
+ * NOTE: that NULL values are not counted in this rule, so this rule, by itself does not
+ * enforce a primary key... it must be combined with a rule requiring some column value
  *
  * @author rjewing
  */
-public class ValidForURIRule implements Rule {
-    private static final String NAME = "validForURI";
-    private static final String GROUP_MESSAGE = "Non-valid URI characters";
-    private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
+public class UniqueValueRule implements Rule {
+    private static final String NAME = "uniqueValue";
+    private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
     private String column;
     private RuleLevel level;
     private MessagesGroup messages;
 
-    public ValidForURIRule() {
+    public UniqueValueRule() {
         this.messages = new MessagesGroup(GROUP_MESSAGE);
     }
 
@@ -40,23 +37,26 @@ public class ValidForURIRule implements Rule {
 
         String uri = recordSet.entity().getAttributeUri(column);
 
-        List<String> invalidValues = recordSet.records()
+        Set<String> set = new HashSet<>();
+
+        List<String> duplicateValues = recordSet.records()
                 .stream()
                 .map(r -> r.get(uri))
-                .filter(v -> !pattern.matcher(v).matches())
+                .filter(v -> !v.equals(""))
+                .filter(v -> !set.add(v))
                 .collect(Collectors.toList());
 
-        if (invalidValues.size() == 0) {
+        if (duplicateValues.size() == 0) {
             return true;
         }
 
-        setMessages(invalidValues);
+        setMessages(duplicateValues);
         return false;
     }
 
     private void setMessages(List<String> invalidValues) {
         messages.add(new SimpleMessage(
-                "\"" + column + "\" contains some invalid URI characters: \"" + String.join("\", \"", invalidValues) + "\""
+                "\"" + column + "\" column is defined as unique but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\""
         ));
     }
 
@@ -84,4 +84,5 @@ public class ValidForURIRule implements Rule {
     public MessagesGroup messages() {
         return messages;
     }
+
 }

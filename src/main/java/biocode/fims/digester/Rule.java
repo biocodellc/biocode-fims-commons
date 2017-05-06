@@ -496,6 +496,7 @@ public class Rule {
      * <rule type='uniqueValue' column='materialSampleID' level='error'></rule>
      * }
      */
+    @Deprecated
     public void uniqueValue() {
         String groupMessage = "Unique value constraint did not pass";
         String sql = "";

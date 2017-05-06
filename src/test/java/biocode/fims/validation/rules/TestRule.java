@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.MessagesGroup;
 
 /**
@@ -22,6 +23,11 @@ public class TestRule implements Rule {
     @Override
     public String name() {
         return RULE_NAME;
+    }
+
+    @Override
+    public boolean run(RecordSet recordSet) {
+        return false;
     }
 
     @Override

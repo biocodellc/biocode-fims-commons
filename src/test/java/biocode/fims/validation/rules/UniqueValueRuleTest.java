@@ -7,39 +7,40 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.renderers.SimpleMessage;
-import org.junit.Before;
+import org.junit.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 /**
  * @author rjewing
  */
-public class ValidForURIRuleTest {
+public class UniqueValueRuleTest {
 
-    private ValidForURIRule rule;
+    private UniqueValueRule rule;
 
     @Before
     public void setUp() {
-        this.rule = new ValidForURIRule();
+        this.rule = new UniqueValueRule();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @org.junit.Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
         assertTrue(rule.run(null));
     }
 
-    @Test
+    @org.junit.Test
     public void should_be_valid_for_empty_recordSet() {
         assertTrue(rule.run(new RecordSet(entity())));
     }
 
     @Test
-    public void should_not_be_valid_for_any_invalid_URI_chars() {
+    public void should_not_be_valid_when_duplicate_values() {
         RecordSet recordSet = new RecordSet(entity());
 
         List<Record> invalidRecords = getInvalidRecords();
@@ -54,9 +55,10 @@ public class ValidForURIRuleTest {
         assertFalse(rule.run(recordSet));
         assertEquals(RuleLevel.ERROR, rule.level());
 
-        MessagesGroup messages = new MessagesGroup("Non-valid URI characters");
+        MessagesGroup messages = new MessagesGroup("Unique value constraint did not pass");
         messages.add(new SimpleMessage(
-                "\"col1\" contains some invalid URI characters: \"" + String.join("\", \"", getInvalidRecordValues()) + "\""
+                "\"col1\" column is defined as unique but some values used more than once: \"" +
+                        String.join("\", \"", getInvalidRecordValues().stream().distinct().collect(Collectors.toList())) + "\""
         ));
 
         assertEquals(messages, rule.messages());
@@ -66,9 +68,9 @@ public class ValidForURIRuleTest {
         List<Record> recordSet = new ArrayList<>();
 
         Record r1 = new GenericRecord();
-        r1.set("urn:col1", "validUri");
+        r1.set("urn:col1", "");
         Record r2 = new GenericRecord();
-        r2.set("urn:col1", "123AOl");
+        r2.set("urn:col1", "value3");
         Record r3 = new GenericRecord();
         r3.set("urn:col1", "");
         return recordSet;
@@ -88,22 +90,10 @@ public class ValidForURIRuleTest {
 
     private List<String> getInvalidRecordValues() {
         return Arrays.asList(
-                "test ",
-                "test%",
-                "test$",
-                "test&",
-                "test+",
-                "test,",
-                "test/",
-                "test:",
-                "test;",
-                "test=",
-                "test?",
-                "test@",
-                "test<",
-                "test>",
-                "test#",
-                "test\\"
+                "value1",
+                "value1",
+                "value2",
+                "value2"
         );
     }
 
