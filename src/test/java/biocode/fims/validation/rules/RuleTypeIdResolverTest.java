@@ -28,14 +28,16 @@ public class RuleTypeIdResolverTest {
     @Test
     public void should_serialize_and_deserialize_rule_implementation() throws IOException {
         TestRule rule = new TestRule();
-        rule.setProp1("a property value");
+        rule.setColumn("col1");
+        rule.setLevel(RuleLevel.WARNING);
 
 
         String serialized = mapper.writeValueAsString(rule);
         Rule deserialized = mapper.readValue(serialized, Rule.class);
 
         assertTrue(deserialized instanceof TestRule);
-        assertEquals("a property value", ((TestRule) deserialized).getProp1());
+        assertEquals("col1", deserialized.column());
+        assertEquals(RuleLevel.WARNING, deserialized.level());
     }
 
     @Test

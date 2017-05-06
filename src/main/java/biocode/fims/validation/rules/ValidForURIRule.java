@@ -21,16 +21,13 @@ import java.util.stream.Collectors;
  *
  * @author rjewing
  */
-public class ValidForURIRule implements Rule {
+public class ValidForURIRule extends AbstractRule {
     private static final String NAME = "validForURI";
     private static final String GROUP_MESSAGE = "Non-valid URI characters";
     private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
 
-    private String column;
-    private RuleLevel level;
-    private MessagesGroup messages;
-
     public ValidForURIRule() {
+        super();
         this.messages = new MessagesGroup(GROUP_MESSAGE);
     }
 
@@ -63,25 +60,5 @@ public class ValidForURIRule implements Rule {
     @Override
     public String name() {
         return NAME;
-    }
-
-    @Override
-    public void setColumn(String column) {
-        this.column = column;
-    }
-
-    @Override
-    public void setLevel(RuleLevel level) {
-        this.level = level;
-    }
-
-    @Override
-    public RuleLevel level() {
-        return level;
-    }
-
-    @Override
-    public MessagesGroup messages() {
-        return messages;
     }
 }

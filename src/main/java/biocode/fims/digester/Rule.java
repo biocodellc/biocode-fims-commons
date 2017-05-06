@@ -547,6 +547,7 @@ public class Rule {
      * </rule>
      * }
      */
+    @Deprecated
     public void compositeUniqueValue() {
         String groupMessage = "Unique value constraint did not pass";
         Statement statement = null;

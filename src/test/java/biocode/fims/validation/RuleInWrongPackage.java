@@ -24,6 +24,11 @@ public class RuleInWrongPackage implements Rule {
     }
 
     @Override
+    public String column() {
+        return null;
+    }
+
+    @Override
     public void setLevel(RuleLevel level) {
     }
 

@@ -19,15 +19,12 @@ import java.util.stream.Collectors;
  *
  * @author rjewing
  */
-public class UniqueValueRule implements Rule {
+public class UniqueValueRule extends AbstractRule {
     private static final String NAME = "uniqueValue";
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
-    private String column;
-    private RuleLevel level;
-    private MessagesGroup messages;
-
     public UniqueValueRule() {
+        super();
         this.messages = new MessagesGroup(GROUP_MESSAGE);
     }
 
@@ -63,26 +60,6 @@ public class UniqueValueRule implements Rule {
     @Override
     public String name() {
         return NAME;
-    }
-
-    @Override
-    public void setColumn(String column) {
-        this.column = column;
-    }
-
-    @Override
-    public void setLevel(RuleLevel level) {
-        this.level = level;
-    }
-
-    @Override
-    public RuleLevel level() {
-        return level;
-    }
-
-    @Override
-    public MessagesGroup messages() {
-        return messages;
     }
 
 }

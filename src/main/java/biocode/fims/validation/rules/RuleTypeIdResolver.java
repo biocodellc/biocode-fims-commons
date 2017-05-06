@@ -55,7 +55,7 @@ public class RuleTypeIdResolver implements TypeIdResolver {
                 Class resourceClass = getClassFromResource(r);
 
                 if (resourceClass != null
-                        && Arrays.asList(resourceClass.getInterfaces()).contains(Rule.class)
+                        && Rule.class.isAssignableFrom(resourceClass)
                         && !Modifier.isAbstract(resourceClass.getModifiers())) {
 
                     rules.add((Rule) resourceClass.newInstance());
