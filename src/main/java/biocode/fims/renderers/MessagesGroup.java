@@ -52,4 +52,18 @@ public class MessagesGroup {
         result = 31 * result + messages.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder("MessagesGroup{" +
+                "GroupName='" + name + '\'' +
+                ", messages=[");
+
+        for (Message m : messages) {
+            s.append(m.message()).append(",");
+        }
+
+        s.append("]}");
+        return s.toString();
+    }
 }

@@ -68,4 +68,19 @@ public class MessagesGroupCollection {
     public int hashCode() {
         return messages.hashCode();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("MessagesGroupCollection{" +
+                "messages=["
+        );
+
+        for (MessagesGroup m: messages) {
+            sb.append(m.toString()).append(", ");
+        }
+
+        sb.append("]}");
+
+        return sb.toString();
+    }
 }

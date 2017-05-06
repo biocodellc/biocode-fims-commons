@@ -1,5 +1,6 @@
 package biocode.fims.renderers;
 
+import biocode.fims.validation.rules.RuleLevel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class EntityMessagesTest {
         Message simpleMessage2 = new SimpleMessage("warning 2");
 
         messages.addWarningMessage(group, simpleMessage);
-        messages.addWarningMessage(group, simpleMessage1);
+        messages.addMessage(group, simpleMessage1, RuleLevel.WARNING);
         messages.addWarningMessage(group2, simpleMessage2);
 
         List<MessagesGroup> warningMessages = messages.warningMessages();
@@ -50,16 +51,18 @@ public class EntityMessagesTest {
         Message simpleMessage = new SimpleMessage("error");
         Message simpleMessage1 = new SimpleMessage("warning 1");
         Message simpleMessage2 = new SimpleMessage("warning 2");
+        Message simpleMessage3 = new SimpleMessage("warning 3");
 
         messages.addErrorMessage(group, simpleMessage);
         messages.addWarningMessage(group, simpleMessage1);
         messages.addWarningMessage(group2, simpleMessage2);
+        messages.addMessage(group2, simpleMessage3, RuleLevel.ERROR);
 
         List<MessagesGroup> warningMessages = messages.warningMessages();
         List<MessagesGroup> errorMessages = messages.errorMessages();
 
         assertEquals(2, warningMessages.size());
-        assertEquals(1, errorMessages.size());
+        assertEquals(2, errorMessages.size());
     }
 
 }

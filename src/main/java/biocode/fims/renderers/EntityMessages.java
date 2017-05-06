@@ -1,5 +1,7 @@
 package biocode.fims.renderers;
 
+import biocode.fims.validation.rules.RuleLevel;
+
 import java.util.List;
 
 /**
@@ -29,6 +31,14 @@ public class EntityMessages {
 
     public void addWarningMessage(String groupMessage, Message msg) {
         warningMessages.addMessage(groupMessage, msg);
+    }
+
+    public void addMessage(String groupMessage, Message msg, RuleLevel level) {
+        if (RuleLevel.ERROR == level) {
+            addErrorMessage(groupMessage, msg);
+        } else {
+            addWarningMessage(groupMessage, msg);
+        }
     }
 
     public List<MessagesGroup> warningMessages() {
@@ -67,5 +77,15 @@ public class EntityMessages {
         result = 31 * result + errorMessages.hashCode();
         result = 31 * result + warningMessages.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "EntityMessages{" +
+                "conceptAlias='" + conceptAlias + '\'' +
+                ", sheetName='" + sheetName + '\'' +
+                ", errorMessages=" + errorMessages +
+                ", warningMessages=" + warningMessages +
+                '}';
     }
 }
