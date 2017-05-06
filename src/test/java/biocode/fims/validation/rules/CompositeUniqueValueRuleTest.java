@@ -1,26 +1,24 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
 /**
  * @author rjewing
  */
-public class CompositeUniqueValueRuleTest {
+public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
 
     private CompositeUniqueValueRule rule;
 
@@ -31,7 +29,7 @@ public class CompositeUniqueValueRuleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
-        assertTrue(rule.run(null));
+        assertTrue(rule.run(null, messages));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -41,7 +39,7 @@ public class CompositeUniqueValueRuleTest {
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        assertTrue(rule.run(new RecordSet(entity())));
+        assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
@@ -54,19 +52,22 @@ public class CompositeUniqueValueRuleTest {
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);
 
-        rule.setColumns(Arrays.asList("col1", "col2"));
+        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
         rule.setLevel(RuleLevel.ERROR);
 
-        assertFalse(rule.run(recordSet));
+        assertFalse(rule.run(recordSet, messages));
         assertEquals(RuleLevel.ERROR, rule.level());
 
-        MessagesGroup messages = new MessagesGroup("Unique value constraint did not pass");
-        messages.add(new SimpleMessage(
-                "(\"col1\", \"col2\") is defined as a composite unique key, but some value combinations were used " +
-                        "more than once: (\"value1\", \"value2\")"
-        ));
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Unique value constraint did not pass",
+                new SimpleMessage(
+                        "(\"col1\", \"col2\") is defined as a composite unique key, but some value combinations were used " +
+                                "more than once: (\"value1\", \"value2\")"
+                )
+        );
 
-        assertEquals(messages, rule.messages());
+        assertEquals(expectedMessages, messages);
     }
 
     private List<Record> getValidRecords() {
@@ -100,17 +101,4 @@ public class CompositeUniqueValueRuleTest {
 
         return recordSet;
     }
-
-    private Entity entity() {
-        Entity entity = new Entity();
-        entity.setConceptAlias("Samples");
-
-        Attribute a = new Attribute("col1", "urn:col1");
-        Attribute a2 = new Attribute("col2", "urn:col2");
-        entity.addAttribute(a);
-        entity.addAttribute(a2);
-
-        return entity;
-    }
-
 }

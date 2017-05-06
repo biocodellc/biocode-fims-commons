@@ -1,11 +1,9 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.junit.*;
 import org.junit.Test;
@@ -20,7 +18,7 @@ import static org.junit.Assert.*;
 /**
  * @author rjewing
  */
-public class UniqueValueRuleTest {
+public class UniqueValueRuleTest extends AbstractRuleTest {
 
     private UniqueValueRule rule;
 
@@ -31,12 +29,12 @@ public class UniqueValueRuleTest {
 
     @org.junit.Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
-        assertTrue(rule.run(null));
+        assertTrue(rule.run(null, messages));
     }
 
     @org.junit.Test
     public void should_be_valid_for_empty_recordSet() {
-        assertTrue(rule.run(new RecordSet(entity())));
+        assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
@@ -52,16 +50,18 @@ public class UniqueValueRuleTest {
         rule.setColumn("col1");
         rule.setLevel(RuleLevel.ERROR);
 
-        assertFalse(rule.run(recordSet));
+        assertFalse(rule.run(recordSet, messages));
         assertEquals(RuleLevel.ERROR, rule.level());
 
-        MessagesGroup messages = new MessagesGroup("Unique value constraint did not pass");
-        messages.add(new SimpleMessage(
-                "\"col1\" column is defined as unique but some values used more than once: \"" +
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Unique value constraint did not pass",
+                new SimpleMessage("\"col1\" column is defined as unique but some values used more than once: \"" +
                         String.join("\", \"", getInvalidRecordValues().stream().distinct().collect(Collectors.toList())) + "\""
-        ));
+                )
+        );
 
-        assertEquals(messages, rule.messages());
+        assertEquals(expectedMessages, messages);
     }
 
     private List<Record> getValidRecords() {
@@ -79,7 +79,7 @@ public class UniqueValueRuleTest {
     private List<Record> getInvalidRecords() {
         List<Record> recordSet = new ArrayList<>();
 
-        for (String v: getInvalidRecordValues()) {
+        for (String v : getInvalidRecordValues()) {
             Record r = new GenericRecord();
             r.set("urn:col1", v);
             recordSet.add(r);
@@ -95,16 +95,6 @@ public class UniqueValueRuleTest {
                 "value2",
                 "value2"
         );
-    }
-
-    private Entity entity() {
-        Entity entity = new Entity();
-        entity.setConceptAlias("Samples");
-
-        Attribute a = new Attribute("col1", "urn:col1");
-        entity.addAttribute(a);
-
-        return entity;
     }
 
 }

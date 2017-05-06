@@ -1,6 +1,7 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
@@ -23,13 +24,8 @@ public class UniqueValueRule extends AbstractRule {
     private static final String NAME = "uniqueValue";
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
-    public UniqueValueRule() {
-        super();
-        this.messages = new MessagesGroup(GROUP_MESSAGE);
-    }
-
     @Override
-    public boolean run(RecordSet recordSet) {
+    public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
 
         String uri = recordSet.entity().getAttributeUri(column);
@@ -47,14 +43,18 @@ public class UniqueValueRule extends AbstractRule {
             return true;
         }
 
-        setMessages(duplicateValues);
+        setMessages(duplicateValues, messages);
         return false;
     }
 
-    private void setMessages(List<String> invalidValues) {
-        messages.add(new SimpleMessage(
-                "\"" + column + "\" column is defined as unique but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\""
-        ));
+    private void setMessages(List<String> invalidValues, EntityMessages messages) {
+        messages.addMessage(
+                GROUP_MESSAGE,
+                new SimpleMessage(
+                        "\"" + column + "\" column is defined as unique but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\""
+                ),
+                level()
+        );
     }
 
     @Override

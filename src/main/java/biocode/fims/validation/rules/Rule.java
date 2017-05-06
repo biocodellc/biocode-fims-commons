@@ -1,9 +1,8 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
@@ -19,7 +18,7 @@ public interface Rule {
     String name();
 
     @JsonIgnore
-    boolean run(RecordSet recordSet);
+    boolean run(RecordSet recordSet, EntityMessages messages);
 
     @JsonProperty
     void setColumn(String column);
@@ -32,7 +31,4 @@ public interface Rule {
 
     @JsonProperty
     RuleLevel level();
-
-    @JsonIgnore
-    MessagesGroup messages();
 }

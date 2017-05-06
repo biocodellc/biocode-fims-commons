@@ -1,24 +1,21 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.digester.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 /**
  * @author rjewing
  */
 abstract class MultiColumnRule implements Rule {
     @JsonProperty
-    protected List<String> columns;
-    protected MessagesGroup messages;
+    protected LinkedList<String> columns;
     private RuleLevel level;
 
     public MultiColumnRule() {
-        columns = new ArrayList<>();
-        messages = new MessagesGroup("MultiColumnRule");
+        columns = new LinkedList<>();
     }
 
     @JsonIgnore
@@ -35,7 +32,7 @@ abstract class MultiColumnRule implements Rule {
 
 
     @JsonProperty
-    public void setColumns(List<String> columns) {
+    public void setColumns(LinkedList<String> columns) {
         this.columns = columns;
     }
 
@@ -50,8 +47,13 @@ abstract class MultiColumnRule implements Rule {
         return level;
     }
 
-    @Override
-    public MessagesGroup messages() {
-        return messages;
+    protected LinkedList<String> getColumnUris(Entity entity) {
+        LinkedList<String> uris = new LinkedList<>();
+
+        for (String c : columns) {
+            uris.add(entity.getAttributeUri(c));
+        }
+
+        return uris;
     }
 }

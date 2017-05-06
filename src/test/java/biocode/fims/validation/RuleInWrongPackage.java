@@ -1,7 +1,7 @@
 package biocode.fims.validation;
 
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 
@@ -15,7 +15,7 @@ public class RuleInWrongPackage implements Rule {
     }
 
     @Override
-    public boolean run(RecordSet recordSet) {
+    public boolean run(RecordSet recordSet, EntityMessages messages) {
         return false;
     }
 
@@ -34,11 +34,6 @@ public class RuleInWrongPackage implements Rule {
 
     @Override
     public RuleLevel level() {
-        return null;
-    }
-
-    @Override
-    public MessagesGroup messages() {
         return null;
     }
 }

@@ -1,7 +1,7 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
 
@@ -26,13 +26,8 @@ public class ValidForURIRule extends AbstractRule {
     private static final String GROUP_MESSAGE = "Non-valid URI characters";
     private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
 
-    public ValidForURIRule() {
-        super();
-        this.messages = new MessagesGroup(GROUP_MESSAGE);
-    }
-
     @Override
-    public boolean run(RecordSet recordSet) {
+    public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
 
         String uri = recordSet.entity().getAttributeUri(column);
@@ -47,14 +42,18 @@ public class ValidForURIRule extends AbstractRule {
             return true;
         }
 
-        setMessages(invalidValues);
+        setMessages(invalidValues, messages);
         return false;
     }
 
-    private void setMessages(List<String> invalidValues) {
-        messages.add(new SimpleMessage(
-                "\"" + column + "\" contains some invalid URI characters: \"" + String.join("\", \"", invalidValues) + "\""
-        ));
+    private void setMessages(List<String> invalidValues, EntityMessages messages) {
+        messages.addMessage(
+                GROUP_MESSAGE,
+                new SimpleMessage(
+                        "\"" + column + "\" contains some invalid URI characters: \"" + String.join("\", \"", invalidValues) + "\""
+                ),
+                level()
+        );
     }
 
     @Override

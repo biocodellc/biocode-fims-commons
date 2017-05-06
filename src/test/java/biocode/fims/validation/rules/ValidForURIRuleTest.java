@@ -1,11 +1,9 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.MessagesGroup;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +17,7 @@ import static org.junit.Assert.*;
 /**
  * @author rjewing
  */
-public class ValidForURIRuleTest {
+public class ValidForURIRuleTest extends AbstractRuleTest {
 
     private ValidForURIRule rule;
 
@@ -30,12 +28,12 @@ public class ValidForURIRuleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
-        assertTrue(rule.run(null));
+        assertTrue(rule.run(null, messages));
     }
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        assertTrue(rule.run(new RecordSet(entity())));
+        assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
@@ -51,15 +49,17 @@ public class ValidForURIRuleTest {
         rule.setColumn("col1");
         rule.setLevel(RuleLevel.ERROR);
 
-        assertFalse(rule.run(recordSet));
+        assertFalse(rule.run(recordSet, messages));
         assertEquals(RuleLevel.ERROR, rule.level());
 
-        MessagesGroup messages = new MessagesGroup("Non-valid URI characters");
-        messages.add(new SimpleMessage(
-                "\"col1\" contains some invalid URI characters: \"" + String.join("\", \"", getInvalidRecordValues()) + "\""
-        ));
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Non-valid URI characters",
+                new SimpleMessage("\"col1\" contains some invalid URI characters: \"" + String.join("\", \"", getInvalidRecordValues()) + "\"")
+        );
 
-        assertEquals(messages, rule.messages());
+        assertEquals(expectedMessages, messages);
+
     }
 
     private List<Record> getValidRecords() {
@@ -77,7 +77,7 @@ public class ValidForURIRuleTest {
     private List<Record> getInvalidRecords() {
         List<Record> recordSet = new ArrayList<>();
 
-        for (String v: getInvalidRecordValues()) {
+        for (String v : getInvalidRecordValues()) {
             Record r = new GenericRecord();
             r.set("urn:col1", v);
             recordSet.add(r);
@@ -88,7 +88,7 @@ public class ValidForURIRuleTest {
 
     private List<String> getInvalidRecordValues() {
         return Arrays.asList(
-                "test ",
+                "tes t",
                 "test%",
                 "test$",
                 "test&",
@@ -106,15 +106,4 @@ public class ValidForURIRuleTest {
                 "test\\"
         );
     }
-
-    private Entity entity() {
-        Entity entity = new Entity();
-        entity.setConceptAlias("Samples");
-
-        Attribute a = new Attribute("col1", "urn:col1");
-        entity.addAttribute(a);
-
-        return entity;
-    }
-
 }

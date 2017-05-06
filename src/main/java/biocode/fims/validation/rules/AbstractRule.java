@@ -1,20 +1,11 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.renderers.MessagesGroup;
-
-import java.util.ArrayList;
-
 /**
  * @author rjewing
  */
 abstract class AbstractRule implements Rule {
     protected String column;
-    protected MessagesGroup messages;
     private RuleLevel level;
-
-    AbstractRule() {
-        messages = new MessagesGroup("MultiColumnRule");
-    }
 
     @Override
     public String column() {
@@ -36,8 +27,4 @@ abstract class AbstractRule implements Rule {
         return level;
     }
 
-    @Override
-    public MessagesGroup messages() {
-        return messages;
-    }
 }
