@@ -741,7 +741,6 @@ public class Rule {
     /**
      * Check that lowestTaxonLevel and LowestTaxon are entered correctly (Biocode Database only)
      */
-    @Deprecated
     public void checkLowestTaxonLevel() {
         String groupMessage = "Lowest taxon level not entered correctly";
 
@@ -893,6 +892,7 @@ public class Rule {
      * 1.  have a value in second column
      * 2.  if there is a list of values specified under the rule, it needs to match one of those values
      */
+    @Deprecated
     public void requiredValueFromOtherColumn() {
 
         StringBuilder fieldListSB = new StringBuilder();
