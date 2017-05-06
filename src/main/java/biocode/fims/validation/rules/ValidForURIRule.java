@@ -1,13 +1,14 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Checks that characters in a string can become a portion of a valid URI
@@ -21,22 +22,41 @@ import java.util.stream.Collectors;
  *
  * @author rjewing
  */
-public class ValidForURIRule extends AbstractRule {
-    private static final String NAME = "validForURI";
+public class ValidForURIRule extends SingleColumnRule {
+    private static final String NAME = "ValidForURI";
     private static final String GROUP_MESSAGE = "Non-valid URI characters";
     private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
+
+    // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
+    ValidForURIRule() {}
+
+    public ValidForURIRule(String column, RuleLevel level) {
+        super(column, level);
+    }
+
+    public ValidForURIRule(String column) {
+        this(column, RuleLevel.WARNING);
+    }
 
     @Override
     public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
 
-        String uri = recordSet.entity().getAttributeUri(column);
+        if (!validConfiguration(recordSet, messages)) {
+            return false;
+        }
 
-        List<String> invalidValues = recordSet.records()
-                .stream()
-                .map(r -> r.get(uri))
-                .filter(v -> !pattern.matcher(v).matches())
-                .collect(Collectors.toList());
+        String uri = recordSet.entity().getAttributeUri(column);
+        List<String> invalidValues = new ArrayList<>();
+
+        for (Record r: recordSet.records()) {
+
+            String value = r.get(uri);
+
+            if (!pattern.matcher(value).matches()) {
+                invalidValues.add(value);
+            }
+        }
 
         if (invalidValues.size() == 0) {
             return true;

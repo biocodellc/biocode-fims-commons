@@ -6,7 +6,13 @@ import biocode.fims.renderers.EntityMessages;
 /**
  * @author rjewing
  */
-public class TestRule extends AbstractRule {
+public class TestRule extends SingleColumnRule {
+    TestRule() {} // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
+
+    public TestRule(String column) {
+        super(column, RuleLevel.WARNING);
+    }
+
     @Override
     public String name() {
         return "TestRule";

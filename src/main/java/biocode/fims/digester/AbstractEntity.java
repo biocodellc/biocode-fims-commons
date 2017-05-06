@@ -1,5 +1,7 @@
 package biocode.fims.digester;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.StringUtils;
 
@@ -139,5 +141,15 @@ public abstract class AbstractEntity {
         result = 31 * result + (getConceptURI() != null ? getConceptURI().hashCode() : 0);
         result = 31 * result + (getConceptForwardingAddress() != null ? getConceptForwardingAddress().hashCode() : 0);
         return result;
+    }
+
+    public Attribute getAttribute(String column) {
+        for (Attribute a: attributes) {
+            if (a.getColumn().equals(column)) {
+                return a;
+            }
+        }
+
+        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
     }
 }

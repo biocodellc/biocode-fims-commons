@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfigValidator;
 import biocode.fims.renderers.EntityMessages;
@@ -24,15 +25,6 @@ public interface Rule {
     boolean run(RecordSet recordSet, EntityMessages messages);
 
     @JsonProperty
-    void setColumn(String column);
-
-    @JsonProperty
-    String column();
-
-    @JsonProperty
-    void setLevel(RuleLevel level);
-
-    @JsonProperty
     RuleLevel level();
 
     /**
@@ -42,7 +34,7 @@ public interface Rule {
      * @param messages error messages to be presented to user
      */
     @JsonIgnore
-    boolean validConfiguration(List<String> messages);
+    boolean validConfiguration(List<String> messages, Entity entity);
 
     /**
      * if {@link Rule#run(RecordSet, EntityMessages)} has failed, this tells us if it was an {@link RuleLevel#ERROR}.

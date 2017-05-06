@@ -17,9 +17,24 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     private static final String NAME = "CompositeUniqueValue";
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
+    // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
+    CompositeUniqueValueRule() {}
+
+    public CompositeUniqueValueRule(List<String> columns) {
+        super(columns, RuleLevel.WARNING);
+    }
+
+    public CompositeUniqueValueRule(List<String> columns, RuleLevel level) {
+        super(columns, level);
+    }
+
     @Override
     public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
+
+        if (!validConfiguration(recordSet, messages)) {
+            return false;
+        }
 
         LinkedList<String> uris = getColumnUris(recordSet.entity());
 
@@ -60,8 +75,8 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         messages.addMessage(
                 GROUP_MESSAGE,
                 new SimpleMessage(
-                "(\"" + String.join("\", \"", columns) + "\") is defined as a composite unique key, but" +
-                        " some value combinations were used more than once: (\"" + String.join("\"), (\"", compositeValues) + "\")"),
+                        "(\"" + String.join("\", \"", columns) + "\") is defined as a composite unique key, but" +
+                                " some value combinations were used more than once: (\"" + String.join("\"), (\"", compositeValues) + "\")"),
                 level()
         );
     }

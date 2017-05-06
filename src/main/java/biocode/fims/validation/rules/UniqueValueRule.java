@@ -1,11 +1,12 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.MessagesGroup;
 import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,24 +21,43 @@ import java.util.stream.Collectors;
  *
  * @author rjewing
  */
-public class UniqueValueRule extends AbstractRule {
-    private static final String NAME = "uniqueValue";
+public class UniqueValueRule extends SingleColumnRule {
+    private static final String NAME = "UniqueValue";
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
+
+    // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
+    UniqueValueRule() {}
+
+    public UniqueValueRule(String column, RuleLevel level) {
+        super(column, level);
+    }
+
+    public UniqueValueRule(String column) {
+        this(column, RuleLevel.WARNING);
+    }
 
     @Override
     public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
 
+        if (!validConfiguration(recordSet, messages)) {
+            return false;
+        }
+
         String uri = recordSet.entity().getAttributeUri(column);
 
         Set<String> set = new HashSet<>();
+        List<String> duplicateValues = new ArrayList<>();
 
-        List<String> duplicateValues = recordSet.records()
-                .stream()
-                .map(r -> r.get(uri))
-                .filter(v -> !v.equals(""))
-                .filter(v -> !set.add(v))
-                .collect(Collectors.toList());
+        for (Record r: recordSet.records()) {
+
+            String value = r.get(uri);
+
+            if (!value.equals("") && !set.add(value)) {
+                duplicateValues.add(value);
+            }
+
+        }
 
         if (duplicateValues.size() == 0) {
             return true;

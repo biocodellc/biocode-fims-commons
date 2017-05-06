@@ -1,7 +1,6 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.digester.Entity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedList;
@@ -10,60 +9,41 @@ import java.util.List;
 /**
  * @author rjewing
  */
-abstract class MultiColumnRule implements Rule {
+abstract class MultiColumnRule extends AbstractRule {
     @JsonProperty
-    protected LinkedList<String> columns;
-    protected boolean hasError;
-    private RuleLevel level;
+    protected List<String> columns;
 
-    public MultiColumnRule() {
-        columns = new LinkedList<>();
-    }
+    MultiColumnRule() {}
 
-    @JsonIgnore
-    @Override
-    public void setColumn(String column) {
-        throw new UnsupportedOperationException("MultiColumnRules do not implement the setColumn method. Use setColumns");
-    }
-
-    @JsonIgnore
-    @Override
-    public String column() {
-        throw new UnsupportedOperationException("MultiColumnRules do not implement the column() method");
-    }
-
-
-    @JsonProperty
-    public void setColumns(LinkedList<String> columns) {
+    MultiColumnRule(List<String> columns, RuleLevel level) {
+        super(level);
         this.columns = columns;
     }
 
-
     @Override
-    public void setLevel(RuleLevel level) {
-        this.level = level;
+    public boolean validConfiguration(List<String> messages, Entity entity) {
+        if (columns.isEmpty()) {
+            messages.add("Invalid " + name() + " Rule configuration. columns must not be empty.");
+
+            return false;
+        }
+
+        return checkColumnsExist(messages, entity);
     }
 
-    @Override
-    public RuleLevel level() {
-        return level;
+    private boolean checkColumnsExist(List<String> messages, Entity entity) {
+        boolean valid = true;
+
+        for (String c: columns) {
+            if (!entityHasAttribute(messages, entity, c)) {
+                valid = false;
+            }
+        }
+
+        return valid;
     }
 
-    @Override
-    public boolean validConfiguration(List<String> messages) {
-        return true;
-    }
-
-    @Override
-    public boolean hasError() {
-        return hasError;
-    }
-
-    protected void setError() {
-        hasError = RuleLevel.ERROR == level;
-    }
-
-    protected LinkedList<String> getColumnUris(Entity entity) {
+    LinkedList<String> getColumnUris(Entity entity) {
         LinkedList<String> uris = new LinkedList<>();
 
         for (String c : columns) {

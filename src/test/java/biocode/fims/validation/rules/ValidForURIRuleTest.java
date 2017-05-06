@@ -19,25 +19,37 @@ import static org.junit.Assert.*;
  */
 public class ValidForURIRuleTest extends AbstractRuleTest {
 
-    private ValidForURIRule rule;
-
-    @Before
-    public void setUp() {
-        this.rule = new ValidForURIRule();
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
+        Rule rule = new ValidForURIRule(null);
         assertTrue(rule.run(null, messages));
     }
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
+        Rule rule = new ValidForURIRule("col1");
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
+    public void should_not_validate_if_null_column() {
+        Rule rule = new ValidForURIRule(null);
+
+        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid Rule Configuration. Contact Project Administrator.",
+                new SimpleMessage("Invalid ValidForURI Rule configuration. Column must not be blank or null.")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
     public void should_not_be_valid_for_any_invalid_URI_chars() {
+        Rule rule = new ValidForURIRule("col1", RuleLevel.ERROR);
         RecordSet recordSet = new RecordSet(entity());
 
         List<Record> invalidRecords = getInvalidRecords();
@@ -45,9 +57,6 @@ public class ValidForURIRuleTest extends AbstractRuleTest {
 
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);
-
-        rule.setColumn("col1");
-        rule.setLevel(RuleLevel.ERROR);
 
         assertFalse(rule.run(recordSet, messages));
         assertTrue(rule.hasError());

@@ -5,12 +5,11 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -20,30 +19,39 @@ import static org.junit.Assert.*;
  */
 public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
 
-    private CompositeUniqueValueRule rule;
-
-    @Before
-    public void setUp() {
-        this.rule = new CompositeUniqueValueRule();
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
-        assertTrue(rule.run(null, messages));
-    }
+        Rule rule = new CompositeUniqueValueRule(null);
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void should_throw_exception_for_setColumn() {
-        rule.setColumn("test");
+        assertTrue(rule.run(null, messages));
     }
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
+        Rule rule = new CompositeUniqueValueRule(Arrays.asList("col1", "col2"));
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
+    public void should_not_validate_if_empty_columns() {
+        Rule rule = new CompositeUniqueValueRule(Collections.emptyList());
+
+        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid Rule Configuration. Contact Project Administrator.",
+                new SimpleMessage("Invalid CompositeUniqueValue Rule configuration. columns must not be empty.")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
     public void should_not_be_valid_when_duplicate_values() {
+        Rule rule = new CompositeUniqueValueRule(Arrays.asList("col1", "col2"), RuleLevel.ERROR);
+
         RecordSet recordSet = new RecordSet(entity());
 
         List<Record> invalidRecords = getInvalidRecords();
@@ -51,9 +59,6 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
 
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);
-
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
-        rule.setLevel(RuleLevel.ERROR);
 
         assertFalse(rule.run(recordSet, messages));
         assertTrue(rule.hasError());

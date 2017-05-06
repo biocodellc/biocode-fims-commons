@@ -1,5 +1,6 @@
 package biocode.fims.validation;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.validation.rules.Rule;
@@ -22,26 +23,13 @@ public class RuleInWrongPackage implements Rule {
     }
 
     @Override
-    public void setColumn(String column) {
-    }
-
-    @Override
-    public String column() {
-        return null;
-    }
-
-    @Override
-    public void setLevel(RuleLevel level) {
-    }
-
-    @Override
     public RuleLevel level() {
         return null;
     }
 
     @Override
-    public boolean validConfiguration(List<String> messages) {
-        return true;
+    public boolean validConfiguration(List<String> messages, Entity entity) {
+        return false;
     }
 
     @Override

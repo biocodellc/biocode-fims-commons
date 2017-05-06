@@ -5,7 +5,6 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
-import org.junit.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,25 +19,55 @@ import static org.junit.Assert.*;
  */
 public class UniqueValueRuleTest extends AbstractRuleTest {
 
-    private UniqueValueRule rule;
-
-    @Before
-    public void setUp() {
-        this.rule = new UniqueValueRule();
-    }
-
-    @org.junit.Test(expected = IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
+        Rule rule = new UniqueValueRule(null);
         assertTrue(rule.run(null, messages));
     }
 
-    @org.junit.Test
+    @Test
     public void should_be_valid_for_empty_recordSet() {
+        Rule rule = new UniqueValueRule("col1");
+
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
+    public void should_not_validate_if_empty_columns() {
+        Rule rule = new UniqueValueRule(null);
+
+        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid Rule Configuration. Contact Project Administrator.",
+                new SimpleMessage("Invalid UniqueValue Rule configuration. Column must not be blank or null.")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
+    public void should_not_validate_if_no_attribute_for_column() {
+        Rule rule = new UniqueValueRule("fake_column");
+
+        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid Rule Configuration. Contact Project Administrator.",
+                new SimpleMessage("Invalid UniqueValue Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
     public void should_not_be_valid_when_duplicate_values() {
+        Rule rule = new UniqueValueRule("col1", RuleLevel.ERROR);
+
         RecordSet recordSet = new RecordSet(entity());
 
         List<Record> invalidRecords = getInvalidRecords();
@@ -46,9 +75,6 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
 
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);
-
-        rule.setColumn("col1");
-        rule.setLevel(RuleLevel.ERROR);
 
         assertFalse(rule.run(recordSet, messages));
         assertTrue(rule.hasError());

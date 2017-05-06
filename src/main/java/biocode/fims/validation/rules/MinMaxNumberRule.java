@@ -1,9 +1,12 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -11,42 +14,55 @@ import java.util.regex.Pattern;
 
 /**
  * Check that minimum/maximum numbers are entered correctly.
- *
- * 1) check that either both columns are present or missing, but not only 1 column present
+ * <p>
+ * minimumColumn and maximumColumn must both set
+ * <p>
+ * 1) check that either both minimumColumn and maximumColumn are either present or missing, but not only 1 column present
  * 2) check that each column is a valid number
- * 3) check that the 2nd column in columns list is greater the the 1st column
+ * 3) check that maximumColumn is greater then the minimumColumn for each {@link Record}
  *
  * @author rjewing
  */
-public class MinMaxNumberRule extends MultiColumnRule {
+public class MinMaxNumberRule extends AbstractRule {
     private static final String NAME = "MinMaxNumber";
     private static final String GROUP_MESSAGE = "Number outside of range";
     private static final Pattern pattern = Pattern.compile("(\\d+.?\\d*|.\\d+)");
+
+    @JsonProperty
+    private String minimumColumn;
+    @JsonProperty
+    private String maximumColumn;
+
+    // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
+    MinMaxNumberRule() {}
+
+    public MinMaxNumberRule(String minimumColumn, String maximumColumn, RuleLevel level) {
+        super(level);
+        this.minimumColumn = minimumColumn;
+        this.maximumColumn = maximumColumn;
+    }
+
+    public MinMaxNumberRule(String minimumColumn, String maximumColumn) {
+        this(minimumColumn, maximumColumn, RuleLevel.WARNING);
+    }
+
 
     @Override
     public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
         boolean isValid = true;
 
-        if (!twoColumnsSpecified()) {
-            messages.addErrorMessage(
-                    "Invalid Rule Configuration",
-                    new SimpleMessage(
-                            "Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                                    "but we found " + columns.size() + ". Talk to your project administrator to fix the issue"
-                    )
-            );
-
-            hasError = true;
+        if (!validConfiguration(recordSet, messages)) {
             return false;
         }
 
-        LinkedList<String> uris = getColumnUris(recordSet.entity());
+        String minUri = recordSet.entity().getAttributeUri(minimumColumn);
+        String maxUri = recordSet.entity().getAttributeUri(maximumColumn);
 
         for (Record r : recordSet.records()) {
 
-            String minColVal = r.get(uris.get(0));
-            String maxColVal = r.get(uris.get(1));
+            String minColVal = r.get(minUri);
+            String maxColVal = r.get(maxUri);
 
             if (minColVal.equals("") && maxColVal.equals("")) {
                 continue;
@@ -54,14 +70,14 @@ public class MinMaxNumberRule extends MultiColumnRule {
                 isValid = false;
                 messages.addWarningMessage(
                         "Spreadsheet check",
-                        new SimpleMessage("Column \"" + columns.get(1) + "\" exists but must have corresponding column \"" + columns.get(0) + "\"")
+                        new SimpleMessage("Column \"" + maximumColumn + "\" exists but must have corresponding column \"" + minimumColumn + "\"")
                 );
                 continue;
             } else if (maxColVal.equals("")) {
                 isValid = false;
                 messages.addWarningMessage(
                         "Spreadsheet check",
-                        new SimpleMessage("Column \"" + columns.get(0) + "\" exists but must have corresponding column \"" + columns.get(1) + "\"")
+                        new SimpleMessage("Column \"" + minimumColumn + "\" exists but must have corresponding column \"" + maximumColumn + "\"")
                 );
                 continue;
             }
@@ -70,7 +86,7 @@ public class MinMaxNumberRule extends MultiColumnRule {
             if (!pattern.matcher(minColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
-                        new SimpleMessage("non-numeric value \"" + minColVal + "\" for column \"" + columns.get(0) + "\""),
+                        new SimpleMessage("non-numeric value \"" + minColVal + "\" for column \"" + minimumColumn + "\""),
                         level()
                 );
                 validNumbers = false;
@@ -80,7 +96,7 @@ public class MinMaxNumberRule extends MultiColumnRule {
             if (!pattern.matcher(maxColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
-                        new SimpleMessage("non-numeric value \"" + maxColVal + "\" for column \"" + columns.get(1) + "\""),
+                        new SimpleMessage("non-numeric value \"" + maxColVal + "\" for column \"" + maximumColumn + "\""),
                         level()
                 );
                 validNumbers = false;
@@ -92,7 +108,7 @@ public class MinMaxNumberRule extends MultiColumnRule {
                     if (Double.parseDouble(minColVal) > Double.parseDouble(maxColVal)) {
                         messages.addMessage(
                                 GROUP_MESSAGE,
-                                new SimpleMessage("Illegal values! " + columns.get(0) + " = " + minColVal + " while " + columns.get(1) + " = " + maxColVal + ""),
+                                new SimpleMessage("Illegal values! " + minimumColumn + " = " + minColVal + " while " + maximumColumn + " = " + maxColVal + ""),
                                 level()
                         );
                         isValid = false;
@@ -111,22 +127,18 @@ public class MinMaxNumberRule extends MultiColumnRule {
         return isValid;
     }
 
-    private boolean twoColumnsSpecified() {
-        return columns.size() == 2;
-    }
-
     @Override
-    public boolean validConfiguration(List<String> messages) {
-        if (!twoColumnsSpecified()) {
+    public boolean validConfiguration(List<String> messages, Entity entity) {
+        if (StringUtils.isBlank(minimumColumn) || StringUtils.isBlank(maximumColumn)) {
             messages.add(
-                    "Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                            "but we found " + columns.size() + ". Talk to your project administrator to fix the issue"
+                    "Invalid MinMaxNumber Rule configuration. minimumColumn and maximumColumn must not be null or empty"
             );
 
             return false;
         }
 
-        return super.validConfiguration(messages);
+        return entityHasAttribute(messages, entity, minimumColumn)
+                && entityHasAttribute(messages, entity, maximumColumn);
     }
 
     @Override

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.spy;
 /**
  * Tests for {@link UserService}
  */
+@Ignore
 public class UserServiceTest {
     private String INVALID_PASSWORD = "password";
     private String PASSWORD = "correct";

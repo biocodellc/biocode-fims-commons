@@ -5,7 +5,6 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
@@ -17,68 +16,36 @@ import static org.junit.Assert.*;
  */
 public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
-    private MinMaxNumberRule rule;
-
-    @Before
-    public void setUp() {
-        this.rule = new MinMaxNumberRule();
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
+        Rule rule = new MinMaxNumberRule(null, null);
         assertTrue(rule.run(null, messages));
     }
 
     @Test
     public void should_return_false_from_validConfiguration_if_only_1_column() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1")));
+        Rule rule = new MinMaxNumberRule("col1", null);
 
         List<String> messages = new ArrayList<>();
 
-        assertFalse(rule.validConfiguration(messages));
+        assertFalse(rule.validConfiguration(messages, entity()));
 
-        assertEquals(Collections.singletonList("Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                "but we found 1. Talk to your project administrator to fix the issue"), messages);
-    }
-
-    @Test
-    public void should_return_false_from_validConfiguration_if_more_then_2_columns() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2", "col3")));
-        List<String> messages = new ArrayList<>();
-
-        assertFalse(rule.validConfiguration(messages));
-
-        assertEquals(Collections.singletonList("Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                "but we found 3. Talk to your project administrator to fix the issue"), messages);
+        assertEquals(Collections.singletonList("Invalid MinMaxNumber Rule configuration. minimumColumn and " +
+                "maximumColumn must not be null or empty"), messages);
     }
 
     @Test
     public void should_not_validate_if_only_1_column() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1")));
+        Rule rule = new MinMaxNumberRule("col1", null);
+
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
-                "Invalid Rule Configuration",
-                new SimpleMessage("Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                        "but we found 1. Talk to your project administrator to fix the issue")
-        );
-
-        assertEquals(expectedMessages, messages);
-    }
-
-    @Test
-    public void should_not_validate_if_more_then_2_columns() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2", "col3")));
-        assertFalse(rule.run(new RecordSet(entity()), messages));
-        assertTrue(rule.hasError());
-
-        EntityMessages expectedMessages = new EntityMessages("Samples");
-        expectedMessages.addErrorMessage(
-                "Invalid Rule Configuration",
-                new SimpleMessage("Invalid MinMaxNumber Rule configuration. 2 columns should be specified, " +
-                        "but we found 3. Talk to your project administrator to fix the issue")
+                "Invalid Rule Configuration. Contact Project Administrator.",
+                new SimpleMessage("Invalid MinMaxNumber Rule configuration. minimumColumn and " +
+                        "maximumColumn must not be null or empty")
         );
 
         assertEquals(expectedMessages, messages);
@@ -86,14 +53,14 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
     public void should_not_be_valid_for_missing_value_from_min_col() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity());
 
@@ -114,7 +81,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_be_valid_for_missing_value_from_max_col() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity());
 
@@ -135,7 +102,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_be_valid_for_non_numeric_values() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity());
 
@@ -166,7 +133,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_be_valid_if_2nd_col_is_greater_then_first() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity());
 
@@ -193,7 +160,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_be_valid() {
-        rule.setColumns(new LinkedList<>(Arrays.asList("col1", "col2")));
+        Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity());
 
