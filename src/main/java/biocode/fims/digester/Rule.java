@@ -677,6 +677,7 @@ public class Rule {
      * level='error'></rule>
      * }
      */
+    @Deprecated
     public void minimumMaximumNumberCheck() {
         String groupMessage = "Number outside of range";
         String minimum = getCleanedColumn().split(",")[0];
@@ -740,6 +741,7 @@ public class Rule {
     /**
      * Check that lowestTaxonLevel and LowestTaxon are entered correctly (Biocode Database only)
      */
+    @Deprecated
     public void checkLowestTaxonLevel() {
         String groupMessage = "Lowest taxon level not entered correctly";
 
