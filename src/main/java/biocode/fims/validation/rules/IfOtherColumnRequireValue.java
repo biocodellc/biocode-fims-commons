@@ -5,6 +5,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class IfOtherColumnRequireValue extends SingleColumnRule {
     private static final String NAME = "IfOtherColumnRequireValue";
     private static final String GROUP_MESSAGE = "Dependent column value check";
+    @JsonProperty
     private String otherColumn;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation

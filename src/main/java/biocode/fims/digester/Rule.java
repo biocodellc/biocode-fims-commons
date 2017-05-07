@@ -1091,6 +1091,7 @@ public class Rule {
      * <rule type="checkTissueColumns" name="" plateName="format_name96" wellNumber="well_number96" level="warning"/>
      * }
      */
+    @Deprecated
     public void checkTissueColumns() {
         String groupMessage = "Well number / plate names not entered correctly";
 
@@ -1136,6 +1137,7 @@ public class Rule {
      * Multiple ranges can be specified in value, like:   value:">=-90 and <=90"
      * or, simply value:">=0"
      */
+    @Deprecated
     public void validateNumeric() {
         String groupMessage = "Invalid number format";
         boolean validNumber = true;
@@ -1260,6 +1262,7 @@ public class Rule {
      * level="warning"/>
      * }
      */
+    @Deprecated
     public void DwCLatLngChecker() {
         String msg = "";
         String groupMessage = "Invalid Latitude / longitude";
