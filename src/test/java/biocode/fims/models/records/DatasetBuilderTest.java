@@ -308,9 +308,8 @@ public class DatasetBuilderTest {
     }
 
     private Entity samplesEntity() {
-        Entity entity = new Entity();
+        Entity entity = new Entity("sample");
         entity.setWorksheet("samples");
-        entity.setConceptAlias("sample");
         entity.setParentEntity("event");
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
@@ -326,9 +325,8 @@ public class DatasetBuilderTest {
     }
 
     private Entity eventsEntity() {
-        Entity entity = new Entity();
+        Entity entity = new Entity("event");
         entity.setWorksheet("events");
-        entity.setConceptAlias("event");
         entity.setUniqueKey("eventID");
 
         Attribute a1 = new Attribute("location", "urn:location");

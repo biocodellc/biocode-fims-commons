@@ -19,8 +19,12 @@ public class GenericRecordValidator implements RecordValidator {
 
     @Override
     public boolean validate(RecordSet recordSet) {
-        Assert.notNull(config);
         Assert.notNull(recordSet);
+
+        if (config == null) {
+            throw new IllegalStateException("ProjectConfig must not be null. Call setProjectConfig first before validate");
+        }
+
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
         return true;
     }

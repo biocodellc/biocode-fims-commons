@@ -185,9 +185,8 @@ public class ExcelReaderTest {
     private Mapping getSingleEntityMapping() {
         Mapping mapping = new Mapping();
 
-        Entity entity = new Entity();
+        Entity entity = new Entity("samples");
         entity.setWorksheet("samples");
-        entity.setConceptAlias("samples");
         mapping.addEntity(entity);
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
@@ -217,14 +216,12 @@ public class ExcelReaderTest {
     private Mapping getMultipleEntityMapping() {
         Mapping mapping = new Mapping();
 
-        Entity entity1 = new Entity();
+        Entity entity1 = new Entity("samples");
         entity1.setWorksheet("samples");
-        entity1.setConceptAlias("samples");
         mapping.addEntity(entity1);
 
-        Entity entity2 = new Entity();
+        Entity entity2 = new Entity("tissues");
         entity2.setWorksheet("samples");
-        entity2.setConceptAlias("tissues");
         mapping.addEntity(entity2);
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
@@ -255,8 +252,7 @@ public class ExcelReaderTest {
     private Mapping getMultipleEntityMultiSheetMapping() {
         Mapping mapping = getMultipleEntityMapping();
 
-        Entity entity = new Entity();
-        entity.setConceptAlias("events");
+        Entity entity = new Entity("events");
         entity.setWorksheet("events");
         mapping.addEntity(entity);
 

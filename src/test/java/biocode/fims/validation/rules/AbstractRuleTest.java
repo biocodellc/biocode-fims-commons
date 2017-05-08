@@ -17,8 +17,7 @@ abstract class AbstractRuleTest {
     }
 
     protected Entity entity() {
-        Entity entity = new Entity();
-        entity.setConceptAlias("Samples");
+        Entity entity = new Entity("Samples");
 
         Attribute a = new Attribute("col1", "urn:col1");
         Attribute a2 = new Attribute("col2", "urn:col2");

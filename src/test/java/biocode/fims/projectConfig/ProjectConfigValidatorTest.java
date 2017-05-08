@@ -30,7 +30,7 @@ public class ProjectConfigValidatorTest {
     @Test
     public void invalid_if_entity_missing_concept_alias() {
         Mapping mapping = new Mapping();
-        mapping.addEntity(entityNoConceptAlias());
+        mapping.addEntity(new Entity(""));
 
         ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
@@ -152,15 +152,13 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity entityNoConceptAlias() {
-        Entity e = entity1();
-        e.setConceptAlias("");
+        Entity e = new Entity("");
         return e;
     }
 
     private Entity entity1() {
-        Entity e = new Entity();
+        Entity e = new Entity("resource1");
 
-        e.setConceptAlias("resource1");
         e.setConceptForwardingAddress("http://example.com");
         e.setConceptURI(RESOURCE_URI);
         e.setUniqueKey("column1");
@@ -172,9 +170,8 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity();
+        Entity e = new Entity("resource2");
 
-        e.setConceptAlias("resource2");
         e.setConceptURI(RESOURCE_URI);
         e.setUniqueKey("column2");
         e.setWorksheet("worksheet2");

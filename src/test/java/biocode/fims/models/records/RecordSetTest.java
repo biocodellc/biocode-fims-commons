@@ -95,8 +95,7 @@ public class RecordSetTest {
     }
 
     private Entity entity() {
-        Entity entity = new Entity();
-        entity.setConceptAlias("resource");
+        Entity entity = new Entity("resource");
         entity.setUniqueKey("column1");
 
         Attribute a = new Attribute("column1", "urn:column1");

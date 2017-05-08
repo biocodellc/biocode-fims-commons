@@ -83,9 +83,8 @@ abstract class DelimitedTextReaderTest {
     protected Mapping getSingleEntityMapping() {
         Mapping mapping = new Mapping();
 
-        Entity entity = new Entity();
+        Entity entity = new Entity("samples");
         entity.setWorksheet("sheet1");
-        entity.setConceptAlias("samples");
         mapping.addEntity(entity);
 
         Attribute a1 = new Attribute("materialSampleID", "urn:materialSampleID");
@@ -117,14 +116,12 @@ abstract class DelimitedTextReaderTest {
     protected Mapping getMultipleEntityMapping() {
         Mapping mapping = new Mapping();
 
-        Entity entity1 = new Entity();
+        Entity entity1 = new Entity("samples");
         entity1.setWorksheet("sheet1");
-        entity1.setConceptAlias("samples");
         mapping.addEntity(entity1);
 
-        Entity entity2 = new Entity();
+        Entity entity2 = new Entity("events");
         entity2.setWorksheet("sheet1");
-        entity2.setConceptAlias("events");
         mapping.addEntity(entity2);
 
         Attribute a1 = new Attribute("materialSampleID", "urn:materialSampleID");

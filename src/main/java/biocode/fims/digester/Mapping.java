@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class Mapping {
 
     private final LinkedList<Entity> entities = new LinkedList<Entity>();
-    private final LinkedList<ChildEntity> childEntities = new LinkedList<>();
     private final LinkedList<Relation> relations = new LinkedList<Relation>();
     private Metadata metadata;
 
@@ -124,15 +123,6 @@ public class Mapping {
         return entities;
     }
 
-    public void addChildEntity(ChildEntity e) {
-        childEntities.addLast(e);
-    }
-
-    @JsonIgnore
-    public LinkedList<ChildEntity> getChildEntities() {
-        return childEntities;
-    }
-
     /**
      * Add a Relation to this Mapping by appending to the LinkedList of relations
      *
@@ -158,21 +148,6 @@ public class Mapping {
                 return entity;
         }
         return null;
-    }
-
-    /**
-     * Find ChildEntity with a given conceptAlias
-     *
-     * @param conceptAlias
-     * @return
-     */
-    public ChildEntity findChildEntity(String conceptAlias) {
-        for (ChildEntity entity : childEntities) {
-            if (conceptAlias.equals(entity.getConceptAlias()))
-                return entity;
-        }
-
-        throw new FimsRuntimeException("Project Configuration error. Talk to the project administrator", "ChildEntity not found with conceptAlias: " + conceptAlias, 500);
     }
 
     /**
@@ -315,12 +290,6 @@ public class Mapping {
         // Next two lines are newer, may not appear in all configuration files
         d.addCallMethod("fims/mapping/entity/attribute/synonyms", "addSynonyms", 0);
         d.addSetNext("fims/mapping/entity/attribute", "addAttribute");
-
-        // Create entity objects
-        d.addObjectCreate("fims/mapping/childEntity", ChildEntity.class);
-        d.addSetProperties("fims/mapping/childEntity");
-        // the last 2 params provide backwards compatibility for config files that still use worksheetUniqueKey
-        d.addSetNext("fims/mapping/childEntity", "addChildEntity");
 
         // Add attributes associated with this entity
         d.addObjectCreate("fims/mapping/childEntity/attribute", Attribute.class);
