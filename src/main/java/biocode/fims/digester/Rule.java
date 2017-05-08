@@ -284,6 +284,7 @@ public class Rule {
      * If a dataformat other then "string" is specified for an {@link Attribute}, we check that the data is of the
      * correct type ("integer", "date", etc)
      */
+    @Deprecated
     public void validDataTypeFormat() {
         addSqliteRegExp();
         for (Attribute a : mapping.getAllAttributes(digesterWorksheet.getSheetname())) {
