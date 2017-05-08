@@ -624,6 +624,7 @@ public class Rule {
      * </rule>
      * }
      */
+    @Deprecated
     public void BoundingBox() {
         String groupMessage = "Coordinates outside specified bounding box";
 
@@ -741,6 +742,7 @@ public class Rule {
     /**
      * Check that lowestTaxonLevel and LowestTaxon are entered correctly (Biocode Database only)
      */
+    @Deprecated
     public void checkLowestTaxonLevel() {
         String groupMessage = "Lowest taxon level not entered correctly";
 
@@ -1813,6 +1815,7 @@ public class Rule {
      * <field>column2</field>
      * </rule>
      */
+    @Deprecated
     public void requiredColumnInGroup() {
         String groupMessage = "Missing column from group";
         Statement statement = null;
