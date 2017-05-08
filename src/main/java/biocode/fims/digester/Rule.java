@@ -1480,6 +1480,7 @@ public class Rule {
      * </rule>
      * }
      */
+    @Deprecated
     public void RequiredColumn() {
         String groupMessage = "Missing column(s)";
         Statement statement = null;
@@ -1553,6 +1554,7 @@ public class Rule {
      * </rule>
      * }
      */
+    @Deprecated
     public void RequiredColumns() {
         String groupMessage = "Missing column(s)";
         Statement statement = null;
