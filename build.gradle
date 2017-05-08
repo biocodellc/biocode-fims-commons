@@ -50,9 +50,7 @@ dependencies {
     server 'javax.servlet:javax.servlet-api:3.1.0'
     server 'org.apache.poi:poi:3.10.1'
     server 'org.apache.poi:poi-ooxml:3.10.1'
-    server('org.apache.commons:commons-digester3:3.2') {
-        exclude module: 'asm'
-    }
+    server('org.apache.commons:commons-digester3:3.2')
     server 'commons-validator:commons-validator:1.5.0'
     server 'commons-cli:commons-cli:1.2'
     server 'org.apache.commons:commons-dbcp2:2.1.1'
