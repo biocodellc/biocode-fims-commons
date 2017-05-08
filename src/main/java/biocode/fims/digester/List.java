@@ -8,7 +8,7 @@ import java.util.LinkedList;
  */
 public class List {
     private String alias;
-    private boolean caseInsensitive;
+    private boolean caseInsensitive = false;
     //private java.util.List fields = new ArrayList();
      // Loop all the lists associated with the validation element
     private final LinkedList<Field> fields = new LinkedList<Field>();

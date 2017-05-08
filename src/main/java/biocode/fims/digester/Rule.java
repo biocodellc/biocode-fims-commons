@@ -1389,6 +1389,7 @@ public class Rule {
      * <rule type="controlledVocabulary" name="relaxant" level="warning" list="list3"/>
      * }
      */
+    @Deprecated
     public void controlledVocabulary() {
         StringBuilder lookupSB = new StringBuilder();
         List<Field> listFields = null;
