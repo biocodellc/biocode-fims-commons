@@ -22,11 +22,11 @@ public class RequiredValueRule extends MultiColumnRule {
     RequiredValueRule() {
     }
 
-    public RequiredValueRule(List<String> columns) {
+    public RequiredValueRule(LinkedHashSet<String> columns) {
         super(columns, RuleLevel.WARNING);
     }
 
-    public RequiredValueRule(List<String> columns, RuleLevel level) {
+    public RequiredValueRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
     }
 

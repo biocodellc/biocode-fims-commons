@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 
 import static org.junit.Assert.*;
 
@@ -28,13 +29,13 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        Rule rule = new RequiredValueInGroupRule(Arrays.asList("col2", "col3"));
+        Rule rule = new RequiredValueInGroupRule(new LinkedHashSet(Arrays.asList("col2", "col3")));
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_columns() {
-        Rule rule = new RequiredValueInGroupRule(Collections.emptyList());
+        Rule rule = new RequiredValueInGroupRule(new LinkedHashSet<>(Collections.emptyList()));
 
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
@@ -50,7 +51,7 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_be_valid_when_all_columns_are_missing_value() {
-        Rule rule = new RequiredValueInGroupRule(Arrays.asList("col2", "col3"), RuleLevel.ERROR);
+        Rule rule = new RequiredValueInGroupRule(new LinkedHashSet<>(Arrays.asList("col2", "col3")), RuleLevel.ERROR);
 
         RecordSet recordSet = new RecordSet(entity());
 

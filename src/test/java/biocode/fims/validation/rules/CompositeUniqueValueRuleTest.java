@@ -7,10 +7,7 @@ import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -28,13 +25,13 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        Rule rule = new CompositeUniqueValueRule(Arrays.asList("col1", "col2"));
+        Rule rule = new CompositeUniqueValueRule(new LinkedHashSet(Arrays.asList("col1", "col2")));
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_columns() {
-        Rule rule = new CompositeUniqueValueRule(Collections.emptyList());
+        Rule rule = new CompositeUniqueValueRule(new LinkedHashSet<>(Collections.emptyList()));
 
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
@@ -50,7 +47,7 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_be_valid_when_duplicate_values() {
-        Rule rule = new CompositeUniqueValueRule(Arrays.asList("col1", "col2"), RuleLevel.ERROR);
+        Rule rule = new CompositeUniqueValueRule(new LinkedHashSet<>(Arrays.asList("col1", "col2")), RuleLevel.ERROR);
 
         RecordSet recordSet = new RecordSet(entity());
 

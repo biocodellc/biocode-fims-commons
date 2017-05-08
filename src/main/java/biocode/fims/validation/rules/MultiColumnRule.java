@@ -3,19 +3,21 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author rjewing
  */
 abstract class MultiColumnRule extends AbstractRule {
     @JsonProperty
-    protected List<String> columns;
+    protected LinkedHashSet<String> columns;
 
     MultiColumnRule() {}
 
-    MultiColumnRule(List<String> columns, RuleLevel level) {
+    MultiColumnRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(level);
         this.columns = columns;
     }

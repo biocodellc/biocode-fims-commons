@@ -1,6 +1,6 @@
 package biocode.fims.renderers;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -8,10 +8,10 @@ import java.util.List;
  */
 public class MessagesGroupCollection {
 
-    public List<MessagesGroup> messages;
+    public LinkedList<MessagesGroup> messages;
 
     public MessagesGroupCollection() {
-        messages = new ArrayList<>();
+        messages = new LinkedList<>();
     }
 
 

@@ -8,7 +8,9 @@ import biocode.fims.renderers.SimpleMessage;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * check that at least 1 column in the columns list has a value
@@ -25,11 +27,11 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
     RequiredValueInGroupRule() {
     }
 
-    public RequiredValueInGroupRule(List<String> columns) {
+    public RequiredValueInGroupRule(LinkedHashSet<String> columns) {
         super(columns, RuleLevel.WARNING);
     }
 
-    public RequiredValueInGroupRule(List<String> columns, RuleLevel level) {
+    public RequiredValueInGroupRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
     }
 

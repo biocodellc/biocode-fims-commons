@@ -7,9 +7,7 @@ import biocode.fims.renderers.EntityMessages;
 import biocode.fims.validation.rules.*;
 import org.springframework.util.Assert;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author rjewing
@@ -67,7 +65,7 @@ public class GenericRecordValidator implements RecordValidator {
         }
 
         if (!setRequiredValueRule) {
-            rules.add(new RequiredValueRule(Arrays.asList(entity.getUniqueKey()), RuleLevel.ERROR));
+            rules.add(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList(entity.getUniqueKey())), RuleLevel.ERROR));
         }
     }
 

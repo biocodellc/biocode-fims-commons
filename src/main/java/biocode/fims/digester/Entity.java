@@ -4,6 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
+import biocode.fims.validation.rules.Rule;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.StringUtils;
 
@@ -13,7 +14,7 @@ import java.util.*;
 public class Entity {
 
     private final LinkedList<Attribute> attributes;
-    private final Set<biocode.fims.validation.rules.Rule> rules;
+    private final LinkedHashSet<Rule> rules;
     private String worksheet;
     private String uniqueKey;
     private String conceptAlias;
@@ -26,7 +27,7 @@ public class Entity {
 
     public Entity(String conceptAlias) {
         this.conceptAlias = conceptAlias;
-        rules = new HashSet<>();
+        rules = new LinkedHashSet<>();
         attributes = new LinkedList<>();
     }
 
@@ -38,11 +39,11 @@ public class Entity {
         return attributes;
     }
 
-    public Set<biocode.fims.validation.rules.Rule> getRules() {
+    public LinkedHashSet<Rule> getRules() {
         return rules;
     }
 
-    public void addRule(biocode.fims.validation.rules.Rule rule) {
+    public void addRule(Rule rule) {
         this.rules.add(rule);
     }
 

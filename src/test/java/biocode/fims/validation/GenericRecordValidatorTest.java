@@ -87,20 +87,20 @@ public class GenericRecordValidatorTest {
                 new SimpleMessage("Value \"nonInteger\" out of range for \"col2\" using range validation = \">0|<=10\"")
         );
         expectedMessages.addErrorMessage(
-                "Non-valid URI characters",
-                new SimpleMessage("\"eventId\" contains some invalid URI characters: \"nonUri=\", \"\"")
-        );
-        expectedMessages.addErrorMessage(
-                "Missing column(s)",
-                new SimpleMessage("\"eventId\" has a missing cell value")
+                "Invalid DataFormat",
+                new SimpleMessage("\"col2\" contains non-integer value \"nonInteger\"")
         );
         expectedMessages.addErrorMessage(
                 "Unique value constraint did not pass",
                 new SimpleMessage("\"eventId\" column is defined as unique but some values used more than once: \"1234\"")
         );
         expectedMessages.addErrorMessage(
-                "Invalid DataFormat",
-                new SimpleMessage("\"col2\" contains non-integer value \"nonInteger\"")
+                "Non-valid URI characters",
+                new SimpleMessage("\"eventId\" contains some invalid URI characters: \"nonUri=\", \"\"")
+        );
+        expectedMessages.addErrorMessage(
+                "Missing column(s)",
+                new SimpleMessage("\"eventId\" has a missing cell value")
         );
 
         assertEquals(expectedMessages, validator.messages());

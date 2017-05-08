@@ -20,11 +20,11 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
     CompositeUniqueValueRule() {}
 
-    public CompositeUniqueValueRule(List<String> columns) {
+    public CompositeUniqueValueRule(LinkedHashSet<String> columns) {
         super(columns, RuleLevel.WARNING);
     }
 
-    public CompositeUniqueValueRule(List<String> columns, RuleLevel level) {
+    public CompositeUniqueValueRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
     }
 
