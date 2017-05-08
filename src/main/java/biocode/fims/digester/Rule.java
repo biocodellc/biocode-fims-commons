@@ -1762,6 +1762,7 @@ public class Rule {
      * datasetContainsExtraColumns check to see if the uploaded dataset contains any columns that
      * do not exist in the project configuration
      */
+    @Deprecated
     public void datasetContainsExtraColumns() {
         String groupMessge = "Undefined columns. Column(s) will not be persisted.";
         List<String> datasetColumns = worksheet.getColNames();
@@ -1777,6 +1778,7 @@ public class Rule {
     /**
      * isValidUrl checks to see if a string is a valid Url, with the schemes {"http", "https"}
      */
+    @Deprecated
     public void isValidUrl() {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
