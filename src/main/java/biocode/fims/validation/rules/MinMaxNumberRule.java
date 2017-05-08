@@ -146,4 +146,24 @@ public class MinMaxNumberRule extends AbstractRule {
         return NAME;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MinMaxNumberRule)) return false;
+        if (!super.equals(o)) return false;
+
+        MinMaxNumberRule that = (MinMaxNumberRule) o;
+
+        if (minimumColumn != null ? !minimumColumn.equals(that.minimumColumn) : that.minimumColumn != null)
+            return false;
+        return maximumColumn != null ? maximumColumn.equals(that.maximumColumn) : that.maximumColumn == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (minimumColumn != null ? minimumColumn.hashCode() : 0);
+        result = 31 * result + (maximumColumn != null ? maximumColumn.hashCode() : 0);
+        return result;
+    }
 }

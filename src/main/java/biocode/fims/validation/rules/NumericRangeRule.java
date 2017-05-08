@@ -189,4 +189,22 @@ public class NumericRangeRule extends SingleColumnRule {
     private enum OPERATOR {
         GREATER_THEN, LESS_THEN, GREATER_THEN_EQUALS, LESS_THEN_EQUALS
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NumericRangeRule)) return false;
+        if (!super.equals(o)) return false;
+
+        NumericRangeRule that = (NumericRangeRule) o;
+
+        return range != null ? range.equals(that.range) : that.range == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (range != null ? range.hashCode() : 0);
+        return result;
+    }
 }

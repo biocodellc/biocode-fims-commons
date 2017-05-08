@@ -92,4 +92,21 @@ public class IfOtherColumnRequireValue extends SingleColumnRule {
         return NAME;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof IfOtherColumnRequireValue)) return false;
+        if (!super.equals(o)) return false;
+
+        IfOtherColumnRequireValue that = (IfOtherColumnRequireValue) o;
+
+        return otherColumn != null ? otherColumn.equals(that.otherColumn) : that.otherColumn == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (otherColumn != null ? otherColumn.hashCode() : 0);
+        return result;
+    }
 }

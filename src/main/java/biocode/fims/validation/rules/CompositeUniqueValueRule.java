@@ -85,5 +85,4 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     public String name() {
         return NAME;
     }
-
 }

@@ -35,4 +35,21 @@ abstract class SingleColumnRule extends AbstractRule {
         return entityHasAttribute(messages, entity, column);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SingleColumnRule)) return false;
+        if (!super.equals(o)) return false;
+
+        SingleColumnRule that = (SingleColumnRule) o;
+
+        return column != null ? column.equals(that.column) : that.column == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (column != null ? column.hashCode() : 0);
+        return result;
+    }
 }

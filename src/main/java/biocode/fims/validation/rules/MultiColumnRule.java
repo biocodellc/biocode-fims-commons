@@ -52,4 +52,22 @@ abstract class MultiColumnRule extends AbstractRule {
 
         return uris;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MultiColumnRule)) return false;
+        if (!super.equals(o)) return false;
+
+        MultiColumnRule that = (MultiColumnRule) o;
+
+        return columns != null ? columns.equals(that.columns) : that.columns == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (columns != null ? columns.hashCode() : 0);
+        return result;
+    }
 }

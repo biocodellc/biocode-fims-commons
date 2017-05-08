@@ -129,4 +129,22 @@ public class ControlledVocabularyRule extends SingleColumnRule {
     public String name() {
         return NAME;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ControlledVocabularyRule)) return false;
+        if (!super.equals(o)) return false;
+
+        ControlledVocabularyRule that = (ControlledVocabularyRule) o;
+
+        return listName != null ? listName.equals(that.listName) : that.listName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (listName != null ? listName.hashCode() : 0);
+        return result;
+    }
 }

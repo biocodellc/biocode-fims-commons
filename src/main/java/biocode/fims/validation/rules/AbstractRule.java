@@ -80,4 +80,24 @@ abstract class AbstractRule implements Rule {
 
         return true;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractRule)) return false;
+
+        AbstractRule that = (AbstractRule) o;
+        if (name() != null ? !name().equals(that.name()) : that.name() != null) {
+            return false;
+        }
+
+        return level == that.level;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = level != null ? level.hashCode() : 0;
+        result = 31 * result + (name() != null ? name().hashCode() : 0);
+        return result;
+    }
 }
