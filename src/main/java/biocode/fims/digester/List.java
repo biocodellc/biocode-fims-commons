@@ -8,7 +8,7 @@ import java.util.LinkedList;
  */
 public class List {
     private String alias;
-    private String caseInsensitive;
+    private boolean caseInsensitive;
     //private java.util.List fields = new ArrayList();
      // Loop all the lists associated with the validation element
     private final LinkedList<Field> fields = new LinkedList<Field>();
@@ -31,11 +31,11 @@ public class List {
         this.alias = alias;
     }
 
-    public String getCaseInsensitive() {
+    public boolean getCaseInsensitive() {
         return caseInsensitive;
     }
 
-    public void setCaseInsensitive(String caseInsensitive) {
+    public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
     }
 
@@ -72,17 +72,16 @@ public class List {
 
         List list = (List) o;
 
+        if (getCaseInsensitive() != list.getCaseInsensitive()) return false;
         if (getAlias() != null ? !getAlias().equals(list.getAlias()) : list.getAlias() != null) return false;
-        if (getCaseInsensitive() != null ? !getCaseInsensitive().equals(list.getCaseInsensitive()) : list.getCaseInsensitive() != null)
-            return false;
-        return getFields().equals(list.getFields());
+        return getFields() != null ? getFields().equals(list.getFields()) : list.getFields() == null;
     }
 
     @Override
     public int hashCode() {
         int result = getAlias() != null ? getAlias().hashCode() : 0;
-        result = 31 * result + (getCaseInsensitive() != null ? getCaseInsensitive().hashCode() : 0);
-        result = 31 * result + getFields().hashCode();
+        result = 31 * result + (getCaseInsensitive() ? 1 : 0);
+        result = 31 * result + (getFields() != null ? getFields().hashCode() : 0);
         return result;
     }
 }

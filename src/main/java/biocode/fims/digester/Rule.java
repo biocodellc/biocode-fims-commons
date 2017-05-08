@@ -904,7 +904,7 @@ public class Rule {
 
         Boolean caseInsensitiveSearch = false;
         try {
-            if (digesterWorksheet.getValidation().findList(getList()).getCaseInsensitive().equalsIgnoreCase("true")) {
+            if (digesterWorksheet.getValidation().findList(getList()).getCaseInsensitive()) {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
@@ -1185,6 +1185,7 @@ public class Rule {
      * However, the following are recognized as numeric values ("15%", "100$", "1.02E10")
      * }
      */
+    @Deprecated
     public void isNumber() {
         boolean validNumber = checkValidNumberSQL(getCleanedColumn());
     }
@@ -1197,6 +1198,7 @@ public class Rule {
      * @param thisColumn
      * @return
      */
+    @Deprecated
     private boolean checkValidNumberSQL(String thisColumn) {
         String groupMessage = "Invalid number";
         boolean validNumber = true;
@@ -1319,6 +1321,7 @@ public class Rule {
      * level="warning"/>
      * }
      */
+    @Deprecated
     public void latLngChecker() {
         String msg = "";
         String groupMessage = "Invalid latitude / longitude";
@@ -1395,7 +1398,7 @@ public class Rule {
 
         Boolean caseInsensitiveSearch = false;
         try {
-            if (digesterWorksheet.getValidation().findList(getList()).getCaseInsensitive().equalsIgnoreCase("true")) {
+            if (digesterWorksheet.getValidation().findList(getList()).getCaseInsensitive()) {
                 caseInsensitiveSearch = true;
             }
         } catch (NullPointerException e) {
