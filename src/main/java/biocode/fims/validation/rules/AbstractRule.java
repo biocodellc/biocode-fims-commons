@@ -4,6 +4,7 @@ import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
 
@@ -16,6 +17,7 @@ import java.util.List;
 abstract class AbstractRule implements Rule {
     private boolean hasError = false;
     private RuleLevel level;
+    protected ProjectConfig config;
 
     AbstractRule() {}
 
@@ -23,16 +25,23 @@ abstract class AbstractRule implements Rule {
         this.level = level;
     }
 
+    @Override
     public RuleLevel level() {
         return level;
     }
 
+    @Override
     public boolean hasError() {
         return hasError;
     }
 
     void setError() {
         hasError = RuleLevel.ERROR == level;
+    }
+
+    @Override
+    public void setConfig(ProjectConfig config) {
+        this.config = config;
     }
 
     boolean entityHasAttribute(List<String> messages, Entity entity, String column) {
