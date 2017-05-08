@@ -1,9 +1,15 @@
 package biocode.fims.validation;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.rules.*;
 import org.springframework.util.Assert;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author rjewing
@@ -11,6 +17,8 @@ import org.springframework.util.Assert;
 public class GenericRecordValidator implements RecordValidator {
     private ProjectConfig config;
     private EntityMessages messages;
+    private boolean hasError = false;
+    private boolean isValid = true;
 
     @Override
     public void setProjectConfig(ProjectConfig config) {
@@ -26,12 +34,46 @@ public class GenericRecordValidator implements RecordValidator {
         }
 
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
-        return true;
+
+        Set<Rule> rules = recordSet.entity().getRules();
+        addDefaultRules(rules, recordSet.entity());
+
+        for (Rule r: rules) {
+            if (!r.run(recordSet, messages)) {
+
+                if (r.hasError()) {
+                    hasError = true;
+                }
+
+                isValid = false;
+            }
+
+        }
+        return isValid;
+    }
+
+    private void addDefaultRules(Set<Rule> rules, Entity entity) {
+        rules.add(new ValidDataTypeFormatRule());
+        rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
+        rules.add(new ValidForURIRule(entity.getUniqueKey(), RuleLevel.ERROR));
+
+        boolean setRequiredValueRule = false;
+        for (Rule rule: rules) {
+            if (rule instanceof RequiredValueRule && rule.level() == RuleLevel.ERROR) {
+                ((RequiredValueRule) rule).addColumn(entity.getUniqueKey());
+                setRequiredValueRule = true;
+                break;
+            }
+        }
+
+        if (!setRequiredValueRule) {
+            rules.add(new RequiredValueRule(Arrays.asList(entity.getUniqueKey()), RuleLevel.ERROR));
+        }
     }
 
     @Override
-    public boolean hasWarning() {
-        return false;
+    public boolean hasError() {
+        return hasError;
     }
 
     @Override

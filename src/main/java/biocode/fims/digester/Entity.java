@@ -13,7 +13,7 @@ import java.util.*;
 public class Entity {
 
     private final LinkedList<Attribute> attributes;
-    private final Set<Rule> rules;
+    private final Set<biocode.fims.validation.rules.Rule> rules;
     private String worksheet;
     private String uniqueKey;
     private String conceptAlias;
@@ -38,11 +38,11 @@ public class Entity {
         return attributes;
     }
 
-    public Set<Rule> getRules() {
+    public Set<biocode.fims.validation.rules.Rule> getRules() {
         return rules;
     }
 
-    public void addRule(Rule rule) {
+    public void addRule(biocode.fims.validation.rules.Rule rule) {
         this.rules.add(rule);
     }
 

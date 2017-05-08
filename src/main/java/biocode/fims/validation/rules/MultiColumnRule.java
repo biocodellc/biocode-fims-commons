@@ -20,6 +20,10 @@ abstract class MultiColumnRule extends AbstractRule {
         this.columns = columns;
     }
 
+    public void addColumn(String column) {
+        columns.add(column);
+    }
+
     @Override
     public boolean validConfiguration(List<String> messages, Entity entity) {
         if (columns.isEmpty()) {

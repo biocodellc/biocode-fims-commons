@@ -13,7 +13,7 @@ public interface RecordValidator {
 
     boolean validate(RecordSet recordSet);
 
-    boolean hasWarning();
+    boolean hasError();
 
     EntityMessages messages();
 }

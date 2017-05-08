@@ -26,7 +26,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
     private static final Pattern INT_PATTERN = Pattern.compile("[+-]?\\d*");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("[+-]?\\d*\\.\\d*");
 
-    ValidDataTypeFormatRule() {
+    public ValidDataTypeFormatRule() {
         super(RuleLevel.ERROR);
     }
 
