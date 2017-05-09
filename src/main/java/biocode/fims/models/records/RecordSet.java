@@ -2,10 +2,10 @@ package biocode.fims.models.records;
 
 
 import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author rjewing
@@ -15,6 +15,8 @@ public class RecordSet {
     private List<Record> records;
     private RecordSet parent;
     private Entity entity;
+
+    private boolean deduplicated = false;
 
     public RecordSet(Entity entity) {
         this.entity = entity;
@@ -39,11 +41,12 @@ public class RecordSet {
     }
 
     public void add(Record record) {
+        deduplicated = false;
         this.records.add(record);
     }
 
     public List<Record> records() {
-        return records;
+        return Collections.unmodifiableList(records);
     }
 
     public String conceptAlias() {
@@ -54,14 +57,54 @@ public class RecordSet {
         return entity;
     }
 
-    public void merge(List<Record> records) {
+    /**
+     * remove all duplicate Records. That is, if a multiple Records have the same identifier and property values,
+     * remove all but 1.
+     * <p>
+     *
+     * @throws FimsRuntimeException with {@link DataReaderCode#INVALID_RECORDS} If 2 or more Records have the same identifier, but different properties
+     */
+    public void removeDuplicates() {
 
+        if (deduplicated) {
+            return;
+        }
+
+        List<String> invalidRecordIdentifiers = new ArrayList<>();
+        Map<String, Record> recordMap = new HashMap<>();
+
+        String identifierUri = entity.getUniqueKeyURI();
+
+        for (Record r : records()) {
+            String identifier = r.get(identifierUri);
+
+            if (recordMap.containsKey(identifier)) {
+
+                if (!recordMap.get(identifier).equals(r)) {
+                    invalidRecordIdentifiers.add(identifier);
+                }
+
+            } else {
+                recordMap.put(identifier, r);
+            }
+        }
+
+        if (invalidRecordIdentifiers.size() > 0) {
+            throw new FimsRuntimeException(DataReaderCode.INVALID_RECORDS, 400, String.join(", ", invalidRecordIdentifiers));
+        }
+
+        // remove any duplicate records
+        records = new LinkedList<>(new LinkedHashSet<>(records));
+
+        deduplicated = true;
+    }
+
+    public void merge(List<Record> records) {
         for (Record r : records) {
             if (addRecord(r)) {
                 this.records.add(r);
             }
         }
-
     }
 
     private boolean addRecord(Record record) {

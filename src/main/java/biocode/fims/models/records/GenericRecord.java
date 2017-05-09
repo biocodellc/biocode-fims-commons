@@ -41,4 +41,19 @@ public class GenericRecord implements Record {
 
     @Override
     public void setMetadata(RecordMetadata recordMetadata) {}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GenericRecord)) return false;
+
+        GenericRecord record = (GenericRecord) o;
+
+        return properties.equals(record.properties);
+    }
+
+    @Override
+    public int hashCode() {
+        return properties.hashCode();
+    }
 }

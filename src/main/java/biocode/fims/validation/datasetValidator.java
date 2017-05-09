@@ -1,18 +1,123 @@
 package biocode.fims.validation;
 
+import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.renderers.EntityMessages;
+import biocode.fims.renderers.Message;
+import biocode.fims.renderers.SimpleMessage;
 
-import java.util.List;
+import java.util.*;
 
 /**
+ * Runs the appropriate {@link RecordValidator} on a group of {@link RecordSet}s.
+ * <p>
+ * Any parent {@link RecordSet} which are on a multi-entity worksheet, will be de-duplicated before the
+ * {@link RecordValidator}s are run.
+ *
  * @author rjewing
  */
-public class datasetValidator {
+public class DatasetValidator {
     private final RecordValidatorFactory validatorFactory;
     private final List<RecordSet> recordSets;
+    private final ProjectConfig config;
 
-    public datasetValidator(RecordValidatorFactory validatorFactory, List<RecordSet> recordSets) {
+    private final LinkedList<EntityMessages> messages;
+    private final Map<Entity, Message> removeDuplicateMessages;
+    private boolean hasError = false;
+
+    public DatasetValidator(RecordValidatorFactory validatorFactory, List<RecordSet> recordSets, ProjectConfig config) {
         this.validatorFactory = validatorFactory;
         this.recordSets = recordSets;
+        this.config = config;
+        this.messages = new LinkedList<>();
+        this.removeDuplicateMessages = new HashMap<>();
+    }
+
+    public boolean validate() {
+        boolean isValid = true;
+
+        removeDuplicateParentRecords();
+
+        for (RecordSet r : recordSets) {
+
+            RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);
+
+            if (!validator.validate(r)) {
+
+                isValid = false;
+                if (validator.hasError()) {
+                    hasError = true;
+                }
+
+                messages.add(validator.messages());
+            }
+
+        }
+
+        addRemoveDuplicateRecordMessages();
+
+        return !hasError && isValid;
+    }
+
+    private void removeDuplicateParentRecords() {
+        for (RecordSet r : recordSets) {
+
+            Entity entity = r.entity();
+
+            if (entity.isChildEntity() && config.isMultiSheetEntity(entity.getConceptAlias())) {
+                Entity parentEntity = r.parent().entity();
+                try {
+
+                    r.parent().removeDuplicates();
+
+                } catch (FimsRuntimeException e) {
+                    if (e.getErrorCode().equals(DataReaderCode.INVALID_RECORDS)) {
+                        hasError = true;
+
+                        removeDuplicateMessages.put(
+                                parentEntity,
+                                new SimpleMessage("Duplicate \"" + parentEntity.getUniqueKey() + "\" values, however the other columns are not the same.")
+                        );
+                    }
+
+                }
+            }
+        }
+
+    }
+
+    private void addRemoveDuplicateRecordMessages() {
+        for (Map.Entry<Entity, Message> entry : removeDuplicateMessages.entrySet()) {
+            Entity entity = entry.getKey();
+
+            EntityMessages entityMessages = null;
+            for (EntityMessages em : messages) {
+                if (em.conceptAlias().equals(entity.getConceptAlias())) {
+                    entityMessages = em;
+                    break;
+                }
+            }
+
+            if (entityMessages == null) {
+                entityMessages = new EntityMessages(entity.getConceptAlias(), entity.getWorksheet());
+                messages.add(entityMessages);
+            }
+
+            entityMessages.addErrorMessage(
+                    "Duplicate parent records",
+                    entry.getValue()
+            );
+        }
+    }
+
+    public boolean hasError() {
+        return hasError;
+    }
+
+    public List<EntityMessages> messages() {
+        return messages;
     }
 }

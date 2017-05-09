@@ -1,5 +1,6 @@
 package biocode.fims.projectConfig;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Metadata;
 import biocode.fims.digester.Validation;
@@ -17,6 +18,7 @@ import java.io.File;
 
 /**
  * TODO remove xml annotations after converting xml files to json
+ * TODO flatten Mapping, Validation, and Metadata to this class
  *
  * @author rjewing
  */
@@ -32,7 +34,8 @@ public class ProjectConfig {
     @XmlElement
     private Metadata metadata;
 
-    ProjectConfig() {};
+    ProjectConfig() {
+    }
 
     public ProjectConfig(Mapping mapping, Validation validation, Metadata metadata) {
         this.mapping = mapping;
@@ -64,23 +67,9 @@ public class ProjectConfig {
         this.metadata = metadata;
     }
 
-    public static void main(String[] args) throws Exception {
-        File configFile = new File("/Users/rjewing/code/biocode/config-files/dipnet.xml");
+    public boolean isMultiSheetEntity(String conceptAlias) {
+        Entity entity = mapping.getEntity(conceptAlias);
 
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        Validation validation = new Validation();
-        validation.addValidationRules(configFile, mapping);
-
-        ProjectConfig projectConfig = new ProjectConfig(mapping, validation, mapping.getMetadata());
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        String config = mapper.writeValueAsString(projectConfig);
-        JsonNode jsonNode = mapper.valueToTree(projectConfig);
-
-        ProjectConfig pc = mapper.readValue(config, ProjectConfig.class);
-        config.toLowerCase();
+        return entity.hasWorksheet() && mapping.getEntitiesForSheet(entity.getWorksheet()).size() > 1;
     }
 }
