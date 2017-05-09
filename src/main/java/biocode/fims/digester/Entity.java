@@ -4,7 +4,9 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
+import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.Rule;
+import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.StringUtils;
 
@@ -184,7 +186,20 @@ public class Entity {
             }
         }
 
+        RequiredValueRule rule = this.getRule(RequiredValueRule.class, RuleLevel.ERROR);
+
         throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
+    }
+
+    @JsonIgnore
+    public <T extends Rule> T getRule(Class<T> type, RuleLevel level) {
+        for (Rule rule : rules) {
+            if (rule.getClass().isAssignableFrom(type) && rule.level().equals(level)) {
+                return (T) rule;
+            }
+        }
+
+        return null;
     }
 
     @Override

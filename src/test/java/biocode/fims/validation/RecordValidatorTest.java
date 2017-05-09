@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 /**
  * @author rjewing
  */
-public class GenericRecordValidatorTest {
+public class RecordValidatorTest {
 
     RecordValidator validator;
 
@@ -43,22 +43,40 @@ public class GenericRecordValidatorTest {
         validator.validate(null);
     }
 
-    @Test
-    public void should_validate_and_have_empty_messages_with_empty_record_set() {
+    @Test(expected = IllegalStateException.class)
+    public void should_throw_exception_if_child_recordSet_has_null_parent() {
         assertTrue(validator.validate(new RecordSet(entity1())));
         assertEquals(validator.messages(), new EntityMessages(entity1().getConceptAlias(), entity1().getWorksheet()));
     }
 
     @Test
-    public void should_add_default_rules_to_record_set() {
+    public void should_validate_and_have_empty_messages_with_empty_record_set() {
         RecordSet recordSet = new RecordSet(entity1());
+        recordSet.setParent(new RecordSet(entity2()));
+
+        assertTrue(validator.validate(recordSet));
+        assertEquals(validator.messages(), new EntityMessages(entity1().getConceptAlias(), entity1().getWorksheet()));
+    }
+
+    @Test
+    public void should_add_default_rules_to_record_set() {
+        RecordSet parent = new RecordSet(entity2());
+
+        Record p1 = new GenericRecord();
+        p1.set("parentId", "parent1");
+        parent.add(p1);
+
+        RecordSet recordSet = new RecordSet(entity1());
+        recordSet.setParent(parent);
 
         Record r1 = new GenericRecord();
         r1.set("eventId", "1234");
+        r1.set("parentId", "parent1");
         recordSet.add(r1);
 
         Record r2 = new GenericRecord();
         r2.set("eventId", "1234");
+        r2.set("parentId", "parent1");
         r2.set("col2", "-10");
         recordSet.add(r2);
 
@@ -69,6 +87,7 @@ public class GenericRecordValidatorTest {
 
         Record r4 = new GenericRecord();
         r4.set("eventId", "");
+        r4.set("parentId", "parent1");
         recordSet.add(r4);
 
         assertFalse(validator.validate(recordSet));
@@ -97,6 +116,10 @@ public class GenericRecordValidatorTest {
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
+                new SimpleMessage("\"parentId\" has a missing cell value")
+        );
+        expectedMessages.addErrorMessage(
+                "Missing column(s)",
                 new SimpleMessage("\"eventId\" has a missing cell value")
         );
 
@@ -110,9 +133,11 @@ public class GenericRecordValidatorTest {
 
         e.setUniqueKey("eventId");
         e.setWorksheet("events");
+        e.setParentEntity("parent");
 
         e.addAttribute(new Attribute("eventId", "eventId"));
         e.addAttribute(new Attribute("col1", "col1"));
+        e.addAttribute(new Attribute("parentId", "parentId"));
         Attribute a1 = new Attribute("col2", "col2");
         a1.setDatatype(DataType.INTEGER);
         e.addAttribute(a1);
@@ -123,9 +148,18 @@ public class GenericRecordValidatorTest {
         return e;
     }
 
+    private Entity entity2() {
+        Entity e = new Entity("parent");
+        e.setUniqueKey("parentId");
+
+        e.addAttribute(new Attribute("parentId", "parentId"));
+        return e;
+    }
+
     private ProjectConfig config() {
         Mapping mapping = new Mapping();
         mapping.addEntity(entity1());
+        mapping.addEntity(entity2());
 
         return new ProjectConfig(mapping, null, null);
     }
