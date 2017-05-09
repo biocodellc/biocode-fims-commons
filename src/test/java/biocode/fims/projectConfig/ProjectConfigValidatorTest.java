@@ -167,22 +167,18 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
-    public void invalid_if_attributes_have_duplicate_uri() {
+    public void invalid_if_entity_attributes_have_duplicate_uri() {
         Mapping mapping = new Mapping();
 
         Entity e = entity1();
-        e.addAttribute(new Attribute("col10", "col10"));
+        e.addAttribute(new Attribute("duplicateUri", "urn:column1"));
         mapping.addEntity(e);
-
-        Entity e2 = entity2();
-        e2.addAttribute(new Attribute("col10", "col10"));
-        mapping.addEntity(e2);
 
         ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Attribute uris must be unique. Duplicate uri \"col10\" found in entities: [\"resource2\", \"resource1\"]"), validator.errors());
+        assertEquals(Arrays.asList("Duplicate Attribute uri \"urn:column1\" found in entity \"resource1\""), validator.errors());
     }
 
     private Entity entity1() {
@@ -205,7 +201,7 @@ public class ProjectConfigValidatorTest {
         e.setUniqueKey("column2");
         e.setWorksheet("worksheet2");
 
-        attributesList2().forEach(e::addAttribute);
+        attributesList1().forEach(e::addAttribute);
 
         return e;
     }
@@ -217,17 +213,6 @@ public class ProjectConfigValidatorTest {
         attributes.add(new Attribute("column2", "urn:column2"));
         attributes.add(new Attribute("column3", "urn:column3"));
         attributes.add(new Attribute("column4", "urn:column4"));
-
-        return attributes;
-    }
-
-    private List<Attribute> attributesList2() {
-        List<Attribute> attributes = new ArrayList<>();
-
-        attributes.add(new Attribute("column1", "column1"));
-        attributes.add(new Attribute("column2", "column2"));
-        attributes.add(new Attribute("column3", "column3"));
-        attributes.add(new Attribute("column4", "column4"));
 
         return attributes;
     }

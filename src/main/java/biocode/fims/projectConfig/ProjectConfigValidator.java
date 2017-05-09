@@ -111,8 +111,8 @@ public class ProjectConfigValidator {
     private void allRulesHaveValidConfiguration() {
         List<String> messages = new ArrayList<>();
 
-        for (Entity e: config.getMapping().getEntities()) {
-            for (Rule rule: e.getRules()) {
+        for (Entity e : config.getMapping().getEntities()) {
+            for (Rule rule : e.getRules()) {
                 rule.setConfig(config);
                 rule.validConfiguration(messages, e);
             }
@@ -122,30 +122,15 @@ public class ProjectConfigValidator {
     }
 
     private void allAttributesHaveUniqueUri() {
-        Set<String> uris = new HashSet<>();
-        Map<String, List<String>> duplicateUris = new HashMap<>();
-        Map<String, String> uriEntityMap = new HashMap<>();
 
-        for (Entity e: config.getMapping().getEntities()) {
-            for (Attribute a: e.getAttributes()) {
+        for (Entity e : config.getMapping().getEntities()) {
+            Set<String> uris = new HashSet<>();
+            for (Attribute a : e.getAttributes()) {
                 if (!uris.add(a.getUri())) {
-                    duplicateUris.computeIfAbsent(a.getUri(), k -> new ArrayList<>()).add(e.getConceptAlias());
-                } else {
-                    uriEntityMap.put(a.getUri(), e.getConceptAlias());
+                    errorMessages.add(
+                            "Duplicate Attribute uri \"" + a.getUri() + "\" found in entity \"" + e.getConceptAlias() + "\""
+                    );
                 }
-            }
-        }
-
-        if (duplicateUris.size() > 0) {
-            for (Map.Entry<String, List<String>> entry: duplicateUris.entrySet()) {
-                String uri = entry.getKey();
-                List<String> entities = entry.getValue();
-                entities.add(uriEntityMap.get(uri)); // add the 1st entity to the list so we can report all entities to user
-
-                errorMessages.add(
-                        "Attribute uris must be unique. Duplicate uri \"" + uri + "\" found in entities: [\"" +
-                                String.join("\", \"", entities) + "\"]"
-                );
             }
         }
     }
