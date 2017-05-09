@@ -1,8 +1,10 @@
 package biocode.fims.reader.plugins;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
+import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.reader.DataReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -83,7 +85,18 @@ public class ExcelReader extends AbstractTabularDataReader {
             if (sheetEntities.size() > 0) {
                 instantiateRecordsForCurrentSheet();
             }
+        }
 
+        boolean hasRecords = false;
+        for (Map.Entry<Entity, List<Record>> entry: entityRecords.entrySet()) {
+            if (entry.getValue().size() > 0) {
+                hasRecords = true;
+                break;
+            }
+        }
+
+        if (!hasRecords) {
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
         }
     }
 

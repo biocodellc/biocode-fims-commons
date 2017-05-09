@@ -3,6 +3,8 @@ package biocode.fims.reader.plugins;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
@@ -53,6 +55,33 @@ public class ExcelReaderTest {
 
     }
 
+    @Test
+    public void should_throw_exception_if_no_data() {
+        File csvFile = new File(classLoader.getResource("noDataDataset.xlsx").getFile());
+
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+
+        try {
+            reader.getRecordSets();
+            fail();
+        } catch (FimsRuntimeException e) {
+            assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
+        }
+    }
+
+    @Test
+    public void should_throw_exception_if_only_headers() {
+        File csvFile = new File(classLoader.getResource("onlyHeadersDataset.xlsx").getFile());
+
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+
+        try {
+            reader.getRecordSets();
+            fail();
+        } catch (FimsRuntimeException e) {
+            assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
+        }
+    }
 
     @Test
     public void should_return_all_records_for_single_entity_single_sheet_mapping() {

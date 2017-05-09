@@ -7,6 +7,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.reader.DataReader;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
 

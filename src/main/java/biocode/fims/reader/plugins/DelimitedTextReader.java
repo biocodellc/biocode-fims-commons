@@ -72,6 +72,10 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
         setHasNext();
         setColumnNames();
 
+        if (!hasNext) {
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
+        }
+
         sheetEntities = mapping.getEntitiesForSheet(sheetName);
     }
 
@@ -79,7 +83,11 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
 
     private void setColumnNames() {
         // Get the first row to populate Column Names
-        colNames = nextRow();
+        try {
+            colNames = nextRow();
+        } catch (NoSuchElementException e) {
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
+        }
 
         Set<String> colSet = new HashSet<>();
 

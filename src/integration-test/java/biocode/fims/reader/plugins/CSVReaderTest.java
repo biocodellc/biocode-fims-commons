@@ -73,10 +73,42 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
         DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
 
         try {
-            List<RecordSet> recordSets = reader.getRecordSets();
+            reader.getRecordSets();
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.DUPLICATE_COLUMNS, e.getErrorCode());
+        }
+    }
+
+    @Test
+    public void should_throw_exception_if_only_headers() {
+        File csvFile = new File(classLoader.getResource("onlyHeadersDataset.csv").getFile());
+
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
+        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+
+        try {
+            reader.getRecordSets();
+            fail();
+        } catch (FimsRuntimeException e) {
+            assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
+        }
+    }
+
+    @Test
+    public void should_throw_exception_if_no_data() {
+        File csvFile = new File(classLoader.getResource("noDataDataset.csv").getFile());
+
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
+        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+
+        try {
+            reader.getRecordSets();
+            fail();
+        } catch (FimsRuntimeException e) {
+            assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
         }
     }
 }
