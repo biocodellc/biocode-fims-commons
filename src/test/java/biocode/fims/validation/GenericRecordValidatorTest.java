@@ -26,7 +26,7 @@ public class GenericRecordValidatorTest {
 
     @Before
     public void setUp() {
-        this.validator = new GenericRecordValidator();
+        this.validator = new RecordValidator();
         this.validator.setProjectConfig(config());
     }
 

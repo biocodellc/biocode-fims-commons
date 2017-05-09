@@ -29,12 +29,12 @@ public class RecordValidatorFactoryTest {
     @Test
     public void should_return_generic_validator_if_no_validator_found() {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
-        assertEquals(GenericRecordValidator.class, validatorFactory.getValidator(null, new ProjectConfig(null, null, null)).getClass());
+        assertEquals(RecordValidator.class, validatorFactory.getValidator(null, new ProjectConfig(null, null, null)).getClass());
     }
 
     @Test
     public void should_return_validator_for_class() {
-        RecordValidator validator = new GenericRecordValidator();
+        RecordValidator validator = new RecordValidator();
         Map<Class<? extends Record>, RecordValidator> validators = new HashMap<>();
         validators.put(GenericRecord.class, validator);
 

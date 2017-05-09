@@ -22,7 +22,7 @@ public class RecordValidatorFactory {
 
         RecordValidator validator = validators.getOrDefault(
                 recordType,
-                new GenericRecordValidator()
+                new RecordValidator()
         );
 
         validator.setProjectConfig(config);
