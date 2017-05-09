@@ -43,12 +43,6 @@ public class RecordValidatorTest {
         validator.validate(null);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void should_throw_exception_if_child_recordSet_has_null_parent() {
-        assertTrue(validator.validate(new RecordSet(entity1())));
-        assertEquals(validator.messages(), new EntityMessages(entity1().getConceptAlias(), entity1().getWorksheet()));
-    }
-
     @Test
     public void should_validate_and_have_empty_messages_with_empty_record_set() {
         RecordSet recordSet = new RecordSet(entity1());
@@ -87,7 +81,7 @@ public class RecordValidatorTest {
 
         Record r4 = new GenericRecord();
         r4.set("eventId", "");
-        r4.set("parentId", "parent1");
+        r4.set("parentId", "parent2");
         recordSet.add(r4);
 
         assertFalse(validator.validate(recordSet));
@@ -116,11 +110,11 @@ public class RecordValidatorTest {
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
-                new SimpleMessage("\"parentId\" has a missing cell value")
+                new SimpleMessage("\"eventId\" has a missing cell value")
         );
         expectedMessages.addErrorMessage(
-                "Missing column(s)",
-                new SimpleMessage("\"eventId\" has a missing cell value")
+                "Invalid parent identifier(s)",
+                new SimpleMessage("The following identifiers do not exist in the parent entity \"parent\": [\"\", \"parent2\"]")
         );
 
         assertEquals(expectedMessages, validator.messages());

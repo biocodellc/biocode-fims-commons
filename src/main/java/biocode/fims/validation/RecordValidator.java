@@ -72,11 +72,7 @@ public class RecordValidator {
         requiredValueRule.addColumn(entity.getUniqueKey());
 
         if (entity.isChildEntity()) {
-            if (recordSet.parent() == null) {
-                throw new IllegalStateException("Entity \"" + entity.getConceptAlias() + "\" is a child entity, but the RecordSet.parent() was null");
-            }
-
-            requiredValueRule.addColumn(recordSet.parent().entity().getUniqueKey());
+            rules.add(new ValidParentIdentifiersRule());
         }
     }
 
