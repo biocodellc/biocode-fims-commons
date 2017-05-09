@@ -10,9 +10,9 @@ import java.util.Map;
  * @author rjewing
  */
 public class RecordValidatorFactory {
-    private final Map<Class<? extends Record>, RecordValidator> validators;
+    private final Map<Class<? extends Record>, ValidatorInstantiator> validators;
 
-    public RecordValidatorFactory(Map<Class<? extends Record>, RecordValidator> validators) {
+    public RecordValidatorFactory(Map<Class<? extends Record>, ValidatorInstantiator> validators) {
         Assert.notNull(validators);
         this.validators = validators;
     }
@@ -20,13 +20,6 @@ public class RecordValidatorFactory {
     public RecordValidator getValidator(Class<? extends Record> recordType, ProjectConfig config) {
         Assert.notNull(config);
 
-        RecordValidator validator = validators.getOrDefault(
-                recordType,
-                new RecordValidator()
-        );
-
-        validator.setProjectConfig(config);
-
-        return validator;
+        return validators.getOrDefault(recordType, new RecordValidator.DefaultValidatorInstantiator()).newInstance(config);
     }
 }

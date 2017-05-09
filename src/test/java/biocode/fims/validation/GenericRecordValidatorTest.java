@@ -26,15 +26,13 @@ public class GenericRecordValidatorTest {
 
     @Before
     public void setUp() {
-        this.validator = new RecordValidator();
-        this.validator.setProjectConfig(config());
+        this.validator = new RecordValidator(config());
     }
 
     @Test
     public void should_throw_exception_if_project_config_is_null_in_validate() {
         try {
-            validator.setProjectConfig(null);
-            validator.validate(null);
+            new RecordValidator(null).validate(null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -53,7 +51,6 @@ public class GenericRecordValidatorTest {
 
     @Test
     public void should_add_default_rules_to_record_set() {
-        validator.setProjectConfig(config());
         RecordSet recordSet = new RecordSet(entity1());
 
         Record r1 = new GenericRecord();

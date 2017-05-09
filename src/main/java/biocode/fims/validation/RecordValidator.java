@@ -12,6 +12,9 @@ import java.util.*;
 /**
  * This class serves as a base for all other RecordSet validators and is meant to be extended.
  *
+ * Sub-classes should also create a {@link ValidatorInstantiator} implementation to instantiate a instance. This is
+ * used in the RecordValidatorFactory
+ *
  * This class will apply any {@link Rule} defined in the {@link Entity} to the {@link RecordSet}
  *
  * @author rjewing
@@ -22,7 +25,7 @@ public class RecordValidator {
     protected boolean hasError = false;
     protected boolean isValid = true;
 
-    public void setProjectConfig(ProjectConfig config) {
+    public RecordValidator(ProjectConfig config) {
         this.config = config;
     }
 
@@ -77,5 +80,12 @@ public class RecordValidator {
 
     public EntityMessages messages() {
         return messages;
+    }
+
+    public static class DefaultValidatorInstantiator implements ValidatorInstantiator {
+        @Override
+        public RecordValidator newInstance(ProjectConfig config) {
+            return new RecordValidator(config);
+        }
     }
 }

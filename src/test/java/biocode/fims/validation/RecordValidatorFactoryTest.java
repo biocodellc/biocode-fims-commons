@@ -17,7 +17,7 @@ public class RecordValidatorFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_if_null_validator_map_given() {
-        RecordValidatorFactory validatorFactory = new RecordValidatorFactory(null);
+        new RecordValidatorFactory(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -34,14 +34,13 @@ public class RecordValidatorFactoryTest {
 
     @Test
     public void should_return_validator_for_class() {
-        RecordValidator validator = new RecordValidator();
-        Map<Class<? extends Record>, RecordValidator> validators = new HashMap<>();
-        validators.put(GenericRecord.class, validator);
+        Map<Class<? extends Record>, ValidatorInstantiator> validators = new HashMap<>();
+        validators.put(GenericRecord.class, new TestRecordValidator.TestValidatorInstantiator());
 
         ProjectConfig config = new ProjectConfig(null, null, null);
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(validators);
 
-        assertEquals(validator, validatorFactory.getValidator(GenericRecord.class, config));
+        assertEquals(TestRecordValidator.class, validatorFactory.getValidator(GenericRecord.class, config).getClass());
     }
 
 }
