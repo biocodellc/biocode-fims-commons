@@ -1,13 +1,13 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.DataType;
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
+import biocode.fims.digester.*;
+import biocode.fims.validation.rules.CompositeUniqueValueRule;
+import biocode.fims.validation.rules.ControlledVocabularyRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -43,7 +43,7 @@ public class ProjectConfigValidatorTest {
     public void invalid_if_entity_non_unique_concept_alias() {
         Mapping mapping = new Mapping();
         mapping.addEntity(entity1());
-        mapping.addEntity(entity1());
+        mapping.addEntity(new Entity("resource1"));
 
         ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
@@ -151,9 +151,38 @@ public class ProjectConfigValidatorTest {
         assertEquals(Arrays.asList("Entity \"resource1\" specifies an attribute \"urn:column5\" with dataType \"DATE\" but is missing a dataFormat"), validator.errors());
     }
 
-    private Entity entityNoConceptAlias() {
-        Entity e = new Entity("");
-        return e;
+    @Test
+    public void invalid_if_rule_configuration_invalid() {
+        Mapping mapping = new Mapping();
+
+        Entity e = entity1();
+        e.addRule(new ControlledVocabularyRule("column1", "noList"));
+        mapping.addEntity(e);
+
+        ProjectConfig config = new ProjectConfig(mapping, new Validation(), null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Invalid Project configuration. Could not find list with name \"noList\""), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_attributes_have_duplicate_uri() {
+        Mapping mapping = new Mapping();
+
+        Entity e = entity1();
+        e.addAttribute(new Attribute("col10", "col10"));
+        mapping.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.addAttribute(new Attribute("col10", "col10"));
+        mapping.addEntity(e2);
+
+        ProjectConfig config = new ProjectConfig(mapping, null, null);
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Attribute uris must be unique. Duplicate uri \"col10\" found in entities: [\"resource2\", \"resource1\"]"), validator.errors());
     }
 
     private Entity entity1() {
@@ -176,7 +205,7 @@ public class ProjectConfigValidatorTest {
         e.setUniqueKey("column2");
         e.setWorksheet("worksheet2");
 
-        attributesList1().forEach(e::addAttribute);
+        attributesList2().forEach(e::addAttribute);
 
         return e;
     }
@@ -188,6 +217,17 @@ public class ProjectConfigValidatorTest {
         attributes.add(new Attribute("column2", "urn:column2"));
         attributes.add(new Attribute("column3", "urn:column3"));
         attributes.add(new Attribute("column4", "urn:column4"));
+
+        return attributes;
+    }
+
+    private List<Attribute> attributesList2() {
+        List<Attribute> attributes = new ArrayList<>();
+
+        attributes.add(new Attribute("column1", "column1"));
+        attributes.add(new Attribute("column2", "column2"));
+        attributes.add(new Attribute("column3", "column3"));
+        attributes.add(new Attribute("column4", "column4"));
 
         return attributes;
     }

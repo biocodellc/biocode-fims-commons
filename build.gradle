@@ -58,7 +58,7 @@ dependencies {
     server 'org.apache.commons:commons-dbcp2:2.1.1'
     server 'commons-lang:commons-lang:2.6'
     server 'com.sun.mail:javax.mail:1.5.5'
-    server 'joda-time:joda-time:2.1'
+    server 'joda-time:joda-time:2.1' // TODO replace with java 8 Date/Times
     server 'org.apache.httpcomponents:httpcore:4.2.1'
     server 'org.apache.httpcomponents:httpclient:4.2.1'
     server 'com.ibm.icu:icu4j:3.4.4'
@@ -71,6 +71,7 @@ dependencies {
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     server 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
     server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.4'
+    server group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.8.8'
 
     // aspectj
     serverRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'

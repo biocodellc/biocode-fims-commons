@@ -13,8 +13,8 @@ import java.util.*;
 
 public class Entity {
 
-    private final LinkedList<Attribute> attributes;
-    private final LinkedHashSet<Rule> rules;
+    private LinkedList<Attribute> attributes;
+    private LinkedHashSet<Rule> rules;
     private String worksheet;
     private String uniqueKey;
     private String conceptAlias;
@@ -24,6 +24,9 @@ public class Entity {
     private boolean esNestedObject = false;
     private Class<? extends Record> recordType = GenericRecord.class;
     private URI identifier;
+
+    // needed for jackson deserialization
+    Entity() {}
 
     public Entity(String conceptAlias) {
         this.conceptAlias = conceptAlias;
@@ -64,6 +67,7 @@ public class Entity {
      *
      * @return
      */
+    @JsonIgnore
     public String getUniqueKeyURI() {
         if (StringUtils.isBlank(uniqueKey)) {
             return uniqueKey;
