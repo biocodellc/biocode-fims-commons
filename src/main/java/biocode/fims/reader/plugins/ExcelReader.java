@@ -43,7 +43,7 @@ public class ExcelReader extends AbstractTabularDataReader {
     protected Iterator<Row> rowIterator = null;
     protected int numCols;
 
-    ExcelReader() {
+    public ExcelReader() {
     }
 
     public ExcelReader(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {

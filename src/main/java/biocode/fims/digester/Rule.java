@@ -307,6 +307,7 @@ public class Rule {
         }
     }
 
+
     private void isIntegerDataFormat(Attribute a) {
         Statement statement = null;
         ResultSet rs = null;

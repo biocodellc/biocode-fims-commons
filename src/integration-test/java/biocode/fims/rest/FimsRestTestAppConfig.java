@@ -2,7 +2,7 @@ package biocode.fims.rest;
 
 import biocode.fims.application.config.SettingsManagerConfig;
 import biocode.fims.bcid.Resolver;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+//import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.rest.versioning.VersionTransformer;
@@ -37,10 +37,10 @@ public class FimsRestTestAppConfig {
     @Value("classpath:api-version-urls.yaml")
     private Resource urlFile;
 
-    @Bean
-    public FimsMetadataFileManager fimsMetadataFileManager() {
-        return null;
-    }
+//    @Bean
+//    public FimsMetadataFileManager fimsMetadataFileManager() {
+//        return null;
+//    }
 
     @Bean
     public VersionTransformer versionTransformer() {

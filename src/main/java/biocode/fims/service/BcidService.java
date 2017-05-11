@@ -5,7 +5,6 @@ import biocode.fims.models.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.models.*;
 import biocode.fims.repositories.BcidRepository;
@@ -140,7 +139,8 @@ public class BcidService {
                 projectId,
                 expeditionCode,
                 ResourceTypes.DATASET_RESOURCE_TYPE,
-                FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE
+//                FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE //TODO fixme
+                ""
         );
     }
 

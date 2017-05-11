@@ -66,7 +66,7 @@ public class DatasetBuilder {
         return this;
     }
 
-    public DatasetBuilder reload(boolean reload) {
+    public DatasetBuilder reloadDataset(boolean reload) {
         this.isUpdate = !reload;
         return this;
     }

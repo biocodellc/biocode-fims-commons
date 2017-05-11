@@ -2,6 +2,7 @@ package biocode.fims.run;
 
 import biocode.fims.digester.Validation;
 import biocode.fims.digester.Mapping;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.RowMessage;
 import biocode.fims.utils.Html2Text;
 import org.json.simple.JSONArray;
@@ -17,7 +18,6 @@ import java.util.stream.Collectors;
  * working in a Servlet environment.
  */
 public class ProcessController {
-    private Boolean hasWarnings = false;
     private Process process;
     private String expeditionCode;
     private String expeditionTitle;
@@ -33,6 +33,8 @@ public class ProcessController {
     private String accessionNumber;
     private Boolean publicStatus = false;   // default to false
     private String outputFolder;
+    private boolean hasError;
+    private List<EntityMessages> entityMessages;
 
     public ProcessController(int projectId, String expeditionCode) {
         this.expeditionCode = expeditionCode;
@@ -61,14 +63,6 @@ public class ProcessController {
 
     public void setUserId(int userId) {
         this.userId = userId;
-    }
-
-    public Boolean getHasWarnings() {
-        return hasWarnings;
-    }
-
-    public void setHasWarnings(Boolean hasWarnings) {
-        this.hasWarnings = hasWarnings;
     }
 
     public String getExpeditionCode() {
@@ -264,5 +258,21 @@ public class ProcessController {
 
     public void setExpeditionCode(String expeditionCode) {
         this.expeditionCode = expeditionCode;
+    }
+
+    public void setHasError(boolean hasError) {
+        this.hasError = hasError;
+    }
+
+    public boolean hasError() {
+        return hasError;
+    }
+
+    public void setMessages(List<EntityMessages> messages) {
+        this.entityMessages = messages;
+    }
+
+    public List<EntityMessages> messages() {
+        return entityMessages;
     }
 }

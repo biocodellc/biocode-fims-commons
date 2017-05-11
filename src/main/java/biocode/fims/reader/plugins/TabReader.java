@@ -21,7 +21,7 @@ public class TabReader extends DelimitedTextReader {
     /**
      * This is only to be used for passing the class into the DataReaderFactory
      */
-    TabReader() {
+    public TabReader() {
         super(DELIMITER);
     }
 

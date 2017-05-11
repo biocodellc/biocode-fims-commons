@@ -2,7 +2,6 @@ package biocode.fims.models.records;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
@@ -217,7 +216,7 @@ public class DatasetBuilderTest {
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
-                .reload(true)
+                .reloadDataset(true)
                 .build();
 
         assertEquals(2, recordSets.size());

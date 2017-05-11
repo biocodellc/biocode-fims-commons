@@ -4,7 +4,6 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.AcknowledgedResponse;
 import biocode.fims.rest.FimsService;
@@ -37,15 +36,13 @@ import java.util.stream.Collectors;
 public class ExpeditionsResource extends FimsService {
     private final ExpeditionService expeditionService;
     private final ProjectService projectService;
-    private final FimsMetadataFileManager fimsMetadataFileManager;
 
     @Autowired
     public ExpeditionsResource(ExpeditionService expeditionService, ProjectService projectService,
-                               SettingsManager settingsManager, FimsMetadataFileManager fimsMetadataFileManager) {
+                               SettingsManager settingsManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
-        this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
 
     /**
@@ -229,8 +226,9 @@ public class ExpeditionsResource extends FimsService {
         ProcessController processController = new ProcessController(projectId, expeditionCode);
         processController.setOutputFolder(defaultOutputDirectory());
         processController.setMapping(mapping);
-        fimsMetadataFileManager.setProcessController(processController);
-        fimsMetadataFileManager.deleteDataset();
+        //TODO fixme
+//        fimsMetadataFileManager.setProcessController(processController);
+//        fimsMetadataFileManager.deleteDataset();
 
         return new AcknowledgedResponse(true);
     }

@@ -3,7 +3,6 @@ package biocode.fims.repositories;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.models.Bcid;
 
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
@@ -47,8 +46,7 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
             "select b from Bcid b where b.bcidId in \n" +
                     "(select max(b2.bcidId) from Bcid b2 where " +
                     "b2.expedition.project.projectId=:projectId and " +
-                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' and " +
-                    "b2.subResourceType='" + FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE + "' " +
+                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " + //TODO fixme. removed subResourceType
                     "and b.expedition.expeditionId=b2.expedition.expeditionId" +
                     ")"
     )
