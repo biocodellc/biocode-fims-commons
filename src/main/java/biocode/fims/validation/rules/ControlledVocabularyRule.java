@@ -54,6 +54,10 @@ public class ControlledVocabularyRule extends SingleColumnRule {
 
             String value = r.get(uri);
 
+            if (value.equals("")) {
+                continue;
+            }
+
             if (list.getCaseInsensitive()) {
 
                 if (!fields.contains(value.toLowerCase())) {

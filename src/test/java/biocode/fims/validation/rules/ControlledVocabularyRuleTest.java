@@ -1,9 +1,7 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Entity;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.List;
-import biocode.fims.digester.Validation;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
@@ -133,10 +131,13 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         r3.set("urn:col1", "error");
         Record r4 = new GenericRecord();
         r4.set("urn:col1", "another");
+        Record r5 = new GenericRecord();
+        r5.set("urn:col1", "");
         recordSet.add(r1);
         recordSet.add(r2);
         recordSet.add(r3);
         recordSet.add(r4);
+        recordSet.add(r5);
 
         assertFalse(rule.run(recordSet, messages));
 
