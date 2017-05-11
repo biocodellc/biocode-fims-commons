@@ -16,22 +16,22 @@ import java.util.List;
  *
  * @author rjewing
  */
-public class IfOtherColumnRequireValue extends SingleColumnRule {
-    private static final String NAME = "IfOtherColumnRequireValue";
+public class RequireValueIfOtherColumnRule extends SingleColumnRule {
+    private static final String NAME = "RequireValueIfOtherColumn";
     private static final String GROUP_MESSAGE = "Dependent column value check";
     @JsonProperty
     private String otherColumn;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    IfOtherColumnRequireValue() {
+    RequireValueIfOtherColumnRule() {
     }
 
-    public IfOtherColumnRequireValue(String column, String otherColumn, RuleLevel level) {
+    public RequireValueIfOtherColumnRule(String column, String otherColumn, RuleLevel level) {
         super(column, level);
         this.otherColumn = otherColumn;
     }
 
-    public IfOtherColumnRequireValue(String column, String otherColumn) {
+    public RequireValueIfOtherColumnRule(String column, String otherColumn) {
         this(column, otherColumn, RuleLevel.WARNING);
     }
 
@@ -95,10 +95,10 @@ public class IfOtherColumnRequireValue extends SingleColumnRule {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof IfOtherColumnRequireValue)) return false;
+        if (!(o instanceof RequireValueIfOtherColumnRule)) return false;
         if (!super.equals(o)) return false;
 
-        IfOtherColumnRequireValue that = (IfOtherColumnRequireValue) o;
+        RequireValueIfOtherColumnRule that = (RequireValueIfOtherColumnRule) o;
 
         return otherColumn != null ? otherColumn.equals(that.otherColumn) : that.otherColumn == null;
     }

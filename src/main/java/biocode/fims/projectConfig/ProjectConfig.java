@@ -2,6 +2,7 @@ package biocode.fims.projectConfig;
 
 import biocode.fims.digester.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.*;
 import java.util.List;
@@ -14,9 +15,11 @@ import java.util.stream.Collectors;
 public class ProjectConfig {
 
     private final LinkedList<Entity> entities;
+    @JsonProperty
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
+    private String description;
 
     public ProjectConfig() {
         this.entities = new LinkedList<>();
@@ -71,5 +74,29 @@ public class ProjectConfig {
 
     public void addList(biocode.fims.digester.List list) {
         lists.add(list);
+    }
+
+    public String getExpeditionForwardingAddress() {
+        return expeditionForwardingAddress;
+    }
+
+    public void setExpeditionForwardingAddress(String expeditionForwardingAddress) {
+        this.expeditionForwardingAddress = expeditionForwardingAddress;
+    }
+
+    public String getDatasetForwardingAddress() {
+        return datasetForwardingAddress;
+    }
+
+    public void setDatasetForwardingAddress(String datasetForwardingAddress) {
+        this.datasetForwardingAddress = datasetForwardingAddress;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -4,7 +4,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
-import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,7 +27,10 @@ public class Entity {
     private URI identifier;
 
     // needed for jackson deserialization
-    Entity() {}
+    public Entity() {
+        rules = new LinkedHashSet<>();
+        attributes = new LinkedList<>();
+    } // can make package-private after converting all configs
 
     public Entity(String conceptAlias) {
         this.conceptAlias = conceptAlias;
@@ -95,6 +97,11 @@ public class Entity {
         return conceptAlias;
     }
 
+    // TODO remove after all project configurations have been converted
+    public void setConceptAlias(String conceptAlias) {
+        this.conceptAlias = conceptAlias;
+    }
+
     public String getConceptURI() {
         return conceptURI;
     }
@@ -156,7 +163,7 @@ public class Entity {
         return recordType;
     }
 
-    public void setRecordType(Class recordType) {
+    public void setRecordType(Class<? extends Record> recordType) {
         this.recordType = recordType;
     }
 
@@ -185,8 +192,6 @@ public class Entity {
                 return a;
             }
         }
-
-        RequiredValueRule rule = this.getRule(RequiredValueRule.class, RuleLevel.ERROR);
 
         throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
     }
