@@ -1,10 +1,10 @@
 package biocode.fims.reader;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.plugins.CSVReader;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -66,7 +65,7 @@ public class DataReaderFactoryTest {
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add("sheetName", "test");
 
-        DataReader reader = rf.getReader(classLoader.getResource("testDataset.csv").getFile(), new Mapping(), rm);
+        DataReader reader = rf.getReader(classLoader.getResource("testDataset.csv").getFile(), new ProjectConfig(), rm);
 
         assertEquals(CSVReader.class, reader.getClass());
     }

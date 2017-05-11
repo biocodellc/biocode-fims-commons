@@ -151,12 +151,12 @@ public class DatasetValidatorTest {
     }
 
     private ProjectConfig config() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
-        mapping.addEntity(entity1());
-        mapping.addEntity(entity2());
+        config.addEntity(entity1());
+        config.addEntity(entity2());
 
-        return new ProjectConfig(mapping, null, null);
+        return config;
     }
 
     private Entity entity1() {

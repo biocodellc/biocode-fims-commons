@@ -1,10 +1,10 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 
 import java.io.*;
@@ -34,8 +34,8 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
     private boolean hasNext = false;
     private char delimiter;
 
-    DelimitedTextReader(File file, Mapping mapping, RecordMetadata recordMetadata, char delimiter) {
-        super(file, mapping, recordMetadata);
+    DelimitedTextReader(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata, char delimiter) {
+        super(file, projectConfig, recordMetadata);
         this.delimiter = delimiter;
 
         if (!recordMetadata.has(SHEET_NAME_KEY)) {
@@ -47,11 +47,6 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
 
     DelimitedTextReader(char delimiter) {
         this.delimiter = delimiter;
-    }
-
-    @Override
-    public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        return new CSVReader(file, mapping, recordMetadata);
     }
 
     @Override
@@ -76,7 +71,7 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
             throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
         }
 
-        sheetEntities = mapping.getEntitiesForSheet(sheetName);
+        sheetEntities = config.getEntitiesForSheet(sheetName);
     }
 
     abstract void configureTokenizer();

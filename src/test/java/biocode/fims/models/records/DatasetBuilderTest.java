@@ -299,12 +299,12 @@ public class DatasetBuilderTest {
     }
 
     private ProjectConfig config() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
-        mapping.addEntity(eventsEntity());
-        mapping.addEntity(samplesEntity());
+        config.addEntity(eventsEntity());
+        config.addEntity(samplesEntity());
 
-        return new ProjectConfig(mapping, null, null);
+        return config;
     }
 
     private Entity samplesEntity() {
@@ -348,8 +348,8 @@ public class DatasetBuilderTest {
     private DataReaderFactory dataReaderFactory(DataReader reader) {
         return new DataReaderFactory(null) {
             @Override
-            public DataReader getReader(String filepath, Mapping mapping, RecordMetadata recordMetadata) {
-                return reader.newInstance(new File(filepath), mapping, recordMetadata);
+            public DataReader getReader(String filepath, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
+                return reader.newInstance(new File(filepath), projectConfig, recordMetadata);
             }
         };
     }

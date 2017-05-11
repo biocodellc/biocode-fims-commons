@@ -1,7 +1,7 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
         }
 
         try {
-            new TabReader(new File("test.txt"), new Mapping(), null);
+            new TabReader(new File("test.txt"), new ProjectConfig(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -43,7 +43,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new TabReader(tsvFile, getSingleEntityMapping(), rm);
+        DataReader reader = new TabReader(tsvFile, getSingleEntityConfig(), rm);
 
         verifySingleEntityMapping(reader);
     }
@@ -54,7 +54,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new TabReader(tsvFile, getMultipleEntityMapping(), rm);
+        DataReader reader = new TabReader(tsvFile, getMultipleEntityConfig(), rm);
 
         verifyMultiEntityMapping(reader);
     }

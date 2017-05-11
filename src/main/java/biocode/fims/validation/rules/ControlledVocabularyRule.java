@@ -115,7 +115,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
             return false;
         }
 
-        list = config.getValidation().findList(listName);
+        list = config.findList(listName);
 
         if (list == null) {
             messages.add("Invalid Project configuration. Could not find list with name \"" + listName + "\"");

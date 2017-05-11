@@ -2,11 +2,11 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.apache.commons.lang.StringUtils;
@@ -20,7 +20,7 @@ import java.util.*;
  */
 abstract class AbstractTabularDataReader implements DataReader {
     protected File file;
-    protected Mapping mapping;
+    protected ProjectConfig config;
     private RecordMetadata recordMetadata;
     protected Map<Entity, List<Record>> entityRecords;
     protected List<Entity> sheetEntities;
@@ -31,12 +31,12 @@ abstract class AbstractTabularDataReader implements DataReader {
     AbstractTabularDataReader() {
     }
 
-    AbstractTabularDataReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
+    AbstractTabularDataReader(File file, ProjectConfig config, RecordMetadata recordMetadata) {
         Assert.notNull(file);
-        Assert.notNull(mapping);
+        Assert.notNull(config);
         Assert.notNull(recordMetadata);
         this.file = file;
-        this.mapping = mapping;
+        this.config = config;
         this.recordMetadata = recordMetadata;
         this.entityRecords = new HashMap<>();
     }

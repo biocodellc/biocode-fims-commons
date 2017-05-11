@@ -1,10 +1,10 @@
 package biocode.fims.reader;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.utils.FileUtils;
 
 import java.io.File;
@@ -22,7 +22,7 @@ public class DataReaderFactory {
         this.dataReaders = dataReaders;
     }
 
-    public DataReader getReader(String filepath, Mapping mapping, RecordMetadata recordMetadata) {
+    public DataReader getReader(String filepath, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
         String ext = FileUtils.getExtension(filepath, "");
 
         File file = new File(filepath);
@@ -34,7 +34,7 @@ public class DataReaderFactory {
         for (DataReader reader : dataReaders.getOrDefault(recordMetadata.readerType(), Collections.emptyList())) {
 
             if (reader.handlesExtension(ext)) {
-                return reader.newInstance(file, mapping, recordMetadata);
+                return reader.newInstance(file, projectConfig, recordMetadata);
             }
         }
 

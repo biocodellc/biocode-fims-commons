@@ -1,8 +1,8 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class TestDataReader implements DataReader {
     }
 
     @Override
-    public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
+    public DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
         this.filename = file.getName();
         return this;
     }

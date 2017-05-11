@@ -18,21 +18,17 @@ import static org.junit.Assert.*;
 public class ProjectConfigValidatorTest {
     private final static String RESOURCE_URI = "http://www.w3.org/2000/01/rdf-schema#Resource";
 
-    @Test
-    public void invalid_if_no_mapping() {
-        ProjectConfig config = new ProjectConfig(null, null, null);
+    @Test(expected = IllegalArgumentException.class)
+    public void invalid_if_no_config() {
 
-        ProjectConfigValidator validator = new ProjectConfigValidator(config);
-
-        assertFalse(validator.isValid());
+        new ProjectConfigValidator(null);
     }
 
     @Test
     public void invalid_if_entity_missing_concept_alias() {
-        Mapping mapping = new Mapping();
-        mapping.addEntity(new Entity(""));
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(new Entity(""));
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -41,11 +37,10 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_non_unique_concept_alias() {
-        Mapping mapping = new Mapping();
-        mapping.addEntity(entity1());
-        mapping.addEntity(new Entity("resource1"));
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(entity1());
+        config.addEntity(new Entity("resource1"));
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -54,12 +49,11 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_unique_key_missing_attribute() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
         Entity entity = entity1();
         entity.setUniqueKey("column_non_exist");
-        mapping.addEntity(entity);
+        config.addEntity(entity);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -68,12 +62,11 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_has_worksheet_no_unique_key() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
         Entity e = entity1();
         e.setUniqueKey("");
-        mapping.addEntity(e);
+        config.addEntity(e);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -82,12 +75,11 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_parent_doesnt_exist() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
         Entity e1 = entity1();
         e1.setParentEntity("non_existant_concept_alias");
-        mapping.addEntity(e1);
+        config.addEntity(e1);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -96,18 +88,17 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_parent_no_unique_key() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
         Entity e1 = entity1();
         e1.setWorksheet("");
         e1.setUniqueKey("");
-        mapping.addEntity(e1);
+        config.addEntity(e1);
 
         Entity e2 = entity2();
         e2.setParentEntity(e1.getConceptAlias());
-        mapping.addEntity(e2);
+        config.addEntity(e2);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -116,18 +107,17 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_no_attribute_for_entity_parent_unique_key() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
         Entity e1 = entity1();
         e1.setUniqueKey("uniqueColumn");
         e1.addAttribute(new Attribute("uniqueColumn", "urn:uniqueColumn"));
-        mapping.addEntity(e1);
+        config.addEntity(e1);
 
         Entity e2 = entity2();
         e2.setParentEntity(e1.getConceptAlias());
-        mapping.addEntity(e2);
+        config.addEntity(e2);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -136,15 +126,14 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
         Attribute a = new Attribute("column5", "urn:column5");
         a.setDatatype(DataType.DATE);
         Entity e = entity1();
         e.addAttribute(a);
-        mapping.addEntity(e);
+        config.addEntity(e);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -153,13 +142,12 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_rule_configuration_invalid() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
         Entity e = entity1();
         e.addRule(new ControlledVocabularyRule("column1", "noList"));
-        mapping.addEntity(e);
+        config.addEntity(e);
 
-        ProjectConfig config = new ProjectConfig(mapping, new Validation(), null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
@@ -168,13 +156,12 @@ public class ProjectConfigValidatorTest {
 
     @Test
     public void invalid_if_entity_attributes_have_duplicate_uri() {
-        Mapping mapping = new Mapping();
+        ProjectConfig config = new ProjectConfig();
 
         Entity e = entity1();
         e.addAttribute(new Attribute("duplicateUri", "urn:column1"));
-        mapping.addEntity(e);
+        config.addEntity(e);
 
-        ProjectConfig config = new ProjectConfig(mapping, null, null);
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());

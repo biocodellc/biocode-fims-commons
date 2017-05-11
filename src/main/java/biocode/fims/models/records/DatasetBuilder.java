@@ -87,7 +87,7 @@ public class DatasetBuilder {
 
     private void instantiateDataSourceRecords() {
         for (DataSource dataSource : dataSources) {
-            DataReader reader = dataReaderFactory.getReader(dataSource.dataFile, config.getMapping(), dataSource.metadata);
+            DataReader reader = dataReaderFactory.getReader(dataSource.dataFile, config, dataSource.metadata);
 
             recordSets.addAll(reader.getRecordSets());
         }
@@ -95,7 +95,7 @@ public class DatasetBuilder {
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            DataReader reader = dataReaderFactory.getReader(file, config.getMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+            DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
             recordSets.addAll(reader.getRecordSets());
         }
@@ -116,14 +116,13 @@ public class DatasetBuilder {
 
     private Set<Entity> getChildRecordSetParentEntities() {
         Set<Entity> parentEntities = new HashSet<>();
-        Mapping mapping = config.getMapping();
 
         for (RecordSet r : recordSets) {
 
             Entity e = r.entity();
 
             if (e.isChildEntity()) {
-                parentEntities.add(mapping.getEntity(e.getParentEntity()));
+                parentEntities.add(config.getEntity(e.getParentEntity()));
             }
         }
 
@@ -168,7 +167,7 @@ public class DatasetBuilder {
             }
         }
 
-        return new RecordSet(config.getMapping().findEntity(conceptAlias));
+        return new RecordSet(config.getEntity(conceptAlias));
     }
 
     private static class DataSource {

@@ -157,6 +157,8 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
 
     private ProjectConfig config() {
+        ProjectConfig config = new ProjectConfig();
+
         List l1 = new List();
         l1.setAlias("yesNo");
         Field f1 = new Field();
@@ -176,10 +178,9 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         f4.setValue("false");
         l2.addField(f4);
 
-        Validation validation = new Validation();
-        validation.addList(l1);
-        validation.addList(l2);
+        config.addList(l1);
+        config.addList(l2);
 
-        return new ProjectConfig(null, validation, null);
+        return config;
     }
 }

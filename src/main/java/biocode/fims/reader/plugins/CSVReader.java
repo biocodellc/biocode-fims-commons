@@ -2,8 +2,9 @@ package biocode.fims.reader.plugins;
 
 
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.reader.DataReader;
 
 import java.io.*;
 import java.util.Collections;
@@ -42,11 +43,11 @@ public class CSVReader extends DelimitedTextReader {
 
     /**
      * @param file
-     * @param mapping
+     * @param projectConfig
      * @param recordMetadata must contain the key SHEET_NAME_KEY declaring the {@link Entity#getWorksheet()} of the csv file
      */
-    public CSVReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        super(file, mapping, recordMetadata, DELIMITER);
+    public CSVReader(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
+        super(file, projectConfig, recordMetadata, DELIMITER);
     }
 
     @Override
@@ -57,5 +58,10 @@ public class CSVReader extends DelimitedTextReader {
     @Override
     void configureTokenizer() {
         st.wordChars('\t', '\t');
+    }
+
+    @Override
+    public DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
+        return new CSVReader(file, projectConfig, recordMetadata);
     }
 }

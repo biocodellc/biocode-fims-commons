@@ -1,11 +1,11 @@
 package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -46,8 +46,8 @@ public class ExcelReader extends AbstractTabularDataReader {
     ExcelReader() {
     }
 
-    public ExcelReader(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        super(file, mapping, recordMetadata);
+    public ExcelReader(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
+        super(file, projectConfig, recordMetadata);
 
         this.entityRecords = new HashMap<>();
         this.dataFormatter = new DataFormatter();
@@ -59,8 +59,8 @@ public class ExcelReader extends AbstractTabularDataReader {
     }
 
     @Override
-    public DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata) {
-        return new ExcelReader(file, mapping, recordMetadata);
+    public DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
+        return new ExcelReader(file, projectConfig, recordMetadata);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class ExcelReader extends AbstractTabularDataReader {
             currSheet = sheet;
             colNames = null;
             numCols = -1;
-            sheetEntities = mapping.getEntitiesForSheet(currSheet.getSheetName());
+            sheetEntities = config.getEntitiesForSheet(currSheet.getSheetName());
 
             if (sheetEntities.size() > 0) {
                 instantiateRecordsForCurrentSheet();

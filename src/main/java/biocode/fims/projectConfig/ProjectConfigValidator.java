@@ -5,6 +5,7 @@ import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
 import biocode.fims.validation.rules.Rule;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
 
 import java.util.*;
 
@@ -18,15 +19,12 @@ public class ProjectConfigValidator {
     private List<String> errorMessages;
 
     public ProjectConfigValidator(ProjectConfig config) {
+        Assert.notNull(config);
         this.config = config;
         this.errorMessages = new ArrayList<>();
     }
 
     public boolean isValid() {
-        if (config.getMapping() == null) {
-            return false;
-        }
-
         validateMapping();
 
         return errorMessages.isEmpty();
@@ -45,7 +43,7 @@ public class ProjectConfigValidator {
     private void allEntitiesHaveUniqueConceptAlias() {
         Set<String> uniqueConceptAlias = new HashSet<>();
 
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             if (StringUtils.isEmpty(e.getConceptAlias())) {
                 errorMessages.add("Entity is missing a conceptAlias");
             } else if (!uniqueConceptAlias.add(e.getConceptAlias())) {
@@ -55,7 +53,7 @@ public class ProjectConfigValidator {
     }
 
     private void entityWithWorksheetHaveUniqueKey() {
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             if (!StringUtils.isEmpty(e.getWorksheet()) && StringUtils.isEmpty(e.getUniqueKey())) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a worksheet but is missing a uniqueKey");
             }
@@ -63,7 +61,7 @@ public class ProjectConfigValidator {
     }
 
     private void entityUniqueKeysHaveMatchingAttribute() {
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
 
             if (!StringUtils.isBlank(e.getUniqueKey())
                     && e.getAttributes().stream()
@@ -78,10 +76,10 @@ public class ProjectConfigValidator {
     }
 
     private void allChildEntitiesHaveValidParent() {
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             if (e.isChildEntity()) {
 
-                Entity parentEntity = config.getMapping().getEntity(e.getParentEntity());
+                Entity parentEntity = config.getEntity(e.getParentEntity());
 
                 if (parentEntity == null) {
                     errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that does not exist");
@@ -97,7 +95,7 @@ public class ProjectConfigValidator {
     private void dateTimeAttributesHaveDataFormat() {
         List<DataType> dataTimeDataTypes = Arrays.asList(DataType.DATE, DataType.DATETIME, DataType.TIME);
 
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             for (Attribute a : e.getAttributes()) {
                 if (dataTimeDataTypes.contains(a.getDatatype())
                         && StringUtils.isEmpty(a.getDataformat())) {
@@ -111,7 +109,7 @@ public class ProjectConfigValidator {
     private void allRulesHaveValidConfiguration() {
         List<String> messages = new ArrayList<>();
 
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             for (Rule rule : e.getRules()) {
                 rule.setConfig(config);
                 rule.validConfiguration(messages, e);
@@ -123,7 +121,7 @@ public class ProjectConfigValidator {
 
     private void allAttributesHaveUniqueUri() {
 
-        for (Entity e : config.getMapping().getEntities()) {
+        for (Entity e : config.getEntities()) {
             Set<String> uris = new HashSet<>();
             for (Attribute a : e.getAttributes()) {
                 if (!uris.add(a.getUri())) {

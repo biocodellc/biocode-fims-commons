@@ -2,12 +2,11 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.util.List;
 
@@ -81,12 +80,12 @@ abstract class DelimitedTextReaderTest {
         }
     }
 
-    protected Mapping getSingleEntityMapping() {
-        Mapping mapping = new Mapping();
+    protected ProjectConfig getSingleEntityConfig() {
+        ProjectConfig config = new ProjectConfig();
 
         Entity entity = new Entity("samples");
         entity.setWorksheet("sheet1");
-        mapping.addEntity(entity);
+        config.addEntity(entity);
 
         Attribute a1 = new Attribute("materialSampleID", "urn:materialSampleID");
         Attribute a2 = new Attribute("principalInvestigator", "urn:principalInvestigator");
@@ -111,19 +110,19 @@ abstract class DelimitedTextReaderTest {
         entity.addAttribute(a10);
         entity.addAttribute(a11);
 
-        return mapping;
+        return config;
     }
 
-    protected Mapping getMultipleEntityMapping() {
-        Mapping mapping = new Mapping();
+    protected ProjectConfig getMultipleEntityConfig() {
+        ProjectConfig config = new ProjectConfig();
 
         Entity entity1 = new Entity("samples");
         entity1.setWorksheet("sheet1");
-        mapping.addEntity(entity1);
+        config.addEntity(entity1);
 
         Entity entity2 = new Entity("events");
         entity2.setWorksheet("sheet1");
-        mapping.addEntity(entity2);
+        config.addEntity(entity2);
 
         Attribute a1 = new Attribute("materialSampleID", "urn:materialSampleID");
         Attribute a2 = new Attribute("principalInvestigator", "urn:principalInvestigator");
@@ -149,6 +148,6 @@ abstract class DelimitedTextReaderTest {
         entity2.addAttribute(a10);
         entity2.addAttribute(a11);
 
-        return mapping;
+        return config;
     }
 }

@@ -1,75 +1,75 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Metadata;
-import biocode.fims.digester.Validation;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.digester.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.*;
-import java.io.File;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * TODO remove xml annotations after converting xml files to json
- * TODO flatten Mapping, Validation, and Metadata to this class
- *
  * @author rjewing
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@XmlRootElement(name = "fims")
-@XmlAccessorType(XmlAccessType.FIELD)
 public class ProjectConfig {
 
-    @XmlElement
-    private Mapping mapping;
-    @XmlElement
-    private Validation validation;
-    @XmlElement
-    private Metadata metadata;
+    private final LinkedList<Entity> entities;
+    private final LinkedList<biocode.fims.digester.List> lists;
+    private String expeditionForwardingAddress;
+    private String datasetForwardingAddress;
 
-    ProjectConfig() {
+    public ProjectConfig() {
+        this.entities = new LinkedList<>();
+        this.lists = new LinkedList<>();
     }
 
-    public ProjectConfig(Mapping mapping, Validation validation, Metadata metadata) {
-        this.mapping = mapping;
-        this.validation = validation;
-        this.metadata = metadata;
-    }
+    /**
+     * Lookup a {@link biocode.fims.digester.List} by its alias
+     *
+     * @param alias
+     * @return
+     */
+    public biocode.fims.digester.List findList(String alias) {
+        for (biocode.fims.digester.List list: lists) {
+            if (list.getAlias().equals(alias)) {
+                return list;
+            }
+        }
 
-    public Mapping getMapping() {
-        return mapping;
-    }
-
-    public void setMapping(Mapping mapping) {
-        this.mapping = mapping;
-    }
-
-    public Validation getValidation() {
-        return validation;
-    }
-
-    public void setValidation(Validation validation) {
-        this.validation = validation;
-    }
-
-    public Metadata getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(Metadata metadata) {
-        this.metadata = metadata;
+        return null;
     }
 
     public boolean isMultiSheetEntity(String conceptAlias) {
-        Entity entity = mapping.getEntity(conceptAlias);
+        Entity entity = getEntity(conceptAlias);
 
-        return entity.hasWorksheet() && mapping.getEntitiesForSheet(entity.getWorksheet()).size() > 1;
+        return entity.hasWorksheet() && getEntitiesForSheet(entity.getWorksheet()).size() > 1;
+    }
+
+    public Entity getEntity(String conceptAlias) {
+        for (Entity entity: entities) {
+            if (entity.getConceptAlias().equals(conceptAlias)) {
+                return entity;
+            }
+        }
+
+        return null;
+    }
+
+    public List<Entity> getEntitiesForSheet(String sheetName) {
+        return entities.stream()
+                .filter(e -> sheetName.equals(e.getWorksheet()))
+                .collect(Collectors.toList());
+    }
+
+    public LinkedList<Entity> getEntities() {
+        return entities;
+    }
+
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+    }
+
+    public void addList(biocode.fims.digester.List list) {
+        lists.add(list);
     }
 }

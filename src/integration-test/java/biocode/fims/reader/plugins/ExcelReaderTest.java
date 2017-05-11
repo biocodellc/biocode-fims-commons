@@ -2,12 +2,12 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Before;
@@ -48,7 +48,7 @@ public class ExcelReaderTest {
         }
 
         try {
-            new ExcelReader(new File("test.xls"), new Mapping(), null);
+            new ExcelReader(new File("test.xls"), new ProjectConfig(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -59,7 +59,7 @@ public class ExcelReaderTest {
     public void should_throw_exception_if_no_data() {
         File csvFile = new File(classLoader.getResource("noDataDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(csvFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         try {
             reader.getRecordSets();
@@ -73,7 +73,7 @@ public class ExcelReaderTest {
     public void should_throw_exception_if_only_headers() {
         File csvFile = new File(classLoader.getResource("onlyHeadersDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(csvFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         try {
             reader.getRecordSets();
@@ -87,7 +87,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -100,7 +100,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping_xls_file() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xls").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -133,7 +133,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_single_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -168,7 +168,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_multi_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("multiSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetMapping(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -211,12 +211,12 @@ public class ExcelReaderTest {
         assertTrue(tissuesRecord.has("urn:96_well_num"));
     }
 
-    private Mapping getSingleEntityMapping() {
-        Mapping mapping = new Mapping();
+    private ProjectConfig getSingleEntityConfig() {
+        ProjectConfig config = new ProjectConfig();
 
         Entity entity = new Entity("samples");
         entity.setWorksheet("samples");
-        mapping.addEntity(entity);
+        config.addEntity(entity);
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
         Attribute a2 = new Attribute("principalInvestigator", "urn:principalInvestigator");
@@ -239,19 +239,19 @@ public class ExcelReaderTest {
         entity.addAttribute(a9);
         entity.addAttribute(a10);
 
-        return mapping;
+        return config;
     }
 
-    private Mapping getMultipleEntityMapping() {
-        Mapping mapping = new Mapping();
+    private ProjectConfig getMultipleEntityConfig() {
+        ProjectConfig config = new ProjectConfig();
 
         Entity entity1 = new Entity("samples");
         entity1.setWorksheet("samples");
-        mapping.addEntity(entity1);
+        config.addEntity(entity1);
 
         Entity entity2 = new Entity("tissues");
         entity2.setWorksheet("samples");
-        mapping.addEntity(entity2);
+        config.addEntity(entity2);
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
         Attribute a2 = new Attribute("principalInvestigator", "urn:principalInvestigator");
@@ -275,15 +275,15 @@ public class ExcelReaderTest {
         entity2.addAttribute(a9);
         entity2.addAttribute(a10);
 
-        return mapping;
+        return config;
     }
 
-    private Mapping getMultipleEntityMultiSheetMapping() {
-        Mapping mapping = getMultipleEntityMapping();
+    private ProjectConfig getMultipleEntityMultiSheetConfig() {
+        ProjectConfig config = getMultipleEntityConfig();
 
         Entity entity = new Entity("events");
         entity.setWorksheet("events");
-        mapping.addEntity(entity);
+        config.addEntity(entity);
 
         Attribute a1 = new Attribute("location", "urn:location");
         Attribute a2 = new Attribute("country", "urn:country");
@@ -296,6 +296,6 @@ public class ExcelReaderTest {
         entity.addAttribute(a4);
         entity.addAttribute(a5);
 
-        return mapping;
+        return config;
     }
 }

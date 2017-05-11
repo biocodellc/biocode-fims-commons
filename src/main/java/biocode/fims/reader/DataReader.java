@@ -1,8 +1,8 @@
 package biocode.fims.reader;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 
 import java.io.File;
 import java.util.List;
@@ -16,7 +16,7 @@ public interface DataReader {
 
     boolean handlesExtension(String ext);
 
-    DataReader newInstance(File file, Mapping mapping, RecordMetadata recordMetadata);
+    DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata);
 
     DataReaderType readerType();
 

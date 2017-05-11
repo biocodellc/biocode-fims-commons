@@ -4,6 +4,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
+import biocode.fims.models.Project;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
@@ -151,11 +152,11 @@ public class RecordValidatorTest {
     }
 
     private ProjectConfig config() {
-        Mapping mapping = new Mapping();
-        mapping.addEntity(entity1());
-        mapping.addEntity(entity2());
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(entity1());
+        config.addEntity(entity2());
 
-        return new ProjectConfig(mapping, null, null);
+        return config;
     }
 
 }

@@ -1,16 +1,14 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -35,7 +33,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
         }
 
         try {
-            new CSVReader(new File("test.csv"), new Mapping(), null);
+            new CSVReader(new File("test.csv"), new ProjectConfig(), null);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -48,7 +46,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+        DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         verifySingleEntityMapping(reader);
     }
@@ -59,7 +57,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new CSVReader(csvFile, getMultipleEntityMapping(), rm);
+        DataReader reader = new CSVReader(csvFile, getMultipleEntityConfig(), rm);
 
         verifyMultiEntityMapping(reader);
     }
@@ -70,7 +68,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+        DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
             reader.getRecordSets();
@@ -86,7 +84,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+        DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
             reader.getRecordSets();
@@ -102,7 +100,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
-        DataReader reader = new CSVReader(csvFile, getSingleEntityMapping(), rm);
+        DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
             reader.getRecordSets();
