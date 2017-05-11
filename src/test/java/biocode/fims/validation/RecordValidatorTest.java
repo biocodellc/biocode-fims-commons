@@ -1,9 +1,6 @@
 package biocode.fims.validation;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.DataType;
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
+import biocode.fims.digester.*;
 import biocode.fims.models.Project;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
@@ -11,8 +8,10 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.rules.ControlledVocabularyRule;
 import biocode.fims.validation.rules.NumericRangeRule;
 import biocode.fims.validation.rules.Rule;
+import biocode.fims.validation.rules.RuleLevel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -123,6 +122,18 @@ public class RecordValidatorTest {
 
     }
 
+    @Test
+    public void should_call_rule_setConfig_before_running_rule() {
+        RecordSet recordSet = new RecordSet(entity2());
+
+        Record p1 = new GenericRecord();
+        p1.set("parentId", "parent1");
+        p1.set("col1", "YES");
+        recordSet.add(p1);
+
+        assertTrue(validator.validate(recordSet));
+    }
+
     private Entity entity1() {
         Entity e = new Entity("event");
 
@@ -148,6 +159,11 @@ public class RecordValidatorTest {
         e.setUniqueKey("parentId");
 
         e.addAttribute(new Attribute("parentId", "parentId"));
+        e.addAttribute(new Attribute("col1", "col1"));
+
+        Rule rule = new ControlledVocabularyRule("col1", "yesNo");
+        e.addRule(rule);
+
         return e;
     }
 
@@ -155,6 +171,18 @@ public class RecordValidatorTest {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(entity1());
         config.addEntity(entity2());
+
+        List yesNoList = new List();
+        yesNoList.setAlias("yesNo");
+        Field f1 = new Field();
+        f1.setValue("yes");
+        yesNoList.addField(f1);
+        Field f2 = new Field();
+        f2.setValue("no");
+        yesNoList.addField(f2);
+        yesNoList.setCaseInsensitive(true);
+
+        config.addList(yesNoList);
 
         return config;
     }

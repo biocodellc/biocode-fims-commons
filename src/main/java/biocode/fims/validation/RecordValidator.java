@@ -42,6 +42,9 @@ public class RecordValidator {
         addDefaultRules(rules, recordSet);
 
         for (Rule r : rules) {
+
+            r.setConfig(config);
+
             if (!r.run(recordSet, messages)) {
 
                 if (r.hasError()) {
