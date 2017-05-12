@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public interface RecordRepository {
 
-    List<Record> getRecords(int projectId, String expeditionCode, String conceptAlias);
+    List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
 
     void save(List<RecordSet> recordSets, String projectCode, int expeditionId);
 }

@@ -107,7 +107,7 @@ public class DatasetBuilder {
         for (Entity e : parentEntities) {
 
             if (fetchRecordSet(e)) {
-                List<Record> records = recordRepository.getRecords(projectId, expeditionCode, e.getConceptAlias());
+                List<? extends Record> records = recordRepository.getRecords(projectId, expeditionCode, e.getConceptAlias(), e.getRecordType());
 
                 mergeRecords(e, records);
             }
@@ -134,7 +134,7 @@ public class DatasetBuilder {
                 .noneMatch(r -> r.entity().equals(entity));
     }
 
-    private void mergeRecords(Entity entity, List<Record> records) {
+    private void mergeRecords(Entity entity, List<? extends Record> records) {
         RecordSet recordSet = recordSets.stream()
                 .filter(rs -> rs.entity().equals(entity))
                 .findFirst()

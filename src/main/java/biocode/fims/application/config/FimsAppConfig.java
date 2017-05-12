@@ -2,6 +2,7 @@ package biocode.fims.application.config;
 
 import biocode.fims.bcid.Resolver;
 import biocode.fims.models.records.GenericRecord;
+import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.DataReaderFactory;
@@ -22,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import sun.net.www.content.text.Generic;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -92,6 +95,9 @@ public class FimsAppConfig {
 
     @Bean
     public RecordRepository recordRepository() {
-        return new PostgresRecordRespository(jdbcTemplate);
+        Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers = new HashMap<>();
+        rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
+
+        return new PostgresRecordRespository(jdbcTemplate, rowMappers);
     }
 }

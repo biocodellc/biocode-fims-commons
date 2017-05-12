@@ -14,7 +14,7 @@ public class TestRecordRepository implements RecordRepository {
     private List<RecordStore> stores = new ArrayList<>();
 
     @Override
-    public List<Record> getRecords(int projectId, String expeditionCode, String conceptAlias) {
+    public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
         RecordStore ex = new RecordStore(projectId, expeditionCode, conceptAlias);
 
         return stores.stream()

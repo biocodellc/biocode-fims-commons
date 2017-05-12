@@ -110,7 +110,7 @@ public class RecordSet {
         deduplicated = true;
     }
 
-    public void merge(List<Record> records) {
+    public void merge(List<? extends Record> records) {
         for (Record r : records) {
             if (addRecord(r)) {
                 this.records.add(r);
