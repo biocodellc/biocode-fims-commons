@@ -1,6 +1,6 @@
 package biocode.fims.models.records;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Note that implementing classes should override equals() and hashCode() methods. These methods are used
@@ -16,7 +16,13 @@ public interface Record {
 
     void set(String property, String value);
 
-    List<Record> all();
+    Map<String, String> properties();
 
     void setMetadata(RecordMetadata recordMetadata);
+
+    /**
+     * this indicates that the Record needs to be persisted.
+     * @return
+     */
+    boolean persist();
 }

@@ -9,6 +9,8 @@ import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
+import biocode.fims.repositories.PostgresRecordRespository;
+import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -46,6 +49,8 @@ public class FimsAppConfig {
     ExpeditionService expeditionService;
     @Autowired
     SettingsManager settingsManager;
+    @Autowired
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Bean
     public Resolver resolver() throws FileNotFoundException {
@@ -83,5 +88,10 @@ public class FimsAppConfig {
         validators.put(GenericRecord.class, new RecordValidator.DefaultValidatorInstantiator());
 
         return new RecordValidatorFactory(validators);
+    }
+
+    @Bean
+    public RecordRepository recordRepository() {
+        return new PostgresRecordRespository(jdbcTemplate);
     }
 }

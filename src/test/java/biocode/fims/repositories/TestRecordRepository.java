@@ -1,6 +1,8 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordSet;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,11 @@ public class TestRecordRepository implements RecordRepository {
                 .findAny()
                 .orElse(ex)
                 .records;
+    }
+
+    @Override
+    public void save(List<RecordSet> recordSets, String projectCode, int expeditionId) {
+        throw new NotImplementedException();
     }
 
     public void addRecord(int projectId, String expeditionCode, String conceptAlias, Record record) {

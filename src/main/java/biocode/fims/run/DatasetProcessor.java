@@ -1,26 +1,33 @@
 package biocode.fims.run;
 
+import biocode.fims.application.config.FimsAppConfig;
+import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.Project;
 import biocode.fims.models.records.*;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.reader.TabularDataReaderType;
+import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.validation.DatasetValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 
 import java.util.*;
 
 /**
- * Core class for running fims validation and uploading.
+ * Class for processing datasets. This includes validation and uploading
  */
-public class Process {
-    private static final Logger logger = LoggerFactory.getLogger(Process.class);
+public class DatasetProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(DatasetProcessor.class);
 
     private final DataReaderFactory readerFactory;
     private final RecordValidatorFactory validatorFactory;
@@ -29,8 +36,9 @@ public class Process {
     private final ProcessController processController;
 
     private final String workbookFile;
-    private final Map<String, RecordMetadata> datasets;
+    private final Map<String, RecordMetadata> datasetSources;
     private final boolean reloadDataset;
+    private List<RecordSet> dataset;
 
     public static class ProcessBuilder {
         // Required
@@ -99,9 +107,9 @@ public class Process {
                     (workbookFile != null || datasets.size() > 0);
         }
 
-        public Process build() {
+        public DatasetProcessor build() {
             if (isValid()) {
-                return new Process(this);
+                return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
                         "projectConfig must not be null and either a workbook or dataset are required.", 500);
@@ -109,14 +117,14 @@ public class Process {
         }
     }
 
-    private Process(ProcessBuilder builder) {
+    private DatasetProcessor(ProcessBuilder builder) {
         readerFactory = builder.readerFactory;
         validatorFactory = builder.validatorFactory;
         recordRepository = builder.recordRepository;
         projectConfig = builder.projectConfig;
         processController = builder.processController;
         workbookFile = builder.workbookFile;
-        datasets = builder.datasets;
+        datasetSources = builder.datasets;
         reloadDataset = builder.reloadDataset;
 
         //TODO maybe need to get/set projectConfig on projectController
@@ -130,11 +138,11 @@ public class Process {
                 .reloadDataset(reloadDataset)
                 .addWorkbook(workbookFile);
 
-        for (Map.Entry<String, RecordMetadata> dataset: datasets.entrySet()) {
+        for (Map.Entry<String, RecordMetadata> dataset: datasetSources.entrySet()) {
             datasetBuilder.addDatasource(dataset.getKey(), dataset.getValue());
         }
 
-        List<RecordSet> dataset = datasetBuilder.build();
+        dataset = datasetBuilder.build();
 
         // TODO add status messages during validation
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, projectConfig);
@@ -150,24 +158,31 @@ public class Process {
     }
 
     public void upload(boolean createExpedition, boolean ignoreUser, ExpeditionService expeditionService) {
-        //TODO implement this
-//        if (createExpedition) {
-//            createExpedition(expeditionService);
-//        }
-//
-//        Expedition expedition = getExpedition(expeditionService);
-//
-//        if (expedition == null) {
-//            throw new FimsRuntimeException(UploadCode.EXPEDITION_CREATE, 400, processController.getExpeditionCode());
-//        } else if (!ignoreUser) {
-//            if (expedition.getUser().getUserId() != processController.getUserId()) {
-//                throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, processController.getExpeditionCode());
-//            }
-//        }
-//
-////        fimsMetadataFileManager.upload();
-//
-//        processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
+        if (dataset == null) {
+            throw new IllegalStateException("validate must be called before uploading");
+        }
+
+        if (processController.hasError()) {
+            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500);
+        }
+
+        if (createExpedition) {
+            createExpedition(expeditionService);
+        }
+
+        Expedition expedition = getExpedition(expeditionService);
+
+        if (expedition == null) {
+            throw new FimsRuntimeException(UploadCode.EXPEDITION_CREATE, 400, processController.getExpeditionCode());
+        } else if (!ignoreUser) {
+            if (expedition.getUser().getUserId() != processController.getUserId()) {
+                throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, processController.getExpeditionCode());
+            }
+        }
+
+        recordRepository.save(dataset, expedition.getProject().getProjectCode(), expedition.getExpeditionId());
+
+        processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
     }
 
@@ -202,5 +217,31 @@ public class Process {
                 null,
                 processController.getMapping()
         );
+    }
+
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(FimsAppConfig.class);
+        ProjectService projectService = applicationContext.getBean(ProjectService.class);
+        DataReaderFactory dataReaderFactory = applicationContext.getBean(DataReaderFactory.class);
+        RecordValidatorFactory validatorFactory = applicationContext.getBean(RecordValidatorFactory.class);
+        RecordRepository repository = applicationContext.getBean(RecordRepository.class);
+
+        String file = "/Users/rjewing/Desktop/geome-fims-output.txt";
+        RecordMetadata metadata = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        metadata.add(CSVReader.SHEET_NAME_KEY, "Samples");
+        Project project = projectService.getProject(25);
+
+        DatasetBuilder datasetBuilder = new DatasetBuilder(dataReaderFactory, repository, project.getProjectConfig(), 25, "TEST")
+                .addDatasource(file, metadata);
+
+        List<RecordSet> recordSets = datasetBuilder.build();
+
+        DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, project.getProjectConfig());
+
+        if (validator.validate() || !validator.hasError()) {
+            repository.save(recordSets, project.getProjectCode(), 30);
+        }
+
+        validator.hasError();
     }
 }

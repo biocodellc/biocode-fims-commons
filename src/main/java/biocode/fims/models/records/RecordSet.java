@@ -4,8 +4,10 @@ package biocode.fims.models.records;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
+import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -19,6 +21,7 @@ public class RecordSet {
     private boolean deduplicated = false;
 
     public RecordSet(Entity entity) {
+        Assert.notNull(entity);
         this.entity = entity;
         this.records = new ArrayList<>();
     }
@@ -47,6 +50,14 @@ public class RecordSet {
 
     public List<Record> records() {
         return Collections.unmodifiableList(records);
+    }
+
+    public List<Record> recordsToPersist() {
+        return Collections.unmodifiableList(
+                records.stream()
+                        .filter(Record::persist)
+                        .collect(Collectors.toList())
+        );
     }
 
     public String conceptAlias() {

@@ -145,7 +145,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfig config = new ProjectConfig();
 
         Entity e = entity1();
-        e.addRule(new ControlledVocabularyRule("column1", "noList"));
+        e.addRule(new ControlledVocabularyRule("column1", "noList", config));
         config.addEntity(e);
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);

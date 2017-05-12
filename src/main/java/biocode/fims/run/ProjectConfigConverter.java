@@ -107,7 +107,7 @@ public class ProjectConfigConverter {
                                 break;
                             case "checkInXMLFields":
                             case "controlledVocabulary":
-                                ControlledVocabularyRule controlledVocabularyRule = new ControlledVocabularyRule(column, r.getList(), level);
+                                ControlledVocabularyRule controlledVocabularyRule = new ControlledVocabularyRule(column, r.getList(), config, level);
                                 entitiesForSheet.forEach(e -> e.addRule(controlledVocabularyRule));
                                 break;
                             case "duplicateColumnNames":

@@ -111,7 +111,6 @@ public class ProjectConfigValidator {
 
         for (Entity e : config.getEntities()) {
             for (Rule rule : e.getRules()) {
-                rule.setConfig(config);
                 rule.validConfiguration(messages, e);
             }
         }

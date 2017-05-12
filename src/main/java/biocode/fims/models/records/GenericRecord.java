@@ -1,8 +1,7 @@
 package biocode.fims.models.records;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,6 +9,12 @@ import java.util.Map;
  */
 public class GenericRecord implements Record {
     private Map<String, String> properties;
+    private boolean persist = true;
+
+    public GenericRecord(Map<String, String> properties, boolean shouldPersist) {
+        this.properties = properties;
+        this.persist = shouldPersist;
+    }
 
     public GenericRecord(Map<String, String> properties) {
         this.properties = properties;
@@ -30,17 +35,23 @@ public class GenericRecord implements Record {
     }
 
     @Override
-    public void set(String property, String value) {
-        properties.put(property, value);
+    public Map<String, String> properties() {
+        return Collections.unmodifiableMap(properties);
     }
 
     @Override
-    public List<Record> all() {
-        return Arrays.asList(new GenericRecord(), new GenericRecord());
+    public void set(String property, String value) {
+        properties.put(property, value);
+        persist = true;
     }
 
     @Override
     public void setMetadata(RecordMetadata recordMetadata) {}
+
+    @Override
+    public boolean persist() {
+        return persist;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -80,10 +80,11 @@ COMMENT ON COLUMN bcids.created is 'timestamp of insertion';
 COMMENT ON COLUMN bcids.modified is 'timestamp of last update';
 
 DROP TABLE IF EXISTS projects;
+CREATE DOMAIN project_code as text CHECK (length(value) <= 10);
 
 CREATE TABLE projects (
   projectId SERIAL PRIMARY KEY NOT NULL,
-  projectCode TEXT NOT NULL,
+  projectCode project_code NOT NULL,
   projectTitle TEXT,
   projectUrl TEXT NOT NULL,
   validationXml TEXT NOT NULL,
@@ -115,6 +116,8 @@ CREATE TABLE userProjects (
 
 CREATE INDEX userProjects_projectId_idx ON projects (projectId);
 CREATE INDEX userProjects_userId_idx ON projects (userId);
+CREATE INDEX projects_projectcode_idx ON projects (projectcode);
+ALTER TABLE projects ADD CONSTRAINT projects_projectcode_uniq UNIQUE USING INDEX projects_projectcode_idx;
 
 DROP TABLE IF EXISTS expeditions;
 

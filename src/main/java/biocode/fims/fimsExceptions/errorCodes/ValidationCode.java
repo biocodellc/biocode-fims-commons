@@ -7,5 +7,5 @@ public enum ValidationCode implements ErrorCode {
     EMPTY_DATASET,
     DUPLICATE_COLUMNS,
     INVALID_SHEET,
-    NO_DATA
+    INVALID_DATASET, NO_DATA
 }

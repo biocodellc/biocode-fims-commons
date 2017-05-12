@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * working in a Servlet environment.
  */
 public class ProcessController {
-    private Process process;
+    private DatasetProcessor datasetProcessor;
     private String expeditionCode;
     private String expeditionTitle;
     private int projectId;
@@ -248,12 +248,12 @@ public class ProcessController {
         this.outputFolder = outputFolder;
     }
 
-    public void setProcess(Process process) {
-        this.process = process;
+    public void setDatasetProcessor(DatasetProcessor datasetProcessor) {
+        this.datasetProcessor = datasetProcessor;
     }
 
-    public Process getProcess() {
-        return process;
+    public DatasetProcessor getDatasetProcessor() {
+        return datasetProcessor;
     }
 
     public void setExpeditionCode(String expeditionCode) {
