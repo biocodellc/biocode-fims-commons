@@ -4,6 +4,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -18,14 +19,15 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    CompositeUniqueValueRule() {}
-
-    public CompositeUniqueValueRule(LinkedHashSet<String> columns) {
-        super(columns, RuleLevel.WARNING);
+    private CompositeUniqueValueRule() {
     }
 
     public CompositeUniqueValueRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
+    }
+
+    public CompositeUniqueValueRule(LinkedHashSet<String> columns) {
+        this(columns, RuleLevel.WARNING);
     }
 
     @Override

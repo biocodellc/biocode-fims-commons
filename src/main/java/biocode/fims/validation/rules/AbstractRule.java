@@ -14,12 +14,14 @@ import java.util.List;
 /**
  * @author rjewing
  */
-abstract class AbstractRule implements Rule {
+public abstract class AbstractRule implements Rule {
     private boolean hasError = false;
     private RuleLevel level;
     protected ProjectConfig config;
 
-    AbstractRule() {}
+    AbstractRule() {
+        this.level = RuleLevel.WARNING;
+    }
 
     AbstractRule(RuleLevel level) {
         this.level = level;
@@ -37,11 +39,6 @@ abstract class AbstractRule implements Rule {
 
     void setError() {
         hasError = RuleLevel.ERROR == level;
-    }
-
-    @Override
-    public void setConfig(ProjectConfig config) {
-        this.config = config;
     }
 
     boolean entityHasAttribute(List<String> messages, Entity entity, String column) {

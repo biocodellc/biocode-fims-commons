@@ -37,7 +37,4 @@ public class RuleInWrongPackage implements Rule {
     public boolean hasError() {
         return false;
     }
-
-    @Override
-    public void setConfig(ProjectConfig config) {}
 }

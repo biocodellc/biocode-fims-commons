@@ -1,5 +1,6 @@
 package biocode.fims.models.dataTypes;
 
+import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +18,7 @@ public class JacksonUtil {
     public static final ObjectMapper OBJECT_MAPPER;
 
     static {
-        OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER = new SpringObjectMapper();
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 
@@ -25,7 +26,7 @@ public class JacksonUtil {
         try {
             return OBJECT_MAPPER.readValue(string, clazz);
         } catch (IOException e) {
-            throw new IllegalArgumentException("The given string value: " + string + " cannot be transformed to Json object");
+            throw new IllegalArgumentException("The given string value: " + string + " cannot be transformed to Json object", e);
         }
     }
 
@@ -33,7 +34,7 @@ public class JacksonUtil {
         try {
             return OBJECT_MAPPER.writeValueAsString(value);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("The given Json object value: " + value + " cannot be transformed to a String");
+            throw new IllegalArgumentException("The given Json object value: " + value + " cannot be transformed to a String", e);
         }
     }
 

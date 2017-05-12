@@ -26,7 +26,9 @@ public class RecordValidatorTest {
 
     @Before
     public void setUp() {
-        this.validator = new RecordValidator(config());
+        ProjectConfig config = config();
+        config.addEntity(entity2());
+        this.validator = new RecordValidator(config);
     }
 
     @Test
@@ -161,7 +163,7 @@ public class RecordValidatorTest {
         e.addAttribute(new Attribute("parentId", "parentId"));
         e.addAttribute(new Attribute("col1", "col1"));
 
-        Rule rule = new ControlledVocabularyRule("col1", "yesNo");
+        Rule rule = new ControlledVocabularyRule("col1", "yesNo", config());
         e.addRule(rule);
 
         return e;
@@ -170,7 +172,6 @@ public class RecordValidatorTest {
     private ProjectConfig config() {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(entity1());
-        config.addEntity(entity2());
 
         List yesNoList = new List();
         yesNoList.setAlias("yesNo");

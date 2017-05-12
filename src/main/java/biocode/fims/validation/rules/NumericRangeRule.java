@@ -5,6 +5,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -29,7 +30,7 @@ public class NumericRangeRule extends SingleColumnRule {
     private List<Range> ranges;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    NumericRangeRule() {
+    private NumericRangeRule() {
     }
 
     public NumericRangeRule(String column, String range, RuleLevel level) {

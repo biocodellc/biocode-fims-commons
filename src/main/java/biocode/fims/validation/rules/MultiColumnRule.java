@@ -15,7 +15,9 @@ abstract class MultiColumnRule extends AbstractRule {
     @JsonProperty
     protected LinkedHashSet<String> columns;
 
-    MultiColumnRule() {}
+    MultiColumnRule() {
+        this.columns = new LinkedHashSet<>();
+    }
 
     MultiColumnRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(level);

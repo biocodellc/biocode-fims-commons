@@ -13,7 +13,8 @@ abstract class SingleColumnRule extends AbstractRule {
     @JsonProperty
     protected String column;
 
-    SingleColumnRule() {}
+    SingleColumnRule() {
+    }
 
     SingleColumnRule(String column, RuleLevel level) {
         super(level);

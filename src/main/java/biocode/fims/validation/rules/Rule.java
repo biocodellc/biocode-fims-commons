@@ -43,7 +43,4 @@ public interface Rule {
      */
     @JsonIgnore
     boolean hasError();
-
-    @JsonIgnore
-    void setConfig(ProjectConfig config);
 }

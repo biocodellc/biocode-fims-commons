@@ -19,28 +19,26 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_for_null_recordSet() {
-        Rule rule = new ControlledVocabularyRule(null, "");
+        Rule rule = new ControlledVocabularyRule(null, "", config(), RuleLevel.WARNING);
         assertTrue(rule.run(null, messages));
     }
 
     @Test(expected = IllegalStateException.class)
     public void should_throw_exception_for_null_config() {
-        Rule rule = new ControlledVocabularyRule("col1", "");
+        Rule rule = new ControlledVocabularyRule("col1", "", null);
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
-        Rule rule = new ControlledVocabularyRule("col1", "yesNo");
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule("col1", "yesNo", config());
 
         assertTrue(rule.run(new RecordSet(entity()), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_column() {
-        Rule rule = new ControlledVocabularyRule(null, "yesNo");
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule(null, "yesNo", config());
 
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
@@ -56,8 +54,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_validate_if_no_listName() {
-        Rule rule = new ControlledVocabularyRule("col1", null);
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule("col1", null, config());
 
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
@@ -73,8 +70,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
     @Test
     public void should_not_validate_if_cant_find_list() {
-        Rule rule = new ControlledVocabularyRule("col1", "list1");
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule("col1", "list1", config());
 
         assertFalse(rule.run(new RecordSet(entity()), messages));
         assertTrue(rule.hasError());
@@ -91,8 +87,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     @Test
     public void should_not_be_valid_when_value_not_in_case_sensitive_list() {
 
-        Rule rule = new ControlledVocabularyRule("col1", "yesNo");
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule("col1", "yesNo", config());
 
         RecordSet recordSet = new RecordSet(entity());
 
@@ -118,8 +113,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     @Test
     public void should_not_be_valid_when_value_not_in_case_insensitive_list() {
 
-        Rule rule = new ControlledVocabularyRule("col1", "trueFalse");
-        rule.setConfig(config());
+        Rule rule = new ControlledVocabularyRule("col1", "trueFalse", config());
 
         RecordSet recordSet = new RecordSet(entity());
 

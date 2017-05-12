@@ -5,6 +5,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -24,15 +25,15 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
     private String uniqueKeyColumn;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    RequiredValueInGroupRule() {
-    }
-
-    public RequiredValueInGroupRule(LinkedHashSet<String> columns) {
-        super(columns, RuleLevel.WARNING);
+    private RequiredValueInGroupRule() {
     }
 
     public RequiredValueInGroupRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
+    }
+
+    public RequiredValueInGroupRule(LinkedHashSet<String> columns) {
+        this(columns, RuleLevel.WARNING);
     }
 
     @Override

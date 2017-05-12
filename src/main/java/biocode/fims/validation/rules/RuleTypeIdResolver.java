@@ -16,6 +16,8 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,14 +60,16 @@ public class RuleTypeIdResolver implements TypeIdResolver {
                         && Rule.class.isAssignableFrom(resourceClass)
                         && !Modifier.isAbstract(resourceClass.getModifiers())) {
 
-                    rules.add((Rule) resourceClass.newInstance());
+                    Constructor<Rule> constructor = resourceClass.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    rules.add(constructor.newInstance());
                 }
             }
 
         } catch (IOException e) {
             // cant find RULE_PACKAGE
             throw new FimsRuntimeException("Can't find package: " + RULE_PACKAGE, 500, e);
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             logger.error("Error Instantiating Rule implementation in package: " + RULE_PACKAGE, e);
         }
 

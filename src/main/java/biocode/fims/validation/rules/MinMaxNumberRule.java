@@ -5,6 +5,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
@@ -34,7 +35,8 @@ public class MinMaxNumberRule extends AbstractRule {
     private String maximumColumn;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    MinMaxNumberRule() {}
+    private MinMaxNumberRule() {
+    }
 
     public MinMaxNumberRule(String minimumColumn, String maximumColumn, RuleLevel level) {
         super(level);

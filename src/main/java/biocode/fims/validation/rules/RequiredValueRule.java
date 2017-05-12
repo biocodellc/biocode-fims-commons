@@ -5,6 +5,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -19,15 +20,15 @@ public class RequiredValueRule extends MultiColumnRule {
     private static final String GROUP_MESSAGE = "Missing column(s)";
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    RequiredValueRule() {
-    }
-
-    public RequiredValueRule(LinkedHashSet<String> columns) {
-        super(columns, RuleLevel.WARNING);
+    private RequiredValueRule() {
     }
 
     public RequiredValueRule(LinkedHashSet<String> columns, RuleLevel level) {
         super(columns, level);
+    }
+
+    public RequiredValueRule(LinkedHashSet<String> columns) {
+        this(columns, RuleLevel.WARNING);
     }
 
     @Override

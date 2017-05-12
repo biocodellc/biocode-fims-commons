@@ -4,6 +4,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ public class UniqueValueRule extends SingleColumnRule {
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    UniqueValueRule() {}
+    private UniqueValueRule() {
+    }
 
     public UniqueValueRule(String column, RuleLevel level) {
         super(column, level);
@@ -49,7 +51,7 @@ public class UniqueValueRule extends SingleColumnRule {
         Set<String> set = new HashSet<>();
         List<String> duplicateValues = new ArrayList<>();
 
-        for (Record r: recordSet.records()) {
+        for (Record r : recordSet.records()) {
 
             String value = r.get(uri);
 

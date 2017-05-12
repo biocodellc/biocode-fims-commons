@@ -4,6 +4,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 
@@ -22,7 +23,7 @@ public class ValidURLRule extends SingleColumnRule {
     private static final String GROUP_MESSAGE = "Invalid URL";
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    ValidURLRule() {}
+    private ValidURLRule() {}
 
     public ValidURLRule(String column, RuleLevel level) {
         super(column, level);

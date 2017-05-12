@@ -4,6 +4,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class ValidForURIRule extends SingleColumnRule {
     private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
-    ValidForURIRule() {}
+    private ValidForURIRule() {}
 
     public ValidForURIRule(String column, RuleLevel level) {
         super(column, level);
