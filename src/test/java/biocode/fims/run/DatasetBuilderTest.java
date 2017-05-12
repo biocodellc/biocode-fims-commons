@@ -1,16 +1,21 @@
-package biocode.fims.models.records;
+package biocode.fims.run;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.records.GenericRecord;
+import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
+import biocode.fims.run.DatasetBuilder;
 import org.junit.Test;
 
 import java.io.File;

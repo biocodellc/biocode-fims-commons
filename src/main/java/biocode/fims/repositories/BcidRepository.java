@@ -42,16 +42,6 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
 
     Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
 
-    @Query(value =
-            "select b from Bcid b where b.bcidId in \n" +
-                    "(select max(b2.bcidId) from Bcid b2 where " +
-                    "b2.expedition.project.projectId=:projectId and " +
-                    "b2.resourceType='" + ResourceTypes.DATASET_RESOURCE_TYPE + "' " + //TODO fixme. removed subResourceType
-                    "and b.expedition.expeditionId=b2.expedition.expeditionId" +
-                    ")"
-    )
-    Set<Bcid> findLatestFimsMetadataDatasets(@Param("projectId") int projectId);
-
     void deleteByBcidId(int bcidId);
 
     List<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);

@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author rjewing
@@ -39,5 +40,9 @@ public class DataReaderFactory {
         }
 
         throw new FimsRuntimeException(DataReaderCode.NOT_FOUND, 400, ext);
+    }
+
+    public Set<DataReader.DataReaderType> getReaderTypes() {
+        return dataReaders.keySet();
     }
 }

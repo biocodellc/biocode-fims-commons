@@ -1,10 +1,12 @@
-package biocode.fims.models.records;
+package biocode.fims.run;
 
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.DataReader;

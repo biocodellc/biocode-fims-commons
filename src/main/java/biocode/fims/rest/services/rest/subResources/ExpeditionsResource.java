@@ -1,7 +1,5 @@
 package biocode.fims.rest.services.rest.subResources;
 
-import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.fimsExceptions.*;
@@ -10,7 +8,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.run.ProcessController;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
@@ -18,19 +15,16 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
  */
-@Scope("prototype")
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
 public class ExpeditionsResource extends FimsService {
@@ -216,19 +210,6 @@ public class ExpeditionsResource extends FimsService {
         }
 
         expeditionService.delete(expeditionCode, projectId);
-
-        // delete any data for the expedition
-        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
-
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        ProcessController processController = new ProcessController(projectId, expeditionCode);
-        processController.setOutputFolder(defaultOutputDirectory());
-        processController.setMapping(mapping);
-        //TODO fixme
-//        fimsMetadataFileManager.setProcessController(processController);
-//        fimsMetadataFileManager.deleteDataset();
 
         return new AcknowledgedResponse(true);
     }

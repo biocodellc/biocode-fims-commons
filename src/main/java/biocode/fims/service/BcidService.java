@@ -121,27 +121,11 @@ public class BcidService {
         return bcidRepository.findByExpeditionExpeditionIdAndResourceTypeIn(expeditionId, resourceType);
     }
 
-    @Transactional(readOnly = true)
-    public Set<Bcid> getLatestDatasets(int projectId) {
-        return bcidRepository.findLatestFimsMetadataDatasets(projectId);
-    }
-
     @Transactional
     public void updateModifiedTs(Bcid bcid) {
         if (bcid != null) {
             bcidRepository.updateModifiedTs(bcid.getBcidId());
         }
-    }
-
-    @Transactional(readOnly = true)
-    public List<Bcid> getFimsMetadataDatasets(int projectId, String expeditionCode) {
-        return bcidRepository.findAllByResourceTypeAndSubResourceType(
-                projectId,
-                expeditionCode,
-                ResourceTypes.DATASET_RESOURCE_TYPE,
-//                FimsMetadataFileManager.DATASET_RESOURCE_SUB_TYPE //TODO fixme
-                ""
-        );
     }
 
     @Transactional(readOnly = true)

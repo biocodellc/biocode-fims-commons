@@ -46,10 +46,6 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         if (session != null) {
             ProcessController pc = (ProcessController) session.getAttribute("processController");
             if (pc != null) {
-                //TODO fixme
-//                if (pc.getDatasetProcessor() != null) {
-//                    pc.getDatasetProcessor().close();
-//                }
 
                 //remove processController from session
                 session.removeAttribute("processController");

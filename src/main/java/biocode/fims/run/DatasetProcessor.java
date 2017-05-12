@@ -11,6 +11,7 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.reader.plugins.CSVReader;
+import biocode.fims.renderers.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
@@ -39,8 +40,10 @@ public class DatasetProcessor {
     private final Map<String, RecordMetadata> datasetSources;
     private final boolean reloadDataset;
     private List<RecordSet> dataset;
+    private boolean hasError = false;
+    private List<EntityMessages> messages;
 
-    public static class ProcessBuilder {
+    public static class Builder {
         // Required
         private DataReaderFactory readerFactory;
         private RecordValidatorFactory validatorFactory;
@@ -54,37 +57,37 @@ public class DatasetProcessor {
         // Optional
         private boolean reloadDataset = false;
 
-        public ProcessBuilder(ProcessController processController) {
+        public Builder(ProcessController processController) {
             this.processController = processController;
             this.datasets = new HashMap<>();
         }
 
-        public ProcessBuilder readerFactory(DataReaderFactory readerFactory) {
+        public Builder readerFactory(DataReaderFactory readerFactory) {
             this.readerFactory = readerFactory;
             return this;
         }
 
-        public ProcessBuilder validatorFactory(RecordValidatorFactory validatorFactory) {
+        public Builder validatorFactory(RecordValidatorFactory validatorFactory) {
             this.validatorFactory = validatorFactory;
             return this;
         }
 
-        public ProcessBuilder recordRepository(RecordRepository recordRepository) {
+        public Builder recordRepository(RecordRepository recordRepository) {
             this.recordRepository = recordRepository;
             return this;
         }
 
-        public ProcessBuilder projectConfig(ProjectConfig projectConfig) {
+        public Builder projectConfig(ProjectConfig projectConfig) {
             this.projectConfig = projectConfig;
             return this;
         }
 
-        public ProcessBuilder workbook(String workbookFile) {
+        public Builder workbook(String workbookFile) {
             this.workbookFile = workbookFile;
             return this;
         }
 
-        public ProcessBuilder addDataset(String datasetFile, RecordMetadata metadata) {
+        public Builder addDataset(String datasetFile, RecordMetadata metadata) {
             datasets.put(datasetFile, metadata);
             return this;
         }
@@ -94,7 +97,7 @@ public class DatasetProcessor {
          * @param reloadDataset
          * @return
          */
-        public ProcessBuilder reloadDataset(boolean reloadDataset) {
+        public Builder reloadDataset(boolean reloadDataset) {
             this.reloadDataset = reloadDataset;
             return this;
         }
@@ -117,7 +120,7 @@ public class DatasetProcessor {
         }
     }
 
-    private DatasetProcessor(ProcessBuilder builder) {
+    private DatasetProcessor(Builder builder) {
         readerFactory = builder.readerFactory;
         validatorFactory = builder.validatorFactory;
         recordRepository = builder.recordRepository;
@@ -126,6 +129,7 @@ public class DatasetProcessor {
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
         reloadDataset = builder.reloadDataset;
+        messages = Collections.emptyList();
 
         //TODO maybe need to get/set projectConfig on projectController
     }
@@ -150,8 +154,8 @@ public class DatasetProcessor {
         boolean valid = validator.validate();
 
         if (!valid) {
-            processController.setHasError(validator.hasError());
-            processController.setMessages(validator.messages());
+            hasError = true;
+            messages = validator.messages();
         }
 
         return valid;
@@ -184,6 +188,14 @@ public class DatasetProcessor {
 
         processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
+    }
+
+    public boolean hasError() {
+        return hasError;
+    }
+
+    public List<EntityMessages> messages() {
+        return messages;
     }
 
     private Expedition getExpedition(ExpeditionService expeditionService) {
