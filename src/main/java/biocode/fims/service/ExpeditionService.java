@@ -49,7 +49,7 @@ public class ExpeditionService {
         this.settingsManager = settingsManager;
     }
 
-    public void create(Expedition expedition, int userId, int projectId, URI webAddress, Mapping mapping) {
+    public void create(Expedition expedition, int userId, int projectId, URI webAddress) {
         Project project = entityManager.getReference(Project.class, projectId);
         User user = entityManager.getReference(User.class, userId);
 
@@ -71,7 +71,7 @@ public class ExpeditionService {
 
         Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
         expedition.setExpeditionBcid(bcid);
-        createEntityBcids(mapping, expedition.getExpeditionId(), userId, ezidRequest);
+        createEntityBcids(project.getProjectConfig().getEntities(), expedition.getExpeditionId(), userId, ezidRequest);
     }
 
     public void update(Expedition expedition) {
@@ -216,8 +216,8 @@ public class ExpeditionService {
         return expditionBcid;
     }
 
-    private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
-        for (Entity entity : mapping.getEntities()) {
+    private void createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest) {
+        for (Entity entity : entities) {
             Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
             bcidService.create(bcid, userId);
             bcidService.attachBcidToExpedition(bcid, expeditionId);

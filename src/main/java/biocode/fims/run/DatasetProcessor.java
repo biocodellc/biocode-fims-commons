@@ -130,8 +130,6 @@ public class DatasetProcessor {
         datasetSources = builder.datasets;
         reloadDataset = builder.reloadDataset;
         messages = Collections.emptyList();
-
-        //TODO maybe need to get/set projectConfig on projectController
     }
 
     public boolean validate() {
@@ -166,7 +164,7 @@ public class DatasetProcessor {
             throw new IllegalStateException("validate must be called before uploading");
         }
 
-        if (processController.hasError()) {
+        if (hasError) {
             throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500);
         }
 
@@ -186,7 +184,7 @@ public class DatasetProcessor {
 
         recordRepository.save(dataset, expedition.getProject().getProjectCode(), expedition.getExpeditionId());
 
-        processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
+//        processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
     }
 
@@ -218,7 +216,7 @@ public class DatasetProcessor {
 
         expedition = new Expedition.ExpeditionBuilder(
                 processController.getExpeditionCode())
-                .expeditionTitle(processController.getExpeditionTitle())
+                .expeditionTitle("Expedition " + processController.getExpeditionCode())
                 .isPublic(processController.getPublicStatus())
                 .build();
 
@@ -226,8 +224,7 @@ public class DatasetProcessor {
                 expedition,
                 processController.getUserId(),
                 processController.getProjectId(),
-                null,
-                processController.getMapping()
+                null
         );
     }
 

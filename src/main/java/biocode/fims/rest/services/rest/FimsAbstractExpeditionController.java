@@ -75,11 +75,6 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
                          @FormParam("public") @DefaultValue("true") Boolean isPublic) {
         URI uri;
 
-        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
-
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
         Expedition expedition = new Expedition.ExpeditionBuilder(expeditionCode)
                 .expeditionTitle(expeditionTitle)
                 .isPublic(isPublic)
@@ -90,7 +85,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         } else {
             uri = null;
         }
-        expeditionService.create(expedition, userContext.getUser().getUserId(), projectId, uri, mapping);
+        expeditionService.create(expedition, userContext.getUser().getUserId(), projectId, uri);
 
         return Response.ok(expedition).build();
     }
