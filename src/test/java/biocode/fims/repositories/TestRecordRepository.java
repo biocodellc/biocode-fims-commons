@@ -29,6 +29,21 @@ public class TestRecordRepository implements RecordRepository {
         throw new NotImplementedException();
     }
 
+    @Override
+    public void setCreateEntityTableSql(String projectCode, String conceptAlias) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void createEntityTable(String projectCode, String conceptAlias, List<String> indexedColumnUris) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void createEntityTableIndex(String projectCode, String conceptAlias, String column) {
+        throw new NotImplementedException();
+    }
+
     public void addRecord(int projectId, String expeditionCode, String conceptAlias, Record record) {
         RecordStore store = stores.stream()
                 .filter(s -> s.projectId == projectId

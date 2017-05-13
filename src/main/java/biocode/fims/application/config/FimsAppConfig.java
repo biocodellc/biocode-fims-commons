@@ -10,7 +10,7 @@ import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
-import biocode.fims.repositories.PostgresRecordRespository;
+import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
@@ -25,7 +25,6 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import sun.net.www.content.text.Generic;
 
 import java.io.FileNotFoundException;
 import java.util.Arrays;
@@ -98,6 +97,6 @@ public class FimsAppConfig {
         Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers = new HashMap<>();
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
 
-        return new PostgresRecordRespository(jdbcTemplate, rowMappers);
+        return new PostgresRecordRepository(jdbcTemplate, rowMappers);
     }
 }

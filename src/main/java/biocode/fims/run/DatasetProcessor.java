@@ -182,7 +182,7 @@ public class DatasetProcessor {
             }
         }
 
-        recordRepository.save(dataset, expedition.getProject().getProjectCode(), expedition.getExpeditionId());
+        recordRepository.save(dataset, expedition.getProject().getProjectId(), expedition.getExpeditionId());
 
 //        processController.appendSuccessMessage("<br><font color=#188B00>Successfully Uploaded!</font><br><br>");
 
@@ -248,7 +248,7 @@ public class DatasetProcessor {
         DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, project.getProjectConfig());
 
         if (validator.validate() || !validator.hasError()) {
-            repository.save(recordSets, project.getProjectCode(), 30);
+            repository.save(recordSets, project.getProjectId(), 30);
         }
 
         validator.hasError();

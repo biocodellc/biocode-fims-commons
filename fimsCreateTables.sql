@@ -254,3 +254,14 @@ CREATE INDEX templateConfigs_projectId_idx ON templateConfigs (projectId);
 COMMENT ON COLUMN templateConfigs.configName is 'The name of the config';
 COMMENT ON COLUMN templateConfigs.public is 'Whether or not this is a public template config?';
 COMMENT ON COLUMN templateConfigs.config is 'The array of uris to be checked when generating a template';
+
+-- Function that is added to each entity table in a trigger when created
+CREATE OR REPLACE FUNCTION entity_tsv_trigger()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+begin
+  new.tsv = to_tsvector(string_agg((j).value::text, ' ')) from jsonb_each(new.data) as j;
+  return new;
+end
+$function$;
