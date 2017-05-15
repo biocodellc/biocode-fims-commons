@@ -2,13 +2,13 @@ package biocode.fims.validation;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.run.ProcessorStatus;
 import biocode.fims.validation.rules.RequiredValueRule;
 import org.junit.Test;
 
@@ -53,7 +53,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
 
-        assertFalse(validator.validate());
+        assertFalse(validator.validate(new ProcessorStatus()));
         assertFalse(validator.hasError());
 
         List<EntityMessages> messages = validator.messages();
@@ -97,7 +97,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
 
-        assertTrue(validator.validate());
+        assertTrue(validator.validate(new ProcessorStatus()));
         assertFalse(validator.hasError());
     }
 
@@ -131,7 +131,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
 
-        assertFalse(validator.validate());
+        assertFalse(validator.validate(new ProcessorStatus()));
         assertTrue(validator.hasError());
 
         List<EntityMessages> messages = validator.messages();

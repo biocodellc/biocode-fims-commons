@@ -25,22 +25,22 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public void save(List<RecordSet> recordSets, String projectCode, int expeditionId) {
+    public void save(List<RecordSet> recordSets, int projectId, int expeditionId) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void setCreateEntityTableSql(String projectCode, String conceptAlias) {
+    public void createEntityTable(int projectId, String conceptAlias) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void createEntityTable(String projectCode, String conceptAlias, List<String> indexedColumnUris) {
+    public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void createEntityTableIndex(String projectCode, String conceptAlias, String column) {
+    public void createEntityTableIndex(int projectId, String conceptAlias, String column) {
         throw new NotImplementedException();
     }
 

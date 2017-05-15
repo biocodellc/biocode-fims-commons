@@ -23,7 +23,7 @@ public class ProcessControllerTest {
 //    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 //    @Test
 //    public void getMessages_test() {
-//        ProcessController pc = new ProcessController(0, null);
+//        ProcessorStatus pc = new ProcessorStatus(0, null);
 //
 //        JSONObject expected = new JSONObject();
 //        JSONObject worksheets = new JSONObject();

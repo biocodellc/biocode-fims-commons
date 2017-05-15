@@ -8,6 +8,7 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.Message;
 import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.run.ProcessorStatus;
 
 import java.util.*;
 
@@ -36,12 +37,14 @@ public class DatasetValidator {
         this.removeDuplicateMessages = new HashMap<>();
     }
 
-    public boolean validate() {
+    public boolean validate(ProcessorStatus processorStatus) {
         boolean isValid = true;
 
         removeDuplicateParentRecords();
 
         for (RecordSet r : recordSets) {
+
+            processorStatus.appendStatus("\nValidating entity: " + r.conceptAlias());
 
             RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);
 

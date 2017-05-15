@@ -4,7 +4,7 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsAbstractException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
-import biocode.fims.run.ProcessController;
+import biocode.fims.run.ProcessorStatus;
 import biocode.fims.utils.ErrorInfo;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.slf4j.Logger;
@@ -42,15 +42,6 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         String mediaType;
 
         HttpSession session = request.getSession();
-
-        if (session != null) {
-            ProcessController pc = (ProcessController) session.getAttribute("processController");
-            if (pc != null) {
-
-                //remove processController from session
-                session.removeAttribute("processController");
-            }
-        }
 
         // check if the called service is expected to return HTML of JSON
         // try to get the mediaType of the matched method. If an exception was thrown before the resource was constructed

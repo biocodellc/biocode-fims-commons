@@ -5,7 +5,7 @@
 //import biocode.fims.renderers.RowMessage;
 //import biocode.fims.renderers.EntityMessages;
 //import biocode.fims.renderers.SimpleMessage;
-//import biocode.fims.run.ProcessController;
+//import biocode.fims.run.ProcessorStatus;
 //import org.json.simple.JSONObject;
 //import org.junit.Assert;
 //import org.junit.Before;
@@ -25,7 +25,7 @@
 //
 //    private Mapping mapping;
 //    private FimsMetadataFileManager fm;
-//    private ProcessController pc;
+//    private ProcessorStatus pc;
 //    private ClassLoader classLoader;
 //
 //    @Before
@@ -129,7 +129,7 @@
 //        Validation validation = new Validation();
 //        validation.addValidationRules(configFile, mapping);
 //
-//        pc = new ProcessController(0, null);
+//        pc = new ProcessorStatus(0, null);
 //        pc.setMapping(mapping);
 //        pc.setValidation(validation);
 //

@@ -5,7 +5,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 
@@ -15,9 +14,9 @@ import java.sql.PreparedStatement;
 @Aspect
 public class PostgresRecordRepositoryAdvice {
     @Autowired(required = false)
-    UserContext userContext;
+    private UserContext userContext;
     @Autowired
-    NamedParameterJdbcTemplate jdbcTemplate;
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Before("execution(* biocode.fims.repositories.PostgresRecordRepository.*(..))")
     public void setFimsUser() {
