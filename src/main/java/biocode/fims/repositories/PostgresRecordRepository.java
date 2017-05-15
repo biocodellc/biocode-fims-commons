@@ -23,31 +23,12 @@ import java.util.*;
 @Transactional
 public class PostgresRecordRepository implements RecordRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final Properties sql;
     private final Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers;
 
-    private final static String INSERT_SQL = "INSERT INTO project_${projectId}.${table} (expedition_id, local_identifier, data) " +
-            "VALUES (:expeditionId, :identifier, to_jsonb(:data::jsonb)) " +
-            "ON CONFLICT (local_identifier, expedition_id) " +
-            "DO UPDATE SET data = to_jsonb(:data::jsonb)";
-
-    private final static String SELECT_RECORDS_SQL = "SELECT r.data as data from project_${projectId}.${table} AS r " +
-            "INNER JOIN expeditions e on r.expediton_id = e.expeditionid " +
-            "WHERE e.expeditionCode = :expeditionCode AND e.projectId = :projectId";
-
-    private final static String CREATE_ENTITY_TABLE_SQL = "CREATE TABLE project_${projectId}.${table} " +
-            "(id SERIAL PRIMARY KEY, local_identifier TEXT NOT NULL, expedition_id INT NOT NULL REFERENCES expeditions (expeditionId) ON DELETE CASCADE, " +
-            "data JSONB NOT NULL, tsv TSVECTOR, " +
-            "UNIQUE (local_identifier, expedition_id))";
-
-    private final static String ENTITY_TABLE_TSV_TRIGGER_SQL = "CREATE TRIGGER tsvectorupdate " +
-            "BEFORE INSERT OR UPDATE ON project_${projectId}.${table} " +
-            "FOR EACH ROW EXECUTE PROCEDURE entity_tsv_trigger()";
-
-    private final static String ENTITY_DATA_GIN_INDEX_SQL = "CREATE INDEX idx_project_${projectId}_${table}_data ON project_${projectId}.${table} USING GIN (data)";
-    private final static String ENTITY_TSV_GIN_INDEX_SQL = "CREATE INDEX idx_project_${projectId}_${table}_tsv ON project_${projectId}.${table} USING GIN (tsv)";
-
-    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers) {
+    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers) {
         this.jdbcTemplate = jdbcTemplate;
+        this.sql = sql;
         this.rowMappers = rowMappers;
     }
 
@@ -60,7 +41,7 @@ public class PostgresRecordRepository implements RecordRepository {
         sqlParams.put("projectId", projectId);
 
         return jdbcTemplate.query(
-                StrSubstitutor.replace(SELECT_RECORDS_SQL, tableMap),
+                StrSubstitutor.replace(sql.getProperty("selectRecords"), tableMap),
                 sqlParams,
                 rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
         );
@@ -96,7 +77,10 @@ public class PostgresRecordRepository implements RecordRepository {
                     insertParams.add(recordParams);
                 }
 
-                jdbcTemplate.batchUpdate(StrSubstitutor.replace(INSERT_SQL, tableMap), insertParams.toArray(new HashMap[insertParams.size()]));
+                jdbcTemplate.batchUpdate(
+                        StrSubstitutor.replace(sql.getProperty("insertRecord"), tableMap),
+                        insertParams.toArray(new HashMap[insertParams.size()])
+                );
 
             }
         } catch (JsonProcessingException e) {
@@ -113,14 +97,9 @@ public class PostgresRecordRepository implements RecordRepository {
     public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
         Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
 
-        jdbcTemplate.execute(StrSubstitutor.replace(CREATE_ENTITY_TABLE_SQL, tableMap), PreparedStatement::execute);
+        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createEntityTable"), tableMap), PreparedStatement::execute);
 
-        jdbcTemplate.execute(StrSubstitutor.replace(ENTITY_TABLE_TSV_TRIGGER_SQL, tableMap), PreparedStatement::execute);
-
-        jdbcTemplate.execute(StrSubstitutor.replace(ENTITY_DATA_GIN_INDEX_SQL, tableMap), PreparedStatement::execute);
-        jdbcTemplate.execute(StrSubstitutor.replace(ENTITY_TSV_GIN_INDEX_SQL, tableMap), PreparedStatement::execute);
-
-        for (String column: indexedColumnUris) {
+        for (String column : indexedColumnUris) {
             createEntityTableIndex(projectId, conceptAlias, column);
         }
     }

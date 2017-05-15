@@ -19,7 +19,6 @@ import java.io.IOException;
 @Configuration
 @ComponentScan(basePackages = {"biocode.fims.rest", VersionTransformer.TRANSFORMER_PACKAGE})
 @EnableScheduling
-@EnableAspectJAutoProxy
 public class FimsWebAppConfig {
 
     @Value("classpath:api-version-urls.yaml")

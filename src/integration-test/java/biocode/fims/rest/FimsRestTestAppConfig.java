@@ -37,11 +37,6 @@ public class FimsRestTestAppConfig {
     @Value("classpath:api-version-urls.yaml")
     private Resource urlFile;
 
-//    @Bean
-//    public FimsMetadataFileManager fimsMetadataFileManager() {
-//        return null;
-//    }
-
     @Bean
     public VersionTransformer versionTransformer() {
         return new VersionTransformer();

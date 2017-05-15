@@ -1,0 +1,50 @@
+insertRecord: >
+  INSERT INTO project_${projectId}.${table}
+    (expedition_id, local_identifier, data)
+  VALUES
+    (:expeditionId, :identifier, to_jsonb(:data::jsonb))
+  ON CONFLICT (local_identifier, expedition_id)
+    DO UPDATE SET data = to_jsonb(:data::jsonb)
+
+selectRecords: >
+  SELECT r.data as data
+  FROM project_${projectId}.${table} AS r
+    INNER JOIN expeditions e on r.expediton_id = e.expeditionid
+  WHERE e.expeditionCode = :expeditionCode AND e.projectId = :projectId
+
+# sql for creating entity tables
+createEntityTable: >
+  CREATE TABLE project_${projectId}.${table}
+    (
+      id SERIAL PRIMARY KEY,
+      local_identifier TEXT NOT NULL,
+      expedition_id INT NOT NULL REFERENCES expeditions (expeditionId) ON DELETE CASCADE,
+      data JSONB NOT NULL,
+      tsv TSVECTOR,
+      created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE (local_identifier, expedition_id)
+    );
+
+  CREATE TRIGGER tsvector_update BEFORE INSERT OR UPDATE ON project_${projectId}.${table} FOR EACH ROW EXECUTE PROCEDURE entity_tsv_trigger();
+  CREATE TRIGGER update_modtime BEFORE UPDATE ON project_${projectId}.${table} FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+  CREATE TRIGGER set_createdtime BEFORE INSERT ON project_${projectId}.${table} FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+  CREATE TRIGGER entity_audit AFTER INSERT OR DELETE OR UPDATE ON project_${projectId}.${table} FOR EACH ROW EXECUTE PROCEDURE entity_history();
+
+  CREATE INDEX idx_project_${projectId}_${table}_data ON project_${projectId}.${table} USING GIN (data);
+  CREATE INDEX idx_project_${projectId}_${table}_tsv ON project_${projectId}.${table} USING GIN (tsv);
+
+# sql to execute when creating a new project
+createProjectSchema: >
+  CREATE SCHEMA project_${projectId};
+
+  CREATE TABLE audit_table
+  (
+    event_id bigserial primary key,
+    table_name text not null, -- table the change was made to
+    user text, -- user who made the change
+    ts TIMESTAMP WITH TIME ZONE NOT NULL, -- timestamp the change happened
+    action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')), -- INSERT, DELETE, UPDATE, or TRUNCATE
+    row_data jsonb, -- For INSERT this is the new row values. For DELETE and UPDATE it is the old row values.
+    changed_fields jsonb -- Null except UPDATE events. This is the result of jsonb_diff_val(NEW data, OLD data)
+  );

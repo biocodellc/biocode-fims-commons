@@ -265,3 +265,108 @@ begin
   return new;
 end
 $function$;
+
+CREATE OR REPLACE FUNCTION get_fims_user() RETURNS text AS $$
+  SELECT current_setting('fims.username', TRUE);
+$$ LANGUAGE sql;
+
+COMMENT ON FUNCTION get_fims_user() IS $body$
+Fetches the value of current_setting('fims.username', true).
+This value can be set by calling SET LOCAL "fims.username" = 'user';
+This is useful to retrieve the logged in user from the fims applicaton in a postgresql trigger.
+$body$;
+
+CREATE OR REPLACE FUNCTION jsonb_diff_val(new JSONB, old JSONB)
+  RETURNS JSONB AS $$
+DECLARE
+  result JSONB;
+  object_result JSONB;
+  v RECORD;
+BEGIN
+  IF jsonb_typeof(new) = 'null' or new = '{}'::jsonb THEN
+    RAISE INFO 'Returning old';
+    RETURN old;
+  END IF;
+
+  result = new;
+  FOR v IN SELECT * FROM jsonb_each(old) LOOP
+    IF jsonb_typeof(new->v.key) = 'object' AND jsonb_typeof(old->v.key) = 'object'THEN
+      object_result = jsonb_diff_val(new->v.key, old->v.key);
+      IF object_result = '{}'::jsonb THEN
+        result = result - v.key; --if empty remove
+      ELSE
+        result = result || jsonb_build_object(v.key,object_result);
+      END IF;
+    ELSIF new->v.key = old->v.key THEN
+      result = result - v.key;
+    ELSIF result ? v.key THEN CONTINUE;
+    ELSE
+      result = result || jsonb_build_object(v.key, null);
+    END IF;
+  END LOOP;
+
+  RETURN result;
+
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION jsonb_diff_val(jsonb, jsonb) IS $body$
+Generates a jsonb diff object where the 1st arg differs from the second. If the 1st arg does not include a
+key in the 2nd arg, then the diff will contain '{key}: "null"'
+$body$;
+
+CREATE OR REPLACE FUNCTION entity_history() RETURNS TRIGGER AS $body$
+DECLARE
+  audit_table_name text;
+  audit_session_user text;
+  row_data jsonb;
+  changed_fields jsonb;
+BEGIN
+  IF TG_WHEN <> 'AFTER' THEN
+    RAISE EXCEPTION 'entity_history() may only run as an AFTER trigger';
+  END IF;
+
+  IF TG_LEVEL = 'STATEMENT' THEN
+    RAISE EXCEPTION 'entity_history() does not support being a STATEMENT trigger';
+  END IF;
+
+  audit_table_name = TG_TABLE_SCHEMA::text || '.audit_table';
+
+  audit_session_user = get_fims_user();
+  IF NULLIF(audit_session_user, '') IS NULL THEN
+    audit_session_user = 'postgres_role: ' || session_user::text;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
+    row_data = to_jsonb(OLD.*) - 'tsv' - 'changed' - 'modified';
+    changed_fields =  jsonb_diff_val(to_jsonb(NEW.*) - 'tsv' - 'changed' - 'modified', row_data);
+    IF changed_fields = '{}'::jsonb THEN
+      -- All changed fields are ignored. Skip this update.
+      RETURN NULL;
+    END IF;
+  ELSIF TG_OP = 'DELETE' THEN
+    row_data = to_jsonb(OLD.*) - 'tsv' - 'changed' - 'modified';
+  ELSIF TG_OP = 'INSERT' THEN
+    row_data = to_jsonb(NEW.*) - 'tsv' - 'changed' - 'modified';
+  ELSE
+    RAISE EXCEPTION '[entity_history] - Trigger func added as trigger for unhandled case: %, %',TG_OP, TG_LEVEL;
+    RETURN NULL;
+  END IF;
+
+  EXECUTE 'INSERT INTO ' || audit_table_name || ' (table_name, user_name, ts, action, row_data, changed_fields) ' ||
+   'VALUES (' || quote_literal(TG_TABLE_SCHEMA::text || '.' || TG_TABLE_NAME::text) || ', ' || quote_literal(audit_session_user)
+   || ', CURRENT_TIMESTAMP, ' || quote_literal(substring(TG_OP,1,1)) || ', ' || quote_literal(row_data) || ', '
+   || quote_nullable(changed_fields) || ')';
+
+  RETURN NULL;
+END;
+$body$
+LANGUAGE plpgsql
+SECURITY DEFINER;
+
+COMMENT ON FUNCTION entity_history() IS $body$
+Track changes to a table at the row level.
+
+This will create an entry in the SCHEMA.audit_table for each row that is updated, inserted, or deleted.
+This is useful for creating a history of all changes to entities.
+$body$;
