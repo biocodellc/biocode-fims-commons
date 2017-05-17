@@ -1,334 +1,396 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.parboiled.Action;
 import org.parboiled.BaseParser;
 import org.parboiled.Context;
 import org.parboiled.Rule;
+import org.parboiled.support.StringVar;
+
+import static biocode.fims.query.dsl.LogicalOperator.AND;
+import static biocode.fims.query.dsl.LogicalOperator.OR;
 
 /**
- * Custom fims query parser. This minimally parses an incoming query string so we can reconstruct the appropriate
- * elastic search query. Elastic search query_string queries do not support nested queries, se we need to parse
- * just enough to be able to reconstruct the appropriate Elastic Search QueryBuilders, with support for nested queries.
- * <p>
- * TODO prevent regexp and wildcard queries? Bad performance and resource intensive
- *
  * @author rjewing
  */
 @SuppressWarnings("InfiniteRecursion")
 public class QueryParser extends BaseParser<Object> {
 
-    private FieldColumnTransformer transformer;
-
-    public QueryParser(FieldColumnTransformer transformer) {
-        this.transformer = transformer;
-    }
-
     public Rule Parse() {
-        return Query();
-    }
-
-    public Rule QueryExpression() {
-        return Optional(
-                FirstOf(
-                        AnyExpression(),
-                        OneOrMore(WhiteSpaceChars())
-                ),
-                QueryExpression()
+        return Sequence(
+                Optional(TopExpression()),
+                EOI,
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        if (context.getValueStack().isEmpty()) push(new Query(new EmptyExpression()));
+                        else push(new Query(popExp()));
+                        return context.getValueStack().size() == 1;
+                    }
+                }
         );
     }
 
-    public Rule QueryExpressionBreakOnWhiteSpace() {
-        return Optional(
-                AnyExpression(),
-                QueryExpressionBreakOnWhiteSpace()
+    Rule TopExpression() {
+        return Sequence(
+                WhiteSpace(),
+                SubExpression(),
+                ZeroOrMore(
+                        WhiteSpace(),
+                        OrChars(),
+                        WhiteSpace(),
+                        SubExpression(),
+                        push(new LogicalExpression(OR, popExp(1), popExp()))
+                )
         );
     }
 
-    public Rule AnyExpression() {
+    Rule SubExpression() {
+        return Sequence(
+                Expression(),
+                ZeroOrMore(
+                        WhiteSpace(),
+                        AndChars(),
+                        WhiteSpace(),
+                        Expression(),
+                        push(new LogicalExpression(AND, popExp(1), popExp()))
+                )
+        );
+    }
+
+    Rule Expression() {
         return FirstOf(
-                QueryGroup(),
-                Exists(),
-                Expedition(),
-                Must(),
-                MustNot(),
-                Filter(),
-                Range(),
-                Phrase(),
-                Term()
+                FilterExpression(),
+                ExistsExpression(),
+                ExpeditionsExpression(),
+                FTSExpression(),
+                ExpressionGroup()
         );
     }
 
-    public Rule Query() {
+    Rule FilterExpression() {
         return Sequence(
-                push(new Query()),
-                Optional(QueryExpression())
+                Chars(),
+                WhiteSpace(),
+                FirstOf(
+                        PhraseComparisonExpression(),
+                        ComparisonExpression(),
+                        LikeExpression(),
+                        PhraseExpression(),
+                        RangeExpression()
+                )
         );
     }
 
-    public Rule QueryClause() {
+    Rule ExistsExpression() {
         return Sequence(
-                push(new QueryClause()),
-                Optional(QueryExpressionBreakOnWhiteSpace())
+                SpecialPrefixExpression(ExistsChars()),
+                push(new ExistsExpression(popStr())),
+                WhiteSpace()
         );
     }
 
-    public Rule FilterQuery() {
+    Rule ExpeditionsExpression() {
         return Sequence(
-                push(new FilterQuery()),
-                Optional(QueryExpressionBreakOnWhiteSpace())
+                SpecialPrefixExpression(ExpeditionsChars()),
+                push(new ExpeditionExpression(popStr())),
+                WhiteSpace()
         );
     }
 
-    public Rule QueryGroup() {
+    Rule SpecialPrefixExpression(Rule prefix) {
+        return Sequence(
+                prefix,
+                WhiteSpace(),
+                SemiColon(),
+                WhiteSpace(),
+                FirstOf(
+                        Sequence(
+                                OpenBracket(),
+                                WhiteSpace(),
+                                PhraseChars(CloseBracket(), false),
+                                WhiteSpace(),
+                                CloseBracket()
+                        ),
+                        Chars()
+                )
+        );
+    }
+
+    Rule FTSExpression() {
+        StringVar column = new StringVar();
+        return Sequence(
+                Optional(
+                        Chars(),
+                        WhiteSpace(),
+                        SemiColon(),
+                        column.set(popStr())
+
+                ),
+                WhiteSpace(),
+                Chars(),
+                push(new FTSExpression(column.get(), popStr())),
+                WhiteSpace()
+        );
+    }
+
+    Rule ExpressionGroup() {
         return Sequence(
                 OpenParen(),
                 WhiteSpace(),
-                Query(),
+                TopExpression(),
                 WhiteSpace(),
                 CloseParen(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        ((QueryContainer) peek(1)).add((QueryExpression) pop());
-                        return true;
-                    }
-                }
+                WhiteSpace()
         );
     }
 
-    public Rule Exists() {
+    Rule PhraseComparisonExpression() {
         return Sequence(
-                ExistsString(),
+                ComparisonOperator(),
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        ComparisonOperator op = ComparisonOperator.fromOp((String) peek());
+                        return op.equals(ComparisonOperator.EQUALS) || op.equals(ComparisonOperator.NOT_EQUALS);
+                    }
+                },
+                WhiteSpace(),
+                Phrase(),
+                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr()))),
+                WhiteSpace()
+        );
+    }
+
+    Rule ComparisonExpression() {
+        return Sequence(
+                ComparisonOperator(),
+                WhiteSpace(),
                 Chars(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        ((QueryContainer) peek()).add(
-                                new ExistsQuery(transformer, match())
-                        );
-                        return true;
-                    }
-                }
+                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr()))),
+                WhiteSpace()
         );
     }
 
-    public Rule Expedition() {
+    Rule LikeExpression() {
         return Sequence(
-                ExpeditionString(),
-                Chars(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        ((ExpeditionQueryContainer) peek()).addExpedition(match());
-                        return true;
-                    }
-                }
-        );
-    }
-
-    public Rule Must() {
-        return Sequence(
-                MustChar(),
+                LikeChar(),
                 WhiteSpace(),
-                QueryClause(),
-                WhiteSpace(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        ((Query) peek(1)).addMust((QueryClause) pop());
-                        return true;
-                    }
-                }
+                Phrase(),
+                push(new LikeExpression(popStr(1), popStr())),
+                WhiteSpace()
         );
     }
 
-    public Rule MustNot() {
+    Rule PhraseExpression() {
         return Sequence(
-                MustNotChar(),
+                SemiColon(),
                 WhiteSpace(),
-                QueryClause(),
+                Phrase(),
+                push(new PhraseExpression(popStr(1), popStr())),
+                WhiteSpace()
+        );
+    }
+
+    Rule RangeExpression() {
+        return Sequence(
+                SemiColon(),
                 WhiteSpace(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        ((Query) peek(1)).addMustNot((QueryClause) pop());
-                        return true;
-                    }
-                }
+                Range(),
+                push(new RangeExpression(popStr(1), popStr())),
+                WhiteSpace()
         );
     }
 
-    public Rule Filter() {
-        return Sequence(
-                Chars(),
-                push(match()),
-                ValueDelim(),
-                FilterQuery(),
-                new FilterAction()
-        );
-    }
+    //***** Helper Rules for Consuming Text *****//
 
-    public Rule Range() {
-        return Sequence(
-                OpenRangeChars(),
-                push(match()),
-                OneOrMore(
-                        TestNot(CloseRangeChars()),
-                        ANY
-                ),
-                push(match()),
-                CloseRangeChars(),
-                push(match()),
-                new RangeAction()
-        );
-    }
-
-    public Rule Phrase() {
+    Rule Phrase() {
         return Sequence(
                 QuoteChar(),
-                OneOrMore(
-                        TestNot(QuoteChar()),
-                        ANY
-                ),
-                push(match()),
-                QuoteChar(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        QueryStringQuery q = new QueryStringQuery("\"" + pop() + "\"");
-                        ((QueryContainer) peek()).add(q);
-                        return true;
-                    }
-                }
+                PhraseChars(QuoteChar(), true),
+                QuoteChar()
         );
     }
 
-    public Rule Term() {
+    Rule Range() {
+        StringVar range = new StringVar("");
         return Sequence(
-                Chars(),
-                new Action() {
-                    @Override
-                    public boolean run(Context context) {
-                        QueryStringQuery q = new QueryStringQuery(match());
-                        ((QueryContainer) peek()).add(q);
-                        return true;
-                    }
-                }
+                OpenRange(),
+                range.append(match()),
+                PhraseChars(CloseRange(), false),
+                range.append((String) pop()),
+                CloseRange(),
+                range.append(match()),
+                push(range.get())
         );
     }
 
+    Rule ComparisonOperator() {
+        return Sequence(
+                ComparisonOperatorChars(),
+                push(match())
+        );
+    }
 
-    public Rule WhiteSpace() {
+    Rule PhraseChars(Rule delimChar, boolean unEscape) {
+        StringVar text = new StringVar("");
+        return Sequence(
+                OneOrMore(
+                        FirstOf(
+                                (unEscape) ? AppendEscapedReservedChars(text) : NOTHING,
+                                TestNot(delimChar)
+                        ),
+                        ANY,
+                        text.append(match())
+                ),
+                push(text.get())
+        );
+    }
+
+    Rule Chars() {
+        StringVar text = new StringVar("");
+
+        return Sequence(
+                OneOrMore(
+                        FirstOf(
+                                AppendEscapedReservedChars(text),
+                                Sequence(
+                                        TestNot(WhiteSpaceChars()),
+                                        TestNot(ReservedChars())
+                                )
+                        ),
+                        ANY,
+                        text.append(match())
+                ),
+                push(text.get())
+        );
+    }
+
+    Rule AppendEscapedReservedChars(StringVar text) {
+        return Sequence(
+                EscapeChar(),
+                ReservedChars(),
+                text.append(match().replaceFirst("\\\\", ""))
+        );
+    }
+
+    Rule ReservedChars() {
+        return FirstOf(
+                ComparisonOperatorChars(),
+                SemiColon(),
+                ExpeditionsChars(),
+                QuoteChar(),
+                OpenParen(),
+                CloseParen(),
+                AndChars(),
+                OrChars(),
+                ExistsChars(),
+                OpenBracket(),
+                CloseBracket(),
+                LikeChar(),
+                OpenRange(),
+                CloseRange()
+        );
+    }
+
+    Rule WhiteSpace() {
         return ZeroOrMore(WhiteSpaceChars());
     }
 
-    public Rule Chars() {
-        return OneOrMore(
-                FirstOf(
-                        EscapedReservedChars(),
-                        TestNot(ReservedChars())
-                ),
-                ANY
-        );
-    }
+    //***** Special Character(s) *****//
 
-    public Rule EscapedReservedChars() {
-        return Sequence(
-                EscapeChar(),
-                ReservedChars()
-        );
-    }
-
-    public Rule ReservedChars() {
+    Rule ComparisonOperatorChars() {
         return FirstOf(
-                OpenParen(),
-                CloseParen(),
-                ExistsString(),
-                ExpeditionString(),
-                MustChar(),
-                MustNotChar(),
-                ValueDelim(),
-                QuoteChar(),
-                OpenRangeChars(),
-                CloseRangeChars(),
-                WhiteSpaceChars()
+                "<=",
+                ">=",
+                "<>",
+                Ch('<'),
+                Ch('>'),
+                Ch('=')
         );
     }
 
-    public Rule EscapeChar() {
+    Rule EscapeChar() {
         return Ch('\\');
     }
 
-    public Rule ExistsString() {
-        return String("_exists_:");
+    Rule ExpeditionsChars() {
+        return String("_expeditions_");
     }
 
-    public Rule ExpeditionString() {
-        return String("expedition:");
+    Rule ExistsChars() {
+        return String("_exists_");
     }
 
-    public Rule ValueDelim() {
-        return Ch(':');
-    }
-
-    public Rule MustChar() {
-        return Ch('+');
-    }
-
-    public Rule MustNotChar() {
-        return Ch('-');
-    }
-
-    public Rule QuoteChar() {
-        return Ch('"');
-    }
-
-    public Rule OpenParen() {
+    Rule OpenParen() {
         return Ch('(');
     }
 
-    public Rule CloseParen() {
+    Rule CloseParen() {
         return Ch(')');
     }
 
-    public Rule OpenRangeChars() {
+    Rule OpenBracket() {
+        return Ch('[');
+    }
+
+    Rule CloseBracket() {
+        return Ch(']');
+    }
+
+    Rule LikeChar() {
+        return String("::");
+    }
+
+    Rule OpenRange() {
         return AnyOf("[{");
     }
 
-    public Rule CloseRangeChars() {
+    Rule CloseRange() {
         return AnyOf("]}");
     }
 
-    public Rule WhiteSpaceChars() {
+    Rule SemiColon() {
+        return Ch(':');
+    }
+
+    Rule QuoteChar() {
+        return Ch('"');
+    }
+
+    Rule OrChars() {
+        return IgnoreCase("or");
+    }
+
+    Rule AndChars() {
+        return IgnoreCase("AND");
+    }
+
+    Rule WhiteSpaceChars() {
         return AnyOf(" \t\f");
     }
 
 
-    class FilterAction implements Action {
-        @Override
-        public boolean run(Context context) {
-            FilterQuery fq = (FilterQuery) pop();
-            String col = (String) pop();
-            QueryContainer qc = (QueryContainer) peek();
+    //***** Helper functions *****//
 
-            for (QueryExpression e : fq.getExpressions()) {
-                e.setColumn(transformer, col);
-                qc.add(e);
-            }
-
-            return true;
-        }
+    Expression popExp() {
+        return (Expression) pop();
     }
 
-    class RangeAction implements Action {
-        @Override
-        public boolean run(Context context) {
-            QueryContainer qc = (QueryContainer) peek(3);
-            swap3();
-            QueryStringQuery q = new QueryStringQuery("" + pop() + pop() + pop());
-            qc.add(q);
-            return true;
-        }
+    Expression popExp(int down) {
+        return (Expression) pop(down);
     }
+
+    String popStr() {
+        return (String) pop();
+    }
+
+    String popStr(int down) {
+        return (String) pop(down);
+    }
+
+
+    boolean debug(Context context) {
+        return true; // set permanent breakpoint here
+    }
+
 }

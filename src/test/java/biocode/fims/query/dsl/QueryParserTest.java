@@ -1,6 +1,5 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.elasticSearch.FieldColumnTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.parboiled.Parboiled;
@@ -14,263 +13,246 @@ import static org.junit.Assert.*;
  */
 public class QueryParserTest {
     ParseRunner<Query> parseRunner;
-    Query expected;
-    FieldColumnTransformer transformer;
 
     @Before
     public void setUp() throws Exception {
-        transformer = null;
-        QueryParser parser = Parboiled.createParser(QueryParser.class, transformer);
+        QueryParser parser = Parboiled.createParser(QueryParser.class);
         parseRunner = new ReportingParseRunner<>(parser.Parse());
-        expected = new Query();
     }
 
     @Test
     public void should_return_empty_query_given_empty_string() {
         Query result = parseRunner.run("").resultValue;
-        assertEquals(expected, result);
+        assertEquals(new Query(new EmptyExpression()), result);
     }
 
     @Test
-    public void should_parse_single_query_string() {
-        String qs = "multiple term query \"with phrases\"";
+    public void should_parse_simple_fts_expression() {
+        String qs = " value1 ";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new QueryStringQuery("multiple"));
-        expected.add(new QueryStringQuery("term"));
-        expected.add(new QueryStringQuery("query"));
-        expected.add(new QueryStringQuery("\"with phrases\""));
+        Query expected = new Query(new FTSExpression(null, "value1"));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_exists_column() {
-        String qs = " _exists_:column1";
+    public void should_parse_simple_fts_filter_expression() {
+        String qs = "col1:value1 ";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery(transformer, "column1"));
+        Query expected = new Query(new FTSExpression("col1", "value1"));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_query_with_multiple_exists_and_query_strings() {
-        String qs = " _exists_:column1 this term _exists_:column3 \"query string\" phrase";
+    public void should_parse_equals_filter_expression() {
+        String qs = " col1 = value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery(transformer, "column1"));
-        expected.add(new QueryStringQuery("this"));
-        expected.add(new QueryStringQuery("term"));
-        expected.add(new ExistsQuery(transformer, "column3"));
-        expected.add(new QueryStringQuery("\"query string\""));
-        expected.add(new QueryStringQuery("phrase"));
-
-        assertEquals(expected, result);
-
-    }
-
-    @Test
-    public void should_parse_must_queries() {
-        String qs = "+term1 shouldTerm +_exists_:column1 +\"phrase must\"";
-
-        Query result = parseRunner.run(qs).resultValue;
-
-        QueryClause must = new QueryClause();
-        must.add(new QueryStringQuery("term1"));
-        expected.addMust(must);
-
-        expected.add(new QueryStringQuery("shouldTerm"));
-
-        QueryClause must2 = new QueryClause();
-        must2.add(new ExistsQuery(transformer, "column1"));
-        expected.addMust(must2);
-
-        QueryClause must3 = new QueryClause();
-        must3.add(new QueryStringQuery("\"phrase must\""));
-        expected.addMust(must3);
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.EQUALS));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_must_not_queries() {
-        String qs = "-term1 -(shouldTerm orTerm) -_exists_:column1 +\"phrase must\"";
+    public void should_parse_greater_then_filter_expression() {
+        String qs = "col1 > value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        QueryClause mustNot = new QueryClause();
-        mustNot.add(new QueryStringQuery("term1"));
-        expected.addMustNot(mustNot);
-
-        Query group = new Query();
-        group.add(new QueryStringQuery("shouldTerm"));
-        group.add(new QueryStringQuery("orTerm"));
-        QueryClause mustNot2 = new QueryClause();
-        mustNot2.add(group);
-        expected.addMustNot(mustNot2);
-
-        QueryClause mustNot3 = new QueryClause();
-        mustNot3.add(new ExistsQuery(transformer, "column1"));
-        expected.addMustNot(mustNot3);
-
-        QueryClause must = new QueryClause();
-        must.add(new QueryStringQuery("\"phrase must\""));
-        expected.addMust(must);
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_sub_queries() {
-        String qs = "term1 ( shouldTerm ) term";
+    public void should_parse_greater_then_equal_filter_expression() {
+        String qs = "col1 >=value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new QueryStringQuery("term1"));
-
-        Query group = new Query();
-        group.add(new QueryStringQuery("shouldTerm"));
-        expected.add(group);
-
-        expected.add(new QueryStringQuery("term"));
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN_EQUAL));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_filter_queries() {
-        String qs = "_exists_:column1 column2:term1 term2 column3:(term3 +term4)";
+    public void should_parse_less_then_filter_expression() {
+        String qs = "col1 < value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new ExistsQuery(transformer, "column1"));
-
-        QueryStringQuery q = new QueryStringQuery("term1");
-        q.setColumn(transformer, "column2");
-        expected.add(q);
-
-        expected.add(new QueryStringQuery("term2"));
-
-        Query group = new Query();
-        group.setColumn(transformer, "column3");
-        group.add(new QueryStringQuery("term3"));
-        QueryClause must = new QueryClause();
-        must.add(new QueryStringQuery("term4"));
-        group.addMust(must);
-        expected.add(group);
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_range_queries() {
-        String qs = "column1:[1 TO 5] column2:<=5 column3:{5 TO 10]";
+    public void should_parse_less_then_equal_filter_expression() {
+        String qs = "col1<=value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        QueryStringQuery q = new QueryStringQuery("[1 TO 5]");
-        q.setColumn(transformer, "column1");
-        expected.add(q);
-
-        QueryStringQuery q2 = new QueryStringQuery("<=5");
-        q2.setColumn(transformer, "column2");
-        expected.add(q2);
-
-        QueryStringQuery q3 = new QueryStringQuery("{5 TO 10]");
-        q3.setColumn(transformer, "column3");
-        expected.add(q3);
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN_EQUAL));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_filter_with_dot_notation() {
-        String qs = "conceptAlias.\\*:a";
+    public void should_parse_not_equal_filter_expression() {
+        String qs = "col1 <> value1";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        QueryStringQuery q = new QueryStringQuery("a");
-        q.setColumn(transformer, "conceptAlias.\\*");
-        expected.add(q);
+        Query expected = new Query(new ComparisonExpression("col1", "value1", ComparisonOperator.NOT_EQUALS));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_expeditons() {
-        String qs = "term expedition:TEST expedition:TEST2";
+    public void should_parse_equals_filter_expression_with_phrase() {
+        String qs = " col1 = \" some and value\\\"1\"";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        expected.add(new QueryStringQuery("term"));
-
-        expected.addExpedition("TEST");
-        expected.addExpedition("TEST2");
+        Query expected = new Query(new ComparisonExpression("col1", " some and value\"1", ComparisonOperator.EQUALS));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_escaped_must_not_char_as_query_string() {
-        String qs = "decimalLatitude:<\\-10";
+    public void should_parse_phrase_filter_expression() {
+        String qs = " col1:\"some value and another\"";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        QueryStringQuery q = new QueryStringQuery("<\\-10");
-        q.setColumn(transformer, "decimalLatitude");
-
-        expected.add(q);
+        Query expected = new Query(new PhraseExpression("col1", "some value and another"));
 
         assertEquals(expected, result);
     }
 
     @Test
-    public void should_parse_bounding_box_query() {
-        String qs = "(+decimalLongitude:>170 +decimalLongitude:<=180) (+decimalLongitude:<\\-170 +decimalLongitude:>=\\-180) +expedition:Panpen_COI_MI";
+    public void should_parse_range_filter_expression() {
+        String qs = " col1:[* TO 10}";
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query group = new Query();
-
-        QueryClause groupMust1 = new QueryClause();
-        QueryStringQuery q = new QueryStringQuery(">170");
-        q.setColumn(transformer, "decimalLongitude");
-        groupMust1.add(q);
-        group.addMust(groupMust1);
-
-        QueryClause groupMust2 = new QueryClause();
-        QueryStringQuery q2 = new QueryStringQuery("<=180");
-        q2.setColumn(transformer, "decimalLongitude");
-        groupMust2.add(q2);
-        group.addMust(groupMust2);
-
-        expected.add(group);
-
-        Query group2 = new Query();
-
-        QueryClause group2Must1 = new QueryClause();
-        QueryStringQuery q3 = new QueryStringQuery("<\\-170");
-        q3.setColumn(transformer, "decimalLongitude");
-        group2Must1.add(q3);
-        group2.addMust(group2Must1);
-
-        QueryClause group2Must2 = new QueryClause();
-        QueryStringQuery q4 = new QueryStringQuery(">=\\-180");
-        q4.setColumn(transformer, "decimalLongitude");
-        group2Must2.add(q4);
-        group2.addMust(group2Must2);
-
-        expected.add(group2);
-
-        QueryClause must = new QueryClause();
-        must.addExpedition("Panpen_COI_MI");
-        expected.addMust(must);
+        Query expected = new Query(new RangeExpression("col1", "[* TO 10}"));
 
         assertEquals(expected, result);
     }
 
+    @Test
+    public void should_parse_like_filter_expression() {
+        String qs = " col1::\"%test\"";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(new LikeExpression("col1", "%test"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_exists_filter_expression() {
+        String qs = "_exists_:col1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(new ExistsExpression("col1"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_exists_filter_expression() {
+        String qs = "_exists_:[col1, col2]";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(new ExistsExpression("col1, col2"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_expedition_filter_expression() {
+        String qs = "_expeditions_:exp_1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(new ExpeditionExpression("exp_1"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_expeditions_filter_expression() {
+        String qs = "_expeditions_:[exp_1, exp_2]";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(new ExpeditionExpression("exp_1, exp_2"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_and_expression() {
+        String qs = "col2 = someValue and col1::\"%test\" and value2";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Expression l1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new ComparisonExpression("col2", "someValue", ComparisonOperator.EQUALS),
+                new LikeExpression("col1", "%test")
+        );
+        Expression l2 = new LogicalExpression(
+                LogicalOperator.AND,
+                l1,
+                new FTSExpression(null, "value2")
+        );
+
+        Query expected = new Query(l2);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_and_or_expression() {
+        String qs = "col2 = someValue and col1::\"%test\" or val and (value2 or val3)";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Expression l1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new ComparisonExpression("col2", "someValue", ComparisonOperator.EQUALS),
+                new LikeExpression("col1", "%test")
+        );
+        Expression r2 = new LogicalExpression(
+                LogicalOperator.OR,
+                new FTSExpression(null, "value2"),
+                new FTSExpression(null, "val3")
+        );
+        Expression r1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new FTSExpression(null, "val"),
+                r2
+        );
+        Expression root = new LogicalExpression(
+                LogicalOperator.OR,
+                l1,
+                r1
+        );
+
+        Query expected = new Query(root);
+
+        assertEquals(expected, result);
+    }
 }
