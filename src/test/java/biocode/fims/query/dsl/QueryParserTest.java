@@ -30,7 +30,7 @@ public class QueryParserTest {
     @Test
     public void should_return_empty_query_given_empty_string() {
         Query result = parseRunner.run("").resultValue;
-        assertEquals(new Query(queryBuilder,  new EmptyExpression()), result);
+        assertEquals(new Query(queryBuilder, new EmptyExpression()), result);
     }
 
     @Test
@@ -242,15 +242,17 @@ public class QueryParserTest {
                 new ComparisonExpression("col2", "someValue", ComparisonOperator.EQUALS),
                 new LikeExpression("col1", "%test")
         );
-        Expression r2 = new LogicalExpression(
-                LogicalOperator.OR,
-                new FTSExpression(null, "value2"),
-                new FTSExpression(null, "val3")
+        Expression g1 = new GroupExpression(
+                new LogicalExpression(
+                        LogicalOperator.OR,
+                        new FTSExpression(null, "value2"),
+                        new FTSExpression(null, "val3")
+                )
         );
         Expression r1 = new LogicalExpression(
                 LogicalOperator.AND,
                 new FTSExpression(null, "val"),
-                r2
+                g1
         );
         Expression root = new LogicalExpression(
                 LogicalOperator.OR,

@@ -146,6 +146,7 @@ public class QueryParser extends BaseParser<Object> {
                 TopExpression(),
                 WhiteSpace(),
                 CloseParen(),
+                push(new GroupExpression(popExp())),
                 WhiteSpace()
         );
     }

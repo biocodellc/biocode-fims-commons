@@ -26,4 +26,6 @@ public interface ExpressionVisitor {
     void visit(RangeExpression rangeExpression);
 
     void visit(EmptyExpression emptyExpression);
+
+    void visit(GroupExpression groupExpression);
 }
