@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
 /**
@@ -24,6 +25,20 @@ public class RangeExpression implements Expression {
         Assert.notNull(column);
         this.column = column;
         this.range = range;
+    }
+
+
+    public String column() {
+        return column;
+    }
+
+    public String range() {
+        return range;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
 /**
@@ -8,14 +9,27 @@ import org.springframework.util.Assert;
  * @author rjewing
  */
 public class PhraseExpression implements Expression {
-    private String column;
-    private final String term;
+    private final String column;
+    private final String phrase;
 
-    public PhraseExpression(String column, String term) {
-        Assert.notNull(term);
+    public PhraseExpression(String column, String phrase) {
+        Assert.notNull(phrase);
         Assert.notNull(column);
         this.column = column;
-        this.term = term;
+        this.phrase = phrase;
+    }
+
+    public String column() {
+        return column;
+    }
+
+    public String phrase() {
+        return phrase;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
@@ -26,13 +40,13 @@ public class PhraseExpression implements Expression {
         PhraseExpression that = (PhraseExpression) o;
 
         if (column != null ? !column.equals(that.column) : that.column != null) return false;
-        return term.equals(that.term);
+        return phrase.equals(that.phrase);
     }
 
     @Override
     public int hashCode() {
         int result = column != null ? column.hashCode() : 0;
-        result = 31 * result + term.hashCode();
+        result = 31 * result + phrase.hashCode();
         return result;
     }
 
@@ -40,7 +54,7 @@ public class PhraseExpression implements Expression {
     public String toString() {
         return "PhraseExpression{" +
                 "column='" + column + '\'' +
-                ", term='" + term + '\'' +
+                ", phrase='" + phrase + '\'' +
                 '}';
     }
 }

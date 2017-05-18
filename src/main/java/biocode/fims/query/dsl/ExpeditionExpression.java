@@ -1,6 +1,11 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Expedition Search Expression
@@ -16,6 +21,19 @@ public class ExpeditionExpression implements Expression {
     public ExpeditionExpression(String expeditionsString) {
         Assert.notNull(expeditionsString);
         this.expeditionsString = expeditionsString;
+    }
+
+    public List<String> expeditions() {
+        if (expeditionsString.startsWith("[")) {
+            return Arrays.asList(expeditionsString.substring(1, expeditionsString.length() - 1).split(" ?, ?"));
+        } else {
+            return Collections.singletonList(expeditionsString);
+        }
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

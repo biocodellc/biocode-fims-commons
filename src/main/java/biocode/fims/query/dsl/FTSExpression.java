@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
 /**
@@ -17,13 +18,26 @@ import org.springframework.util.Assert;
  * @author rjewing
  */
 public class FTSExpression implements Expression {
-    private String column;
+    private final String column;
     private final String term;
 
     public FTSExpression(String column, String term) {
         Assert.notNull(term);
         this.column = column;
         this.term = term;
+    }
+
+    public String column() {
+        return column;
+    }
+
+    public String term() {
+        return term;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

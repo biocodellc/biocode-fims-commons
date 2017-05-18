@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
 /**
@@ -17,6 +18,23 @@ public class LogicalExpression implements Expression {
         this.left = left;
         this.right = right;
         this.operator = operator;
+    }
+
+    public Expression left() {
+        return left;
+    }
+
+    public Expression right() {
+        return right;
+    }
+
+    public LogicalOperator operator() {
+        return operator;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

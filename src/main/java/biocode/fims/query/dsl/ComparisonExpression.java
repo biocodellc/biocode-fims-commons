@@ -1,7 +1,8 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.ExpressionVisitor;
+
 /**
- * Exact match Expression
  * @author rjewing
  */
 public class ComparisonExpression implements Expression {
@@ -13,6 +14,23 @@ public class ComparisonExpression implements Expression {
         this.column = column;
         this.term = term;
         this.operator = operator;
+    }
+
+    public String column() {
+        return column;
+    }
+
+    public String term() {
+        return term;
+    }
+
+    public ComparisonOperator operator() {
+        return operator;
+    }
+
+    @Override
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
