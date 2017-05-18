@@ -1,5 +1,8 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.fimsExceptions.FimsException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
@@ -32,8 +35,8 @@ public class RangeExpression implements Expression {
         return column;
     }
 
-    public String range() {
-        return range;
+    public ParsedRange parsedRange() {
+        return new ParsedRange(range);
     }
 
     @Override
@@ -65,5 +68,89 @@ public class RangeExpression implements Expression {
                 "column='" + column + '\'' +
                 ", range='" + range + '\'' +
                 '}';
+    }
+
+
+    public static class ParsedRange {
+        private ComparisonOperator leftOperator;
+        private String leftValue;
+        private ComparisonOperator rightOperator;
+        private String rightValue;
+
+        public ParsedRange(String range) {
+            parse(range);
+        }
+
+        public ComparisonOperator leftOperator() {
+            return leftOperator;
+        }
+
+        public String leftValue() {
+            return leftValue;
+        }
+
+        public ComparisonOperator rightOperator() {
+            return rightOperator;
+        }
+
+        public String rightValue() {
+            return rightValue;
+        }
+
+        private void parse(String rangeString) {
+            String[] range = rangeString.split(" ?TO ?");
+
+            if (range.length != 2) {
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "invalid range " + rangeString);
+            }
+
+            String left = range[0].trim();
+            String right = range[1].trim();
+
+            try {
+                parseLeft(left);
+                parseRight(right);
+            } catch (FimsException e) {
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "invalid range " + rangeString);
+            }
+
+            if (leftValue == null && rightValue == null) {
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "invalid range " + rangeString);
+            }
+        }
+
+        private void parseLeft(String value) throws FimsException {
+            if (value.startsWith("[")) {
+                leftOperator = ComparisonOperator.GREATER_THEN_EQUAL;
+            } else if (value.startsWith("{")) {
+                leftOperator = ComparisonOperator.GREATER_THEN;
+            } else {
+                throw new FimsException();
+            }
+
+            leftValue = value.substring(1);
+
+            if (leftValue.equals("*")) {
+                leftValue = null;
+                leftOperator = null;
+            }
+        }
+
+        private void parseRight(String value) throws FimsException {
+            if (value.endsWith("]")) {
+                rightOperator = ComparisonOperator.LESS_THEN_EQUAL;
+            } else if (value.endsWith("}")) {
+                rightOperator = ComparisonOperator.LESS_THEN;
+            } else {
+                throw new FimsException();
+            }
+
+            rightValue = value.substring(0, value.length() - 1);
+
+            if (rightValue.equals("*")) {
+                rightValue = null;
+                rightOperator = null;
+            }
+        }
     }
 }
