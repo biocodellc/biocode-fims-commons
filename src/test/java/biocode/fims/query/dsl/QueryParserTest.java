@@ -1,5 +1,8 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.digester.Entity;
+import biocode.fims.models.Project;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.junit.Before;
@@ -19,7 +22,7 @@ public class QueryParserTest {
 
     @Before
     public void setUp() throws Exception {
-        queryBuilder = new QueryBuilder(null, null);
+        queryBuilder = new QueryBuilder(project(), "event");
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder);
         parseRunner = new ReportingParseRunner<>(parser.Parse());
     }
@@ -135,7 +138,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new PhraseExpression("col1", "some value and another"));
+        Query expected = new Query(queryBuilder, new LikeExpression("col1", "%some value and another%"));
 
         assertEquals(expected, result);
     }
@@ -258,5 +261,17 @@ public class QueryParserTest {
         Query expected = new Query(queryBuilder, root);
 
         assertEquals(expected, result);
+    }
+
+    private Project project() {
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(new Entity("event"));
+
+        Project project = new Project.ProjectBuilder("TEST", null, config, null)
+                .build();
+
+        project.setProjectId(1);
+
+        return project;
     }
 }

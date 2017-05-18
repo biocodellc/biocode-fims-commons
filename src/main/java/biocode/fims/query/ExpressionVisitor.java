@@ -23,8 +23,6 @@ public interface ExpressionVisitor {
 
     void visit(LogicalExpression logicalExpression);
 
-    void visit(PhraseExpression phraseExpression);
-
     void visit(RangeExpression rangeExpression);
 
     void visit(EmptyExpression emptyExpression);

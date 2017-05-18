@@ -192,7 +192,7 @@ public class QueryParser extends BaseParser<Object> {
                 SemiColon(),
                 WhiteSpace(),
                 Phrase(),
-                push(new PhraseExpression(popStr(1), popStr())),
+                push(new LikeExpression(popStr(1), "%" + popStr() + "%")),
                 WhiteSpace()
         );
     }

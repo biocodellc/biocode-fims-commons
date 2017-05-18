@@ -6,7 +6,7 @@ import org.springframework.util.Assert;
 /**
  * ILike Search Expression
  *
- * col1:"%value"    ->  col1 ILIKE '%value'
+ * col1::"%value"    ->  col1 ILIKE '%value'
  *
  * @author rjewing
  */
