@@ -14,6 +14,10 @@ public class GroupExpression implements Expression {
         this.expression = expression;
     }
 
+    public Expression expression() {
+        return expression;
+    }
+
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visit(this);
