@@ -5,6 +5,7 @@ import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.query.PostgresUtils;
 import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,6 +97,7 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
         Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
+        tableMap.put("conceptAlias", conceptAlias);
 
         jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createEntityTable"), tableMap), PreparedStatement::execute);
 
@@ -109,10 +111,9 @@ public class PostgresRecordRepository implements RecordRepository {
         // TODO implement
     }
 
-    private Map<String, Object> getTableMap(int projectId, String table) {
+    private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
         Map<String, Object> tableMap = new HashMap<>();
-        tableMap.put("projectId", projectId);
-        tableMap.put("table", table);
+        tableMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
         return tableMap;
     }
 
