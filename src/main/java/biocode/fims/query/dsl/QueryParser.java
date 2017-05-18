@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.Action;
 import org.parboiled.BaseParser;
 import org.parboiled.Context;
@@ -14,6 +15,11 @@ import static biocode.fims.query.dsl.LogicalOperator.OR;
  */
 @SuppressWarnings("InfiniteRecursion")
 public class QueryParser extends BaseParser<Object> {
+    private final QueryBuildingExpressionVisitor queryBuilder;
+
+    public QueryParser(QueryBuildingExpressionVisitor queryBuilder) {
+        this.queryBuilder = queryBuilder;
+    }
 
     public Rule Parse() {
         return Sequence(
@@ -22,8 +28,8 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        if (context.getValueStack().isEmpty()) push(new Query(new EmptyExpression()));
-                        else push(new Query(popExp()));
+                        if (context.getValueStack().isEmpty()) push(new Query(queryBuilder, new EmptyExpression()));
+                        else push(new Query(queryBuilder, popExp()));
                         return context.getValueStack().size() == 1;
                     }
                 }
@@ -387,10 +393,4 @@ public class QueryParser extends BaseParser<Object> {
     String popStr(int down) {
         return (String) pop(down);
     }
-
-
-    boolean debug(Context context) {
-        return true; // set permanent breakpoint here
-    }
-
 }

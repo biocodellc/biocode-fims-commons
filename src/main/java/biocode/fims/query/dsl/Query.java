@@ -1,15 +1,27 @@
 package biocode.fims.query.dsl;
 
 
+import biocode.fims.query.QueryBuildingExpressionVisitor;
+import org.springframework.util.Assert;
+
 /**
  * @author rjewing
  */
 public class Query {
 
+    private final QueryBuildingExpressionVisitor queryBuilder;
     private final Expression expression;
 
-    public Query(Expression expression) {
-       this.expression = expression;
+    public Query(QueryBuildingExpressionVisitor queryBuilder, Expression expression) {
+        Assert.notNull(queryBuilder);
+        Assert.notNull(expression);
+        this.queryBuilder = queryBuilder;
+        this.expression = expression;
+    }
+
+    public String query() {
+        expression.accept(queryBuilder);
+        return queryBuilder.query();
     }
 
     @Override
@@ -19,12 +31,15 @@ public class Query {
 
         Query query = (Query) o;
 
-        return expression != null ? expression.equals(query.expression) : query.expression == null;
+        if (!queryBuilder.equals(query.queryBuilder)) return false;
+        return expression.equals(query.expression);
     }
 
     @Override
     public int hashCode() {
-        return expression != null ? expression.hashCode() : 0;
+        int result = queryBuilder.hashCode();
+        result = 31 * result + expression.hashCode();
+        return result;
     }
 
     @Override
