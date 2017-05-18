@@ -102,7 +102,7 @@ public class ResolverTest {
 
     @Test
     public void should_return_default_conceptForwardingAddress_plus_suffix_for_concept_no_webAddress() throws Exception {
-        Project project = new Project.ProjectBuilder("DEMO", "DEMO Project", "http://example.com", "http://example.com/").build();
+        Project project = new Project.ProjectBuilder("DEMO", "DEMO Project", null, "http://example.com/").build();
         project.setProjectId(1);
         Expedition expedition = new Expedition.ExpeditionBuilder("DEMO").build();
         expedition.setProject(project);

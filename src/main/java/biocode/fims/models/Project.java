@@ -50,17 +50,16 @@ public class Project {
         // Required
         private String projectCode;
         private String projectTitle;
-        // TODO figure out how we want to set the projectConfig
-        private String validationXml;
+        private ProjectConfig projectConfig;
         private String projectUrl;
 
         // Optional
         private boolean isPublic = true;
 
-        public ProjectBuilder(String projectCode, String projectTitle, String validationXml, String projectUrl) {
+        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig, String projectUrl) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
-            this.validationXml = validationXml;
+            this.projectConfig = projectConfig;
             this.projectUrl = projectUrl;
         }
 
@@ -78,7 +77,7 @@ public class Project {
     private Project(ProjectBuilder builder) {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
-        validationXml = builder.validationXml;
+        projectConfig = builder.projectConfig;
         projectUrl = builder.projectUrl;
         isPublic = builder.isPublic;
     }

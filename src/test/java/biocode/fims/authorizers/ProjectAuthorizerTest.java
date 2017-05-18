@@ -27,7 +27,7 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_unAuthenticatedUserPublicProject_true() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
                 .isPublic(true)
                 .build();
 
@@ -37,7 +37,7 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_unAuthenticatedUserPrivateProject_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
                 .isPublic(false)
                 .build();
 
@@ -47,7 +47,7 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_unAuthenticatedUserPublicProjectDifferentProjectUrl_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", "http://example.com/test/")
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, "http://example.com/test/")
                 .isPublic(true)
                 .build();
 
@@ -57,7 +57,7 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_AuthenticatedMemberUserPrivateProject_true() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
                 .isPublic(false)
                 .build();
 
@@ -71,7 +71,7 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_AuthenticatedNonMemberUserPrivateProject_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", "", APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
                 .isPublic(false)
                 .build();
 

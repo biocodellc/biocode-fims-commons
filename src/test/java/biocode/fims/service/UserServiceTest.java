@@ -63,7 +63,7 @@ public class UserServiceTest {
 
     @Test
     public void getUser_with_username_and_password_should_return_null_with_valid_password_and_not_member_of_project_at_domain() {
-        Project project = new Project.ProjectBuilder("PROJ", "Test project", "n/a", "http://localhost/test/")
+        Project project = new Project.ProjectBuilder("PROJ", "Test project", null, "http://localhost/test/")
                 .build();
         List<Project> projects = new ArrayList<>();
         projects.add(project);
@@ -78,7 +78,7 @@ public class UserServiceTest {
     public void getUser_with_username_and_password_should_return_user_with_valid_password_and_member_of_project_at_domain() {
         // TODO this test needs to be fixed, but requires refactoring out the PersistenceUnitUtil, as the current
         // ProjectService class is not testable
-        Project project = new Project.ProjectBuilder("PROJ", "Test project", "n/a", "http://localhost/")
+        Project project = new Project.ProjectBuilder("PROJ", "Test project", null, "http://localhost/")
                 .build();
         List<Project> projects = new ArrayList<>();
         projects.add(project);
