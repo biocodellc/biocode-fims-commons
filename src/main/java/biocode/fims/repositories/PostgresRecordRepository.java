@@ -7,6 +7,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.run.Dataset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
@@ -50,9 +51,9 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public void save(List<RecordSet> recordSets, int projectId, int expeditionId) {
+    public void save(Dataset dataset, int projectId, int expeditionId) {
         try {
-            for (RecordSet recordSet : recordSets) {
+            for (RecordSet recordSet : dataset) {
 
                 String table = recordSet.conceptAlias();
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
@@ -72,14 +73,27 @@ public class PostgresRecordRepository implements RecordRepository {
                     recordParams.put("expeditionId", expeditionId);
                     recordParams.put("identifier", record.get(localIdentifierUri));
 
+                    if (recordSet.hasParent()) {
+                        String parentEntityIdColumn = recordSet.parent().entity().getUniqueKey();
+                        String parentIdentifierUri = recordSet.entity().getAttributeUri(parentEntityIdColumn);
+                        recordParams.put("parent_identifier", record.get(parentIdentifierUri));
+                    }
+
                     Map<String, String> properties = record.properties();
                     recordParams.put("data", mapper.writeValueAsString(removeEmptyProperties(properties)));
 
                     insertParams.add(recordParams);
                 }
 
+                String sqlString;
+                if (recordSet.hasParent()) {
+                    sqlString = sql.getProperty("insertChildRecord");
+                } else {
+                    sqlString = sql.getProperty("insertRecord");
+                }
+
                 jdbcTemplate.batchUpdate(
-                        StrSubstitutor.replace(sql.getProperty("insertRecord"), tableMap),
+                        StrSubstitutor.replace(sqlString, tableMap),
                         insertParams.toArray(new HashMap[insertParams.size()])
                 );
 
@@ -98,12 +112,32 @@ public class PostgresRecordRepository implements RecordRepository {
     public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
         Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
         tableMap.put("conceptAlias", conceptAlias);
+        tableMap.put("projectId", projectId);
 
         jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createEntityTable"), tableMap), PreparedStatement::execute);
 
         for (String column : indexedColumnUris) {
             createEntityTableIndex(projectId, conceptAlias, column);
         }
+    }
+
+    @Override
+    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn) {
+        createChildEntityTable(projectId, conceptAlias, parentConceptAlias, parentReferenceColumn, Collections.emptyList());
+    }
+
+    @Override
+    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn, List<String> indexedColumnUris) {
+        createEntityTable(projectId, conceptAlias, indexedColumnUris);
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
+        paramMap.put("parentTable", PostgresUtils.entityTable(projectId, parentConceptAlias));
+        paramMap.put("parentColumn", parentReferenceColumn);
+        paramMap.put("conceptAlias", conceptAlias);
+        paramMap.put("projectId", projectId);
+
+        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createChildEntityTableForeignKey"), paramMap), PreparedStatement::execute);
     }
 
     @Override

@@ -73,7 +73,7 @@ public class DatasetBuilder {
         return this;
     }
 
-    public List<RecordSet> build() {
+    public Dataset build() {
 
         instantiateWorkbookRecords();
         instantiateDataSourceRecords();
@@ -84,7 +84,7 @@ public class DatasetBuilder {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
-        return recordSets;
+        return new Dataset(recordSets);
     }
 
     private void instantiateDataSourceRecords() {

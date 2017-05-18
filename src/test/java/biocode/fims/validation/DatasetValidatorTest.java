@@ -8,6 +8,7 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.validation.rules.RequiredValueRule;
 import org.junit.Test;
@@ -24,13 +25,13 @@ public class DatasetValidatorTest {
     @Test
     public void should_validate_all_recordSets() {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
-        List<RecordSet> recordSets = new LinkedList<>();
+        Dataset dataset = new Dataset();
 
         RecordSet events = new RecordSet(entity1());
-        recordSets.add(events);
+        dataset.add(events);
         RecordSet samples = new RecordSet(entity2());
         samples.setParent(events);
-        recordSets.add(samples);
+        dataset.add(samples);
 
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
@@ -51,7 +52,7 @@ public class DatasetValidatorTest {
         s2.set("eventId", "event1");
         samples.add(s2);
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
 
         assertFalse(validator.validate(new ProcessorStatus()));
         assertFalse(validator.hasError());
@@ -70,14 +71,14 @@ public class DatasetValidatorTest {
     @Test
     public void should_validate_if_parent_is_on_multi_entity_sheet_and_recordSet_has_records_with_same_identifier_and_same_values() {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
-        List<RecordSet> recordSets = new LinkedList<>();
+        Dataset dataset = new Dataset();
 
         RecordSet events = new RecordSet(entity1());
         RecordSet samples = new RecordSet(entity2());
         samples.setParent(events);
 
-        recordSets.add(events);
-        recordSets.add(samples);
+        dataset.add(events);
+        dataset.add(samples);
 
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
@@ -95,7 +96,7 @@ public class DatasetValidatorTest {
         samples.add(s1);
 
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
 
         assertTrue(validator.validate(new ProcessorStatus()));
         assertFalse(validator.hasError());
@@ -104,14 +105,14 @@ public class DatasetValidatorTest {
     @Test
     public void should_not_validate_if_parent_is_on_multi_entity_sheet_and_recordSet_has_records_with_same_identifier_and_different_values() {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
-        List<RecordSet> recordSets = new LinkedList<>();
+        Dataset dataset = new Dataset();
 
         RecordSet events = new RecordSet(entity1());
         RecordSet samples = new RecordSet(entity2());
         samples.setParent(events);
 
-        recordSets.add(events);
-        recordSets.add(samples);
+        dataset.add(events);
+        dataset.add(samples);
 
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
@@ -129,7 +130,7 @@ public class DatasetValidatorTest {
         samples.add(s1);
 
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, config());
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
 
         assertFalse(validator.validate(new ProcessorStatus()));
         assertTrue(validator.hasError());

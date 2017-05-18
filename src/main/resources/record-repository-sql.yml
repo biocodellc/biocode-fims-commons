@@ -6,6 +6,14 @@ insertRecord: >
   ON CONFLICT (local_identifier, expedition_id)
     DO UPDATE SET data = to_jsonb(:data::jsonb)
 
+insertChildRecord: >
+  INSERT INTO ${table}
+    (expedition_id, local_identifier, parent_identifier, data)
+  VALUES
+    (:expeditionId, :identifier, :parent_identifier, to_jsonb(:data::jsonb))
+  ON CONFLICT (local_identifier, expedition_id)
+    DO UPDATE SET data = to_jsonb(:data::jsonb)
+
 selectRecords: >
   SELECT r.data as data
   FROM ${table} AS r
@@ -33,6 +41,14 @@ createEntityTable: >
 
   CREATE INDEX idx_project_${projectId}_${conceptAlias}_data ON ${table} USING GIN (data);
   CREATE INDEX idx_project_${projectId}_${conceptAlias}_tsv ON ${table} USING GIN (tsv);
+
+createChildEntityTableForeignKey: >
+  ALTER TABLE ${table}
+      ADD COLUMN parent_identifier NOT NULL;
+  ALTER TABLE ${table}
+      ADD CONSTRAINT project_${projectId}_${conceptAlias} _parent_fkey
+      FOREIGN KEY (parent_identifier, expedition_id)
+      REFERENCES ${parentTable} (local_identifier, expedition_id);
 
 # sql to execute when creating a new project
 createProjectSchema: >

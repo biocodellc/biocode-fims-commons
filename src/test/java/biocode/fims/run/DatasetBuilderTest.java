@@ -64,10 +64,10 @@ public class DatasetBuilderTest {
         DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
-        List<RecordSet> recordSets = builder.build();
+        Dataset dataset = builder.build();
 
-        assertEquals(1, recordSets.size());
-        assertEquals(1, recordSets.get(0).records().size());
+        assertEquals(1, dataset.size());
+        assertEquals(1, dataset.get(0).records().size());
     }
 
     @Test
@@ -83,16 +83,16 @@ public class DatasetBuilderTest {
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
         builder.addDatasource("samples.csv", samplesMetadata);
 
-        List<RecordSet> recordSets = builder.build();
+        Dataset dataset = builder.build();
 
-        assertEquals(2, recordSets.size());
+        assertEquals(2, dataset.size());
 
-        Optional<RecordSet> eventsSet = recordSets.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
 
         assertTrue(eventsSet.isPresent());
         assertEquals(1, eventsSet.get().records().size());
 
-        Optional<RecordSet> samplesSet = recordSets.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
@@ -110,7 +110,7 @@ public class DatasetBuilderTest {
         RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
 
-        List<RecordSet> recordSets = new DatasetBuilder(
+        Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 repository,
                 config(),
@@ -120,14 +120,14 @@ public class DatasetBuilderTest {
                 .addDatasource("samples.csv", samplesMetadata)
                 .build();
 
-        assertEquals(2, recordSets.size());
+        assertEquals(2, dataset.size());
 
-        Optional<RecordSet> eventsSet = recordSets.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
 
         assertTrue(eventsSet.isPresent());
         assertEquals(2, eventsSet.get().records().size());
 
-        Optional<RecordSet> samplesSet = recordSets.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
@@ -143,7 +143,7 @@ public class DatasetBuilderTest {
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
 
-        List<RecordSet> recordSets = new DatasetBuilder(
+        Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 repository,
                 config(),
@@ -153,14 +153,14 @@ public class DatasetBuilderTest {
                 .addWorkbook("workbook.xlsx")
                 .build();
 
-        assertEquals(2, recordSets.size());
+        assertEquals(2, dataset.size());
 
-        Optional<RecordSet> eventsSet = recordSets.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
 
         assertTrue(eventsSet.isPresent());
         assertEquals(2, eventsSet.get().records().size());
 
-        Optional<RecordSet> samplesSet = recordSets.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
@@ -180,7 +180,7 @@ public class DatasetBuilderTest {
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
 
-        List<RecordSet> recordSets = new DatasetBuilder(
+        Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 repository,
                 config(),
@@ -190,14 +190,14 @@ public class DatasetBuilderTest {
                 .addWorkbook("workbook.xlsx")
                 .build();
 
-        assertEquals(2, recordSets.size());
+        assertEquals(2, dataset.size());
 
-        Optional<RecordSet> eventsSet = recordSets.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
 
         assertTrue(eventsSet.isPresent());
         assertEquals(recordSet, eventsSet.get());
 
-        Optional<RecordSet> samplesSet = recordSets.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());
@@ -213,7 +213,7 @@ public class DatasetBuilderTest {
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
 
-        List<RecordSet> recordSets = new DatasetBuilder(
+        Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 repository,
                 config(),
@@ -224,14 +224,14 @@ public class DatasetBuilderTest {
                 .reloadDataset(true)
                 .build();
 
-        assertEquals(2, recordSets.size());
+        assertEquals(2, dataset.size());
 
-        Optional<RecordSet> eventsSet = recordSets.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
 
         assertTrue(eventsSet.isPresent());
         assertEquals(1, eventsSet.get().records().size());
 
-        Optional<RecordSet> samplesSet = recordSets.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
 
         assertTrue(samplesSet.isPresent());
         assertEquals(4, samplesSet.get().records().size());

@@ -51,7 +51,7 @@ public class DatasetProcessor {
     private final boolean ignoreUser;
     private final boolean publicStatus;
     private final String serverDataDir;
-    private List<RecordSet> dataset;
+    private Dataset dataset;
     private boolean hasError = false;
     private List<EntityMessages> messages;
 
@@ -313,32 +313,5 @@ public class DatasetProcessor {
                         "expeditionService, projectConfig must not be null and either a workbook or dataset are required.", 500);
             }
         }
-    }
-
-
-    public static void main(String[] args) {
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(FimsAppConfig.class);
-        ProjectService projectService = applicationContext.getBean(ProjectService.class);
-        DataReaderFactory dataReaderFactory = applicationContext.getBean(DataReaderFactory.class);
-        RecordValidatorFactory validatorFactory = applicationContext.getBean(RecordValidatorFactory.class);
-        RecordRepository repository = applicationContext.getBean(RecordRepository.class);
-
-        String file = "/Users/rjewing/Desktop/geome-fims-output.txt";
-        RecordMetadata metadata = new RecordMetadata(TabularDataReaderType.READER_TYPE);
-        metadata.add(CSVReader.SHEET_NAME_KEY, "Samples");
-        Project project = projectService.getProject(25);
-
-        DatasetBuilder datasetBuilder = new DatasetBuilder(dataReaderFactory, repository, project.getProjectConfig(), 25, "TEST")
-                .addDatasource(file, metadata);
-
-        List<RecordSet> recordSets = datasetBuilder.build();
-
-        DatasetValidator validator = new DatasetValidator(validatorFactory, recordSets, project.getProjectConfig());
-
-        if (validator.validate(new ProcessorStatus()) || !validator.hasError()) {
-            repository.save(recordSets, project.getProjectId(), 30);
-        }
-
-        validator.hasError();
     }
 }

@@ -8,6 +8,7 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.renderers.Message;
 import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
 
 import java.util.*;
@@ -22,16 +23,16 @@ import java.util.*;
  */
 public class DatasetValidator {
     private final RecordValidatorFactory validatorFactory;
-    private final List<RecordSet> recordSets;
+    private final Dataset dataset;
     private final ProjectConfig config;
 
     private final LinkedList<EntityMessages> messages;
     private final Map<Entity, Message> removeDuplicateMessages;
     private boolean hasError = false;
 
-    public DatasetValidator(RecordValidatorFactory validatorFactory, List<RecordSet> recordSets, ProjectConfig config) {
+    public DatasetValidator(RecordValidatorFactory validatorFactory, Dataset dataset, ProjectConfig config) {
         this.validatorFactory = validatorFactory;
-        this.recordSets = recordSets;
+        this.dataset = dataset;
         this.config = config;
         this.messages = new LinkedList<>();
         this.removeDuplicateMessages = new HashMap<>();
@@ -42,7 +43,7 @@ public class DatasetValidator {
 
         removeDuplicateParentRecords();
 
-        for (RecordSet r : recordSets) {
+        for (RecordSet r : dataset) {
 
             processorStatus.appendStatus("\nValidating entity: " + r.conceptAlias());
 
@@ -66,7 +67,7 @@ public class DatasetValidator {
     }
 
     private void removeDuplicateParentRecords() {
-        for (RecordSet r : recordSets) {
+        for (RecordSet r : dataset) {
 
             Entity entity = r.entity();
 

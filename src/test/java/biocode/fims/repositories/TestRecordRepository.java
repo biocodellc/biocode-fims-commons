@@ -1,7 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.run.Dataset;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public void save(List<RecordSet> recordSets, int projectId, int expeditionId) {
+    public void save(Dataset dataset, int projectId, int expeditionId) {
         throw new NotImplementedException();
     }
 
@@ -37,6 +37,16 @@ public class TestRecordRepository implements RecordRepository {
     @Override
     public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn) {
+
+    }
+
+    @Override
+    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn, List<String> indexedColumnUris) {
+
     }
 
     @Override

@@ -124,4 +124,8 @@ public class RecordSet {
         return records.stream()
                 .noneMatch(r -> record.get(uniqueKey).equals(r.get(uniqueKey)));
     }
+
+    public boolean hasParent() {
+        return parent != null;
+    }
 }
