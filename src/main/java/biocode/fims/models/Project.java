@@ -153,7 +153,7 @@ public class Project {
         this.validationXml = validationXml;
     }
 
-    @JsonIgnore
+    @JsonView(Views.Detailed.class)
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     public ProjectConfig getProjectConfig() {
