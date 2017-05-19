@@ -10,9 +10,8 @@ import biocode.fims.utils.DateUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +75,7 @@ public final class CsvJsonConverter {
 
                         }
 
-                        data.append(value + ",");
+                        data.append(StringEscapeUtils.escapeCsv(value) + ",");
                     } else {
                         // if the column doesn't exist in the dataset, add a placeholder in the csv file.
                         // This is required because we later use the attributes list to insert the csv data
