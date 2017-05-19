@@ -1,6 +1,7 @@
 package biocode.fims.projectConfig;
 
 import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +19,12 @@ public class ProjectConfigTest {
     @Before
     public void setUp() {
         config = new ProjectConfig();
+    }
+
+    @Test(expected = FimsRuntimeException.class)
+    public void should_throw_exception_for_non_existing_entity_when_fetching_related_entities() {
+        config.addEntity(parent());
+        config.getEntitiesInRelation(parent(), new Entity("notRelated"));
     }
 
     @Test
@@ -49,6 +56,21 @@ public class ProjectConfigTest {
     }
 
     @Test
+    public void should_return_false_for_relationship_check_of_unknown_entity() {
+        config.addEntity(parent());
+        assertFalse(config.areRelatedEntities("parent", "unknown"));
+    }
+
+    @Test
+    public void should_return_false_for_relationship_check_of_unrelated_entities() {
+        config.addEntity(parent());
+        Entity unrelated = new Entity("unrelated");
+        config.addEntity(unrelated);
+
+        assertFalse(config.areRelatedEntities("parent", "unrelated"));
+    }
+
+    @Test
     public void should_return_parent_child_entity_list_for_parent_child_relationship() {
         config.addEntity(parent());
         config.addEntity(child());
@@ -58,6 +80,19 @@ public class ProjectConfigTest {
         LinkedList<Entity> expected = new LinkedList<>();
         expected.add(parent());
         expected.add(child());
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_return_empty_list_for_unrelated_entities() {
+        config.addEntity(parent());
+        Entity unrelated = new Entity("unrelated");
+        config.addEntity(unrelated);
+
+        LinkedList<Entity> result = config.getEntitiesInRelation(parent(), unrelated);
+
+        LinkedList<Entity> expected = new LinkedList<>();
 
         assertEquals(expected, result);
     }
@@ -79,8 +114,7 @@ public class ProjectConfigTest {
     }
 
     private Entity parent() {
-        Entity entity = new Entity("parent");
-        return entity;
+        return new Entity("parent");
     }
 
     private Entity child() {

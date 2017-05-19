@@ -60,6 +60,7 @@ create table projects (
   projectCode varchar(255),
   projectTitle varchar(255),
   projectUrl varchar(255) not null,
+  description text,
   public boolean not null,
   ts timestamp,
   validationXml varchar(255) not null,

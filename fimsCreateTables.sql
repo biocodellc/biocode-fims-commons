@@ -87,6 +87,7 @@ CREATE TABLE projects (
   projectCode project_code NOT NULL,
   projectTitle TEXT,
   projectUrl TEXT NOT NULL,
+  description TEXT,
   validationXml TEXT NOT NULL,
   projectConfig JSONB,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

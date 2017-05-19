@@ -21,7 +21,6 @@ public class ProjectConfig {
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
-    private String description;
 
     public ProjectConfig() {
         this.entities = new LinkedList<>();
@@ -128,14 +127,6 @@ public class ProjectConfig {
         this.datasetForwardingAddress = datasetForwardingAddress;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public boolean isEntityChildDescendent(Entity elderEntity, Entity childEntity) {
         return childEntity.isChildEntity() && checkEntityRelation(childEntity, elderEntity);
     }
@@ -145,7 +136,7 @@ public class ProjectConfig {
      *
      * If the entities are directly related the returned value would be [elderEntity, childEntity]
      * If the entities are not directly related the returned list would be [elderEntity, intermediaryEntity, ... ,childEntity]
-     * If the entites are no related, an empty list will be returned
+     * If the entites are not related, an empty list will be returned
      *
      * @param elderEntity
      * @param childEntity
@@ -164,6 +155,11 @@ public class ProjectConfig {
         Entity parentEntity;
         do {
             parentEntity = getEntity(childEntity.getParentEntity());
+
+            if (parentEntity == null) {
+                break;
+            }
+
             relatedEntities.add(parentEntity);
 
             if (parentEntity.getConceptAlias().equals(elderEntity.getConceptAlias())) {

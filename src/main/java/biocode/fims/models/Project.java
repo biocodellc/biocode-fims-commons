@@ -37,6 +37,7 @@ public class Project {
     private Date created;
     private Date modified;
     private String validationXml;
+    private String description;
     private ProjectConfig projectConfig;
     private boolean isPublic;
     private String projectUrl;
@@ -55,6 +56,7 @@ public class Project {
 
         // Optional
         private boolean isPublic = true;
+        private String description;
 
         public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig, String projectUrl) {
             this.projectCode = projectCode;
@@ -65,6 +67,11 @@ public class Project {
 
         public ProjectBuilder isPublic(boolean isPublic) {
             this.isPublic = isPublic;
+            return this;
+        }
+
+        public ProjectBuilder description(String description) {
+            this.description = description;
             return this;
         }
 
@@ -80,6 +87,7 @@ public class Project {
         projectConfig = builder.projectConfig;
         projectUrl = builder.projectUrl;
         isPublic = builder.isPublic;
+        description = builder.description;
     }
 
     // needed for hibernate
@@ -175,6 +183,15 @@ public class Project {
 
     public void setPublic(boolean aPublic) {
         isPublic = aPublic;
+    }
+
+    @JsonView(Views.Detailed.class)
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

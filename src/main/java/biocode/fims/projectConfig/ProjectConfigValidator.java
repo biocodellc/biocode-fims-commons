@@ -85,7 +85,7 @@ public class ProjectConfigValidator {
                     errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that does not exist");
                 } else if (StringUtils.isBlank(parentEntity.getUniqueKey())) {
                     errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
-                } else if (e.getAttributes().stream().noneMatch(a -> a.getUri().equals(parentEntity.getUniqueKeyURI()))) {
+                } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
                     errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey");
                 }
             }

@@ -5,13 +5,13 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.digester.Rule;
 import biocode.fims.fimsExceptions.FimsAbstractException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.ProjectConfigValidator;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.rules.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -26,6 +26,8 @@ import java.util.*;
  * @author RJ Ewing
  */
 public class ProjectConfigConverter {
+    private final static Logger logger = LoggerFactory.getLogger(ProjectConfigConverter.class);
+
     private ProjectService projectService;
 
     public ProjectConfigConverter(ProjectService projectService) {
@@ -51,7 +53,7 @@ public class ProjectConfigConverter {
                 mapping.getEntities().forEach(config::addEntity);
                 config.setDatasetForwardingAddress(mapping.getMetadata().getDatasetForwardingAddress());
                 config.setExpeditionForwardingAddress(mapping.getMetadata().getDatasetForwardingAddress());
-                config.setDescription(mapping.getMetadata().getTextAbstract());
+                p.setDescription(mapping.getMetadata().getTextAbstract());
 
                 for (Worksheet w : validation.getWorksheets()) {
 
@@ -195,9 +197,9 @@ public class ProjectConfigConverter {
 
                 ProjectConfigValidator validator = new ProjectConfigValidator(config);
                 if (!validator.isValid()) {
-                    System.out.println("\n\nInvalid project config: " + p.getProjectId());
-                    for (String s: validator.errors()) {
-                        System.out.println(s);
+                    logger.error("\n\nInvalid project config: " + p.getProjectId());
+                    for (String s : validator.errors()) {
+                        logger.error(s);
                     }
                 } else {
                     p.setProjectConfig(config);
