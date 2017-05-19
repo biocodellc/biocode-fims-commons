@@ -31,4 +31,6 @@ public interface RecordRepository {
     void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn, List<String> indexedColumnUris);
 
     void createEntityTableIndex(int projectId, String conceptAlias, String column);
+
+    void createProjectSchema(int projectId);
 }

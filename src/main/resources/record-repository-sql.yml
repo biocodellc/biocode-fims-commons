@@ -54,11 +54,11 @@ createChildEntityTableForeignKey: >
 createProjectSchema: >
   CREATE SCHEMA project_${projectId};
 
-  CREATE TABLE audit_table
+  CREATE TABLE project_${projectId}.audit_table
   (
     event_id bigserial primary key,
     table_name text not null, -- table the change was made to
-    user text, -- user who made the change
+    user_name text, -- user who made the change
     ts TIMESTAMP WITH TIME ZONE NOT NULL, -- timestamp the change happened
     action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')), -- INSERT, DELETE, UPDATE, or TRUNCATE
     row_data jsonb, -- For INSERT this is the new row values. For DELETE and UPDATE it is the old row values.

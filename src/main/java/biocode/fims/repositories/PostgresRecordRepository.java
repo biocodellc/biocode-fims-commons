@@ -145,6 +145,15 @@ public class PostgresRecordRepository implements RecordRepository {
         // TODO implement
     }
 
+    @Override
+    public void createProjectSchema(int projectId) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("projectId", projectId);
+
+
+        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createProjectSchema"), paramMap), PreparedStatement::execute);
+    }
+
     private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
         Map<String, Object> tableMap = new HashMap<>();
         tableMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
