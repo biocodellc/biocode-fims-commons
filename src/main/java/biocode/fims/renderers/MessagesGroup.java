@@ -1,6 +1,7 @@
 package biocode.fims.renderers;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class MessagesGroup {
         this.messages = new ArrayList<>();
     }
 
+    @JsonProperty("groupMessage")
     public String getName() {
         return name;
     }
@@ -29,6 +31,7 @@ public class MessagesGroup {
         messages.add(msg);
     }
 
+    @JsonProperty("messages")
     public List<String> messages() {
         return messages.stream()
                 .map(Message::message)

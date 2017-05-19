@@ -1,6 +1,8 @@
 package biocode.fims.renderers;
 
 import biocode.fims.validation.rules.RuleLevel;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.jaxrs.json.annotation.JSONP;
 
 import java.util.List;
 
@@ -41,18 +43,22 @@ public class EntityMessages {
         }
     }
 
+    @JsonProperty("warnings")
     public List<MessagesGroup> warningMessages() {
         return warningMessages.allGroupMessages();
     }
 
+    @JsonProperty("errors")
     public List<MessagesGroup> errorMessages() {
         return errorMessages.allGroupMessages();
     }
 
+    @JsonProperty
     public String sheetName() {
         return sheetName;
     }
 
+    @JsonProperty("entity")
     public String conceptAlias() {
         return conceptAlias;
     }
