@@ -93,7 +93,7 @@ public class DatasetProcessor {
         boolean valid = validator.validate(processorStatus);
 
         if (!valid) {
-            hasError = true;
+            hasError = validator.hasError();
             messages = validator.messages();
         }
 
@@ -131,6 +131,11 @@ public class DatasetProcessor {
 
         recordRepository.save(dataset, expedition.getProject().getProjectId(), expedition.getExpeditionId());
 
+        if (expedition.isPublic() != publicStatus) {
+            expedition.setPublic(publicStatus);
+            expeditionService.update(expedition);
+        }
+
         writeDataSources();
         return true;
     }
@@ -155,7 +160,12 @@ public class DatasetProcessor {
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
         if (expedition != null) {
-            throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
+            if (expedition.getUser() != user) {
+                throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
+            } else {
+                // expedition already exists and the user owns the expedition
+                return;
+            }
         }
 
         String status = "\n\tCreating expedition " + expeditionCode + " ... this is a one time process " +
@@ -164,7 +174,7 @@ public class DatasetProcessor {
 
         expedition = new Expedition.ExpeditionBuilder(
                 expeditionCode)
-                .expeditionTitle("Expedition " + expeditionCode)
+                .expeditionTitle(expeditionCode + " Dataset")
                 .isPublic(publicStatus)
                 .build();
 
