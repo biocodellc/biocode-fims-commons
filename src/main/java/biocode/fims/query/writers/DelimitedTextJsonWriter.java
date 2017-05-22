@@ -82,7 +82,24 @@ public class DelimitedTextJsonWriter implements JsonWriter {
             for (JsonNode resource : resources) {
 
                 for (JsonFieldTransform column : columns) {
-                    String val = resource.at(column.getPath()).asText("");
+                    JsonNode node = resource.at(column.getPath());
+                    String val;
+
+                    if (column.isDelimited() && node.isArray()) {
+                        ArrayNode array = (ArrayNode) node;
+                        val = "";
+
+                        for (int i = 0; i < array.size(); i++) {
+                            val += array.get(i).asText("");
+
+                            if (i < array.size() - 1) {
+                                val += column.getDelimiter();
+                            }
+                        }
+                    } else {
+                        val = node.asText("");
+                    }
+
                     if (isCsv) {
                         StringEscapeUtils.escapeCsv(writer, val);
                     } else {

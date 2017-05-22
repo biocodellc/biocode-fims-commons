@@ -2,6 +2,7 @@ package biocode.fims.query.writers;
 
 import biocode.fims.digester.DataType;
 import com.fasterxml.jackson.core.JsonPointer;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * java bean to hold information for Transforming Json Fields into human readable output
@@ -14,6 +15,7 @@ public class JsonFieldTransform {
     private final DataType dataType;
     private final String fieldName;
     private final String uri;
+    private final String delimiter;
 
 
     /**
@@ -21,10 +23,11 @@ public class JsonFieldTransform {
      * @param uri       the uri of the field
      * @param dataType  the {@link DataType} of the field
      */
-    public JsonFieldTransform(String fieldName, String uri, DataType dataType, boolean childObject) {
+    public JsonFieldTransform(String fieldName, String uri, DataType dataType, boolean childObject, String delimiter) {
         this.fieldName = fieldName;
         this.uri = uri;
         this.dataType = dataType;
+        this.delimiter = delimiter;
         String pointerPath = "/" + uri.replaceAll("~", "~0")
                         .replaceAll("/", "~1");
 
@@ -52,5 +55,13 @@ public class JsonFieldTransform {
 
     public String getUri() {
         return uri;
+    }
+
+    public boolean isDelimited() {
+        return !StringUtils.isBlank(delimiter);
+    }
+
+    public String getDelimiter() {
+        return delimiter;
     }
 }
