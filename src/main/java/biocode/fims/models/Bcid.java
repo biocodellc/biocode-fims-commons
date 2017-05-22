@@ -242,6 +242,7 @@ public class Bcid {
         this.modified = modified;
     }
 
+    @Column(updatable=false)
     @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {

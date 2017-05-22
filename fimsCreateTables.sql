@@ -5,7 +5,7 @@
 CREATE OR REPLACE FUNCTION update_modified_column()
   RETURNS TRIGGER AS $$
 BEGIN
-  IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+  IF TG_OP = 'INSERT' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
     NEW.modified = now();
     RETURN NEW;
   ELSE
@@ -63,7 +63,7 @@ CREATE INDEX bcids_identifier_idx on bcids (identifier);
 CREATE INDEX bcids_userId_idx on bcids (userId);
 CREATE INDEX bcids_resourceType_idx on bcids (resourceType);
 
-CREATE TRIGGER update_bcids_modtime BEFORE UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER update_bcids_modtime BEFORE INSERT OR UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER set_bcids_createdtime BEFORE INSERT ON bcids FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN bcids.ezidMade is 'indicates if EZID has been made';
@@ -100,7 +100,7 @@ CREATE INDEX projects_userId_idx ON projects (userId);
 CREATE INDEX projects_public_idx ON projects (public);
 CREATE INDEX projects_projectUrl_idx ON projects (projectUrl);
 
-CREATE TRIGGER update_projects_modtime BEFORE UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN projects.projectCode is 'The short name for this project';
@@ -136,7 +136,7 @@ CREATE TABLE expeditions (
 
 CREATE INDEX expeditions_projectId_idx ON expeditions (projectId);
 
-CREATE TRIGGER update_expeditions_modtime BEFORE UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER update_expeditions_modtime BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN expeditions.expeditionCode is 'The short name for this expedition';

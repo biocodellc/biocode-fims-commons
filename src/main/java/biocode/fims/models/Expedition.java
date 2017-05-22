@@ -98,6 +98,7 @@ public class Expedition {
         this.expeditionTitle = expeditionTitle;
     }
 
+    @Column(updatable=false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {

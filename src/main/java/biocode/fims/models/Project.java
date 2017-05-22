@@ -123,6 +123,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
+    @Column(updatable=false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {
