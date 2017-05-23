@@ -24,6 +24,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private final StringBuilder whereBuilder;
     private final Entity queryEntity;
     private final JoinBuilder joinBuilder;
+    private boolean allQuery;
 
     public QueryBuilder(Project project, String entityConceptAlias) {
         this.project = project;
@@ -35,6 +36,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         this.joinBuilder = new JoinBuilder(queryEntity, project.getProjectConfig(), project.getProjectId());
+    }
+
+    @Override
+    public Entity entity() {
+        return queryEntity;
     }
 
     @Override
@@ -236,9 +242,20 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public void visit(AllExpression allExpression) {
+       this.allQuery = true;
+    }
+
+    @Override
     public String query() {
-        if (whereBuilder.toString().trim().length() == 0) {
+        if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
+        } else if (allQuery && whereBuilder.toString().trim().length() > 0) {
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
+        }
+
+        if (allQuery) {
+            return "SELECT data FROM " + buildTable(queryEntity.getConceptAlias());
         }
 
         return "SELECT data FROM " +

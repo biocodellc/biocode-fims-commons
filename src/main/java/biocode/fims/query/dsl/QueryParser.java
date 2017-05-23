@@ -13,7 +13,7 @@ import static biocode.fims.query.dsl.LogicalOperator.OR;
 /**
  * @author rjewing
  */
-@SuppressWarnings("InfiniteRecursion")
+@SuppressWarnings({"InfiniteRecursion", "WeakerAccess"})
 public class QueryParser extends BaseParser<Object> {
     private final QueryBuildingExpressionVisitor queryBuilder;
 
@@ -37,15 +37,23 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Rule TopExpression() {
-        return Sequence(
-                WhiteSpace(),
-                SubExpression(),
-                ZeroOrMore(
+        return FirstOf(
+                Sequence(
                         WhiteSpace(),
-                        OrChars(),
+                        Ch('*'),
+                        push(new AllExpression()),
+                        WhiteSpace()
+                ),
+                Sequence(
                         WhiteSpace(),
                         SubExpression(),
-                        push(new LogicalExpression(OR, popExp(1), popExp()))
+                        ZeroOrMore(
+                                WhiteSpace(),
+                                OrChars(),
+                                WhiteSpace(),
+                                SubExpression(),
+                                push(new LogicalExpression(OR, popExp(1), popExp()))
+                        )
                 )
         );
     }

@@ -45,6 +45,23 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void should_throw_exception_when_visiting_all_expression_with_other_expression_query() {
+        try {
+            QueryBuilder builder = queryBuilder("event");
+            builder.visit(new AllExpression());
+            builder.visit(new FTSExpression(null, "something"));
+            builder.query();
+            fail();
+        } catch (Exception e) {
+            if (e instanceof FimsRuntimeException) {
+                assertEquals(QueryCode.INVALID_QUERY, ((FimsRuntimeException) e).getErrorCode());
+            } else {
+                fail();
+            }
+        }
+    }
+
+    @Test
     public void should_throw_exception_when_missing_attribute_for_column() {
         try {
             queryBuilder("event").visit(new ComparisonExpression("non_existent_column", "test", ComparisonOperator.EQUALS));
@@ -316,6 +333,16 @@ public class QueryBuilderTest {
         queryBuilder.visit(new RangeExpression("col2", "{* TO 10]"));
 
         assertEquals("SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' <= '10')", queryBuilder.query());
+    }
+
+    @Test
+    public void should_write_valid_sql_for_all_expression() {
+        QueryBuilder queryBuilder = queryBuilder("event");
+        queryBuilder.visit(new AllExpression());
+
+        String expectedSql = "SELECT data FROM project_1.event AS event";
+
+        assertEquals(expectedSql, queryBuilder.query());
     }
 
     @Test

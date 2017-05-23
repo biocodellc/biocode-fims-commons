@@ -28,4 +28,6 @@ public interface ExpressionVisitor {
     void visit(EmptyExpression emptyExpression);
 
     void visit(GroupExpression groupExpression);
+
+    void visit(AllExpression allExpression);
 }

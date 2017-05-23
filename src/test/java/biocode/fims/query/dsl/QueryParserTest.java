@@ -34,6 +34,17 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_all_expression() {
+        String qs = " * ";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, new AllExpression());
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void should_parse_simple_fts_expression() {
         String qs = " value1 ";
 
