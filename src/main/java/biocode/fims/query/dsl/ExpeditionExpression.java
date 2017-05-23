@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Expedition Search Expression
  *
- * _expedition_:exp_1    ->  all results in expedition 'exp_1'
- * _expedition_:[exp_1, exp_2]    ->  all results in either expedition 'exp_1' or 'exp_2'
+ * _expeditions_:exp_1    ->  all results in expedition 'exp_1'
+ * _expeditions_:[exp_1, exp_2]    ->  all results in either expedition 'exp_1' or 'exp_2'
  *
  * @author rjewing
  */
@@ -24,11 +24,7 @@ public class ExpeditionExpression implements Expression {
     }
 
     public List<String> expeditions() {
-        if (expeditionsString.startsWith("[")) {
-            return Arrays.asList(expeditionsString.substring(1, expeditionsString.length() - 1).split(" ?, ?"));
-        } else {
-            return Collections.singletonList(expeditionsString);
-        }
+        return Arrays.asList(expeditionsString.split(" ?, ?"));
     }
 
     @Override
@@ -38,7 +34,7 @@ public class ExpeditionExpression implements Expression {
 
     @Override
     public String toString() {
-        return "ExistsExpression{" +
+        return "ExpeditionExpression{" +
                 "expeditionsString='" + expeditionsString + '\'' +
                 '}';
     }

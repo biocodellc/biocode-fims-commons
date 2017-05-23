@@ -110,7 +110,7 @@ public class QueryBuilderTest {
             fail();
         } catch (Exception e) {
             if (e instanceof FimsRuntimeException) {
-                assertEquals(QueryCode.UNKNOWN_ENTITY, ((FimsRuntimeException) e).getErrorCode());
+                assertEquals(QueryCode.UNKNOWN_COLUMN, ((FimsRuntimeException) e).getErrorCode());
             } else {
                 fail();
             }
@@ -220,7 +220,7 @@ public class QueryBuilderTest {
     @Test
     public void should_write_valid_sql_for_expedition_expression_multiple_expedition() {
         QueryBuilder queryBuilder = queryBuilder("event");
-        queryBuilder.visit(new ExpeditionExpression("[TEST, TEST2]"));
+        queryBuilder.visit(new ExpeditionExpression("TEST, TEST2"));
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN expeditions ON expeditions.expeditionId = event.expedition_id " +

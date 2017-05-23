@@ -291,7 +291,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             String[] columnPath = splitColumnPath(column);
 
             if (!entity.getConceptAlias().equals(columnPath[0])) {
-                throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, column);
+                throw new FimsRuntimeException(QueryCode.UNKNOWN_COLUMN, 400, column);
             }
 
             return new ColumnUri(entity, entity.getAttributeUri(columnPath[1]));
