@@ -2,7 +2,6 @@ package biocode.fims.rest;
 
 import biocode.fims.application.config.SettingsManagerConfig;
 import biocode.fims.bcid.Resolver;
-//import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.rest.versioning.VersionTransformer;
@@ -11,13 +10,11 @@ import biocode.fims.tools.FileCache;
 import biocode.fims.utils.SpringApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.elasticsearch.client.transport.TransportClient;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,11 +57,6 @@ public class FimsRestTestAppConfig {
     @Bean
     public FileCache fileCache() {
         return new FileCache();
-    }
-
-    @Bean
-    public TransportClient transportClient() {
-        return null;
     }
 
     @Bean
