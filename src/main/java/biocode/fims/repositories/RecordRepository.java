@@ -3,6 +3,8 @@ package biocode.fims.repositories;
 import biocode.fims.digester.Attribute;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.query.QueryResult;
+import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 
 import java.util.List;
@@ -33,4 +35,6 @@ public interface RecordRepository {
     void createEntityTableIndex(int projectId, String conceptAlias, String column);
 
     void createProjectSchema(int projectId);
+
+    QueryResult query(Query query);
 }

@@ -2,10 +2,13 @@ package biocode.fims.repositories;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.query.PostgresUtils;
+import biocode.fims.query.QueryResult;
+import biocode.fims.query.dsl.Query;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.run.Dataset;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -101,6 +104,14 @@ public class PostgresRecordRepository implements RecordRepository {
         } catch (JsonProcessingException e) {
             throw new FimsRuntimeException(UploadCode.DATA_SERIALIZATION_ERROR, 500);
         }
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public QueryResult query(Query query) {
+        List<Record> records = (List<Record>) jdbcTemplate.query(query.query(), rowMappers.get(GenericRecord.class));
+
+        return new QueryResult(records, query.entity());
     }
 
     @Override

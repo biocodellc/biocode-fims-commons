@@ -8,6 +8,7 @@ import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Attr;
 
 import java.net.URI;
 import java.util.*;
@@ -124,6 +125,16 @@ public class Entity {
                 .findFirst()
                 .map(Attribute::getUri)
                 .orElse(null);
+    }
+
+    public String getAttributeColumn(String uri) {
+        for (Attribute a: attributes) {
+            if (a.getUri().equals(uri)) {
+                return a.getColumn();
+            }
+        }
+
+        return null;
     }
 
     /**

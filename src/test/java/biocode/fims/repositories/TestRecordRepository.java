@@ -1,6 +1,8 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
+import biocode.fims.query.QueryResult;
+import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -56,6 +58,11 @@ public class TestRecordRepository implements RecordRepository {
 
     @Override
     public void createProjectSchema(int projectId) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public QueryResult query(Query query) {
         throw new NotImplementedException();
     }
 
