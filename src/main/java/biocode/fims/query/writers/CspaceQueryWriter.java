@@ -1,48 +1,53 @@
 package biocode.fims.query.writers;
 
 import biocode.fims.digester.Field;
-import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.query.QueryResult;
 import biocode.fims.settings.PathManager;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Class to write Json to a cspace file. Currently just copying this over from QueryWriter class. This currently only
- * works for UCJeps project
+ * Currently just copying this over from QueryWriter class. This currently only works for UCJeps project
  * <p>
  * TODO: Pass in a CspaceFields object similar to the FastaSequenceFields object which contains all the cspace fields.
  * TODO: We can generify the cspace fields by using the defined_by Attribute attribute
  *
  * @author RJ Ewing
  */
-public class CspaceJsonWriter implements JsonWriter {
-    private final ArrayNode resources;
-    private final String outputDirectory;
-    private final Validation validation;
+public class CspaceQueryWriter implements QueryWriter {
 
-    public CspaceJsonWriter(ArrayNode resources, String outputDirectory, Validation validation) {
-        this.resources = resources;
-        this.outputDirectory = outputDirectory;
-        this.validation = validation;
+    private final QueryResult queryResult;
+    private final ProjectConfig projectConfig;
+
+    public CspaceQueryWriter(QueryResult queryResult, ProjectConfig projectConfig) {
+        this.queryResult = queryResult;
+        this.projectConfig = projectConfig;
     }
 
     @Override
     public File write() {
-        File file = PathManager.createUniqueFile("output.cspace.xml", outputDirectory);
+        File file = PathManager.createUniqueFile("output.cspace.xml", System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
 
+            List<Map<String, String>> records = queryResult.get(true);
+
+            if (records.size() == 0) {
+                throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
+            }
+
             writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             writer.write("<imports>\n");
 
-            for (JsonNode resource : resources) {
+            for (Map<String, String> record : records) {
 
                 //Variables pertaining to row level only
                 String year = "", month = "", day = "", taxon = "", identBy = "", date = "";
@@ -53,10 +58,9 @@ public class CspaceJsonWriter implements JsonWriter {
 
                 writer.write("<import service='CollectionObjects' type='CollectionObject'>\n");
 
-                Iterator<String> iterator = resource.fieldNames();
-                while (iterator.hasNext()) {
-                    String fieldName = iterator.next();
-                    String value = resource.get(fieldName).asText();
+                for (Map.Entry<String, String> e : record.entrySet()) {
+                    String fieldName = e.getKey();
+                    String value = e.getValue();
 
                     // Write out XML Values
                     if (fieldName.equals("bcid")) {
@@ -70,65 +74,65 @@ public class CspaceJsonWriter implements JsonWriter {
                                 .append("\t\t\t<numberType>FIMS Identifier</numberType>\n")
                                 .append("\t\t</otherNumber>\n")
                                 .append("\t</otherNumberList>\n");
-                    } else if (fieldName.equals("urn:habitat")) {
+                    } else if (fieldName.equals("Habitat")) {
                         common.append("\t" + writeXMLValue("fieldCollectionNote", value) + "\n");
-                    } else if (fieldName.equals("urn:barcodenumber")) {
+                    } else if (fieldName.equals("Barcode_Number")) {
                         common.append("\t" + writeXMLValue("objectNumber", value) + "\n");
-                    } else if (fieldName.equals("urn:all_collectors")) {
+                    } else if (fieldName.equals("All_Collectors")) {
                         common.append("\t<fieldCollectors>\n");
-                        common.append("\t\t" + writeXMLValue("fieldCollector", fieldURILookup("Collector", value, validation)) + "\n");
+                        common.append("\t\t" + writeXMLValue("fieldCollector", fieldURILookup("Collector", value)) + "\n");
                         common.append("\t</fieldCollectors>\n");
-                    } else if (fieldName.equals("urn:coll_num")) {
+                    } else if (fieldName.equals("Coll_Num")) {
                         common.append("\t" + writeXMLValue("fieldCollectionNumber", value) + "\n");
-                    } else if (fieldName.equals("urn:coll_year")) {
+                    } else if (fieldName.equals("Coll_Year")) {
                         year = value;
-                    } else if (fieldName.equals("urn:coll_Month")) {
+                    } else if (fieldName.equals("Coll_Month")) {
                         month = value;
-                    } else if (fieldName.equals("urn:coll_day")) {
+                    } else if (fieldName.equals("Coll_Day")) {
                         day = value;
-                    } else if (fieldName.equals("urn:coll_date")) {
+                    } else if (fieldName.equals("Coll_Date")) {
                         date = value;
-                    } else if (fieldName.equals("urn:det_date_display")) {
+                    } else if (fieldName.equals("Det_Date_Display")) {
                         identdate = value;
-                    } else if (fieldName.equals("urn:brief_desc")) {
+                    } else if (fieldName.equals("Plant_Description")) {
                         common.append("\t<briefDescriptions>\n" +
                                 "\t\t" + writeXMLValue("briefDescription", value) + "\n" +
                                 "\t</briefDescriptions>\n");
-                    } else if (fieldName.equals("urn:label_header")) {
-                        naturalhistory.append("\t" + writeXMLValue("labelHeader", fieldURILookup("Label_Header", value, validation)) + "\n");
-                    } else if (fieldName.equals("urn:main_collector")) {
-                        naturalhistory.append("\t" + writeXMLValue("fieldCollectionNumberAssignor", fieldURILookup("Collector", value, validation)) + "\n");
-                    } else if (fieldName.equals("urn:scientificname")) {
-                        taxon = writeXMLValue("taxon", fieldURILookup("ScientificName", value, validation));
-                    } else if (fieldName.equals("urn:determinedby")) {
-                        identBy = writeXMLValue("identBy", fieldURILookup("DeterminedBy", value, validation));
-                    } else if (fieldName.equals("urn:comments")) {
+                    } else if (fieldName.equals("Label_Header")) {
+                        naturalhistory.append("\t" + writeXMLValue("labelHeader", fieldURILookup("Label_Header", value)) + "\n");
+                    } else if (fieldName.equals("Main_Collector")) {
+                        naturalhistory.append("\t" + writeXMLValue("fieldCollectionNumberAssignor", fieldURILookup("Collector", value)) + "\n");
+                    } else if (fieldName.equals("ScientificName")) {
+                        taxon = writeXMLValue("taxon", fieldURILookup("ScientificName", value));
+                    } else if (fieldName.equals("DeterminedBy")) {
+                        identBy = writeXMLValue("identBy", fieldURILookup("DeterminedBy", value));
+                    } else if (fieldName.equals("Comments")) {
                         common.append("\t<comments>\n");
                         common.append("\t\t" + writeXMLValue("comment", value) + "\n");
                         common.append("\t</comments>\n");
-                    } else if (fieldName.equals("urn:det_year")) {
+                    } else if (fieldName.equals("Det_Year")) {
                         identyear = value;
-                    } else if (fieldName.equals("urn:det_month")) {
+                    } else if (fieldName.equals("Det_Month")) {
                         identmonth = value;
-                    } else if (fieldName.equals("urn:det_day")) {
+                    } else if (fieldName.equals("Det_Day")) {
                         identday = value;
-                    } else if (fieldName.equals("urn:locality")) {
+                    } else if (fieldName.equals("Locality")) {
                         Locality = value;
-                    } else if (fieldName.equals("urn:country")) {
+                    } else if (fieldName.equals("Country")) {
                         Country = value;
-                    } else if (fieldName.equals("urn:stateprovince")) {
+                    } else if (fieldName.equals("State_Province")) {
                         State_Province = value;
-                    } else if (fieldName.equals("urn:county")) {
+                    } else if (fieldName.equals("County")) {
                         County = value;
-                    } else if (fieldName.equals("urn:elevation")) {
+                    } else if (fieldName.equals("Elevation")) {
                         Elevation = value;
-                    } else if (fieldName.equals("urn:elevation_units")) {
+                    } else if (fieldName.equals("Elevation_Units")) {
                         Elevation_Units = value;
-                    } else if (fieldName.equals("urn:latitude")) {
+                    } else if (fieldName.equals("Latitude")) {
                         Latitude = value;
-                    } else if (fieldName.equals("urn:longitude")) {
+                    } else if (fieldName.equals("Longitude")) {
                         Longitude = value;
-                    } else if (fieldName.equals("urn:coordinate_source")) {
+                    } else if (fieldName.equals("Coordinate_Source")) {
                         Coordinate_Source = value;
                     } else {
                         // All the biocode.fims.rest of the values
@@ -256,18 +260,20 @@ public class CspaceJsonWriter implements JsonWriter {
      * @return
      */
 
-    private String fieldURILookup(String fieldName, String value, Validation validation) {
+    private String fieldURILookup(String fieldName, String value) {
         // Loop XML attribute value of ScientificName to get the REFNAME
-        for (biocode.fims.digester.List l : validation.getLists()) {
-            if (l.getAlias().equals(fieldName)) {
+        biocode.fims.digester.List l = projectConfig.findList(fieldName);
 
-                for (Field f : l.getFields()) {
-                    if (f.getValue().equals(value)) {
-                        return f.getUri() + "'" + f.getValue() + "'";
-                    }
-                }
+        if (l == null) {
+            return value;
+        }
+
+        for (Field f : l.getFields()) {
+            if (f.getValue().equals(value)) {
+                return f.getUri() + "'" + f.getValue() + "'";
             }
         }
+
         return value;
     }
 

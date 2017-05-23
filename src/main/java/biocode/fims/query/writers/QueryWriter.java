@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * @author RJ Ewing
  */
-public interface JsonWriter {
+public interface QueryWriter {
 
     File write();
 }
