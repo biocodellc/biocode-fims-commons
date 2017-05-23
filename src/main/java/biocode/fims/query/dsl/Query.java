@@ -29,6 +29,10 @@ public class Query {
         return queryBuilder.entity();
     }
 
+    public String queryTable() {
+        return queryBuilder.queryTable();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

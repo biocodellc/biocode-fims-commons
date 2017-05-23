@@ -22,6 +22,10 @@ public class QueryResult {
         this.entity = entity;
     }
 
+    public Entity entity() {
+        return entity;
+    }
+
     /**
      * Returns a list of {@link Record#properties()} as a {@link Map} of column->value pairs
      *

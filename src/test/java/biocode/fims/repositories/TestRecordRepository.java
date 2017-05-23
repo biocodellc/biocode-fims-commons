@@ -4,10 +4,12 @@ import biocode.fims.models.records.Record;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
+import org.springframework.data.domain.Page;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author rjewing
@@ -63,6 +65,11 @@ public class TestRecordRepository implements RecordRepository {
 
     @Override
     public QueryResult query(Query query) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
         throw new NotImplementedException();
     }
 

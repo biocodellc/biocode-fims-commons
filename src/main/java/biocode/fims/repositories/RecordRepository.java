@@ -6,8 +6,12 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author rjewing
@@ -37,4 +41,6 @@ public interface RecordRepository {
     void createProjectSchema(int projectId);
 
     QueryResult query(Query query);
+
+    Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties);
 }

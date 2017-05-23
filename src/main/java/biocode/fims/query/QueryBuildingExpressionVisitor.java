@@ -9,4 +9,6 @@ public interface QueryBuildingExpressionVisitor extends ExpressionVisitor {
     String query();
 
     Entity entity();
+
+    String queryTable();
 }

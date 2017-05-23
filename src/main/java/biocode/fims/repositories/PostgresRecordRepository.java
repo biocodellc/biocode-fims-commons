@@ -15,6 +15,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,6 +116,22 @@ public class PostgresRecordRepository implements RecordRepository {
         List<Record> records = (List<Record>) jdbcTemplate.query(query.query(), rowMappers.get(GenericRecord.class));
 
         return new QueryResult(records, query.entity());
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
+        // naive implementation that will work for now. Probably better to use postgres to paginate
+        List<Record> records = (List<Record>) jdbcTemplate.query(query.query(), rowMappers.get(GenericRecord.class));
+
+        int total = records.size();
+        int from = page * limit;
+        int to = (from + limit < total) ? from + limit : total;
+
+        QueryResult queryResult = new QueryResult(records.subList(from, to), query.entity());
+
+        Pageable pageable = new PageRequest(page, limit);
+        return new PageImpl<>(queryResult.get(includeEmptyProperties), pageable, total);
     }
 
     @Override

@@ -247,6 +247,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public String queryTable() {
+        return buildTable(queryEntity.getConceptAlias());
+    }
+
+    @Override
     public String query() {
         if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
