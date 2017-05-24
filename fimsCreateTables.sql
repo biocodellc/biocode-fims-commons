@@ -54,7 +54,7 @@ CREATE TABLE bcids (
   graph TEXT,
   source_file TEXT,
   resource_type TEXT NOT NULL,
-  sub_resource_type TEXT NOT NULL,
+  sub_resource_type TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -99,7 +99,7 @@ CREATE TABLE projects (
 CREATE INDEX projects_user_id_idx ON projects (user_id);
 CREATE INDEX projects_public_idx ON projects (public);
 CREATE INDEX projects_project_url_idx ON projects (project_url);
-CREATE INDEX projects_project_code_idx ON projects (project_code);
+CREATE UNIQUE INDEX projects_project_code_idx ON projects (project_code);
 ALTER TABLE projects ADD CONSTRAINT projects_project_code_uniq UNIQUE USING INDEX projects_project_code_idx;
 
 CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
@@ -154,17 +154,17 @@ CREATE INDEX expedition_bcids_bcid_id_idx ON expedition_bcids (bcid_id);
 
 DROP TABLE IF EXISTS oauth_clients;
 
-CREATE TABLE oouth_clients (
+CREATE TABLE oauth_clients (
   id TEXT NOT NULL PRIMARY KEY,
   client_secret TEXT NOT NULL,
   callback TEXT NOT NULL
 );
 
-COMMENT ON COLUMN oAuthClients.id is 'the public unique client id';
-COMMENT ON COLUMN oAuthClients.client_secret is 'the private shared secret';
-COMMENT ON COLUMN oAuthClients.callback is 'The callback url of the client app';
+COMMENT ON COLUMN oauth_clients.id is 'the public unique client id';
+COMMENT ON COLUMN oauth_clients.client_secret is 'the private shared secret';
+COMMENT ON COLUMN oauth_clients.callback is 'The callback url of the client app';
 
-DROP TABLE IF EXISTS oouth_nonces;
+DROP TABLE IF EXISTS oauth_nonces;
 
 CREATE TABLE oauth_nonces (
   id SERIAL NOT NULL PRIMARY KEY,
@@ -180,7 +180,7 @@ CREATE INDEX oauth_nonces_code_idx ON oauth_nonces (code);
 
 CREATE TRIGGER set_oouth_nonces_createdtime BEFORE INSERT ON oauth_nonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
-COMMENT ON COLUMN oauthPnonces.code is 'The generated code the client app can exchange for an access token';
+COMMENT ON COLUMN oauth_nonces.code is 'The generated code the client app can exchange for an access token';
 COMMENT ON COLUMN oauth_nonces.redirect_uri is 'The redirectUri associated with this code';
 
 DROP TABLE IF EXISTS oauth_tokens;
@@ -252,9 +252,9 @@ CREATE TABLE template_configs (
 
 CREATE INDEX template_configs_project_id_idx ON template_configs (project_id);
 
-COMMENT ON COLUMN templateConfigs.config_name is 'The name of the config';
-COMMENT ON COLUMN templateConfigs.public is 'Whether or not this is a public template config?';
-COMMENT ON COLUMN templateConfigs.config is 'The array of uris to be checked when generating a template';
+COMMENT ON COLUMN template_configs.config_name is 'The name of the config';
+COMMENT ON COLUMN template_configs.public is 'Whether or not this is a public template config?';
+COMMENT ON COLUMN template_configs.config is 'The array of uris to be checked when generating a template';
 
 -- Function that is added to each entity table in a trigger when created
 CREATE OR REPLACE FUNCTION entity_tsv_trigger()
