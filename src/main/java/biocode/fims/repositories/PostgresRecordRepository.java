@@ -6,6 +6,7 @@ import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.Query;
@@ -113,7 +114,8 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SuppressWarnings({"unchecked"})
     public QueryResult query(Query query) {
-        List<Record> records = (List<Record>) jdbcTemplate.query(query.query(), rowMappers.get(GenericRecord.class));
+        ParametrizedQuery q = query.parameterizedQuery();
+        List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
 
         return new QueryResult(records, query.entity());
     }
@@ -122,7 +124,8 @@ public class PostgresRecordRepository implements RecordRepository {
     @SuppressWarnings({"unchecked"})
     public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
         // naive implementation that will work for now. Probably better to use postgres to paginate
-        List<Record> records = (List<Record>) jdbcTemplate.query(query.query(), rowMappers.get(GenericRecord.class));
+        ParametrizedQuery q = query.parameterizedQuery();
+        List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
 
         int total = records.size();
         int from = page * limit;

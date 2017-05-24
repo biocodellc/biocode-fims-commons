@@ -2,6 +2,7 @@ package biocode.fims.query.dsl;
 
 
 import biocode.fims.digester.Entity;
+import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.springframework.util.Assert;
 
@@ -20,9 +21,9 @@ public class Query {
         this.expression = expression;
     }
 
-    public String query() {
+    public ParametrizedQuery parameterizedQuery() {
         expression.accept(queryBuilder);
-        return queryBuilder.query();
+        return queryBuilder.parameterizedQuery();
     }
 
     public Entity entity() {

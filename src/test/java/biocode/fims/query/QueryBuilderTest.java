@@ -9,6 +9,9 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.dsl.*;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 /**
@@ -19,7 +22,7 @@ public class QueryBuilderTest {
     @Test
     public void should_throw_exception_if_no_visits() {
         try {
-            queryBuilder("event").query();
+            queryBuilder("event").parameterizedQuery();
             fail();
         } catch (Exception e) {
             if (e instanceof FimsRuntimeException) {
@@ -50,7 +53,7 @@ public class QueryBuilderTest {
             QueryBuilder builder = queryBuilder("event");
             builder.visit(new AllExpression());
             builder.visit(new FTSExpression(null, "something"));
-            builder.query();
+            builder.parameterizedQuery();
             fail();
         } catch (Exception e) {
             if (e instanceof FimsRuntimeException) {
@@ -122,7 +125,7 @@ public class QueryBuilderTest {
         try {
             QueryBuilder queryBuilder = queryBuilder("non-linked");
             queryBuilder.visit(new ComparisonExpression("sample.eventId", "test", ComparisonOperator.EQUALS));
-            queryBuilder.query();
+            queryBuilder.parameterizedQuery();
             fail();
         } catch (Exception e) {
             if (e instanceof FimsRuntimeException) {
@@ -138,7 +141,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = singleEntityProjectQueryBuilder();
         queryBuilder.visit(new ComparisonExpression("col2", "value", ComparisonOperator.LESS_THEN_EQUAL));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' <= 'value'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' <= :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -146,7 +155,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = singleEntityProjectQueryBuilder();
         queryBuilder.visit(new ComparisonExpression("event.col2", "value", ComparisonOperator.LESS_THEN_EQUAL));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' <= 'value'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' <= :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -154,7 +169,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("sample");
         queryBuilder.visit(new ComparisonExpression("eventId", "1", ComparisonOperator.EQUALS));
 
-        assertEquals("SELECT data FROM project_1.sample AS sample WHERE sample.data->>'sample_eventId' = '1'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.sample AS sample WHERE sample.data->>'sample_eventId' = :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -162,11 +183,15 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ComparisonExpression("sample.eventId", "1", ComparisonOperator.EQUALS));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
-                "WHERE sample.data->>'sample_eventId' = '1'";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event JOIN project_1.sample AS sample " +
+                        "ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
+                        "WHERE sample.data->>'sample_eventId' = :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -174,7 +199,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ComparisonExpression("col2", "value", ComparisonOperator.EQUALS));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' = 'value'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' = :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -182,7 +213,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ExistsExpression("col2"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data ? 'urn:col2'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "urn:col2");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data ? :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -190,7 +227,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ExistsExpression("[col2, col3]"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data ?& array['urn:col2', 'urn:event_col3']", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "urn:col2");
+        params.put("2", "urn:event_col3");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data ?& array[:1, :2]",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -198,11 +242,17 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ExistsExpression("[col2, col3, sample.col3]"));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
-                "WHERE (event.data ?& array['urn:col2', 'urn:event_col3'] AND sample.data ? 'urn:col3')";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "urn:col2");
+        params.put("2", "urn:event_col3");
+        params.put("3", "urn:col3");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
+                        "WHERE (event.data ?& array[:1, :2] AND sample.data ? :3)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -210,11 +260,15 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ExpeditionExpression("TEST"));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "JOIN expeditions ON expeditions.id = event.expedition_id " +
-                "WHERE expeditions.expedition_code = 'TEST'";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "TEST");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "JOIN expeditions ON expeditions.id = event.expedition_id " +
+                        "WHERE expeditions.expedition_code = :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -222,11 +276,16 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ExpeditionExpression("TEST, TEST2"));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "JOIN expeditions ON expeditions.id = event.expedition_id " +
-                "WHERE expeditions.expedition_code IN ('TEST', 'TEST2')";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "TEST");
+        params.put("2", "TEST2");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "JOIN expeditions ON expeditions.id = event.expedition_id " +
+                        "WHERE expeditions.expedition_code IN (:1, :2)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -234,10 +293,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new FTSExpression(null, "alligators"));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "WHERE event.tsv @@ to_tsquery('alligators')";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "alligators");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "WHERE event.tsv @@ to_tsquery(:1)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -245,10 +308,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new FTSExpression("col2", "alligators"));
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "WHERE (to_tsvector(event.data->>'urn:col2') @@ to_tsquery('alligators') AND event.tsv @@ to_tsquery('alligators'))";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "alligators");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "WHERE (to_tsvector(event.data->>'urn:col2') @@ to_tsquery(:1) AND event.tsv @@ to_tsquery(:1))",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -256,7 +323,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new LikeExpression("col2", "%val%2"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' ILIKE '%val%2'", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "%val%2");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE event.data->>'urn:col2' ILIKE :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -271,10 +344,15 @@ public class QueryBuilderTest {
 
         queryBuilder.visit(andExp);
 
-        String expectedSql = "SELECT data FROM project_1.event AS event " +
-                "WHERE event.data->>'urn:col2' <= '1' AND event.data->>'urn:event_col3' = 'test'";
-
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "test");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event " +
+                        "WHERE event.data->>'urn:col2' <= :1 AND event.data->>'urn:event_col3' = :2",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -297,10 +375,15 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "WHERE " +
-                "event.data->>'urn:col2' <= '1' AND event.data->>'urn:event_col3' = 'test' " +
-                "OR event.data ? 'urn:col2'";
+                "event.data->>'urn:col2' <= :1 AND event.data->>'urn:event_col3' = :2 " +
+                "OR event.data ? :3";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "test");
+        params.put("3", "urn:col2");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -308,7 +391,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new RangeExpression("col2", "[1 TO 10]"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' >= '1' AND event.data->>'urn:col2' <= '10')", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "10");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' >= :1 AND event.data->>'urn:col2' <= :2)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -316,7 +406,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new RangeExpression("col2", "{1 TO 10}"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' > '1' AND event.data->>'urn:col2' < '10')", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "10");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' < :2)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -324,7 +421,14 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new RangeExpression("col2", "{1 TO 10]"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' > '1' AND event.data->>'urn:col2' <= '10')", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "10");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' <= :2)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -332,7 +436,13 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new RangeExpression("col2", "{* TO 10]"));
 
-        assertEquals("SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' <= '10')", queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "10");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT data FROM project_1.event AS event WHERE (event.data->>'urn:col2' <= :1)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -342,7 +452,9 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -371,11 +483,17 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "WHERE " +
-                "event.data->>'eventId' <= '100' AND " +
-                "(event.data->>'urn:col2' <= '1' OR event.data->>'urn:col2' = '4') " +
-                "AND event.data ? 'urn:event_col3'";
+                "event.data->>'eventId' <= :1 AND " +
+                "(event.data->>'urn:col2' <= :2 OR event.data->>'urn:col2' = :3) " +
+                "AND event.data ? :4";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "100");
+        params.put("2", "1");
+        params.put("3", "4");
+        params.put("4", "urn:event_col3");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -385,9 +503,12 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
-                "WHERE sample.data->>'urn:sampleId' = 'value'";
+                "WHERE sample.data->>'urn:sampleId' = :1";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -398,9 +519,12 @@ public class QueryBuilderTest {
         String expectedSql = "SELECT data FROM project_1.tissue AS tissue " +
                 "JOIN project_1.sample AS sample ON sample.local_identifier = tissue.data->>'tissue_sampleId' and sample.expedition_id = tissue.expedition_id " +
                 "JOIN project_1.event AS event ON event.local_identifier = sample.data->>'sample_eventId' and event.expedition_id = sample.expedition_id " +
-                "WHERE event.data->>'eventId' = '1'";
+                "WHERE event.data->>'eventId' = :1";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -411,9 +535,12 @@ public class QueryBuilderTest {
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "JOIN project_1.tissue AS tissue ON tissue.data->>'tissue_sampleId' = sample.local_identifier and tissue.expedition_id = sample.expedition_id " +
-                "WHERE tissue.data->>'urn:tissueId' = '1'";
+                "WHERE tissue.data->>'urn:tissueId' = :1";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
     @Test
@@ -431,9 +558,13 @@ public class QueryBuilderTest {
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "JOIN project_1.tissue AS tissue ON tissue.data->>'tissue_sampleId' = sample.local_identifier and tissue.expedition_id = sample.expedition_id " +
-                "WHERE tissue.data->>'urn:tissueId' = '1' AND sample.data->>'urn:sampleId' = '1'";
+                "WHERE tissue.data->>'urn:tissueId' = :1 AND sample.data->>'urn:sampleId' = :2";
 
-        assertEquals(expectedSql, queryBuilder.query());
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "1");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery());
     }
 
 

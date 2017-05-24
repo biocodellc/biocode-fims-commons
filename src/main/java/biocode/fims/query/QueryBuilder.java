@@ -8,10 +8,7 @@ import biocode.fims.query.dsl.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * {@link QueryBuildingExpressionVisitor} which builds valid PostgreSQL SELECT query.
@@ -25,11 +22,13 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private final Entity queryEntity;
     private final JoinBuilder joinBuilder;
     private boolean allQuery;
+    private Map<String, String> params;
 
     public QueryBuilder(Project project, String entityConceptAlias) {
         this.project = project;
         this.queryEntity = project.getProjectConfig().getEntity(entityConceptAlias);
         this.whereBuilder = new StringBuilder();
+        this.params = new HashMap<>();
 
         if (queryEntity == null) {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, entityConceptAlias);
@@ -53,9 +52,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 .append(columnUri.uri())
                 .append("' ")
                 .append(expression.operator())
-                .append(" '")
-                .append(expression.term())
-                .append("' ");
+                .append(" ")
+                .append(putParam(expression.term()));
     }
 
     @Override
@@ -78,14 +76,14 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             if (columns.size() == 1) {
 
                 whereBuilder
-                        .append(" '")
-                        .append(columns.get(0))
-                        .append("' ");
+                        .append(" ")
+                        .append(putParam(columns.get(0)))
+                        .append(" ");
             } else {
                 whereBuilder
-                        .append("& array['")
-                        .append(String.join("', '", columns))
-                        .append("'] ");
+                        .append("& array[")
+                        .append(String.join(", ", putParams(columns)))
+                        .append("] ");
             }
 
             if (c < entityColumns.size()) {
@@ -123,21 +121,21 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         if (expeditions.size() == 1) {
             whereBuilder
-                    .append("= '")
-                    .append(expeditions.get(0))
-                    .append("'");
+                    .append("= ")
+                    .append(putParam(expeditions.get(0)));
         } else {
             whereBuilder
-                    .append("IN ('")
-                    .append(String.join("', '", expeditions))
-                    .append("')");
+                    .append("IN (")
+                    .append(String.join(", ", putParams(expeditions)))
+                    .append(")");
         }
     }
 
     @Override
     public void visit(FTSExpression expression) {
+        String key = putParam(expression.term());
         if (StringUtils.isBlank(expression.column())) {
-            appendFTSTSVQuery(queryEntity.getConceptAlias(), expression.term());
+            appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
         } else {
             ColumnUri columnUri = lookupColumnUri(expression.column());
 
@@ -146,21 +144,21 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                     .append(columnUri.conceptAlias())
                     .append(".data->>'")
                     .append(columnUri.uri())
-                    .append("') @@ to_tsquery('")
-                    .append(expression.term())
-                    .append("') AND ");
+                    .append("') @@ to_tsquery(")
+                    .append(key)
+                    .append(") AND ");
 
-            appendFTSTSVQuery(columnUri.conceptAlias(), expression.term());
+            appendFTSTSVQuery(columnUri.conceptAlias(), key);
             whereBuilder.append(")");
         }
     }
 
-    private void appendFTSTSVQuery(String conceptAlias, String term) {
+    private void appendFTSTSVQuery(String conceptAlias, String termKey) {
         whereBuilder
                 .append(conceptAlias)
-                .append(".tsv @@ to_tsquery('")
-                .append(term)
-                .append("')");
+                .append(".tsv @@ to_tsquery(")
+                .append(termKey)
+                .append(")");
 
     }
 
@@ -172,9 +170,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 .append(columnUri.conceptAlias())
                 .append(".data->>'")
                 .append(columnUri.uri())
-                .append("' ILIKE '")
-                .append(expression.term())
-                .append("' ");
+                .append("' ILIKE ")
+                .append(putParam(expression.term()));
 
     }
 
@@ -182,6 +179,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(LogicalExpression expression) {
         expression.left().accept(this);
         whereBuilder
+                .append(" ")
                 .append(expression.operator())
                 .append(" ");
         expression.right().accept(this);
@@ -223,9 +221,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 .append(columnUri.uri())
                 .append("' ")
                 .append(operator)
-                .append(" '")
-                .append(value)
-                .append("'");
+                .append(" ")
+                .append(putParam(value));
     }
 
     @Override
@@ -237,13 +234,12 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(GroupExpression expression) {
         whereBuilder.append("(");
         expression.expression().accept(this);
-        whereBuilder.deleteCharAt(whereBuilder.length() - 1); // remove the space from the last visit
-        whereBuilder.append(") ");
+        whereBuilder.append(")");
     }
 
     @Override
     public void visit(AllExpression allExpression) {
-       this.allQuery = true;
+        this.allQuery = true;
     }
 
     @Override
@@ -252,7 +248,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
-    public String query() {
+    public ParametrizedQuery parameterizedQuery() {
         if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
         } else if (allQuery && whereBuilder.toString().trim().length() > 0) {
@@ -260,14 +256,20 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         if (allQuery) {
-            return "SELECT data FROM " + buildTable(queryEntity.getConceptAlias());
+            return new ParametrizedQuery(
+                    "SELECT data FROM " + buildTable(queryEntity.getConceptAlias()),
+                    params
+            );
         }
 
-        return "SELECT data FROM " +
-                buildTable(queryEntity.getConceptAlias()) +
-                joinBuilder.build() +
-                " WHERE " +
-                whereBuilder.toString().trim();
+        return new ParametrizedQuery(
+                "SELECT data FROM " +
+                        buildTable(queryEntity.getConceptAlias()) +
+                        joinBuilder.build() +
+                        " WHERE " +
+                        whereBuilder.toString(),
+                params
+        );
     }
 
     private String buildTable(String conceptAlias) {
@@ -357,6 +359,22 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         return project.getProjectConfig().getEntities().size() > 1;
     }
 
+
+    private String putParam(String val) {
+        String key = String.valueOf(params.size() + 1);
+        params.put(key, val);
+        return ":" + key;
+    }
+
+    private List<String> putParams(List<String> vals) {
+        List<String> keys = new LinkedList<>();
+
+        for (String val: vals) {
+            keys.add(putParam(val));
+        }
+
+        return keys;
+    }
 
     private static class ColumnUri {
         private final Entity entity;

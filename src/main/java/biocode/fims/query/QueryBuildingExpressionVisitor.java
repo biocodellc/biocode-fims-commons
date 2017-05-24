@@ -6,7 +6,7 @@ import biocode.fims.digester.Entity;
  * @author rjewing
  */
 public interface QueryBuildingExpressionVisitor extends ExpressionVisitor {
-    String query();
+    ParametrizedQuery parameterizedQuery();
 
     Entity entity();
 
