@@ -119,7 +119,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         List<String> expeditions = expression.expeditions();
 
-        whereBuilder.append("expeditions.expeditionCode ");
+        whereBuilder.append("expeditions.expedition_code ");
 
         if (expeditions.size() == 1) {
             whereBuilder

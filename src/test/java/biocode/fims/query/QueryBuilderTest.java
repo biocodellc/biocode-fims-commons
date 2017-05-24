@@ -212,7 +212,7 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN expeditions ON expeditions.id = event.expedition_id " +
-                "WHERE expeditions.expeditionCode = 'TEST'";
+                "WHERE expeditions.expedition_code = 'TEST'";
 
         assertEquals(expectedSql, queryBuilder.query());
     }
@@ -224,7 +224,7 @@ public class QueryBuilderTest {
 
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "JOIN expeditions ON expeditions.id = event.expedition_id " +
-                "WHERE expeditions.expeditionCode IN ('TEST', 'TEST2')";
+                "WHERE expeditions.expedition_code IN ('TEST', 'TEST2')";
 
         assertEquals(expectedSql, queryBuilder.query());
     }
