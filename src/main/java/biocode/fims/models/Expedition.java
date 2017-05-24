@@ -66,11 +66,13 @@ public class Expedition {
     }
 
     // needed for hibernate
-    Expedition() {}
+    Expedition() {
+    }
 
     @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getExpeditionId() {
         return expeditionId;
     }
@@ -80,7 +82,7 @@ public class Expedition {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "expedition_code")
     public String getExpeditionCode() {
         return expeditionCode;
     }
@@ -90,6 +92,7 @@ public class Expedition {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(name = "expedition_title")
     public String getExpeditionTitle() {
         return expeditionTitle;
     }
@@ -98,7 +101,7 @@ public class Expedition {
         this.expeditionTitle = expeditionTitle;
     }
 
-    @Column(updatable=false)
+    @Column(updatable = false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {
@@ -180,10 +183,10 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "projectId",
-            referencedColumnName = "projectId",
+    @JoinColumn(name = "project_id",
+            referencedColumnName = "id",
             nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "FK_expedtions_projectId")
+            foreignKey = @ForeignKey(name = "FK_expedtions_project_id")
     )
     public Project getProject() {
         return project;
@@ -197,9 +200,9 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "userId",
-            foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
-            referencedColumnName = "userId"
+    @JoinColumn(name = "user_id",
+            foreignKey = @ForeignKey(name = "FK_expeditions_user_id"),
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;

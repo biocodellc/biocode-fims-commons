@@ -93,7 +93,7 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "select bcidId from bcids where identifier = ?";
+            String sql = "select id from bcids where identifier = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, identifier);
             rs = stmt.executeQuery();
@@ -122,8 +122,8 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "select b.bcidId as bcidId, concat_ws(' ',identifier,title) as identifier from bcids b, users u where u.username = ? && " +
-                    "b.userId=u.userId";
+            String sql = "select b.id as bcidId, concat_ws(' ',identifier,title) as identifier from bcids b, users u where u.username = ? && " +
+                    "b.user_id=u.id";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, username);
@@ -169,7 +169,7 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "SELECT doi, title, webAddress, resourceType " +
+            String sql = "SELECT doi, title, web_address, resource_type " +
                     "FROM bcids WHERE BINARY identifier = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -184,14 +184,14 @@ public class BcidMinter extends BcidEncoder {
                     metadata.put("title", rs.getString("title"));
                 }
                 if (rs.getString("webAddress") != null) {
-                    metadata.put("webAddress", rs.getString("webAddress"));
+                    metadata.put("webAddress", rs.getString("web_address"));
                 }
 
-                ResourceType resourceType = rts.get(rs.getString("resourceType"));
+                ResourceType resourceType = rts.get(rs.getString("resource_type"));
                 if (resourceType != null) {
                     metadata.put("resourceType", resourceType.string);
                 } else {
-                    metadata.put("resourceType", rs.getString("resourceType"));
+                    metadata.put("resourceType", rs.getString("resource_type"));
                 }
 
             } else {
@@ -218,7 +218,7 @@ public class BcidMinter extends BcidEncoder {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "SELECT count(*) as count FROM bcids WHERE BINARY identifier = ? AND userId = ?";
+            String sql = "SELECT count(*) as count FROM bcids WHERE BINARY identifier = ? AND user_id = ?";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, identifier);
@@ -252,7 +252,7 @@ public class BcidMinter extends BcidEncoder {
 
             // update resourceTypeString to the correct uri
             if (metadata.containsKey("resourceTypeString")) {
-                metadata.put("resourceType", new ResourceTypes().getByName(metadata.get("resourceTypeString")).uri);
+                metadata.put("resource_type", new ResourceTypes().getByName(metadata.get("resourceTypeString")).uri);
                 metadata.remove("resourceTypeString");
             }
 

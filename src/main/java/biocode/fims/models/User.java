@@ -112,6 +112,7 @@ public class User {
     User() {
     }
 
+    @Column(name = "id")
     @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -144,7 +145,7 @@ public class User {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "has_set_password")
     public boolean getHasSetPassword() {
         return hasSetPassword;
     }
@@ -184,7 +185,7 @@ public class User {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "first_name")
     public String getFirstName() {
         return firstName;
     }
@@ -194,7 +195,7 @@ public class User {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "last_name")
     public String getLastName() {
         return lastName;
     }
@@ -210,7 +211,7 @@ public class User {
     }
 
     @JsonIgnore
-    @Column(columnDefinition = "char(20) null")
+    @Column(columnDefinition = "char(20) null", name = "password_reset_token")
     public String getPasswordResetToken() {
         return passwordResetToken;
     }
@@ -221,6 +222,7 @@ public class User {
 
     @JsonIgnore
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "password_reset_expiration")
     public Date getPasswordResetExpiration() {
         return passwordResetExpiration;
     }
@@ -261,11 +263,11 @@ public class User {
 
     @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "userProjects",
-            joinColumns = @JoinColumn(name = "userId", referencedColumnName = "userId"),
-            inverseJoinColumns = @JoinColumn(name = "projectId", referencedColumnName = "projectId"),
-            foreignKey = @ForeignKey(name = "FK_userProjects_userId"),
-            inverseForeignKey = @ForeignKey(name = "FK_userProjects_projectId")
+    @JoinTable(name = "user_projects",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id", referencedColumnName = "id"),
+            foreignKey = @ForeignKey(name = "FK_user_projects_user_id"),
+            inverseForeignKey = @ForeignKey(name = "FK_user_projects_project_id")
     )
     public List<Project> getProjectsMemberOf() {
         return projectsMemberOf;

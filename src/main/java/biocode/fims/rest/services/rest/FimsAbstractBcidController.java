@@ -212,7 +212,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
             update.put("doi", doi);
         }
         if (webAddress != null && (!metadata.containsKey("webAddress") || !metadata.get("webAddress").equals(webAddress))) {
-            update.put("webAddress", webAddress);
+            update.put("web_address", webAddress);
         }
         if (title != null && (!metadata.containsKey("title") || !metadata.get("title").equals(title))) {
             update.put("title", title);

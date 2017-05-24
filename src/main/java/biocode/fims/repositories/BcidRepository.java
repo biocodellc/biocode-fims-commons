@@ -25,7 +25,7 @@ public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampl
     void save(Bcid bcid);
 
     @Modifying
-    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where bcidId=:bcidId", nativeQuery = true)
+    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where id=:bcidId", nativeQuery = true)
     void updateModifiedTs(@Param("bcidId") int bcidId);
 
     /**

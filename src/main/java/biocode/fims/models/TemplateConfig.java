@@ -10,7 +10,7 @@ import javax.persistence.*;
  * TemplateConfig Entity object
  */
 @Entity
-@Table(name = "templateConfigs")
+@Table(name = "template_configs")
 public class TemplateConfig {
 
     private int templateConfigId;
@@ -20,11 +20,13 @@ public class TemplateConfig {
     private Project project;
     private User user;
 
-    TemplateConfig() {}
+    TemplateConfig() {
+    }
 
     @JsonView(Views.Summary.class)
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getTemplateConfigId() {
         return templateConfigId;
     }
@@ -34,7 +36,7 @@ public class TemplateConfig {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "config_name")
     public String getConfigName() {
         return configName;
     }
@@ -44,7 +46,7 @@ public class TemplateConfig {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(name="public")
+    @Column(name = "public")
     public boolean getIsPublic() {
         return isPublic;
     }
@@ -97,10 +99,10 @@ public class TemplateConfig {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "projectId",
-            referencedColumnName = "projectId",
+    @JoinColumn(name = "project_id",
+            referencedColumnName = "id",
             nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "FK_templateConfigs_projectId")
+            foreignKey = @ForeignKey(name = "FK_template_configs_project_id")
     )
     public Project getProject() {
         return project;
@@ -113,10 +115,10 @@ public class TemplateConfig {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
+    @JoinColumn(name = "user_id",
+            referencedColumnName = "id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "FK_templateConfigs_userId")
+            foreignKey = @ForeignKey(name = "FK_template_configs_user_id")
     )
     public User getUser() {
         return user;

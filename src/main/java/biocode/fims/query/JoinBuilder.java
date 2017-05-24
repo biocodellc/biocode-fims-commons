@@ -60,7 +60,7 @@ public class JoinBuilder {
 
     private void appendExpeditionsJoin() {
         joinString
-                .append(" JOIN expeditions ON expeditions.expeditionId = ")
+                .append(" JOIN expeditions ON expeditions.id = ")
                 .append(queryEntity.getConceptAlias())
                 .append(".expedition_id");
     }

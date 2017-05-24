@@ -7,7 +7,7 @@ import java.util.Date;
  * oAutheNonce entity object
  */
 @Entity
-@Table(name = "oAuthNonces")
+@Table(name = "oauth_nonces")
 public class OAuthNonce {
     private int oAuthNonceId;
 
@@ -24,10 +24,12 @@ public class OAuthNonce {
         this.oAuthClient = oAuthClient;
     }
 
-    OAuthNonce() {};
+    OAuthNonce() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getoAuthNonceId() {
         return oAuthNonceId;
     }
@@ -54,7 +56,7 @@ public class OAuthNonce {
         this.created = created;
     }
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "redirect_uri")
     public String getRedirectUri() {
         return redirectUri;
     }
@@ -85,9 +87,9 @@ public class OAuthNonce {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId",
-            foreignKey = @ForeignKey(name = "FK_expeditions_userId"),
-            referencedColumnName = "userId"
+    @JoinColumn(name = "user_id",
+            foreignKey = @ForeignKey(name = "FK_oauth_nonces_user_id"),
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;
@@ -98,10 +100,10 @@ public class OAuthNonce {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clientId",
+    @JoinColumn(name = "client_id",
             nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "FK_oAuthNonces_clientId"),
-            referencedColumnName = "clientId")
+            foreignKey = @ForeignKey(name = "FK_oauth_nonces_client_id"),
+            referencedColumnName = "id")
     public OAuthClient getoAuthClient() {
         return oAuthClient;
     }

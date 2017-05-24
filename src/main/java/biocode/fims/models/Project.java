@@ -97,6 +97,7 @@ public class Project {
     @JsonView(Views.Summary.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getProjectId() {
         return projectId;
     }
@@ -106,6 +107,7 @@ public class Project {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(name = "project_code")
     public String getProjectCode() {
         return projectCode;
     }
@@ -115,6 +117,7 @@ public class Project {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(name = "project_title")
     public String getProjectTitle() {
         return projectTitle;
     }
@@ -123,7 +126,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    @Column(updatable=false)
+    @Column(updatable = false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
     public Date getCreated() {
@@ -145,7 +148,7 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "validation_xml")
     public String getValidationXml() {
         return validationXml;
     }
@@ -156,7 +159,7 @@ public class Project {
 
     @JsonView(Views.Detailed.class)
     @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "config")
     public ProjectConfig getProjectConfig() {
         return projectConfig;
     }
@@ -166,7 +169,7 @@ public class Project {
     }
 
     @JsonIgnore
-    @Column(nullable = false)
+    @Column(nullable = false, name = "project_url")
     public String getProjectUrl() {
         return projectUrl;
     }
@@ -176,8 +179,7 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(name = "public",
-            nullable = false)
+    @Column(name = "public", nullable = false)
     public boolean isPublic() {
         return isPublic;
     }
@@ -241,9 +243,9 @@ public class Project {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
-            foreignKey = @ForeignKey(name = "FK_projects_userId"),
+    @JoinColumn(name = "user_id",
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_projects_user_id"),
             nullable = false
 
     )

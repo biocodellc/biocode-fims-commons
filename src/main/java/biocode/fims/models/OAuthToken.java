@@ -16,7 +16,7 @@ import java.util.Date;
  */
 @JsonSerialize(using = OAuthTokenSerializer.class)
 @Entity
-@Table(name = "oAuthTokens")
+@Table(name = "oauth_tokens")
 public class OAuthToken {
     public final static String TOKEN_TYPE = "bearer";
     public final static long EXPIRES_IN = OAuthProviderService.ACCESS_TOKEN_EXPIRATION_INTEVAL;
@@ -43,6 +43,7 @@ public class OAuthToken {
     @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getoAuthTokenId() {
         return oAuthTokenId;
     }
@@ -62,7 +63,7 @@ public class OAuthToken {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "refresh_token")
     public String getRefreshToken() {
         return refreshToken;
     }
@@ -104,9 +105,9 @@ public class OAuthToken {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "userId",
-            foreignKey = @ForeignKey(name = "FK_oAuthTokens_userId"),
-            referencedColumnName = "userId"
+    @JoinColumn(name = "user_id",
+            foreignKey = @ForeignKey(name = "FK_oauth_tokens_user_id"),
+            referencedColumnName = "id"
     )
     public User getUser() {
         return user;
@@ -119,10 +120,10 @@ public class OAuthToken {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "clientId",
+    @JoinColumn(name = "client_id",
             nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "FK_oAuthTokens_clientId"),
-            referencedColumnName = "clientId")
+            foreignKey = @ForeignKey(name = "FK_oauth_tokens_client_id"),
+            referencedColumnName = "id")
     public OAuthClient getoAuthClient() {
         return oAuthClient;
     }

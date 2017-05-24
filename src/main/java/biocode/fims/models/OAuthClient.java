@@ -9,7 +9,7 @@ import java.io.Serializable;
  * OAuthClient entity object
  */
 @Entity
-@Table(name = "oAuthClients")
+@Table(name = "oauth_clients")
 public class OAuthClient implements Serializable {
     private String clientId;
     private String clientSecret;
@@ -40,7 +40,7 @@ public class OAuthClient implements Serializable {
     }
 
     @Id
-    @Column(nullable = false, updatable = false, unique = true)
+    @Column(nullable = false, updatable = false, unique = true, name = "id")
     public String getClientId() {
         return clientId;
     }
@@ -49,6 +49,7 @@ public class OAuthClient implements Serializable {
         this.clientId = clientId;
     }
 
+    @Column(name = "client_secret")
     public String getClientSecret() {
         return clientSecret;
     }

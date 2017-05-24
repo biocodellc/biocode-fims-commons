@@ -29,14 +29,16 @@ public class ProjectConfigConverter {
     private final static Logger logger = LoggerFactory.getLogger(ProjectConfigConverter.class);
 
     private ProjectService projectService;
+    private final String projectUrl;
 
-    public ProjectConfigConverter(ProjectService projectService) {
+    public ProjectConfigConverter(ProjectService projectService, String projectUrl) {
         this.projectService = projectService;
+        this.projectUrl = projectUrl;
     }
 
     public void storeConfigs() throws IOException {
 
-        for (Project p : projectService.getProjects()) {
+        for (Project p : projectService.getProjects(projectUrl)) {
 
             try {
                 File configFile = new ConfigurationFileFetcher(p.getProjectId(), System.getProperty("java.io.tmpdir"), false).getOutputFile();
@@ -211,13 +213,5 @@ public class ProjectConfigConverter {
 
         }
 
-    }
-
-    public static void main(String[] args) throws IOException {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(FimsAppConfig.class);
-        ProjectService projectService = applicationContext.getBean(ProjectService.class);
-
-        ProjectConfigConverter projectConfigConverter = new ProjectConfigConverter(projectService);
-        projectConfigConverter.storeConfigs();
     }
 }
