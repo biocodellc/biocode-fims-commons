@@ -48,6 +48,17 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_entity_concept_alias_not_sql_safe() {
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(new Entity("resource1;select *"));
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity conceptAlias contains one or more invalid characters. Only letters, digits, and _ are valid"), validator.errors());
+    }
+
+    @Test
     public void invalid_if_entity_unique_key_missing_attribute() {
         ProjectConfig config = new ProjectConfig();
         Entity entity = entity1();

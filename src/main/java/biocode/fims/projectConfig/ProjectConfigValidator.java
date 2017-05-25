@@ -32,12 +32,23 @@ public class ProjectConfigValidator {
 
     private void validateMapping() {
         allEntitiesHaveUniqueConceptAlias();
-        entityWithWorksheetHaveUniqueKey();
-        entityUniqueKeysHaveMatchingAttribute();
-        allChildEntitiesHaveValidParent();
-        dateTimeAttributesHaveDataFormat();
-        allRulesHaveValidConfiguration();
         allAttributesHaveUniqueUri();
+
+        for (Entity e : config.getEntities()) {
+            entityConceptAliasOnlyHasValidChars(e);
+            entityWithWorksheetHasUniqueKey(e);
+            entityUniqueKeysHaveMatchingAttribute(e);
+            allChildEntitiesHaveValidParent(e);
+            dateTimeAttributesHaveDataFormat(e);
+            allRulesHaveValidConfiguration(e);
+        }
+    }
+
+    private void entityConceptAliasOnlyHasValidChars(Entity e) {
+        if (!StringUtils.isBlank(e.getConceptAlias())
+                && !e.getConceptAlias().matches("^[a-zA-Z0-9_]+$")) {
+            errorMessages.add("Entity conceptAlias contains one or more invalid characters. Only letters, digits, and _ are valid");
+        }
     }
 
     private void allEntitiesHaveUniqueConceptAlias() {
@@ -52,67 +63,55 @@ public class ProjectConfigValidator {
         }
     }
 
-    private void entityWithWorksheetHaveUniqueKey() {
-        for (Entity e : config.getEntities()) {
-            if (!StringUtils.isEmpty(e.getWorksheet()) && StringUtils.isEmpty(e.getUniqueKey())) {
-                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a worksheet but is missing a uniqueKey");
-            }
+    private void entityWithWorksheetHasUniqueKey(Entity e) {
+        if (!StringUtils.isEmpty(e.getWorksheet()) && StringUtils.isEmpty(e.getUniqueKey())) {
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a worksheet but is missing a uniqueKey");
         }
     }
 
-    private void entityUniqueKeysHaveMatchingAttribute() {
-        for (Entity e : config.getEntities()) {
-
-            if (!StringUtils.isBlank(e.getUniqueKey())
-                    && e.getAttributes().stream()
-                    .noneMatch(a -> e.getUniqueKey().equals(a.getColumn()))
-                    ) {
-                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a uniqueKey but can not find an Attribute with a matching column");
-
-            }
+    private void entityUniqueKeysHaveMatchingAttribute(Entity e) {
+        if (!StringUtils.isBlank(e.getUniqueKey())
+                && e.getAttributes().stream()
+                .noneMatch(a -> e.getUniqueKey().equals(a.getColumn()))
+                ) {
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a uniqueKey but can not find an Attribute with a matching column");
 
         }
 
     }
 
-    private void allChildEntitiesHaveValidParent() {
-        for (Entity e : config.getEntities()) {
-            if (e.isChildEntity()) {
+    private void allChildEntitiesHaveValidParent(Entity e) {
+        if (e.isChildEntity()) {
 
-                Entity parentEntity = config.getEntity(e.getParentEntity());
+            Entity parentEntity = config.getEntity(e.getParentEntity());
 
-                if (parentEntity == null) {
-                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that does not exist");
-                } else if (StringUtils.isBlank(parentEntity.getUniqueKey())) {
-                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
-                } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
-                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey");
-                }
+            if (parentEntity == null) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that does not exist");
+            } else if (StringUtils.isBlank(parentEntity.getUniqueKey())) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
+            } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey");
             }
         }
     }
 
-    private void dateTimeAttributesHaveDataFormat() {
+    private void dateTimeAttributesHaveDataFormat(Entity e) {
         List<DataType> dataTimeDataTypes = Arrays.asList(DataType.DATE, DataType.DATETIME, DataType.TIME);
 
-        for (Entity e : config.getEntities()) {
-            for (Attribute a : e.getAttributes()) {
-                if (dataTimeDataTypes.contains(a.getDatatype())
-                        && StringUtils.isEmpty(a.getDataformat())) {
-                    errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies an attribute \""
-                            + a.getUri() + "\" with dataType \"" + a.getDatatype() + "\" but is missing a dataFormat");
-                }
+        for (Attribute a : e.getAttributes()) {
+            if (dataTimeDataTypes.contains(a.getDatatype())
+                    && StringUtils.isEmpty(a.getDataformat())) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies an attribute \""
+                        + a.getUri() + "\" with dataType \"" + a.getDatatype() + "\" but is missing a dataFormat");
             }
         }
     }
 
-    private void allRulesHaveValidConfiguration() {
+    private void allRulesHaveValidConfiguration(Entity e) {
         List<String> messages = new ArrayList<>();
 
-        for (Entity e : config.getEntities()) {
-            for (Rule rule : e.getRules()) {
-                rule.validConfiguration(messages, e);
-            }
+        for (Rule rule : e.getRules()) {
+            rule.validConfiguration(messages, e);
         }
 
         errorMessages.addAll(messages);

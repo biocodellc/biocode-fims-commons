@@ -1,6 +1,5 @@
 package biocode.fims.query;
 
-import org.apache.commons.lang.text.StrSubstitutor;
 import org.springframework.util.Assert;
 
 import java.util.Map;
