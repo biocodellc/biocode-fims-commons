@@ -1,7 +1,6 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.models.Project;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -322,28 +321,4 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Resource.from(ProjectConfigurationResource.class);
     }
 
-    @GET
-    @Path("/{projectId}/config/refreshCache")
-    public Response refreshCache(@PathParam("projectId") Integer projectId) {
-        new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
-
-        return Response.noContent().build();
-    }
-
-    // TODO commenting this out for now. we don't want to keep updating the index mapping and recieving emails every night
-    // since we are moving away from xml config file, this will be easier to resolve when the config is updated, and we
-    // don't need to run nightly
-//    @Scheduled(cron = "0 0 2 * * *")
-    @GET
-    @Path("/config/refreshCache")
-    public Response refreshAllCache() {
-        logger.info("refreshing project config caches");
-        List<Project> projects = projectService.getProjects(settingsManager.retrieveValue("appRoot"));
-
-        for (Project p: projects) {
-            refreshCache(p.getProjectId());
-        }
-
-        return Response.noContent().build();
-    }
 }

@@ -1,6 +1,5 @@
 package biocode.fims.run;
 
-import biocode.fims.application.config.FimsAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.digester.Rule;
@@ -12,8 +11,6 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.validation.rules.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
 import java.io.IOException;

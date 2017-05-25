@@ -2,8 +2,6 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Mapping;
 import biocode.fims.models.Bcid;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -30,7 +28,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
