@@ -248,28 +248,38 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
-    public ParametrizedQuery parameterizedQuery() {
+    public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
         } else if (allQuery && whereBuilder.toString().trim().length() > 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
         }
 
-        if (allQuery) {
-            return new ParametrizedQuery(
-                    "SELECT data FROM " + buildTable(queryEntity.getConceptAlias()),
-                    params
-            );
+        String sql = "SELECT data FROM " +
+                buildTable(queryEntity.getConceptAlias());
+
+        if (allQuery && !onlyPublicExpeditions) {
+            return new ParametrizedQuery(sql, params);
+        }
+
+        if (onlyPublicExpeditions) {
+            addPublicExpeditions();
         }
 
         return new ParametrizedQuery(
-                "SELECT data FROM " +
-                        buildTable(queryEntity.getConceptAlias()) +
-                        joinBuilder.build() +
-                        " WHERE " +
-                        whereBuilder.toString(),
+                sql + joinBuilder.build() + " WHERE " + whereBuilder.toString(),
                 params
         );
+    }
+
+    private void addPublicExpeditions() {
+        joinBuilder.joinExpeditions(true);
+        if (whereBuilder.toString().trim().length() == 0) {
+            whereBuilder.append("expeditions.public = true");
+        } else {
+            whereBuilder.insert(0, "(");
+            whereBuilder.append(") AND expeditions.public = true");
+        }
     }
 
     private String buildTable(String conceptAlias) {
@@ -369,7 +379,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private List<String> putParams(List<String> vals) {
         List<String> keys = new LinkedList<>();
 
-        for (String val: vals) {
+        for (String val : vals) {
             keys.add(putParam(val));
         }
 

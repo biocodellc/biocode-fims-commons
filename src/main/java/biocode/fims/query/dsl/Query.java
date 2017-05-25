@@ -2,9 +2,13 @@ package biocode.fims.query.dsl;
 
 
 import biocode.fims.digester.Entity;
+import biocode.fims.query.ExpeditionCollectingExpressionVisitor;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.springframework.util.Assert;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author rjewing
@@ -13,6 +17,7 @@ public class Query {
 
     private final QueryBuildingExpressionVisitor queryBuilder;
     private final Expression expression;
+    private Set<String> expeditions;
 
     public Query(QueryBuildingExpressionVisitor queryBuilder, Expression expression) {
         Assert.notNull(queryBuilder);
@@ -21,9 +26,19 @@ public class Query {
         this.expression = expression;
     }
 
-    public ParametrizedQuery parameterizedQuery() {
+    public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         expression.accept(queryBuilder);
-        return queryBuilder.parameterizedQuery();
+        return queryBuilder.parameterizedQuery(onlyPublicExpeditions);
+    }
+
+    public Set<String> expeditions() {
+        if (expeditions == null) {
+            ExpeditionCollectingExpressionVisitor visitor = new ExpeditionCollectingExpressionVisitor();
+            expression.accept(visitor);
+            expeditions = visitor.expeditions();
+        }
+
+        return expeditions;
     }
 
     public Entity entity() {

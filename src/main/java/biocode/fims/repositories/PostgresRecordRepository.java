@@ -114,7 +114,8 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SuppressWarnings({"unchecked"})
     public QueryResult query(Query query) {
-        ParametrizedQuery q = query.parameterizedQuery();
+        boolean onlyPublicExpeditions = query.expeditions().isEmpty();
+        ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
         List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
 
         return new QueryResult(records, query.entity());
@@ -124,7 +125,8 @@ public class PostgresRecordRepository implements RecordRepository {
     @SuppressWarnings({"unchecked"})
     public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
         // naive implementation that will work for now. Probably better to use postgres to paginate
-        ParametrizedQuery q = query.parameterizedQuery();
+        boolean onlyPublicExpeditions = query.expeditions().isEmpty();
+        ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
         List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
 
         int total = records.size();
