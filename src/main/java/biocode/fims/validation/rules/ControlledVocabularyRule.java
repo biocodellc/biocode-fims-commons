@@ -6,6 +6,7 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.ListMessage;
 import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,8 +23,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Checks for values not in the {@link biocode.fims.digester.List} specified by the listName
@@ -65,7 +66,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         String uri = recordSet.entity().getAttributeUri(column);
         List<String> fields = getListFields();
 
-        List<String> invalidValues = new ArrayList<>();
+        Set<String> invalidValues = new LinkedHashSet<>();
 
         for (Record r : recordSet.records()) {
 
@@ -112,11 +113,16 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         return listFields;
     }
 
-    private void setMessages(List<String> invalidValues, EntityMessages messages) {
+    private void setMessages(Set<String> invalidValues, EntityMessages messages) {
+        List<String> fields = list.getFields()
+                .stream()
+                .map(Field::getValue)
+                .collect(Collectors.toList());;
+
         for (String value : invalidValues) {
             messages.addMessage(
-                    "\"" + column + "\" contains value not in list \"" + listName + "\"",
-                    new Message("\"" + value + "\" not an approved \"" + column + "\""),
+                    "Unapproved value(s)",
+                    new ListMessage(fields, "\"" + value + "\" in column \"" + column + "\" not in list \"" + listName + "\""),
                     level()
             );
         }

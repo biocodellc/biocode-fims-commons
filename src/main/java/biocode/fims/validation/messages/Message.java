@@ -1,5 +1,7 @@
 package biocode.fims.validation.messages;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @author rjewing
  */
@@ -10,6 +12,7 @@ public class Message {
         message = msg;
     }
 
+    @JsonProperty("message")
     public String message() {
         return message;
     }

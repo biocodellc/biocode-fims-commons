@@ -7,8 +7,11 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.ListMessage;
 import biocode.fims.validation.messages.Message;
 import org.junit.Test;
+
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -102,9 +105,8 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
-                "\"col1\" contains value not in list \"yesNo\"",
-                new Message("\"Yes\" not an approved \"col1\""
-                )
+                "Unapproved value(s)",
+                getMessage("\"Yes\" in column \"col1\" not in list \"yesNo\"", "yesNo")
         );
 
         assertEquals(expectedMessages, messages);
@@ -137,14 +139,12 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
-                "\"col1\" contains value not in list \"trueFalse\"",
-                new Message("\"error\" not an approved \"col1\""
-                )
+                "Unapproved value(s)",
+                getMessage("\"error\" in column \"col1\" not in list \"trueFalse\"", "trueFalse")
         );
         expectedMessages.addWarningMessage(
-                "\"col1\" contains value not in list \"trueFalse\"",
-                new Message("\"another\" not an approved \"col1\""
-                )
+                "Unapproved value(s)",
+                getMessage("\"another\" in column \"col1\" not in list \"trueFalse\"", "trueFalse")
         );
 
         assertEquals(expectedMessages, messages);
@@ -177,5 +177,16 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         config.addList(l2);
 
         return config;
+    }
+
+    private ListMessage getMessage(String msg, String listName) {
+        java.util.List<String> fields = config()
+                .findList(listName)
+                .getFields()
+                .stream()
+                .map(Field::getValue)
+                .collect(Collectors.toList());
+
+        return new ListMessage(fields, msg);
     }
 }

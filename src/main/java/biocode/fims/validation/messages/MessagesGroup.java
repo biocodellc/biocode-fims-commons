@@ -30,6 +30,7 @@ public class MessagesGroup {
         messages.add(msg);
     }
 
+    @JsonProperty("messages")
     public List<Message> messages() {
         return messages;
     }
