@@ -2,7 +2,7 @@ package biocode.fims.validation.rules;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
-import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.messages.EntityMessages;
 import org.junit.Before;
 
 /**

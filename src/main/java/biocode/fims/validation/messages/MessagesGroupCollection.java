@@ -1,4 +1,4 @@
-package biocode.fims.renderers;
+package biocode.fims.validation.messages;
 
 import java.util.LinkedList;
 import java.util.List;

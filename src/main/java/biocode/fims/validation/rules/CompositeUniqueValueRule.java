@@ -2,9 +2,8 @@ package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -76,7 +75,7 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
 
         messages.addMessage(
                 GROUP_MESSAGE,
-                new SimpleMessage(
+                new Message(
                         "(\"" + String.join("\", \"", columns) + "\") is defined as a composite unique key, but" +
                                 " some value combinations were used more than once: (\"" + String.join("\"), (\"", compositeValues) + "\")"),
                 level()

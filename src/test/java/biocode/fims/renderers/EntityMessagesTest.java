@@ -1,5 +1,8 @@
 package biocode.fims.renderers;
 
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
+import biocode.fims.validation.messages.MessagesGroup;
 import biocode.fims.validation.rules.RuleLevel;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +34,9 @@ public class EntityMessagesTest {
     public void add_warning_message() {
         String group = "Group";
         String group2 = "Group 2";
-        Message simpleMessage = new SimpleMessage("warning");
-        Message simpleMessage1 = new SimpleMessage("warning 1");
-        Message simpleMessage2 = new SimpleMessage("warning 2");
+        Message simpleMessage = new Message("warning");
+        Message simpleMessage1 = new Message("warning 1");
+        Message simpleMessage2 = new Message("warning 2");
 
         messages.addWarningMessage(group, simpleMessage);
         messages.addMessage(group, simpleMessage1, RuleLevel.WARNING);
@@ -48,10 +51,10 @@ public class EntityMessagesTest {
     public void add_error_and_warning_messages() {
         String group = "Group";
         String group2 = "Group 2";
-        Message simpleMessage = new SimpleMessage("error");
-        Message simpleMessage1 = new SimpleMessage("warning 1");
-        Message simpleMessage2 = new SimpleMessage("warning 2");
-        Message simpleMessage3 = new SimpleMessage("warning 3");
+        Message simpleMessage = new Message("error");
+        Message simpleMessage1 = new Message("warning 1");
+        Message simpleMessage2 = new Message("warning 2");
+        Message simpleMessage3 = new Message("warning 3");
 
         messages.addErrorMessage(group, simpleMessage);
         messages.addWarningMessage(group, simpleMessage1);

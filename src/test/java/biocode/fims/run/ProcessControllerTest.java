@@ -1,15 +1,5 @@
 package biocode.fims.run;
 
-import biocode.fims.config.ConfigurationFileErrorMessager;
-import biocode.fims.renderers.RowMessage;
-import org.json.simple.JSONObject;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
-
 /**
  * @author rjewing
  */

@@ -1,18 +1,17 @@
-package biocode.fims.renderers;
+package biocode.fims.validation.messages;
 
 /**
  * Handle messaging for
  */
-public class RowMessage implements Message {
+public class RowMessage extends Message {
     public static final Integer WARNING = 0;
     public static final Integer ERROR = 1;
-    protected String message;
     protected Integer level;
-    protected   String groupMessage;
+    protected String groupMessage;
     private Integer row;
 
     public RowMessage(String msg, int row) {
-        this.message = msg;
+        super(msg);
         this.row = row;
     }
 
@@ -21,19 +20,19 @@ public class RowMessage implements Message {
         return "Row " +
                 row +
                 ": " +
-                this.message;
+                message();
     }
 
     @Deprecated
     public RowMessage(String message, String groupMessage, Integer level) {
-        this.message = message;
+        super(message);
         this.level = level;
         this.groupMessage = groupMessage;
     }
 
     @Deprecated
     public RowMessage(String message, String groupMessage, Integer level, Integer row) {
-        this.message = message;
+        super(message);
         this.row = row;
         if (groupMessage == null) {
             this.groupMessage = this.level + ": Unclassified message";
@@ -46,7 +45,7 @@ public class RowMessage implements Message {
 
     @Deprecated
     public String getGroupMessageAsString() {
-        return "<div id='groupMessage' class='" + getLevelAsString()+ "'>" + this.getLevelAsString() + ": " + groupMessage + "</div>";
+        return "<div id='groupMessage' class='" + getLevelAsString() + "'>" + this.getLevelAsString() + ": " + groupMessage + "</div>";
 
     }
 
@@ -56,9 +55,9 @@ public class RowMessage implements Message {
     @Deprecated
     public String print() {
         if (this.row != null) {
-            return "Row " + this.row + ": " + message;
+            return "Row " + this.row + ": " + message();
         } else {
-            return message;
+            return message();
         }
 
     }

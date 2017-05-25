@@ -3,9 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -109,7 +108,7 @@ public class NumericRangeRule extends SingleColumnRule {
         for (String value: invalidValues) {
             messages.addMessage(
                     GROUP_MESSAGE,
-                    new SimpleMessage(
+                    new Message(
                             "Value \"" + value + "\" out of range for \"" + column + "\" using range validation = \"" + range + "\""
                     ),
                     level()

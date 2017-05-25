@@ -3,7 +3,7 @@ package biocode.fims.validation;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.*;
 import org.springframework.util.Assert;
 

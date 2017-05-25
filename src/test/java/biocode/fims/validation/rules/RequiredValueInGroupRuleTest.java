@@ -5,8 +5,8 @@ import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid RequiredValueInGroup Rule configuration. columns must not be empty.")
+                new Message("Invalid RequiredValueInGroup Rule configuration. columns must not be empty.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -85,7 +85,7 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Missing column from group",
-                new SimpleMessage("row with col1=record4 must have a value in at least 1 of the columns: " +
+                new Message("row with col1=record4 must have a value in at least 1 of the columns: " +
                         "[\"col2\",\"col3\"]")
         );
 

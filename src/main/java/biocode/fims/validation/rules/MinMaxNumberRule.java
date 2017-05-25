@@ -3,9 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
@@ -72,14 +71,14 @@ public class MinMaxNumberRule extends AbstractRule {
                 isValid = false;
                 messages.addWarningMessage(
                         "Spreadsheet check",
-                        new SimpleMessage("Column \"" + maximumColumn + "\" exists but must have corresponding column \"" + minimumColumn + "\"")
+                        new Message("Column \"" + maximumColumn + "\" exists but must have corresponding column \"" + minimumColumn + "\"")
                 );
                 continue;
             } else if (maxColVal.equals("")) {
                 isValid = false;
                 messages.addWarningMessage(
                         "Spreadsheet check",
-                        new SimpleMessage("Column \"" + minimumColumn + "\" exists but must have corresponding column \"" + maximumColumn + "\"")
+                        new Message("Column \"" + minimumColumn + "\" exists but must have corresponding column \"" + maximumColumn + "\"")
                 );
                 continue;
             }
@@ -88,7 +87,7 @@ public class MinMaxNumberRule extends AbstractRule {
             if (!pattern.matcher(minColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
-                        new SimpleMessage("non-numeric value \"" + minColVal + "\" for column \"" + minimumColumn + "\""),
+                        new Message("non-numeric value \"" + minColVal + "\" for column \"" + minimumColumn + "\""),
                         level()
                 );
                 validNumbers = false;
@@ -98,7 +97,7 @@ public class MinMaxNumberRule extends AbstractRule {
             if (!pattern.matcher(maxColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
-                        new SimpleMessage("non-numeric value \"" + maxColVal + "\" for column \"" + maximumColumn + "\""),
+                        new Message("non-numeric value \"" + maxColVal + "\" for column \"" + maximumColumn + "\""),
                         level()
                 );
                 validNumbers = false;
@@ -110,7 +109,7 @@ public class MinMaxNumberRule extends AbstractRule {
                     if (Double.parseDouble(minColVal) > Double.parseDouble(maxColVal)) {
                         messages.addMessage(
                                 GROUP_MESSAGE,
-                                new SimpleMessage("Illegal values! " + minimumColumn + " = " + minColVal + " while " + maximumColumn + " = " + maxColVal + ""),
+                                new Message("Illegal values! " + minimumColumn + " = " + minColVal + " while " + maximumColumn + " = " + maxColVal + ""),
                                 level()
                         );
                         isValid = false;
@@ -118,7 +117,7 @@ public class MinMaxNumberRule extends AbstractRule {
                 } catch (NumberFormatException e) {
                     messages.addMessage(
                             GROUP_MESSAGE,
-                            new SimpleMessage("could not determine if \"" + minColVal + "\" is greater then \"" + maxColVal + "\". Are they both numbers?"),
+                            new Message("could not determine if \"" + minColVal + "\" is greater then \"" + maxColVal + "\". Are they both numbers?"),
                             level()
                     );
                 }

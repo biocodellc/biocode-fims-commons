@@ -5,9 +5,8 @@ import biocode.fims.digester.Field;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonStreamContext;
@@ -117,7 +116,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         for (String value : invalidValues) {
             messages.addMessage(
                     "\"" + column + "\" contains value not in list \"" + listName + "\"",
-                    new SimpleMessage("\"" + value + "\" not an approved \"" + column + "\""),
+                    new Message("\"" + value + "\" not an approved \"" + column + "\""),
                     level()
             );
         }

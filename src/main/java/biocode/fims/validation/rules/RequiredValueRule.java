@@ -3,9 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Attribute;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -98,7 +97,7 @@ public class RequiredValueRule extends MultiColumnRule {
         for (String c : columnsMissingValues) {
             messages.addMessage(
                     GROUP_MESSAGE,
-                    new SimpleMessage(
+                    new Message(
                             "\"" + c + "\" has a missing cell value"
                     ),
                     level()

@@ -3,14 +3,9 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +37,7 @@ public class ValidURLRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid ValidURL Rule configuration. Column must not be blank or null.")
+                new Message("Invalid ValidURL Rule configuration. Column must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -72,11 +67,11 @@ public class ValidURLRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid URL",
-                new SimpleMessage("\"http:/example.com\" is not a valid URL for \"col1\"")
+                new Message("\"http:/example.com\" is not a valid URL for \"col1\"")
         );
         expectedMessages.addErrorMessage(
                 "Invalid URL",
-                new SimpleMessage("\"example.com\" is not a valid URL for \"col1\"")
+                new Message("\"example.com\" is not a valid URL for \"col1\"")
         );
 
         assertEquals(expectedMessages, messages);

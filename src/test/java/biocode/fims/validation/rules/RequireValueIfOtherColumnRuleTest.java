@@ -3,8 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid RequireValueIfOtherColumn Rule configuration. Column must not be blank or null.")
+                new Message("Invalid RequireValueIfOtherColumn Rule configuration. Column must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -56,7 +56,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid RequireValueIfOtherColumn Rule configuration. otherColumn must not be blank or null.")
+                new Message("Invalid RequireValueIfOtherColumn Rule configuration. otherColumn must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -72,7 +72,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid RequireValueIfOtherColumn Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
+                new Message("Invalid RequireValueIfOtherColumn Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
         );
 
         assertEquals(expectedMessages, messages);
@@ -98,7 +98,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Dependent column value check",
-                new SimpleMessage(
+                new Message(
                         "\"col2\" has value \"value\", but associated column \"col1\" has no value"
                 )
         );

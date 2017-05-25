@@ -3,8 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.*;
@@ -39,7 +39,7 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid CompositeUniqueValue Rule configuration. columns must not be empty.")
+                new Message("Invalid CompositeUniqueValue Rule configuration. columns must not be empty.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -63,7 +63,7 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Unique value constraint did not pass",
-                new SimpleMessage(
+                new Message(
                         "(\"col1\", \"col2\") is defined as a composite unique key, but some value combinations were used " +
                                 "more than once: (\"value1\", \"value2\")"
                 )

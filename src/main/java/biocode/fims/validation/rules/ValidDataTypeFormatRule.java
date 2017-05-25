@@ -5,8 +5,8 @@ import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import biocode.fims.utils.DateUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.util.Assert;
@@ -49,7 +49,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                         if (!isIntegerDataFormat(value)) {
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
-                                    new SimpleMessage("\"" + a.getColumn() + "\" contains non-integer value \"" + value + "\"")
+                                    new Message("\"" + a.getColumn() + "\" contains non-integer value \"" + value + "\"")
                             );
                             isValid = false;
                         }
@@ -58,7 +58,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                         if (!isFloatDataFormat(value)) {
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
-                                    new SimpleMessage("\"" + a.getColumn() + "\" contains non-float value \"" + value + "\"")
+                                    new Message("\"" + a.getColumn() + "\" contains non-float value \"" + value + "\"")
                             );
                             isValid = false;
                         }
@@ -69,7 +69,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                         if (!isDateDataFormat(value, a.getDatatype(), a.getDataformat())) {
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
-                                    new SimpleMessage("\"" + a.getColumn() + "\" contains invalid date value \"" +
+                                    new Message("\"" + a.getColumn() + "\" contains invalid date value \"" +
                                             value + "\". " + "Format must be one of [" + a.getDataformat() + "]. If this " +
                                             "is an Excel workbook, the value can also be an Excel DATE cell")
                             );

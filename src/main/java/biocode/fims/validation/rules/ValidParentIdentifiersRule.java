@@ -3,8 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.HashSet;
@@ -69,7 +69,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
     private void setMessages(List<String> invalidValues, EntityMessages messages, String parentEntityAlias) {
         messages.addMessage(
                 GROUP_MESSAGE,
-                new SimpleMessage(
+                new Message(
                         "The following identifiers do not exist in the parent entity \"" + parentEntityAlias + "\": [\"" + String.join("\", \"", invalidValues) + "\"]"
                 ),
                 level()

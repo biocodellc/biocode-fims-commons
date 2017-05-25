@@ -2,9 +2,8 @@ package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -71,7 +70,7 @@ public class ValidForURIRule extends SingleColumnRule {
     private void setMessages(List<String> invalidValues, EntityMessages messages) {
         messages.addMessage(
                 GROUP_MESSAGE,
-                new SimpleMessage(
+                new Message(
                         "\"" + column + "\" contains some invalid URI characters: \"" + String.join("\", \"", invalidValues) + "\""
                 ),
                 level()

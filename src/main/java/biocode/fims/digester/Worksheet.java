@@ -1,6 +1,6 @@
 package biocode.fims.digester;
 
-import biocode.fims.renderers.RowMessage;
+import biocode.fims.validation.messages.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;

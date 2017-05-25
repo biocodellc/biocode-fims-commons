@@ -5,9 +5,8 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.Message;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
 
@@ -83,7 +82,7 @@ public class DatasetValidator {
 
                         removeDuplicateMessages.put(
                                 parentEntity,
-                                new SimpleMessage("Duplicate \"" + parentEntity.getUniqueKey() + "\" values, however the other columns are not the same.")
+                                new Message("Duplicate \"" + parentEntity.getUniqueKey() + "\" values, however the other columns are not the same.")
                         );
                     }
 

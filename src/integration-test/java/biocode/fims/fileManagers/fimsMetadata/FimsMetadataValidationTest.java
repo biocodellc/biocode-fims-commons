@@ -4,7 +4,7 @@
 //import biocode.fims.digester.Mapping;
 //import biocode.fims.renderers.RowMessage;
 //import biocode.fims.renderers.EntityMessages;
-//import biocode.fims.renderers.SimpleMessage;
+//import biocode.fims.renderers.Message;
 //import biocode.fims.run.ProcessorStatus;
 //import org.json.simple.JSONObject;
 //import org.junit.Assert;
@@ -50,22 +50,22 @@
 //
 //        // validForURI rule
 //        entityMessages.addErrorMessage("Non-valid URI characters",
-//                new SimpleMessage("\"materialSampleID\" contains some bad characters: not valid uri"));
+//                new Message("\"materialSampleID\" contains some bad characters: not valid uri"));
 //        entityMessages.addErrorMessage("Non-valid URI characters",
-//                new SimpleMessage("\"materialSampleID\" contains some bad characters: not valid uri"));
+//                new Message("\"materialSampleID\" contains some bad characters: not valid uri"));
 //
 //        /* validDataTypeFormat rules */
 //        // date format rule
 //        entityMessages.addErrorMessage("Invalid DataFormat",
-//                new SimpleMessage("\"Observation_Date\" contains invalid date values. Format must be an Excel DATE or one of [YYYY-MM-DD]: 100, 12/15/17, 12-15-2017"));
+//                new Message("\"Observation_Date\" contains invalid date values. Format must be an Excel DATE or one of [YYYY-MM-DD]: 100, 12/15/17, 12-15-2017"));
 //
 //        // uniqueValue rule
 //        entityMessages.addErrorMessage("Unique value constraint did not pass",
-//                new SimpleMessage("\"materialSampleID\" column is defined as unique but some values used more than once: 1"));
+//                new Message("\"materialSampleID\" column is defined as unique but some values used more than once: 1"));
 //
 //        // RequiredColumns error rule
 //        entityMessages.addErrorMessage("Missing column(s)",
-//                new SimpleMessage("\"materialSampleID\" has a missing cell value"));
+//                new Message("\"materialSampleID\" has a missing cell value"));
 //
 //        // case-sensitive controlledVocabulary rule
 //        entityMessages.addErrorMessage("\"hasLegs\" contains invalid value <a  href=\"#\" onclick=\"list('yesNo','hasLegs');\">see list</a>",
@@ -91,7 +91,7 @@
 //        fm.validate();
 //
 //        EntityMessages expected = new EntityMessages("Samples", "Samples");
-//        expected.addErrorMessage("Initial Spreadsheet check", new SimpleMessage("Error building hashes.  Likely a required column constraint failed."));
+//        expected.addErrorMessage("Initial Spreadsheet check", new Message("Error building hashes.  Likely a required column constraint failed."));
 //
 //        JSONObject worksheetMessages = getValidationMessages();
 //
@@ -107,7 +107,7 @@
 //        fm.validate();
 //
 //        EntityMessages expected = new EntityMessages("Samples", "Samples");
-//        expected.addErrorMessage("Initial Spreadsheet check", new SimpleMessage("DUPLICATE_COLUMNS"));
+//        expected.addErrorMessage("Initial Spreadsheet check", new Message("DUPLICATE_COLUMNS"));
 //
 //        JSONObject worksheetMessages = getValidationMessages();
 //

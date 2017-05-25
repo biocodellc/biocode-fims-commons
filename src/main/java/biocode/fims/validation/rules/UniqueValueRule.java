@@ -2,16 +2,14 @@ package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Check a particular column to see if all the values are unique.
@@ -73,7 +71,7 @@ public class UniqueValueRule extends SingleColumnRule {
     private void setMessages(List<String> invalidValues, EntityMessages messages) {
         messages.addMessage(
                 GROUP_MESSAGE,
-                new SimpleMessage(
+                new Message(
                         "\"" + column + "\" column is defined as unique but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\""
                 ),
                 level()

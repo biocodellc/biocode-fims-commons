@@ -1,7 +1,7 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.messages.EntityMessages;
 
 /**
  * @author rjewing

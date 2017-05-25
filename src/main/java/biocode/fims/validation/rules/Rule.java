@@ -3,7 +3,7 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfigValidator;
-import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.messages.EntityMessages;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

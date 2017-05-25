@@ -5,14 +5,9 @@ import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -83,7 +78,7 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid parent identifier(s)",
-                new SimpleMessage("The following identifiers do not exist in the parent entity \"event\": [\"event2\", \"\"]")
+                new Message("The following identifiers do not exist in the parent entity \"event\": [\"event2\", \"\"]")
         );
 
         assertEquals(expectedMessages, messages);

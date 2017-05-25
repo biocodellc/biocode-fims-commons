@@ -6,8 +6,8 @@ import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -46,7 +46,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid ControlledVocabulary Rule configuration. Column must not be blank or null.")
+                new Message("Invalid ControlledVocabulary Rule configuration. Column must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -62,7 +62,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid ControlledVocabulary Rule configuration. listName must not be blank or null.")
+                new Message("Invalid ControlledVocabulary Rule configuration. listName must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -78,7 +78,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid Project configuration. Could not find list with name \"list1\"")
+                new Message("Invalid Project configuration. Could not find list with name \"list1\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -103,7 +103,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "\"col1\" contains value not in list \"yesNo\"",
-                new SimpleMessage("\"Yes\" not an approved \"col1\""
+                new Message("\"Yes\" not an approved \"col1\""
                 )
         );
 
@@ -138,12 +138,12 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "\"col1\" contains value not in list \"trueFalse\"",
-                new SimpleMessage("\"error\" not an approved \"col1\""
+                new Message("\"error\" not an approved \"col1\""
                 )
         );
         expectedMessages.addWarningMessage(
                 "\"col1\" contains value not in list \"trueFalse\"",
-                new SimpleMessage("\"another\" not an approved \"col1\""
+                new Message("\"another\" not an approved \"col1\""
                 )
         );
 

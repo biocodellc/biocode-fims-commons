@@ -6,8 +6,8 @@ import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.validation.rules.RequiredValueRule;
@@ -63,7 +63,7 @@ public class DatasetValidatorTest {
         EntityMessages expectedMessages = new EntityMessages("event", "sheet1");
         expectedMessages.addWarningMessage(
                 "Missing column(s)",
-                new SimpleMessage("\"col1\" has a missing cell value")
+                new Message("\"col1\" has a missing cell value")
         );
         assertEquals(expectedMessages, messages.get(0));
     }
@@ -141,11 +141,11 @@ public class DatasetValidatorTest {
         EntityMessages expectedMessages = new EntityMessages("event", "sheet1");
         expectedMessages.addErrorMessage(
                 "Unique value constraint did not pass",
-                new SimpleMessage("\"eventId\" column is defined as unique but some values used more than once: \"event1\"")
+                new Message("\"eventId\" column is defined as unique but some values used more than once: \"event1\"")
         );
         expectedMessages.addErrorMessage(
                 "Duplicate parent records",
-                new SimpleMessage("Duplicate \"eventId\" values, however the other columns are not the same.")
+                new Message("Duplicate \"eventId\" values, however the other columns are not the same.")
         );
         assertEquals(expectedMessages, messages.get(0));
 

@@ -2,16 +2,13 @@ package biocode.fims.validation.rules;
 
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * checks to see if each value is a valid Url, with the schemes {"http", "https"}
@@ -70,7 +67,7 @@ public class ValidURLRule extends SingleColumnRule {
         for (String v: invalidValues) {
             messages.addMessage(
                     GROUP_MESSAGE,
-                    new SimpleMessage("\"" + v + "\" is not a valid URL for \"" + column + "\""),
+                    new Message("\"" + v + "\" is not a valid URL for \"" + column + "\""),
                     level()
             );
         }

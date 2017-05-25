@@ -1,17 +1,15 @@
 package biocode.fims.validation;
 
 import biocode.fims.digester.*;
-import biocode.fims.models.Project;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import biocode.fims.validation.rules.NumericRangeRule;
 import biocode.fims.validation.rules.Rule;
-import biocode.fims.validation.rules.RuleLevel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,31 +90,31 @@ public class RecordValidatorTest {
         EntityMessages expectedMessages = new EntityMessages("event", "events");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"-10\" out of range for \"col2\" using range validation = \">0|<=10\"")
+                new Message("Value \"-10\" out of range for \"col2\" using range validation = \">0|<=10\"")
         );
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"nonInteger\" out of range for \"col2\" using range validation = \">0|<=10\"")
+                new Message("Value \"nonInteger\" out of range for \"col2\" using range validation = \">0|<=10\"")
         );
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col2\" contains non-integer value \"nonInteger\"")
+                new Message("\"col2\" contains non-integer value \"nonInteger\"")
         );
         expectedMessages.addErrorMessage(
                 "Unique value constraint did not pass",
-                new SimpleMessage("\"eventId\" column is defined as unique but some values used more than once: \"1234\"")
+                new Message("\"eventId\" column is defined as unique but some values used more than once: \"1234\"")
         );
         expectedMessages.addErrorMessage(
                 "Non-valid URI characters",
-                new SimpleMessage("\"eventId\" contains some invalid URI characters: \"nonUri=\", \"\"")
+                new Message("\"eventId\" contains some invalid URI characters: \"nonUri=\", \"\"")
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
-                new SimpleMessage("\"eventId\" has a missing cell value")
+                new Message("\"eventId\" has a missing cell value")
         );
         expectedMessages.addErrorMessage(
                 "Invalid parent identifier(s)",
-                new SimpleMessage("The following identifiers do not exist in the parent entity \"parent\": [\"\", \"parent2\"]")
+                new Message("The following identifiers do not exist in the parent entity \"parent\": [\"\", \"parent2\"]")
         );
 
         assertEquals(expectedMessages, validator.messages());

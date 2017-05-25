@@ -1,4 +1,4 @@
-package biocode.fims.renderers;
+package biocode.fims.validation.messages;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,6 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -31,11 +30,8 @@ public class MessagesGroup {
         messages.add(msg);
     }
 
-    @JsonProperty("messages")
-    public List<String> messages() {
-        return messages.stream()
-                .map(Message::message)
-                .collect(Collectors.toList());
+    public List<Message> messages() {
+        return messages;
     }
 
     @Override

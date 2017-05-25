@@ -3,8 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.*;
@@ -44,7 +44,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid MinMaxNumber Rule configuration. minimumColumn and " +
+                new Message("Invalid MinMaxNumber Rule configuration. minimumColumn and " +
                         "maximumColumn must not be null or empty")
         );
 
@@ -73,7 +73,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Spreadsheet check",
-                new SimpleMessage("Column \"col2\" exists but must have corresponding column \"col1\"")
+                new Message("Column \"col2\" exists but must have corresponding column \"col1\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -94,7 +94,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Spreadsheet check",
-                new SimpleMessage("Column \"col1\" exists but must have corresponding column \"col2\"")
+                new Message("Column \"col1\" exists but must have corresponding column \"col2\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -121,11 +121,11 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Number outside of range",
-                new SimpleMessage("non-numeric value \"a123b\" for column \"col1\"")
+                new Message("non-numeric value \"a123b\" for column \"col1\"")
         );
         expectedMessages.addWarningMessage(
                 "Number outside of range",
-                new SimpleMessage("non-numeric value \"(10)\" for column \"col2\"")
+                new Message("non-numeric value \"(10)\" for column \"col2\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -152,7 +152,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Number outside of range",
-                new SimpleMessage("Illegal values! col1 = 122 while col2 = .12")
+                new Message("Illegal values! col1 = 122 while col2 = .12")
         );
 
         assertEquals(expectedMessages, messages);

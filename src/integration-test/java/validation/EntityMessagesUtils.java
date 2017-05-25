@@ -1,7 +1,7 @@
 package validation;
 
-import biocode.fims.renderers.MessagesGroup;
-import biocode.fims.renderers.EntityMessages;
+import biocode.fims.validation.messages.MessagesGroup;
+import biocode.fims.validation.messages.EntityMessages;
 import org.json.simple.JSONObject;
 
 /**

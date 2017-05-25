@@ -3,15 +3,13 @@ package biocode.fims.validation.rules;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * check that at least 1 column in the columns list has a value
@@ -85,7 +83,7 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
         for (String key : columnsMissingValues) {
             messages.addMessage(
                     GROUP_MESSAGE,
-                    new SimpleMessage(
+                    new Message(
                             "row with " + uniqueKeyColumn + "=" + key + " must have a value in at least 1 of the " +
                                     "columns: [\"" + String.join("\",\"", columns) + "\"]"),
                     level()

@@ -1,16 +1,15 @@
-package biocode.fims.renderers;
+package biocode.fims.validation.messages;
 
 /**
  * @author rjewing
  */
-public class SimpleMessage implements Message {
+public class Message {
     private final String message;
 
-    public SimpleMessage(String msg) {
+    public Message(String msg) {
         message = msg;
     }
 
-    @Override
     public String message() {
         return message;
     }
@@ -18,9 +17,9 @@ public class SimpleMessage implements Message {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SimpleMessage)) return false;
+        if (!(o instanceof Message)) return false;
 
-        SimpleMessage that = (SimpleMessage) o;
+        Message that = (Message) o;
 
         return message.equals(that.message);
     }

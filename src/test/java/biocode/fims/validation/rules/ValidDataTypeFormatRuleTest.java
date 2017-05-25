@@ -6,8 +6,8 @@ import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,7 +40,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col1\" contains non-integer value \".1\"")
+                new Message("\"col1\" contains non-integer value \".1\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -57,7 +57,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col2\" contains non-float value \"10\"")
+                new Message("\"col2\" contains non-float value \"10\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -74,12 +74,12 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col3\" contains invalid date value \"May 1984\". Format must be one of " +
+                new Message("\"col3\" contains invalid date value \"May 1984\". Format must be one of " +
                         "[hh:mm MM-yyyy, MM-YYYY]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col3\" contains invalid date value \"2001-12-30T15:05:12\". Format must be one of " +
+                new Message("\"col3\" contains invalid date value \"2001-12-30T15:05:12\". Format must be one of " +
                         "[hh:mm MM-yyyy, MM-YYYY]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
 
@@ -97,12 +97,12 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col4\" contains invalid date value \"12-16-2017\". Format must be one of " +
+                new Message("\"col4\" contains invalid date value \"12-16-2017\". Format must be one of " +
                         "[MM-dd]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col4\" contains invalid date value \"string\". Format must be one of " +
+                new Message("\"col4\" contains invalid date value \"string\". Format must be one of " +
                         "[MM-dd]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
 
@@ -120,12 +120,12 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col5\" contains invalid date value \"01:00:00\". Format must be one of " +
+                new Message("\"col5\" contains invalid date value \"01:00:00\". Format must be one of " +
                         "[HH:mm]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new SimpleMessage("\"col5\" contains invalid date value \"1 o'clock\". Format must be one of " +
+                new Message("\"col5\" contains invalid date value \"1 o'clock\". Format must be one of " +
                         "[HH:mm]. If this is an Excel workbook, the value can also be an Excel DATE cell")
         );
 

@@ -5,8 +5,8 @@ import biocode.fims.digester.Entity;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.*;
@@ -41,7 +41,7 @@ public class RequiredValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid RequiredValue Rule configuration. columns must not be empty.")
+                new Message("Invalid RequiredValue Rule configuration. columns must not be empty.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -71,11 +71,11 @@ public class RequiredValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
-                new SimpleMessage("\"col1\" has a missing cell value")
+                new Message("\"col1\" has a missing cell value")
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
-                new SimpleMessage("\"col2\" has a missing cell value")
+                new Message("\"col2\" has a missing cell value")
         );
 
         assertEquals(expectedMessages, messages);

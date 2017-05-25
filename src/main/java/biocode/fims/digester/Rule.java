@@ -3,7 +3,7 @@ package biocode.fims.digester;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.reader.plugins.TabularDataReader;
-import biocode.fims.renderers.RowMessage;
+import biocode.fims.validation.messages.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.utils.DateUtils;
 import biocode.fims.utils.EncodeURIcomponent;

@@ -3,8 +3,8 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid UniqueValue Rule configuration. Column must not be blank or null.")
+                new Message("Invalid UniqueValue Rule configuration. Column must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -58,7 +58,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid UniqueValue Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
+                new Message("Invalid UniqueValue Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
         );
 
         assertEquals(expectedMessages, messages);
@@ -82,7 +82,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Unique value constraint did not pass",
-                new SimpleMessage("\"col1\" column is defined as unique but some values used more than once: \"" +
+                new Message("\"col1\" column is defined as unique but some values used more than once: \"" +
                         String.join("\", \"", getInvalidRecordValues().stream().distinct().collect(Collectors.toList())) + "\""
                 )
         );

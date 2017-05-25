@@ -3,8 +3,7 @@ package biocode.fims.digester;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.reader.SqLiteJsonConverter;
 import biocode.fims.reader.plugins.TabularDataReader;
-import biocode.fims.renderers.RendererInterface;
-import biocode.fims.renderers.RowMessage;
+import biocode.fims.validation.messages.RowMessage;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.PathManager;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,7 +27,7 @@ import java.util.LinkedList;
 /**
  * digester.Validation class holds all worksheets that are part of this validator
  */
-public class Validation implements RendererInterface {
+public class Validation {
     // Loop all the worksheets associated with the validation element
     private final LinkedList<Worksheet> worksheets = new LinkedList<Worksheet>();
     // Loop all the lists associated with the validation element

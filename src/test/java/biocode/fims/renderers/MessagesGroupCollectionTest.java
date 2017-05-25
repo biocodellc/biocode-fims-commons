@@ -1,5 +1,9 @@
 package biocode.fims.renderers;
 
+import biocode.fims.validation.messages.Message;
+import biocode.fims.validation.messages.MessagesGroup;
+import biocode.fims.validation.messages.MessagesGroupCollection;
+import biocode.fims.validation.messages.RowMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +26,7 @@ public class MessagesGroupCollectionTest {
         String group = "Group";
         String group2 = "Group 2";
 
-        Message simpleMessage = new SimpleMessage("message");
+        Message simpleMessage = new Message("message");
         Message rowMessage = new RowMessage("row message", 1);
         Message rowMessage2 = new RowMessage("another row message", 1);
 
@@ -37,10 +41,10 @@ public class MessagesGroupCollectionTest {
         assertEquals("wrong messagesGroup name", group2, messagesGroup2.getName());
 
 
-        assertTrue("messagesGroup missing message", messagesGroup.messages().contains(simpleMessage.message()));
-        assertTrue("messagesGroup missing message", messagesGroup.messages().contains(rowMessage.message()));
-        assertFalse("messagesGroup missing message", messagesGroup.messages().contains(rowMessage2.message()));
-        assertTrue("messagesGroup missing message", messagesGroup2.messages().contains(rowMessage2.message()));
+        assertTrue("messagesGroup missing message", messagesGroup.messages().contains(simpleMessage));
+        assertTrue("messagesGroup missing message", messagesGroup.messages().contains(rowMessage));
+        assertFalse("messagesGroup missing message", messagesGroup.messages().contains(rowMessage2));
+        assertTrue("messagesGroup missing message", messagesGroup2.messages().contains(rowMessage2));
     }
 
     @Test

@@ -3,14 +3,9 @@ package biocode.fims.validation.rules;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +37,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid NumericRange Rule configuration. Column must not be blank or null.")
+                new Message("Invalid NumericRange Rule configuration. Column must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -58,7 +53,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid NumericRange Rule configuration. range must not be blank or null.")
+                new Message("Invalid NumericRange Rule configuration. range must not be blank or null.")
         );
 
         assertEquals(expectedMessages, messages);
@@ -72,7 +67,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid NumericRange Rule configuration. Could not parse range \"0\"")
+                new Message("Invalid NumericRange Rule configuration. Could not parse range \"0\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -85,7 +80,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid NumericRange Rule configuration. Could not parse range \"abc\"")
+                new Message("Invalid NumericRange Rule configuration. Could not parse range \"abc\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -98,7 +93,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new SimpleMessage("Invalid NumericRange Rule configuration. Could not parse range \"=123\"")
+                new Message("Invalid NumericRange Rule configuration. Could not parse range \"=123\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -123,7 +118,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"11\" out of range for \"col1\" using range validation = \"<10\""
+                new Message("Value \"11\" out of range for \"col1\" using range validation = \"<10\""
                 )
         );
 
@@ -149,7 +144,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"11\" out of range for \"col1\" using range validation = \"<=10\""
+                new Message("Value \"11\" out of range for \"col1\" using range validation = \"<=10\""
                 )
         );
 
@@ -175,7 +170,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"0.00\" out of range for \"col1\" using range validation = \">10\""
+                new Message("Value \"0.00\" out of range for \"col1\" using range validation = \">10\""
                 )
         );
 
@@ -201,7 +196,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"-0.00001\" out of range for \"col1\" using range validation = \">=0\""
+                new Message("Value \"-0.00001\" out of range for \"col1\" using range validation = \">=0\""
                 )
         );
 
@@ -230,12 +225,12 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"-0.00001\" out of range for \"col1\" using range validation = \">=0 | <=10\""
+                new Message("Value \"-0.00001\" out of range for \"col1\" using range validation = \">=0 | <=10\""
                 )
         );
         expectedMessages.addWarningMessage(
                 "Invalid number format",
-                new SimpleMessage("Value \"11\" out of range for \"col1\" using range validation = \">=0 | <=10\""
+                new Message("Value \"11\" out of range for \"col1\" using range validation = \">=0 | <=10\""
                 )
         );
 

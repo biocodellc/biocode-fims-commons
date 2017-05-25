@@ -1,8 +1,7 @@
-package biocode.fims.renderers;
+package biocode.fims.validation.messages;
 
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.jaxrs.json.annotation.JSONP;
 
 import java.util.List;
 

@@ -5,8 +5,8 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.renderers.EntityMessages;
-import biocode.fims.renderers.SimpleMessage;
+import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.validation.messages.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public abstract class AbstractRule implements Rule {
             for (String msg: configMessages) {
                 messages.addErrorMessage(
                         "Invalid Rule Configuration. Contact Project Administrator.",
-                        new SimpleMessage(msg)
+                        new Message(msg)
                 );
             }
 
