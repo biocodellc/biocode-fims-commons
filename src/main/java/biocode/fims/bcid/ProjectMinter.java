@@ -84,16 +84,16 @@ public class ProjectMinter {
                     "    \tfrom bcids b,expeditions p, expedition_bcids eB\n" +
                     "    \twhere eB.bcid_id=b.id\n" +
                     "    \tand eB.expedition_id=p.id\n" +
-                    " and b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b.sub_resource_type = \"FimsMetadata\" \n" +
+                    " and b.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b.sub_resource_type = 'FimsMetadata' \n" +
                     "    and p.project_id = ?\n" +
                     "    \tgroup by p.expedition_code) as  b2,\n" +
                     "expeditions p,  expedition_bcids eB\n" +
                     "where p.expedition_code = b2.expedition_code and b1.id = b2.maxId\n" +
                     " and eB.bcid_id=b1.id\n" +
                     " and eB.expedition_id=p.id\n" +
-                    " and b1.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b1.sub_resource_type = \"FimsMetadata\" " +
+                    " and b1.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b1.sub_resource_type = 'FimsMetadata' " +
                     "    and p.project_id =?";
 
             // Enforce restriction on viewing particular bcids -- this is important for protected bcids
@@ -162,7 +162,7 @@ public class ProjectMinter {
         try {
             Integer userId = BcidDatabase.getUserId(username);
 
-            String sql = "SELECT p.id , p.project_code, p.project_title, p.validation_xml FROM projects p, user_projects u WHERE p.id = u.project_id && u.id = \"" + userId + "\"";
+            String sql = "SELECT p.id , p.project_code, p.project_title, p.validation_xml FROM projects p, user_projects u WHERE p.id = u.project_id AND u.id = '" + userId + "'";
             stmt = conn.prepareStatement(sql);
 
             rs = stmt.executeQuery();
@@ -325,8 +325,8 @@ public class ProjectMinter {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String userProjectSql = "SELECT user_id FROM user_projects WHERE project_id = \"" + projectId + "\"";
-            String projectSql = "SELECT project_title FROM projects WHERE id = \"" + projectId + "\"";
+            String userProjectSql = "SELECT user_id FROM user_projects WHERE project_id = '" + projectId + "'";
+            String projectSql = "SELECT project_title FROM projects WHERE id = '" + projectId + "'";
             stmt = conn.prepareStatement(projectSql);
 
             rs = stmt.executeQuery();
@@ -379,8 +379,8 @@ public class ProjectMinter {
                     "WHERE e.user_id = ? and p.id = e.project_id " +
                     "UNION " +
                     "SELECT e.expedition_title, p.project_title FROM expeditions e, expedition_bcids eB, projects p, bcids b " +
-                    "WHERE b.user_id = ? and b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b.sub_resource_type = \"FimsMetadata\" \n" +
+                    "WHERE b.user_id = ? and b.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b.sub_resource_type = 'FimsMetadata' \n" +
                     " and eB.bcid_id=b.id\n" +
                     " and e.id=eB.expedition_id\n" +
                     " and p.id=e.project_id\n" +
@@ -420,8 +420,8 @@ public class ProjectMinter {
                     "e.project_id as projectId, " +
                     "p.project_title as projectTitle \n" +
                     "from bcids b, expeditions e,  expedition_bcids eB, projects p\n" +
-                    "where b.user_id = ? and b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b.sub_resource_type = \"FimsMetadata\" \n" +
+                    "where b.user_id = ? and b.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b.sub_resource_type = 'FimsMetadata' \n" +
                     " and eB.bcid_id=b.id\n" +
                     " and e.id=eB.expedition_id\n" +
                     " and p.id=e.project_id\n" +
@@ -492,16 +492,16 @@ public class ProjectMinter {
                     "    \tfrom bcids b,expeditions e, expedition_bcids eB\n" +
                     "    \twhere eB.bcid_id=b.id\n" +
                     "    \tand eB.expedition_id=e.id\n" +
-                    " and b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b.sub_resource_type = \"FimsMetadata\" \n" +
+                    " and b.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b.sub_resource_type = 'FimsMetadata' \n" +
                     "    \tgroup by e.expeditionCode) as  b2,\n" +
                     "expeditions e,  expedition_bcids eB, projects p\n" +
                     "where e.expedition_code = b2.expeditionCode and b1.id = b2.maxId\n" +
                     " and eB.bcid_id=b1.id\n" +
                     " and eB.expedition_id=e.id\n" +
                     " and p.id=e.project_id\n" +
-                    " and b1.resource_type = \"http://purl.org/dc/dcmitype/Dataset\"\n" +
-                    " and b1.sub_resource_type = \"FimsMetadata\" \n" +
+                    " and b1.resource_type = 'http://purl.org/dc/dcmitype/Dataset'\n" +
+                    " and b1.sub_resource_type = 'FimsMetadata' \n" +
                     "    and e.user_id = ?";
 
             stmt = conn.prepareStatement(sql);
@@ -758,7 +758,7 @@ public class ProjectMinter {
      * @return
      */
     public boolean userExistsInProject(Integer userId, Integer projectId) {
-        String selectString = "SELECT count(*) as count FROM user_projects WHERE user_id = ? && project_id = ?";
+        String selectString = "SELECT count(*) as count FROM user_projects WHERE user_id = ? AND project_id = ?";
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Connection conn = BcidDatabase.getConnection();

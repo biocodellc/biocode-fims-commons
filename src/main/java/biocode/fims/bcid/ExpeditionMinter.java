@@ -90,7 +90,7 @@ public class ExpeditionMinter {
         Connection conn = BcidDatabase.getConnection();
         try {
             String sql = "select id from expeditions " +
-                    "where expedition_code = ? && " +
+                    "where expedition_code = ? AND " +
                     "project_id = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -126,7 +126,7 @@ public class ExpeditionMinter {
                     "FROM " +
                     "   expeditions " +
                     "WHERE " +
-                    "   id= ? && " +
+                    "   id = ? AND " +
                     "   user_id = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -165,8 +165,8 @@ public class ExpeditionMinter {
                     "FROM " +
                     "   expeditions " +
                     "WHERE " +
-                    "   expedition_code= ? && " +
-                    "   user_id = ? && " +
+                    "   expedition_code = ? AND " +
+                    "   user_id = ? AND " +
                     "   project_id = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -207,7 +207,7 @@ public class ExpeditionMinter {
                             " a.project_id as projectId, " +
                             " u.username as expeditionOwner, " +
                             " u2.username as uploader," +
-                            " b.ts as timestamp," +
+                            " b.created as timestamp," +
                             " b.identifier, " +
                             " b.resource_type as resourceType," +
                             " b.finalCopy as finalCopy," +
@@ -217,10 +217,10 @@ public class ExpeditionMinter {
                             "FROM " +
                             " expeditions a, expedition_bcids eB, bcids b, users u, users u2 " +
                             "WHERE" +
-                            " u2.id = b.user_id && " +
-                            " u.id = a.user_id && " +
-                            " a.id = eB.expedition_id && " +
-                            " eB.bcid_id = b.id && \n" +
+                            " u2.id = b.user_id AND " +
+                            " u.id = a.user_id AND " +
+                            " a.id = eB.expedition_id AND " +
+                            " eB.bcid_id = b.id AND \n" +
                             " b.graph = ?";
             stmt = conn.prepareStatement(sql);
 
@@ -233,7 +233,7 @@ public class ExpeditionMinter {
                 metadata.put("expeditionOwner", rs.getString("expeditionOwner"));
                 metadata.put("uploader", rs.getString("uploader"));
                 metadata.put("timestamp", rs.getString("timestamp"));
-                metadata.put("identifier", rs.getString("b.identifier"));
+                metadata.put("identifier", rs.getString("identifier"));
                 metadata.put("resourceType", rs.getString("resourceType"));
                 metadata.put("isPublic", rs.getBoolean("public"));
                 metadata.put("expeditionCode", rs.getString("expeditionCode"));
@@ -318,10 +318,10 @@ public class ExpeditionMinter {
 
             String sql = "SELECT b.identifier, e.public, e.id , e.expedition_title " +
                     "FROM bcids b, expedition_bcids eB, expeditions e " +
-                    "WHERE b.id = eB.bcid_id && eB.expedition_id = e.id && e.expedition_code = ? and e.project_id = ? " +
+                    "WHERE b.id = eB.bcid_id AND eB.expedition_id = e.id AND e.expedition_code = ? and e.project_id = ? " +
             //        " AND b.resourceType not like '%esource%' " +
-            //        " ORDER BY b.ts ASC LIMIT 1";
-            " and b.resource_type = \"http://purl.org/dc/dcmitype/Collection\"";
+            //        " ORDER BY b.created ASC LIMIT 1";
+            " and b.resource_type = 'http://purl.org/dc/dcmitype/Collection'";
             stmt = conn.prepareStatement(sql);
 
             stmt.setString(1, expeditionCode);
@@ -329,12 +329,12 @@ public class ExpeditionMinter {
 
             rs = stmt.executeQuery();
             if (rs.next()) {
-                metadata.put("identifier", rs.getString("b.identifier"));
-                metadata.put("public", rs.getBoolean("e.public"));
+                metadata.put("identifier", rs.getString("identifier"));
+                metadata.put("public", rs.getBoolean("public"));
                 metadata.put("expeditionCode", expeditionCode);
                 metadata.put("projectId", projectId);
-                metadata.put("expeditionTitle", rs.getString("e.expedition_title"));
-                metadata.put("expeditionId", rs.getString("e.id"));
+                metadata.put("expeditionTitle", rs.getString("expedition_title"));
+                metadata.put("expeditionId", rs.getString("id"));
             }
         } catch (SQLException e) {
             throw new ServerErrorException(e);
@@ -361,23 +361,23 @@ public class ExpeditionMinter {
 
             String sql = "SELECT b.identifier, e.public, e.expedition_code, e.project_id, e.expedition_title, b.web_address, b.resource_type " +
                     "FROM bcids b, expedition_bcids eB, expeditions e " +
-                    "WHERE b.id = eB.bcid_id && eB.expedition_id = e.id && e.id = ? " +
+                    "WHERE b.id = eB.bcid_id AND eB.expedition_id = e.id AND e.id = ? " +
                    // " AND b.resourceType not like '%esource%' " +
-                   // " ORDER BY b.ts ASC LIMIT 1";
-             " and b.resource_type = \"http://purl.org/dc/dcmitype/Collection\"";
+                   // " ORDER BY b.created ASC LIMIT 1";
+             " and b.resource_type = 'http://purl.org/dc/dcmitype/Collection'";
             stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, expeditionId);
 
             rs = stmt.executeQuery();
             if (rs.next()) {
-                metadata.put("identifier", rs.getString("b.identifier"));
-                metadata.put("public", rs.getBoolean("e.public"));
-                metadata.put("expeditionCode", rs.getString("e.expedition_code"));
-                metadata.put("projectId", rs.getString("e.project_id"));
-                metadata.put("expeditionTitle", rs.getString("e.expedition_title"));
+                metadata.put("identifier", rs.getString("identifier"));
+                metadata.put("public", rs.getBoolean("public"));
+                metadata.put("expeditionCode", rs.getString("expedition_code"));
+                metadata.put("projectId", rs.getString("project_id"));
+                metadata.put("expeditionTitle", rs.getString("expedition_title"));
                 metadata.put("webAddress", rs.getString("web_address"));
-                metadata.put("resourceType", rs.getString("b.resource_type"));
+                metadata.put("resourceType", rs.getString("resource_type"));
                 metadata.put("expeditionId", expeditionId);
             }
         } catch (SQLException e) {
@@ -406,7 +406,7 @@ public class ExpeditionMinter {
         try {
             String sql = "SELECT b.identifier, b.resource_type " +
                     "FROM bcids b, expedition_bcids eB " +
-                    "WHERE b.id = eB.bcid_id && eB.expedition_id = ?";
+                    "WHERE b.id = eB.bcid_id AND eB.expedition_id = ?";
             stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, expeditionId);
@@ -417,11 +417,11 @@ public class ExpeditionMinter {
             while (rs.next()) {
                 String rtString;
                 JSONObject resource = new JSONObject();
-                ResourceType resourceType = rt.get(rs.getString("b.resource_type"));
+                ResourceType resourceType = rt.get(rs.getString("resource_type"));
                 if (resourceType != null) {
                     rtString = resourceType.string;
                 } else {
-                    rtString = rs.getString("b.resource_type");
+                    rtString = rs.getString("resource_type");
                 }
 
                 // if the resourceType is a dataset or collection, don't add to table
@@ -429,11 +429,11 @@ public class ExpeditionMinter {
                     continue;
                 }
 
-                resource.put("identifier", rs.getString("b.identifier"));
+                resource.put("identifier", rs.getString("identifier"));
                 resource.put("resourceType", rtString);
                 // only add the resourceTypeUri if http: is specified under resource type
-                if (rs.getString("b.resource_type").contains("http:")) {
-                    resource.put("resourceTypeUri", rs.getString("b.resourceType"));
+                if (rs.getString("resource_type").contains("http:")) {
+                    resource.put("resourceTypeUri", rs.getString("resource_type"));
                 } else {
                     resource.put("resourceTypeUri", "");
                 }
@@ -461,20 +461,20 @@ public class ExpeditionMinter {
         Connection conn = BcidDatabase.getConnection();
 
         try {
-            String sql = "SELECT b.ts, b.identifier, b.resource_type, b.title " +
+            String sql = "SELECT b.created, b.identifier, b.resource_type, b.title " +
                     "FROM bcids b, expedition_bcids eB, expeditions e " +
-                    "WHERE b.id = eB.bcid_id && eB.expedition_id = ? && e.id = eB.expedition_id " +
-                    "AND b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\" " +
-                    "AND b.sub_resource_type = \"FimsMetadata\" " +
-                    "ORDER BY b.ts DESC";
+                    "WHERE b.id = eB.bcid_id AND eB.expedition_id = ? AND e.id = eB.expedition_id " +
+                    "AND b.resource_type = 'http://purl.org/dc/dcmitype/Dataset' " +
+                    "AND b.sub_resource_type = 'FimsMetadata' " +
+                    "ORDER BY b.created DESC";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, expeditionId);
 
             rs = stmt.executeQuery();
             while (rs.next()) {
                 JSONObject dataset = new JSONObject();
-                dataset.put("ts", rs.getTimestamp("b.ts").toString());
-                dataset.put("identifier", rs.getString("b.identifier"));
+                dataset.put("ts", rs.getTimestamp("created").toString());
+                dataset.put("identifier", rs.getString("identifier"));
                 dataset.put("resourceType", rs.getString("resource_type"));
                 dataset.put("title", rs.getString("title"));
                 datasets.add(dataset);
@@ -519,8 +519,8 @@ public class ExpeditionMinter {
                     " \tAND u.id = e.user_id \n" +
                     " \tAND b.id = eB.bcid_id\n" +
                     " \tAND eB.expedition_id = e.id \n" +
-                    " \tAND b.resource_type = \"http://purl.org/dc/dcmitype/Dataset\" \n" +
-                    " \tAND b.sub_resource_type = \"FimsMetadata\" \n" +
+                    " \tAND b.resource_type = 'http://purl.org/dc/dcmitype/Dataset' \n" +
+                    " \tAND b.sub_resource_type = 'FimsMetadata' \n" +
                     " GROUP BY eB.expedition_id";
             stmt = conn.prepareStatement(sql);
             stmt.setInt(1, projectId);
@@ -529,10 +529,10 @@ public class ExpeditionMinter {
 
             while (rs.next()) {
                 JSONObject expedition = new JSONObject();
-                expedition.put("username", rs.getString("u.username"));
-                expedition.put("expeditionTitle", rs.getString("e.expedition_title"));
-                expedition.put("expeditionId", rs.getString("e.id"));
-                expedition.put("public", rs.getBoolean("e.public"));
+                expedition.put("username", rs.getString("username"));
+                expedition.put("expeditionTitle", rs.getString("expedition_title"));
+                expedition.put("expeditionId", rs.getString("id"));
+                expedition.put("public", rs.getBoolean("public"));
                 expeditions.add(expedition);
             }
 
@@ -558,7 +558,7 @@ public class ExpeditionMinter {
 
         try {
             String updateString = "UPDATE expeditions SET public = ?" +
-                    " WHERE expedition_code = \"" + expeditionCode + "\" AND project_id = " + projectId;
+                    " WHERE expedition_code = '" + expeditionCode + "' AND project_id = " + projectId;
 
             updateStatement = conn.prepareStatement(updateString);
             updateStatement.setBoolean(1, publicStatus);
