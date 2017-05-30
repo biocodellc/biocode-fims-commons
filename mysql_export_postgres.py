@@ -2,7 +2,7 @@
 import argparse, os, subprocess, time
 
 TABLES = ["bcids", "expedition_bcids", "expeditions", "oauth_clients", "oauth_nonces", "oauth_tokens", "projects",
-          "template_configs", "user_projects", "users"]
+          "project_templates", "user_projects", "users"]
 
 MYSQL_EXPORT_COLUMNS = "mysql -u {} -p{} -e \"SELECT GROUP_CONCAT(COLUMN_NAME SEPARATOR ',') FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema='{}' and table_name='{}' INTO OUTFILE '{}' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY " \
                        "'' ESCAPED BY '' LINES TERMINATED BY '\n';\""

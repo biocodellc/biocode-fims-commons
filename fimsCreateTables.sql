@@ -238,23 +238,21 @@ LANGUAGE 'plpgsql';
 --
 -- COMMENT ON COLUMN ldapNonces.username is 'The username of the login attempt';
 
-DROP TABLE IF EXISTS template_configs;
+DROP TABLE IF EXISTS project_templates;
 
-CREATE TABLE template_configs (
-  id SERIAL NOT NULL PRIMARY KEY,
+CREATE TABLE project_templates (
+  id SERIAL NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
-  config_name TEXT NOT NULL,
-  public BOOLEAN NOT NULL DEFAULT '0',
-  config TEXT NOT NULL,
-  CONSTRAINT template_configs_config_name_project_id_uniq UNIQUE (config_name, project_id)
+  name TEXT NOT NULL,
+  attribute_uris jsonb NOT NULL,
+  CONSTRAINT project_templates_name_project_id_uniq UNIQUE (name, project_id)
 );
 
-CREATE INDEX template_configs_project_id_idx ON template_configs (project_id);
+CREATE INDEX project_templates_project_id_idx ON project_templates (project_id);
 
-COMMENT ON COLUMN template_configs.config_name is 'The name of the config';
-COMMENT ON COLUMN template_configs.public is 'Whether or not this is a public template config?';
-COMMENT ON COLUMN template_configs.config is 'The array of uris to be checked when generating a template';
+COMMENT ON COLUMN project_templates.name is 'The name of the template';
+COMMENT ON COLUMN project_templates.attribute_uris is 'The array of uris for this template';
 
 -- Function that is added to each entity table in a trigger when created
 CREATE OR REPLACE FUNCTION entity_tsv_trigger()

@@ -197,76 +197,6 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     }
 
     /**
-     * Service used to save a fims template generator configuration
-     *
-     * @param checkedOptions
-     * @param configName
-     * @param projectId
-     * @return
-     */
-    @POST
-    @Authenticated
-    @Path("/{projectId}/saveTemplateConfig")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response saveTemplateConfig(@FormParam("checkedOptions") List<String> checkedOptions,
-                                       @FormParam("configName") String configName,
-                                       @PathParam("projectId") Integer projectId) {
-
-        if (configName.equalsIgnoreCase("default")) {
-            return Response.ok("{\"error\": \"To change the default config, talk to the project admin.\"}").build();
-        }
-
-        ProjectMinter projectMinter = new ProjectMinter();
-
-        if (projectMinter.templateConfigExists(configName, projectId)) {
-            if (projectMinter.usersTemplateConfig(configName, projectId, userContext.getUser().getUserId())) {
-                projectMinter.updateTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
-            } else {
-                return Response.ok("{\"error\": \"A configuration with that name already exists, and you are not the owner.\"}").build();
-            }
-        } else {
-            projectMinter.saveTemplateConfig(configName, projectId, userContext.getUser().getUserId(), checkedOptions);
-        }
-
-        return Response.ok("{\"success\": \"Successfully saved template configuration.\"}").build();
-    }
-
-    /**
-     * Service used to get the fims template generator configurations for a given project
-     *
-     * @param projectId
-     * @return
-     */
-    @GET
-    @Path("/{projectId}/getTemplateConfigs/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTemplateConfigs(@PathParam("projectId") Integer projectId) {
-        ProjectMinter p = new ProjectMinter();
-        JSONArray configs = p.getTemplateConfigs(projectId);
-
-        return Response.ok(configs.toJSONString()).build();
-    }
-
-    /**
-     * Service used to get a specific fims template generator configuration
-     *
-     * @param configName
-     * @param projectId
-     * @return
-     */
-    @GET
-    @Path("/{projectId}/getTemplateConfig/{configName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getConfig(@PathParam("configName") String configName,
-                              @PathParam("projectId") Integer projectId) {
-        ProjectMinter p = new ProjectMinter();
-        JSONObject response = p.getTemplateConfig(configName, projectId);
-
-        return Response.ok(response.toJSONString()).build();
-    }
-
-    /**
      * Service used to delete a specific fims template generator configuration
      *
      * @param configName
@@ -291,6 +221,17 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         }
 
         return Response.ok("{\"success\": \"Successfully removed template configuration.\"}").build();
+    }
+
+
+    /**
+     *
+     * @responseType biocode.fims.rest.services.rest.subResources.ExpeditionsResource
+     * @resourceTag Expeditions
+     */
+    @Path("{projectId}/templates")
+    public Resource getTemplatesResource() {
+        return Resource.from(TemplatesResource.class);
     }
 
     /**

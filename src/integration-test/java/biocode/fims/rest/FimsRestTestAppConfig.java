@@ -96,6 +96,7 @@ public class FimsRestTestAppConfig {
                 ProjectConfigurationResource.class,
                 ProjectConfigurationListResource.class,
                 ExpeditionsResource.class,
+                TemplatesResource.class,
                 UsersResource.class
         )));
 

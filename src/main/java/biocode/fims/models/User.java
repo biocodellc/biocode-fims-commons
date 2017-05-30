@@ -42,7 +42,7 @@ public class User {
     private Set<Expedition> expeditions;
     private Set<Project> projects;
     private List<Project> projectsMemberOf;
-    private Set<TemplateConfig> templateConfigs;
+    private Set<ProjectTemplate> projectTemplates;
 
     public static class UserBuilder {
         // Required
@@ -279,12 +279,12 @@ public class User {
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
-    public Set<TemplateConfig> getTemplateConfigs() {
-        return templateConfigs;
+    public Set<ProjectTemplate> getProjectTemplates() {
+        return projectTemplates;
     }
 
-    private void setTemplateConfigs(Set<TemplateConfig> templateConfigs) {
-        this.templateConfigs = templateConfigs;
+    private void setProjectTemplates(Set<ProjectTemplate> projectTemplates) {
+        this.projectTemplates = projectTemplates;
     }
 
     @Override

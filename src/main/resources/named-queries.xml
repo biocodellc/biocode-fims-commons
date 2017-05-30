@@ -8,7 +8,7 @@
         <query>SELECT t.*, c.*, u.*
             from oauth_tokens t
             inner join users u on t.user_id = u.id
-            inner join oauth_clients c on c.client_id = t.id
+            inner join oauth_clients c on t.client_id = c.id
             where t.refresh_token = :refreshToken and EXTRACT( EPOCH FROM age(now(), t.created) ) &lt;= :expirationInterval
         </query>
     </named-native-query>

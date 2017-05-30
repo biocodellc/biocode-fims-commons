@@ -79,6 +79,16 @@ public class ProjectService {
         return projectRepository.getProjectByProjectId(projectId, "Project.withExpeditions");
     }
 
+    public Project getProjectWithTemplates(int projectId, String projectUrl) {
+        Project project = projectRepository.getProjectByProjectId(projectId, "Project.withTemplates");
+
+        if (project != null && project.getProjectUrl().equals(projectUrl)) {
+            return project;
+        }
+
+        return null;
+    }
+
     /**
      * checks if a user is the admin of a specific project
      *

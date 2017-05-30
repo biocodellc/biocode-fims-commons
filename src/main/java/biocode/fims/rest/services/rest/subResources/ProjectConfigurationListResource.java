@@ -19,7 +19,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectConfigurationListResource extends FimsService {
 
-
     private final ProjectService projectService;
 
     @Autowired

@@ -27,7 +27,9 @@ import java.util.Set;
                 attributeNodes = @NamedAttributeNode("expeditions")),
         @NamedEntityGraph(name = "Project.withExpeditionsAndMembers",
                 attributeNodes = {@NamedAttributeNode("projectMembers"), @NamedAttributeNode("expeditions")}
-        )
+        ),
+        @NamedEntityGraph(name = "Project.withTemplates",
+                attributeNodes = @NamedAttributeNode("templates"))
 })
 public class Project {
 
@@ -44,7 +46,7 @@ public class Project {
     private List<Expedition> expeditions;
     private User user;
     private List<User> projectMembers;
-    private Set<TemplateConfig> templateConfigs;
+    private Set<ProjectTemplate> templates;
 
     public static class ProjectBuilder {
 
@@ -273,12 +275,12 @@ public class Project {
     @OneToMany(mappedBy = "project",
             fetch = FetchType.LAZY
     )
-    public Set<TemplateConfig> getTemplateConfigs() {
-        return templateConfigs;
+    public Set<ProjectTemplate> getTemplates() {
+        return templates;
     }
 
-    public void setTemplateConfigs(Set<TemplateConfig> templateConfigs) {
-        this.templateConfigs = templateConfigs;
+    public void setTemplates(Set<ProjectTemplate> templates) {
+        this.templates = templates;
     }
 
     // TODO move this to projectService?
