@@ -161,7 +161,7 @@ public class ExpeditionsResource extends FimsService {
     @Path("/{expeditionCode}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Expedition updateExpeditions(@PathParam("projectId") Integer projectId,
+    public Expedition updateExpedition(@PathParam("projectId") Integer projectId,
                                         @PathParam("expeditionCode") String expeditionCode,
                                         Expedition expedition) {
         Expedition existingExpedition = expeditionService.getExpedition(expeditionCode, projectId);

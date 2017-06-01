@@ -1,9 +1,11 @@
 package biocode.fims.models;
 
+import biocode.fims.authorizers.ExpeditionVisibility;
 import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.*;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.net.URI;
@@ -25,6 +27,7 @@ public class Expedition {
     private Date created;
     private Date modified;
     private boolean isPublic;
+    private ExpeditionVisibility visibility;
     private URI identifier;
     private List<EntityIdentifier> entityIdentifiers;
     private Set<Bcid> bcids;
@@ -40,6 +43,7 @@ public class Expedition {
         // Optional
         private String expeditionTitle;
         private boolean isPublic = true;
+        private ExpeditionVisibility visibility = ExpeditionVisibility.EXPEDITION;
 
         public ExpeditionBuilder(String expeditionCode) {
             this.expeditionCode = expeditionCode;
@@ -55,6 +59,11 @@ public class Expedition {
             return this;
         }
 
+        public ExpeditionBuilder visibility(ExpeditionVisibility visibility) {
+            this.visibility = visibility;
+            return this;
+        }
+
         public Expedition build() {
             if (expeditionTitle == null)
                 expeditionTitle = expeditionCode;
@@ -67,6 +76,7 @@ public class Expedition {
         expeditionCode = builder.expeditionCode;
         expeditionTitle = builder.expeditionTitle;
         isPublic = builder.isPublic;
+        visibility = builder.visibility;
     }
 
     // needed for hibernate
@@ -135,6 +145,18 @@ public class Expedition {
 
     public void setPublic(boolean aPublic) {
         isPublic = aPublic;
+    }
+
+    @JsonView(Views.Summary.class)
+    @Column(name="visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    public ExpeditionVisibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(ExpeditionVisibility visibility) {
+        Assert.notNull(visibility);
+        this.visibility = visibility;
     }
 
     @JsonView(Views.Summary.class)

@@ -128,6 +128,7 @@ CREATE TABLE expeditions (
   expedition_code TEXT NOT NULL,
   expedition_title TEXT,
   identifier TEXT,
+  visibility TEXT NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users (id),
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

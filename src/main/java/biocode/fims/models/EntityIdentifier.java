@@ -1,5 +1,6 @@
 package biocode.fims.models;
 
+import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
@@ -40,16 +41,17 @@ public class EntityIdentifier {
         return conceptAlias;
     }
 
-    private void setConceptAlias(String conceptAlias) {
+    void setConceptAlias(String conceptAlias) {
         this.conceptAlias = conceptAlias;
     }
 
+    @Convert(converter = UriPersistenceConverter.class)
     @Column(name = "identifier", updatable = false, nullable = false)
     public URI getIdentifier() {
         return identifier;
     }
 
-    private void setIdentifier(URI identifier) {
+    void setIdentifier(URI identifier) {
         this.identifier = identifier;
     }
 }
