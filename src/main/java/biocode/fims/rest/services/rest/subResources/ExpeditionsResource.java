@@ -185,7 +185,7 @@ public class ExpeditionsResource extends FimsService {
     /**
      * method to transfer the updated {@link Expedition} object to an existing {@link Expedition}. This
      * allows us to control which properties can be updated.
-     * Currently allows updating of the following properties : expeditionTitle and isPublic
+     * Currently allows updating of the following properties : expeditionTitle, visibility, and isPublic
      *
      * @param existingExpedition
      * @param updatedExpedition
@@ -193,12 +193,11 @@ public class ExpeditionsResource extends FimsService {
     private void updateExistingExpedition(Expedition existingExpedition, Expedition updatedExpedition) {
         existingExpedition.setExpeditionTitle(updatedExpedition.getExpeditionTitle());
         existingExpedition.setPublic(updatedExpedition.isPublic());
+        existingExpedition.setVisibility(updatedExpedition.getVisibility());
     }
 
     /**
      * delete an expedition
-     * <p>
-     * Project Admin access only
      *
      * @param projectId      The projectId the expedition belongs to
      * @param expeditionCode The expeditionCode of the expedition to delete
@@ -207,14 +206,19 @@ public class ExpeditionsResource extends FimsService {
     @UserEntityGraph("User.withProjects")
     @DELETE
     @Authenticated
-    @Admin
     @Path("/{expeditionCode}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public AcknowledgedResponse deleteExpedition(@PathParam("projectId") Integer projectId,
                                                  @PathParam("expeditionCode") String expeditionCode) {
-        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
-            throw new ForbiddenRequestException("You are not an admin for this project");
+        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+
+        if (expedition == null || !expedition.getProject().getProjectUrl().equals(appRoot)) {
+            throw new FimsRuntimeException("expedition not found", 404);
+        }
+
+        if (!expedition.getUser().equals(userContext.getUser()) && !projectService.isProjectAdmin(userContext.getUser(), projectId)) {
+            throw new ForbiddenRequestException("You do not own this expedition, or you are not an admin for this project");
         }
 
         expeditionService.delete(expeditionCode, projectId);
