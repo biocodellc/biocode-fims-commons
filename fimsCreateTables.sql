@@ -127,6 +127,7 @@ CREATE TABLE expeditions (
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   expedition_code TEXT NOT NULL,
   expedition_title TEXT,
+  identifier TEXT,
   user_id INTEGER NOT NULL REFERENCES users (id),
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -151,6 +152,18 @@ CREATE TABLE expedition_bcids (
 
 CREATE INDEX expedition_bcids_expedition_id_idx ON expedition_bcids (expedition_id);
 CREATE INDEX expedition_bcids_bcid_id_idx ON expedition_bcids (bcid_id);
+
+DROP TABLE IF EXISTS entity_identifiers;
+
+CREATE TABLE entity_identifiers (
+  id SERIAL,
+  expedition_id INTEGER NOT NULL REFERENCES expeditions (id) ON DELETE CASCADE,
+  concept_alias TEXT NOT NULL,
+  identifier TEXT NOT NULL,
+  CONSTRAINT entitiy_identifiers_expediton_id_concept_alias_uniq UNIQUE (expedition_id, concept_alias)
+);
+
+CREATE INDEX entity_identifiers_expedition_id ON entity_identifiers (expedition_id);
 
 DROP TABLE IF EXISTS oauth_clients;
 

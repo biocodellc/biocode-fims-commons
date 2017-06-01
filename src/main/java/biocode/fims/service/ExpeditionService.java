@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -70,8 +73,11 @@ public class ExpeditionService {
         boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
 
         Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
+        expedition.setIdentifier(bcid.getIdentifier());
         expedition.setExpeditionBcid(bcid);
-        createEntityBcids(project.getProjectConfig().getEntities(), expedition.getExpeditionId(), userId, ezidRequest);
+        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().getEntities(), expedition.getExpeditionId(), userId, ezidRequest);
+        expedition.setEntityIdentifiers(entityIdentifiers);
+        expeditionRepository.save(expedition);
     }
 
     public void update(Expedition expedition) {
@@ -216,14 +222,21 @@ public class ExpeditionService {
         return expditionBcid;
     }
 
-    private void createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest) {
+    private List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest) {
+        List<EntityIdentifier> identifiers = new ArrayList<>();
+
         for (Entity entity : entities) {
             Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
             bcidService.create(bcid, userId);
             bcidService.attachBcidToExpedition(bcid, expeditionId);
 
             entity.setIdentifier(bcid.getIdentifier());
+            identifiers.add(
+                    new EntityIdentifier(entity.getConceptAlias(), bcid.getIdentifier())
+            );
         }
+
+        return identifiers;
     }
 
     /**

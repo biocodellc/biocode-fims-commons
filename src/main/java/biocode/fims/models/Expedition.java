@@ -1,10 +1,12 @@
 package biocode.fims.models;
 
+import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,8 @@ public class Expedition {
     private Date created;
     private Date modified;
     private boolean isPublic;
+    private URI identifier;
+    private List<EntityIdentifier> entityIdentifiers;
     private Set<Bcid> bcids;
     private Project project;
     private User user;
@@ -133,6 +137,34 @@ public class Expedition {
         isPublic = aPublic;
     }
 
+    @JsonView(Views.Summary.class)
+    @Convert(converter = UriPersistenceConverter.class)
+    @Column(name = "identifier")
+    public URI getIdentifier() {
+        return identifier;
+    }
+
+    @JsonIgnore
+    public void setIdentifier(URI identifier) {
+        if (this.identifier == null) {
+            this.identifier = identifier;
+        }
+    }
+
+    @JsonView(Views.Detailed.class)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name="expedition_id", nullable = false)
+    public List<EntityIdentifier> getEntityIdentifiers() {
+        return entityIdentifiers;
+    }
+
+    @JsonIgnore
+    public void setEntityIdentifiers(List<EntityIdentifier> entityIdentifiers) {
+        if (this.entityIdentifiers == null) {
+            this.entityIdentifiers = entityIdentifiers;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -186,7 +218,7 @@ public class Expedition {
     @JoinColumn(name = "project_id",
             referencedColumnName = "id",
             nullable = false, updatable = false,
-            foreignKey = @ForeignKey(name = "FK_expedtions_project_id")
+            foreignKey = @ForeignKey(name = "FK_expeditions_project_id")
     )
     public Project getProject() {
         return project;

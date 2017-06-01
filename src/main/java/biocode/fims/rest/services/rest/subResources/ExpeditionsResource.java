@@ -63,6 +63,10 @@ public class ExpeditionsResource extends FimsService {
 
         if (admin.isPresent()) {
 
+            if (userContext.getUser() == null) {
+                throw new UnauthorizedRequestException("You must be logged in to view all the projects expeditions");
+            }
+
             if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
                 throw new ForbiddenRequestException("You are not an admin for this project");
             }
@@ -85,6 +89,10 @@ public class ExpeditionsResource extends FimsService {
     }
 
     private List<Expedition> getUsersExpeditions(List<Expedition> expeditions, boolean includePrivate) {
+        if (userContext.getUser() == null) {
+            throw new UnauthorizedRequestException("You must be logged in to view your expeditions");
+        }
+
         return expeditions
                 .stream()
                 .filter(e -> e.getUser().equals(userContext.getUser()) && (e.isPublic() || includePrivate))
