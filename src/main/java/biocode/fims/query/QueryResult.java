@@ -4,10 +4,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author rjewing
@@ -36,7 +33,7 @@ public class QueryResult {
         List<Map<String, String>> transformedRecords = new ArrayList<>();
 
         for (Record record : records) {
-            Map<String, String> properties = new HashMap<>();
+            Map<String, String> properties = new LinkedHashMap<>();
 
             if (!includeEmpty) {
                 for (Map.Entry<String, String> e : record.properties().entrySet()) {
