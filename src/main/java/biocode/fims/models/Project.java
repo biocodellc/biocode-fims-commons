@@ -5,6 +5,8 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -17,6 +19,7 @@ import java.util.Set;
 /**
  * Project Entity object
  */
+@JsonIgnoreProperties({ "config" })
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "projects")

@@ -68,7 +68,7 @@ public class ProjectsResource extends FimsService {
      */
     @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
-    @POST
+    @PUT
     @Authenticated
     @Admin
     @Path("/{projectId}/")
@@ -95,12 +95,13 @@ public class ProjectsResource extends FimsService {
     /**
      * method to transfer the updated {@link Project} object to an existing {@link Project}. This
      * allows us to control which properties can be updated.
-     * Currently allows updating of the following properties : projectAbstract, projectTitle, isPublic, and validationXml
+     * Currently allows updating of the following properties : description, projectTitle, isPublic, and validationXml
      * @param existingProject
      * @param updatedProject
      */
     private void updateExistingProject(Project existingProject, Project updatedProject) {
         existingProject.setProjectTitle(updatedProject.getProjectTitle());
+        existingProject.setDescription(updatedProject.getDescription());
         existingProject.setValidationXml(updatedProject.getValidationXml());
         existingProject.setPublic(updatedProject.isPublic());
     }

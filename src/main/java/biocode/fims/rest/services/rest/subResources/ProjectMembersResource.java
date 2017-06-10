@@ -44,7 +44,7 @@ public class ProjectMembersResource extends FimsService {
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
     @UserEntityGraph("User.withProjects")
-    @JsonView(Views.Summary.class)
+    @JsonView(Views.Detailed.class)
     @GET
     @Authenticated
     public List<User> getMembers(@PathParam("projectId") Integer projectId) {
