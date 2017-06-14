@@ -22,6 +22,111 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+
+CREATE OR REPLACE FUNCTION get_fims_user() RETURNS text AS $$
+  SELECT current_setting('fims.username', TRUE);
+$$ LANGUAGE sql;
+
+COMMENT ON FUNCTION get_fims_user() IS $body$
+Fetches the value of current_setting('fims.username', true).
+This value can be set by calling SET LOCAL "fims.username" = 'user';
+This is useful to retrieve the logged in user from the fims applicaton in a postgresql trigger.
+$body$;
+
+CREATE OR REPLACE FUNCTION jsonb_diff_val(new JSONB, old JSONB)
+  RETURNS JSONB AS $$
+DECLARE
+  result JSONB;
+  object_result JSONB;
+  v RECORD;
+BEGIN
+  IF jsonb_typeof(new) = 'null' or new = '{}'::jsonb THEN
+    RAISE INFO 'Returning old';
+    RETURN old;
+  END IF;
+
+  result = new;
+  FOR v IN SELECT * FROM jsonb_each(old) LOOP
+    IF jsonb_typeof(new->v.key) = 'object' AND jsonb_typeof(old->v.key) = 'object'THEN
+      object_result = jsonb_diff_val(new->v.key, old->v.key);
+      IF object_result = '{}'::jsonb THEN
+        result = result - v.key; --if empty remove
+      ELSE
+        result = result || jsonb_build_object(v.key,object_result);
+      END IF;
+    ELSIF new->v.key = old->v.key THEN
+      result = result - v.key;
+    ELSIF result ? v.key THEN CONTINUE;
+    ELSE
+      result = result || jsonb_build_object(v.key, null);
+    END IF;
+  END LOOP;
+
+  RETURN result;
+
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION jsonb_diff_val(jsonb, jsonb) IS $body$
+Generates a jsonb diff object where the 1st arg differs from the second. If the 1st arg does not include a
+key in the 2nd arg, then the diff will contain '{key}: "null"'
+$body$;
+
+CREATE OR REPLACE FUNCTION project_config_history() RETURNS TRIGGER AS $body$
+DECLARE
+  audit_table_name text;
+  audit_session_user text;
+  config jsonb;
+  changed_fields jsonb;
+BEGIN
+  IF TG_WHEN <> 'AFTER' THEN
+    RAISE EXCEPTION 'project_config_history() may only run as an AFTER trigger';
+  END IF;
+
+  IF TG_LEVEL = 'STATEMENT' THEN
+    RAISE EXCEPTION 'project_config_history() does not support being a STATEMENT trigger';
+  END IF;
+
+  audit_table_name = 'project_config_history';
+
+  audit_session_user = get_fims_user();
+  IF NULLIF(audit_session_user, '') IS NULL THEN
+    audit_session_user = 'postgres_role: ' || session_user::text;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
+    config = OLD.config;
+    changed_fields =  jsonb_diff_val(to_jsonb(NEW.config), config);
+    IF changed_fields = '{}'::jsonb THEN
+      -- All changed fields are ignored. Skip this update.
+      RETURN NULL;
+    END IF;
+  ELSIF TG_OP = 'DELETE' THEN
+    config = OLD.config;
+  ELSIF TG_OP = 'INSERT' THEN
+    config = NEW.config;
+  ELSE
+    RAISE EXCEPTION '[project_config_history] - Trigger func added as trigger for unhandled case: %, %',TG_OP, TG_LEVEL;
+    RETURN NULL;
+  END IF;
+
+  EXECUTE 'INSERT INTO ' || audit_table_name || ' (user_name, ts, action, config, changed_fields, project_id) ' ||
+   'VALUES (' || quote_literal(audit_session_user) || ', CURRENT_TIMESTAMP, ' || quote_literal(substring(TG_OP,1,1)) ||
+   ', ' || quote_literal(config) || ', ' || quote_nullable(changed_fields) || quote_literal(NEW.id) || ')';
+
+  RETURN NULL;
+END;
+$body$
+LANGUAGE plpgsql
+SECURITY DEFINER;
+
+COMMENT ON FUNCTION project_config_history() IS $body$
+Track changes to the projects.config column.
+
+This will create an entry in the project_config_history for each config that is updated, inserted, or deleted.
+This is useful for creating a history of all changes to project configs.
+$body$;
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -108,6 +213,26 @@ CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW E
 COMMENT ON COLUMN projects.project_code is 'The short name for this project';
 COMMENT ON COLUMN projects.project_url is 'Where this project is located on the web';
 COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
+
+DROP TABLE IF EXISTS project_config_history;
+CREATE TABLE project_config_history
+  (
+    id bigserial primary key,
+    user_name text,
+    ts TIMESTAMP WITH TIME ZONE NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')),
+    config jsonb,
+    changed_fields jsonb,
+    project_id INTEGER NOT NULL REFERENCES projects (id)
+  );
+
+CREATE TRIGGER config_history AFTER INSERT OR DELETE OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
+
+COMMENT ON COLUMN project_config_history.user_name is 'user who made the change';
+COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';
+COMMENT ON COLUMN project_config_history.action is 'INSERT, DELETE, UPDATE, or TRUNCATE';
+COMMENT ON COLUMN project_config_history.config is 'For INSERT this is the new config values. For DELETE and UPDATE it is the old config values.';
+COMMENT ON COLUMN project_config_history.changed_fields is 'Null except UPDATE events. This is the result of jsonb_diff_val(NEW data, OLD data)';
 
 DROP TABLE IF EXISTS user_projects;
 
@@ -278,55 +403,6 @@ begin
   return new;
 end
 $function$;
-
-CREATE OR REPLACE FUNCTION get_fims_user() RETURNS text AS $$
-  SELECT current_setting('fims.username', TRUE);
-$$ LANGUAGE sql;
-
-COMMENT ON FUNCTION get_fims_user() IS $body$
-Fetches the value of current_setting('fims.username', true).
-This value can be set by calling SET LOCAL "fims.username" = 'user';
-This is useful to retrieve the logged in user from the fims applicaton in a postgresql trigger.
-$body$;
-
-CREATE OR REPLACE FUNCTION jsonb_diff_val(new JSONB, old JSONB)
-  RETURNS JSONB AS $$
-DECLARE
-  result JSONB;
-  object_result JSONB;
-  v RECORD;
-BEGIN
-  IF jsonb_typeof(new) = 'null' or new = '{}'::jsonb THEN
-    RAISE INFO 'Returning old';
-    RETURN old;
-  END IF;
-
-  result = new;
-  FOR v IN SELECT * FROM jsonb_each(old) LOOP
-    IF jsonb_typeof(new->v.key) = 'object' AND jsonb_typeof(old->v.key) = 'object'THEN
-      object_result = jsonb_diff_val(new->v.key, old->v.key);
-      IF object_result = '{}'::jsonb THEN
-        result = result - v.key; --if empty remove
-      ELSE
-        result = result || jsonb_build_object(v.key,object_result);
-      END IF;
-    ELSIF new->v.key = old->v.key THEN
-      result = result - v.key;
-    ELSIF result ? v.key THEN CONTINUE;
-    ELSE
-      result = result || jsonb_build_object(v.key, null);
-    END IF;
-  END LOOP;
-
-  RETURN result;
-
-END;
-$$ LANGUAGE plpgsql;
-
-COMMENT ON FUNCTION jsonb_diff_val(jsonb, jsonb) IS $body$
-Generates a jsonb diff object where the 1st arg differs from the second. If the 1st arg does not include a
-key in the 2nd arg, then the diff will contain '{key}: "null"'
-$body$;
 
 CREATE OR REPLACE FUNCTION entity_history() RETURNS TRIGGER AS $body$
 DECLARE
