@@ -124,7 +124,7 @@ public class DatasetBuilder {
             Entity e = r.entity();
 
             if (e.isChildEntity()) {
-                parentEntities.add(config.getEntity(e.getParentEntity()));
+                parentEntities.add(config.entity(e.getParentEntity()));
             }
         }
 
@@ -169,7 +169,7 @@ public class DatasetBuilder {
             }
         }
 
-        return new RecordSet(config.getEntity(conceptAlias));
+        return new RecordSet(config.entity(conceptAlias));
     }
 
     private static class DataSource {

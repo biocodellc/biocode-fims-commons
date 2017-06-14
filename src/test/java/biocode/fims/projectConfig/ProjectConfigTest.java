@@ -1,11 +1,15 @@
 package biocode.fims.projectConfig;
 
+import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -24,7 +28,7 @@ public class ProjectConfigTest {
     @Test(expected = FimsRuntimeException.class)
     public void should_throw_exception_for_non_existing_entity_when_fetching_related_entities() {
         config.addEntity(parent());
-        config.getEntitiesInRelation(parent(), new Entity("notRelated"));
+        config.entitiesInRelation(parent(), new Entity("notRelated"));
     }
 
     @Test
@@ -75,7 +79,7 @@ public class ProjectConfigTest {
         config.addEntity(parent());
         config.addEntity(child());
 
-        LinkedList<Entity> result = config.getEntitiesInRelation(parent(), child());
+        LinkedList<Entity> result = config.entitiesInRelation(parent(), child());
 
         LinkedList<Entity> expected = new LinkedList<>();
         expected.add(parent());
@@ -90,7 +94,7 @@ public class ProjectConfigTest {
         Entity unrelated = new Entity("unrelated");
         config.addEntity(unrelated);
 
-        LinkedList<Entity> result = config.getEntitiesInRelation(parent(), unrelated);
+        LinkedList<Entity> result = config.entitiesInRelation(parent(), unrelated);
 
         LinkedList<Entity> expected = new LinkedList<>();
 
@@ -103,7 +107,7 @@ public class ProjectConfigTest {
         config.addEntity(parent());
         config.addEntity(child());
 
-        LinkedList<Entity> result = config.getEntitiesInRelation(parent(), grandChild());
+        LinkedList<Entity> result = config.entitiesInRelation(parent(), grandChild());
 
         LinkedList<Entity> expected = new LinkedList<>();
         expected.add(parent());
@@ -111,6 +115,45 @@ public class ProjectConfigTest {
         expected.add(grandChild());
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_generate_normalized_attribute_uris() {
+        Entity entity = parent();
+        entity.addAttribute(new Attribute("column", "parent_column"));
+
+        Attribute a1 = new Attribute();
+        a1.setColumn("Space Column");
+        entity.addAttribute(a1);
+
+        Attribute a2 = new Attribute();
+        a2.setColumn("@Column");
+        entity.addAttribute(a2);
+
+        Attribute a3 = new Attribute();
+        a3.setColumn("Column");
+        entity.addAttribute(a3);
+
+        config.addEntity(entity);
+        config.generateUris();
+
+        Entity e = config.entities().get(0);
+
+        assertEquals("parent_space_column", e.getAttribute("Space Column").getUri());
+        assertEquals("parent_column1", e.getAttribute("@Column").getUri());
+        assertEquals("parent_column2", e.getAttribute("Column").getUri());
+    }
+
+    @Test
+    public void should_return_false_if_not_valid() {
+        Entity entity = parent();
+        entity.addAttribute(new Attribute("column", null));
+
+        config.addEntity(entity);
+
+        assertFalse(config.isValid());
+
+        assertEquals(Collections.singletonList("Invalid Attribute uri \"null\" found in entity \"parent\". Uri must only contain alpha-numeric or _:/ characters."), config.errors());
     }
 
     private Entity parent() {

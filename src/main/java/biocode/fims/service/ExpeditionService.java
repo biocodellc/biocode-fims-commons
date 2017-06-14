@@ -23,9 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +73,7 @@ public class ExpeditionService {
         Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
         expedition.setIdentifier(bcid.getIdentifier());
         expedition.setExpeditionBcid(bcid);
-        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().getEntities(), expedition.getExpeditionId(), userId, ezidRequest);
+        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), userId, ezidRequest, false);
         expedition.setEntityIdentifiers(entityIdentifiers);
         expeditionRepository.save(expedition);
     }
@@ -222,18 +220,35 @@ public class ExpeditionService {
         return expditionBcid;
     }
 
-    private List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest) {
+    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest, boolean checkForExistingBcids) {
         List<EntityIdentifier> identifiers = new ArrayList<>();
 
-        for (Entity entity : entities) {
-            Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
-            bcidService.create(bcid, userId);
-            bcidService.attachBcidToExpedition(bcid, expeditionId);
+        List<Entity> entitiesToSkip = new ArrayList<>();
+        // temporary check to ease postgres migration
+        if (checkForExistingBcids) {
+            List<Bcid> entityBcids = bcidService.getEntityBcids(expeditionId);
 
-            entity.setIdentifier(bcid.getIdentifier());
-            identifiers.add(
-                    new EntityIdentifier(entity.getConceptAlias(), bcid.getIdentifier())
-            );
+
+            for (Entity e: entities) {
+                if (entityBcids.stream()
+                        .filter(b -> b.getTitle().equals(e.getConceptAlias()))
+                        .count() > 0) {
+                    entitiesToSkip.add(e);
+                }
+            }
+        }
+
+        for (Entity entity : entities) {
+            if (!entitiesToSkip.contains(entity)) {
+                Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
+                bcidService.create(bcid, userId);
+                bcidService.attachBcidToExpedition(bcid, expeditionId);
+
+                entity.setIdentifier(bcid.getIdentifier());
+                identifiers.add(
+                        new EntityIdentifier(entity.getConceptAlias(), bcid.getIdentifier())
+                );
+            }
         }
 
         return identifiers;

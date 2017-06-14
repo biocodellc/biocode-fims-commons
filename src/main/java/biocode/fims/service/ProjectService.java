@@ -1,7 +1,12 @@
 package biocode.fims.service;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.projectConfig.ProjectConfigValidator;
+import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,21 +31,34 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
+    private final ProjectConfigRepository projectConfigRepository;
 
     @Autowired
-    public ProjectService(ProjectRepository projectRepository, UserService userService) {
+    public ProjectService(ProjectRepository projectRepository, UserService userService, ProjectConfigRepository projectConfigRepository) {
         this.projectRepository = projectRepository;
         this.userService = userService;
+        this.projectConfigRepository = projectConfigRepository;
     }
 
     public void create(Project project, int userId) {
         User user = entityManager.getReference(User.class, userId);
         project.setUser(user);
+
+        // save an empty config first as we can't validate the config until the projectId is generated
+        ProjectConfig config = project.getProjectConfig();
+        project.setProjectConfig(new ProjectConfig());
+
+        // we need to save here so we can get the projectId
         projectRepository.save(project);
 
+        project.setProjectConfig(config);
+
+        projectConfigRepository.createProjectSchema(project.getProjectId());
+        projectConfigRepository.save(config, project.getProjectId());
     }
 
     public void update(Project project) {
+        projectConfigRepository.save(project.getProjectConfig(), project.getProjectId());
         projectRepository.save(project);
     }
 

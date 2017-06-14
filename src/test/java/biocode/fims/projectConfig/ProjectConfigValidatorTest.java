@@ -39,12 +39,12 @@ public class ProjectConfigValidatorTest {
     public void invalid_if_entity_non_unique_concept_alias() {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(entity1());
-        config.addEntity(new Entity("resource1"));
+        config.addEntity(new Entity("Resource1"));
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Duplicate entity conceptAlias detected \"resource1\""), validator.errors());
+        assertEquals(Arrays.asList("Duplicate entity conceptAlias detected \"Resource1\". conceptAliases are not case sensitive."), validator.errors());
     }
 
     @Test
@@ -177,6 +177,41 @@ public class ProjectConfigValidatorTest {
 
         assertFalse(validator.isValid());
         assertEquals(Arrays.asList("Duplicate Attribute uri \"urn:column1\" found in entity \"resource1\""), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_entity_attributes_have_duplicate_column() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.addAttribute(new Attribute("column1", "urn:/column_1"));
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Duplicate Attribute column \"column1\" found in entity \"resource1\""), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_entity_attribute_uri_invalid() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.addAttribute(new Attribute("column6", null));
+        e.addAttribute(new Attribute("column7", "some uri"));
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Invalid Attribute uri \"null\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters.",
+                "Invalid Attribute uri \"some uri\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters."
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+
     }
 
     private Entity entity1() {

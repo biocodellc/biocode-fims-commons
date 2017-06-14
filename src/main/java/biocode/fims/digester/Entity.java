@@ -218,6 +218,45 @@ public class Entity {
         return null;
     }
 
+    public void generateUris() {
+        java.util.List<String> existingUris = getExistingUris();
+
+        for (Attribute a: attributes) {
+            if (StringUtils.isBlank(a.getUri())) {
+
+                String normalizedCol = normalizeColumn(a.getColumn());
+                String uri = conceptAlias + "_" + normalizedCol;
+
+                int i = 1;
+                while (existingUris.contains(uri)) {
+                    if (!existingUris.contains(uri + i)) {
+                        uri = uri + i;
+                        existingUris.add(uri);
+                        break;
+                    } else {
+                        i++;
+                    }
+                }
+
+                a.setUri(uri);
+            }
+        }
+    }
+
+    private java.util.List<String> getExistingUris() {
+        java.util.List<String> uris = new ArrayList<>();
+
+        for (Attribute a: attributes) {
+            uris.add(a.getUri());
+        }
+
+        return uris;
+    }
+
+    private String normalizeColumn(String column) {
+        return column.replaceAll(" ", "_").replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

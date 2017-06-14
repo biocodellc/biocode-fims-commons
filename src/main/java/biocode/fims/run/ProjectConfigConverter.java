@@ -4,9 +4,12 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.digester.Rule;
 import biocode.fims.fimsExceptions.FimsAbstractException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.ProjectConfigValidator;
+import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.rules.*;
 import org.slf4j.Logger;
@@ -27,10 +30,12 @@ public class ProjectConfigConverter {
 
     private ProjectService projectService;
     private final String projectUrl;
+    private final ProjectConfigRepository configRepository;
 
-    public ProjectConfigConverter(ProjectService projectService, String projectUrl) {
+    public ProjectConfigConverter(ProjectService projectService, String projectUrl, ProjectConfigRepository configRepository) {
         this.projectService = projectService;
         this.projectUrl = projectUrl;
+        this.configRepository = configRepository;
     }
 
     public void storeConfigs() throws IOException {
@@ -56,7 +61,7 @@ public class ProjectConfigConverter {
 
                 for (Worksheet w : validation.getWorksheets()) {
 
-                    java.util.List<Entity> entitiesForSheet = config.getEntitiesForSheet(w.getSheetname());
+                    java.util.List<Entity> entitiesForSheet = config.entitiesForSheet(w.getSheetname());
 
                     for (Rule r : w.getRules()) {
 
@@ -193,16 +198,20 @@ public class ProjectConfigConverter {
 
                 }
 
-
-                ProjectConfigValidator validator = new ProjectConfigValidator(config);
-                if (!validator.isValid()) {
-                    logger.error("\n\nInvalid project config: " + p.getProjectId());
-                    for (String s : validator.errors()) {
-                        logger.error(s);
+//                p.setProjectConfig(config);
+                try {
+                    configRepository.createProjectSchema(p.getProjectId());
+                    configRepository.save(config, p.getProjectId(), true);
+//                    projectService.update(p);
+                } catch (FimsRuntimeException e) {
+                    if (e.getErrorCode().equals(ConfigCode.INVALID)) {
+                        logger.error("\n\nInvalid project config: " + p.getProjectId());
+                        for (String s : config.errors()) {
+                            logger.error(s);
+                        }
+                    } else {
+                        throw e;
                     }
-                } else {
-                    p.setProjectConfig(config);
-                    projectService.update(p);
                 }
             } catch (FimsAbstractException e) {
                 e.printStackTrace();

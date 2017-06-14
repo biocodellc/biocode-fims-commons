@@ -72,7 +72,7 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         }
     }
 
-    // method to set the relevent information in ErrorInfo
+    // method to set the relevant information in ErrorInfo
     protected ErrorInfo getErrorInfo(Exception e) {
         String usrMessage;
         String developerMessage = null;

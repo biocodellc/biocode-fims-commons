@@ -2,7 +2,7 @@ package biocode.fims.projectConfig;
 
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -21,6 +21,8 @@ public class ProjectConfig {
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
+    private List<String> errors;
+    private boolean validated = false;
 
     public ProjectConfig() {
         this.entities = new LinkedList<>();
@@ -44,12 +46,12 @@ public class ProjectConfig {
     }
 
     public boolean isMultiSheetEntity(String conceptAlias) {
-        Entity entity = getEntity(conceptAlias);
+        Entity entity = entity(conceptAlias);
 
-        return entity.hasWorksheet() && getEntitiesForSheet(entity.getWorksheet()).size() > 1;
+        return entity.hasWorksheet() && entitiesForSheet(entity.getWorksheet()).size() > 1;
     }
 
-    public Entity getEntity(String conceptAlias) {
+    public Entity entity(String conceptAlias) {
         for (Entity entity : entities) {
             if (entity.getConceptAlias().equals(conceptAlias)) {
                 return entity;
@@ -59,7 +61,7 @@ public class ProjectConfig {
         return null;
     }
 
-    public List<Entity> getEntitiesForSheet(String sheetName) {
+    public List<Entity> entitiesForSheet(String sheetName) {
         return entities.stream()
                 .filter(e -> sheetName.equals(e.getWorksheet()))
                 .collect(Collectors.toList());
@@ -67,8 +69,8 @@ public class ProjectConfig {
 
     public boolean areRelatedEntities(String conceptAlias1, String conceptAlias2) {
 
-        Entity entity1 = getEntity(conceptAlias1);
-        Entity entity2 = getEntity(conceptAlias2);
+        Entity entity1 = entity(conceptAlias1);
+        Entity entity2 = entity(conceptAlias2);
 
         if (entity1 == null || entity2 == null) {
             return false;
@@ -86,7 +88,7 @@ public class ProjectConfig {
     private boolean checkEntityRelation(Entity childEntity, Entity elderEntity) {
         Entity parentEntity;
         do {
-            parentEntity = getEntity(childEntity.getParentEntity());
+            parentEntity = entity(childEntity.getParentEntity());
 
             if (parentEntity.getConceptAlias().equals(elderEntity.getConceptAlias())) {
                 return true;
@@ -99,19 +101,21 @@ public class ProjectConfig {
     }
 
 
-    public LinkedList<Entity> getEntities() {
+    public LinkedList<Entity> entities() {
         return entities;
     }
 
     public void addEntity(Entity entity) {
         entities.add(entity);
+        validated = false;
     }
 
     public void addList(biocode.fims.digester.List list) {
         lists.add(list);
+        validated = false;
     }
 
-    public String getExpeditionForwardingAddress() {
+    public String expeditionForwardingAddress() {
         return expeditionForwardingAddress;
     }
 
@@ -119,12 +123,20 @@ public class ProjectConfig {
         this.expeditionForwardingAddress = expeditionForwardingAddress;
     }
 
-    public String getDatasetForwardingAddress() {
+    public String datasetForwardingAddress() {
         return datasetForwardingAddress;
     }
 
     public void setDatasetForwardingAddress(String datasetForwardingAddress) {
         this.datasetForwardingAddress = datasetForwardingAddress;
+    }
+
+    @JsonIgnore
+    public List<String> errors() {
+        if (!validated) {
+            isValid();
+        }
+        return (errors != null) ? errors : new ArrayList<>();
     }
 
     public boolean isEntityChildDescendent(Entity elderEntity, Entity childEntity) {
@@ -142,7 +154,7 @@ public class ProjectConfig {
      * @param childEntity
      * @return
      */
-    public LinkedList<Entity> getEntitiesInRelation(Entity elderEntity, Entity childEntity) {
+    public LinkedList<Entity> entitiesInRelation(Entity elderEntity, Entity childEntity) {
         LinkedList<Entity> relatedEntities = new LinkedList<>();
         boolean found = false;
 
@@ -154,7 +166,7 @@ public class ProjectConfig {
 
         Entity parentEntity;
         do {
-            parentEntity = getEntity(childEntity.getParentEntity());
+            parentEntity = entity(childEntity.getParentEntity());
 
             if (parentEntity == null) {
                 break;
@@ -175,5 +187,46 @@ public class ProjectConfig {
 
         Collections.reverse(relatedEntities);
         return relatedEntities;
+    }
+
+    public void generateUris() {
+        for (Entity e: entities) {
+            e.generateUris();
+        }
+    }
+
+    public boolean isValid() {
+        ProjectConfigValidator validator = new ProjectConfigValidator(this);
+
+        validated = true;
+        if (!validator.isValid()) {
+            this.errors = validator.errors();
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ProjectConfig)) return false;
+
+        ProjectConfig config = (ProjectConfig) o;
+
+        if (!entities.equals(config.entities)) return false;
+        if (!lists.equals(config.lists)) return false;
+        if (expeditionForwardingAddress != null ? !expeditionForwardingAddress.equals(config.expeditionForwardingAddress) : config.expeditionForwardingAddress != null)
+            return false;
+        return datasetForwardingAddress != null ? datasetForwardingAddress.equals(config.datasetForwardingAddress) : config.datasetForwardingAddress == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = entities.hashCode();
+        result = 31 * result + lists.hashCode();
+        result = 31 * result + (expeditionForwardingAddress != null ? expeditionForwardingAddress.hashCode() : 0);
+        result = 31 * result + (datasetForwardingAddress != null ? datasetForwardingAddress.hashCode() : 0);
+        return result;
     }
 }

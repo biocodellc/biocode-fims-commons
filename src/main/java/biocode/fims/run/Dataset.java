@@ -29,7 +29,7 @@ public class Dataset implements Iterable<RecordSet> {
     }
 
     /**
-     * adds RecordSets so that any recordSet w/o a parent in inserted at the beginning of the list. If the
+     * adds RecordSets so that any recordSet w/o a parent is inserted at the beginning of the list. If the
      * recordSet has a parent, it is inserted after the parent, but before any children
      *
      * @param recordSet

@@ -34,36 +34,6 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public void createEntityTable(int projectId, String conceptAlias) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn, List<String> indexedColumnUris) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void createEntityTableIndex(int projectId, String conceptAlias, String column) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void createProjectSchema(int projectId) {
-        throw new NotImplementedException();
-    }
-
-    @Override
     public QueryResult query(Query query) {
         throw new NotImplementedException();
     }

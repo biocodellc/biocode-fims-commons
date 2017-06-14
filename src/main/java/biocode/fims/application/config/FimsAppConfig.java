@@ -10,9 +10,7 @@ import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
-import biocode.fims.repositories.PostgresRecordRepository;
-import biocode.fims.repositories.PostgresRecordRepositoryAdvice;
-import biocode.fims.repositories.RecordRepository;
+import biocode.fims.repositories.*;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
@@ -26,6 +24,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -110,5 +109,14 @@ public class FimsAppConfig {
     @Bean
     public PostgresRecordRepositoryAdvice recordRepositoryAdvice() {
         return new PostgresRecordRepositoryAdvice();
+    }
+
+    @Bean
+    public ProjectConfigRepository projectConfigRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("project-config-repository-sql.yml"));
+
+        return new PostgresProjectConfigRepository((JdbcTemplate) jdbcTemplate.getJdbcOperations(), yaml.getObject(),
+                settingsManager, expeditionService);
     }
 }

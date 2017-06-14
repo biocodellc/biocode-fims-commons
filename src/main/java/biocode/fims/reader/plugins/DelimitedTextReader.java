@@ -5,7 +5,6 @@ import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.reader.DataReader;
 
 import java.io.*;
 import java.util.*;
@@ -71,7 +70,7 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
             throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
         }
 
-        sheetEntities = config.getEntitiesForSheet(sheetName);
+        sheetEntities = config.entitiesForSheet(sheetName);
     }
 
     abstract void configureTokenizer();

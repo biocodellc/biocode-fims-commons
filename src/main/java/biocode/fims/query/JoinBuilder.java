@@ -84,7 +84,7 @@ public class JoinBuilder {
     }
 
     private void buildChildJoin(Entity entity) {
-        LinkedList<Entity> entityHierarchy = config.getEntitiesInRelation(queryEntity, entity);
+        LinkedList<Entity> entityHierarchy = config.entitiesInRelation(queryEntity, entity);
         entityHierarchy.remove(queryEntity);
 
         Entity parentEntity = queryEntity;
@@ -104,7 +104,7 @@ public class JoinBuilder {
     }
 
     private void buildParentJoin(Entity entity) {
-        LinkedList<Entity> entityHierarchy = config.getEntitiesInRelation(entity, queryEntity);
+        LinkedList<Entity> entityHierarchy = config.entitiesInRelation(entity, queryEntity);
         entityHierarchy.remove(queryEntity);
         Collections.reverse(entityHierarchy);
 

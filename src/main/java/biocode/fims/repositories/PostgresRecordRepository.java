@@ -139,57 +139,6 @@ public class PostgresRecordRepository implements RecordRepository {
         return new PageImpl<>(queryResult.get(includeEmptyProperties), pageable, total);
     }
 
-    @Override
-    public void createEntityTable(int projectId, String conceptAlias) {
-        createEntityTable(projectId, conceptAlias, Collections.emptyList());
-    }
-
-    @Override
-    public void createEntityTable(int projectId, String conceptAlias, List<String> indexedColumnUris) {
-        Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
-        tableMap.put("conceptAlias", conceptAlias);
-        tableMap.put("projectId", projectId);
-
-        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createEntityTable"), tableMap), PreparedStatement::execute);
-
-        for (String column : indexedColumnUris) {
-            createEntityTableIndex(projectId, conceptAlias, column);
-        }
-    }
-
-    @Override
-    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn) {
-        createChildEntityTable(projectId, conceptAlias, parentConceptAlias, parentReferenceColumn, Collections.emptyList());
-    }
-
-    @Override
-    public void createChildEntityTable(int projectId, String conceptAlias, String parentConceptAlias, String parentReferenceColumn, List<String> indexedColumnUris) {
-        createEntityTable(projectId, conceptAlias, indexedColumnUris);
-
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
-        paramMap.put("parentTable", PostgresUtils.entityTable(projectId, parentConceptAlias));
-        paramMap.put("parentColumn", parentReferenceColumn);
-        paramMap.put("conceptAlias", conceptAlias);
-        paramMap.put("projectId", projectId);
-
-        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createChildEntityTableForeignKey"), paramMap), PreparedStatement::execute);
-    }
-
-    @Override
-    public void createEntityTableIndex(int projectId, String conceptAlias, String column) {
-        // TODO implement
-    }
-
-    @Override
-    public void createProjectSchema(int projectId) {
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("projectId", projectId);
-
-
-        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createProjectSchema"), paramMap), PreparedStatement::execute);
-    }
-
     private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
         Map<String, Object> tableMap = new HashMap<>();
         tableMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));

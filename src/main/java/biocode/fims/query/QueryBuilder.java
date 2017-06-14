@@ -26,7 +26,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     public QueryBuilder(Project project, String entityConceptAlias) {
         this.project = project;
-        this.queryEntity = project.getProjectConfig().getEntity(entityConceptAlias);
+        this.queryEntity = project.getProjectConfig().entity(entityConceptAlias);
         this.whereBuilder = new StringBuilder();
         this.params = new HashMap<>();
 
@@ -297,7 +297,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private ColumnUri lookupSingleEntityColumnUri(String column) {
-        Entity entity = project.getProjectConfig().getEntities().get(0);
+        Entity entity = project.getProjectConfig().entities().get(0);
 
         if (pathBasedColumn(column)) {
             String[] columnPath = splitColumnPath(column);
@@ -344,7 +344,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             return new ColumnUri(queryEntity, entityAttributeUri);
         }
 
-        for (Entity entity : project.getProjectConfig().getEntities()) {
+        for (Entity entity : project.getProjectConfig().entities()) {
             entityAttributeUri = entity.getAttributeUri(column);
 
             if (!StringUtils.isBlank(entityAttributeUri)) {
@@ -356,7 +356,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private ColumnUri lookupColumnUriFromPath(String conceptAlias, String column) {
-        Entity entity = project.getProjectConfig().getEntity(conceptAlias);
+        Entity entity = project.getProjectConfig().entity(conceptAlias);
 
         if (entity == null) {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, String.join(".", conceptAlias, column));
@@ -366,7 +366,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private boolean multiEntityConfig() {
-        return project.getProjectConfig().getEntities().size() > 1;
+        return project.getProjectConfig().entities().size() > 1;
     }
 
 

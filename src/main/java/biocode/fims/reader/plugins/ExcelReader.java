@@ -80,7 +80,7 @@ public class ExcelReader extends AbstractTabularDataReader {
             currSheet = sheet;
             colNames = null;
             numCols = -1;
-            sheetEntities = config.getEntitiesForSheet(currSheet.getSheetName());
+            sheetEntities = config.entitiesForSheet(currSheet.getSheetName());
 
             if (sheetEntities.size() > 0) {
                 instantiateRecordsForCurrentSheet();
