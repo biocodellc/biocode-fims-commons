@@ -72,7 +72,7 @@ public class QueryResultTest {
     }
 
     private Entity sample() {
-        Entity e = new Entity("sample");
+        Entity e = new Entity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.addAttribute(new Attribute("sampleId", "urn:sampleId"));

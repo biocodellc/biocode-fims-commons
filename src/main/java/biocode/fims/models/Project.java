@@ -6,7 +6,6 @@ import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -164,7 +163,7 @@ public class Project {
 
     @JsonIgnore
     @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb", name = "config")
+    @Column(columnDefinition = "jsonb", name = "config", updatable = false)
     public ProjectConfig getProjectConfig() {
         return projectConfig;
     }

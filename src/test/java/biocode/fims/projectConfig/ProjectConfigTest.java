@@ -28,7 +28,7 @@ public class ProjectConfigTest {
     @Test(expected = FimsRuntimeException.class)
     public void should_throw_exception_for_non_existing_entity_when_fetching_related_entities() {
         config.addEntity(parent());
-        config.entitiesInRelation(parent(), new Entity("notRelated"));
+        config.entitiesInRelation(parent(), new Entity("notRelated", "someURI"));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ProjectConfigTest {
     @Test
     public void should_return_false_for_relationship_check_of_unrelated_entities() {
         config.addEntity(parent());
-        Entity unrelated = new Entity("unrelated");
+        Entity unrelated = new Entity("unrelated", "someURI");
         config.addEntity(unrelated);
 
         assertFalse(config.areRelatedEntities("parent", "unrelated"));
@@ -91,7 +91,7 @@ public class ProjectConfigTest {
     @Test
     public void should_return_empty_list_for_unrelated_entities() {
         config.addEntity(parent());
-        Entity unrelated = new Entity("unrelated");
+        Entity unrelated = new Entity("unrelated", "someURI");
         config.addEntity(unrelated);
 
         LinkedList<Entity> result = config.entitiesInRelation(parent(), unrelated);
@@ -157,17 +157,17 @@ public class ProjectConfigTest {
     }
 
     private Entity parent() {
-        return new Entity("parent");
+        return new Entity("parent", "someURI");
     }
 
     private Entity child() {
-        Entity entity = new Entity("child");
+        Entity entity = new Entity("child", "someURI");
         entity.setParentEntity("parent");
         return entity;
     }
 
     private Entity grandChild() {
-        Entity entity = new Entity("grandChild");
+        Entity entity = new Entity("grandChild", "someURI");
         entity.setParentEntity("child");
         return entity;
     }

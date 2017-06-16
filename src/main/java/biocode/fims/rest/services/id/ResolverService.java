@@ -39,16 +39,16 @@ public class ResolverService extends FimsService {
     private UriInfo uriInfo;
 
     private final BcidService bcidService;
-    private final ProjectService projectService;
+    private final ProjectAuthorizer projectAuthorizer;
     private final SettingsManager settingsManager;
     private final Resolver resolver;
 
     @Autowired
-    ResolverService(BcidService bcidService, ProjectService projectService,
+    ResolverService(BcidService bcidService, ProjectAuthorizer projectAuthorizer,
                     SettingsManager settingsManager, Resolver resolver) {
         super(settingsManager);
         this.bcidService = bcidService;
-        this.projectService = projectService;
+        this.projectAuthorizer = projectAuthorizer;
         this.settingsManager = settingsManager;
         this.resolver = resolver;
     }
@@ -119,7 +119,6 @@ public class ResolverService extends FimsService {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
         BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
 
         JSONRenderer renderer = new JSONRenderer(

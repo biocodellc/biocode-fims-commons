@@ -58,6 +58,7 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    @SetFimsUser
     @SuppressWarnings({"unchecked"})
     public void save(Dataset dataset, int projectId, int expeditionId) {
         try {
@@ -138,6 +139,7 @@ public class PostgresRecordRepository implements RecordRepository {
         Pageable pageable = new PageRequest(page, limit);
         return new PageImpl<>(queryResult.get(includeEmptyProperties), pageable, total);
     }
+
 
     private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
         Map<String, Object> tableMap = new HashMap<>();

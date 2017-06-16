@@ -2,7 +2,7 @@ package biocode.fims.authorizers;
 
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.service.ProjectService;
+import biocode.fims.repositories.ProjectRepository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class ProjectAuthorizerTest {
     private static String APP_ROOT = "http://example.com/";
 
     @Mock
-    private ProjectService projectService;
+    private ProjectRepository projectRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -31,7 +31,7 @@ public class ProjectAuthorizerTest {
                 .isPublic(true)
                 .build();
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), true);
     }
 
@@ -41,7 +41,7 @@ public class ProjectAuthorizerTest {
                 .isPublic(false)
                 .build();
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), false);
     }
 
@@ -51,7 +51,7 @@ public class ProjectAuthorizerTest {
                 .isPublic(true)
                 .build();
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), false);
     }
 
@@ -63,9 +63,9 @@ public class ProjectAuthorizerTest {
 
         User user = getUser();
 
-        Mockito.when(projectService.isUserMemberOfProject(user, project.getProjectId())).thenReturn(true);
+        Mockito.when(projectRepository.userIsMember(project.getProjectId(), user.getUserId())).thenReturn(true);
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), true);
     }
 
@@ -77,9 +77,9 @@ public class ProjectAuthorizerTest {
 
         User user = getUser();
 
-        Mockito.when(projectService.isUserMemberOfProject(user, project.getProjectId())).thenReturn(false);
+        Mockito.when(projectRepository.userIsMember(project.getProjectId(), user.getUserId())).thenReturn(false);
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), false);
     }
 

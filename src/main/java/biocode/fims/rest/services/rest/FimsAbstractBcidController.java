@@ -34,13 +34,14 @@ import java.util.Hashtable;
 public abstract class FimsAbstractBcidController extends FimsService {
 
     private final BcidService bcidService;
-    private final ProjectService projectService;
+    private final ProjectAuthorizer projectAuthorizer;
 
     @Autowired
-    FimsAbstractBcidController(BcidService bcidService, ProjectService projectService, SettingsManager settingsManager) {
+    FimsAbstractBcidController(BcidService bcidService, SettingsManager settingsManager,
+                               ProjectAuthorizer projectAuthorizer) {
         super(settingsManager);
         this.bcidService = bcidService;
-        this.projectService = projectService;
+        this.projectAuthorizer = projectAuthorizer;
     }
 
     /**
@@ -125,8 +126,6 @@ public abstract class FimsAbstractBcidController extends FimsService {
                             settingsManager.retrieveValue("divider")
                             )
             );
-
-            ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
 
             JSONRenderer renderer = new JSONRenderer(
                     userContext.getUser(),
@@ -266,7 +265,6 @@ public abstract class FimsAbstractBcidController extends FimsService {
             throw new UnauthorizedRequestException("Talk to the project admin to download this bcid.");
         }
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), bcid.getExpedition().getProject())) {
             throw new UnauthorizedRequestException("You are not authorized to download this private dataset.");
         }

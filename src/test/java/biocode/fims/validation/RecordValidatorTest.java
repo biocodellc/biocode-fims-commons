@@ -135,7 +135,7 @@ public class RecordValidatorTest {
     }
 
     private Entity entity1() {
-        Entity e = new Entity("event");
+        Entity e = new Entity("event", "someURI");
 
         e.setUniqueKey("eventId");
         e.setWorksheet("events");
@@ -155,7 +155,7 @@ public class RecordValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("parent");
+        Entity e = new Entity("parent", "someURI");
         e.setUniqueKey("parentId");
 
         e.addAttribute(new Attribute("parentId", "parentId"));

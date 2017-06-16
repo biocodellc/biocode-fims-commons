@@ -12,7 +12,7 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
@@ -23,12 +23,12 @@ import java.util.*;
  */
 @Transactional
 public class PostgresProjectConfigRepository implements ProjectConfigRepository {
-    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
     private final SettingsManager settingsManager;
     private final ExpeditionService expeditionService;
 
-    public PostgresProjectConfigRepository(JdbcTemplate jdbcTemplate, Properties sql, SettingsManager settingsManager,
+    public PostgresProjectConfigRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, SettingsManager settingsManager,
                                            ExpeditionService expeditionService) {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
@@ -37,19 +37,22 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
     }
 
     @Override
+    @SetFimsUser
     public void createProjectSchema(int projectId) {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("projectId", projectId);
 
-        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createProjectSchema"), paramMap));
+        jdbcTemplate.execute(StrSubstitutor.replace(sql.getProperty("createProjectSchema"), paramMap), PreparedStatement::execute);
     }
 
     @Override
+    @SetFimsUser
     public void save(ProjectConfig config, int projectId) {
         save(config, projectId, false);
     }
 
     @Override
+    @SetFimsUser
     public void save(ProjectConfig config, int projectId, boolean checkForExistingBcids) {
         config.generateUris();
 
@@ -57,9 +60,12 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
             throw new FimsRuntimeException(ConfigCode.INVALID, 400);
         }
 
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("projectId", projectId);
+
         ProjectConfig existingConfig = jdbcTemplate.queryForObject(
                 sql.getProperty("getConfig"),
-                new Object[]{projectId},
+                sqlParams,
                 (rs, rowNum) -> JacksonUtil.fromString(rs.getString("config"), ProjectConfig.class)
         );
 
@@ -67,9 +73,13 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
             config = updateConfig(config, projectId, existingConfig, checkForExistingBcids);
         }
 
+        sqlParams = new HashMap<>();
+        sqlParams.put("projectId", projectId);
+        sqlParams.put("config", JacksonUtil.toString(config));
+
         jdbcTemplate.update(
                 sql.getProperty("updateConfig"),
-                JacksonUtil.toString(config)
+                sqlParams
         );
     }
 
@@ -77,24 +87,28 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
         ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
         config = updator.update(existingConfig);
 
-        List<String> entityTableSqlStatements = new ArrayList<>();
+        StringBuilder entityTableSql = new StringBuilder();
 
         for (Entity e: sortEntities(updator.newEntities())) {
-            entityTableSqlStatements.add(createEntityTableSql(e, projectId, config));
+            entityTableSql.append((createEntityTableSql(e, projectId, config)));
         }
 
         // need to drop any child tables before the parent tables
         List<Entity> entitiesToRemove = sortEntities(updator.removedEntities());
         Collections.reverse(entitiesToRemove);
         for (Entity e: entitiesToRemove) {
-            entityTableSqlStatements.add(
+            entityTableSql.append(
                     "DROP TABLE " + PostgresUtils.entityTable(projectId, e.getConceptAlias() + ";")
             );
         }
 
-        jdbcTemplate.batchUpdate(entityTableSqlStatements.toArray(new String[] {}));
+        if (entityTableSql.toString().length() > 0) {
+            jdbcTemplate.execute(entityTableSql.toString(), PreparedStatement::execute);
+        }
 
-        createEntityBcids(updator.newEntities(), projectId, checkForExistingBcids);
+        if (updator.newEntities().size() > 0) {
+            createEntityBcids(updator.newEntities(), projectId, checkForExistingBcids);
+        }
 
         return config;
     }

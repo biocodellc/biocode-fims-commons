@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.models.*;
@@ -37,16 +38,16 @@ public class ExpeditionService {
     private EntityManager entityManager;
 
     private final ExpeditionRepository expeditionRepository;
-    private final ProjectService projectService;
     private final BcidService bcidService;
+    private final ProjectAuthorizer projectAuthorizer;
     private final SettingsManager settingsManager;
 
     @Autowired
     public ExpeditionService(ExpeditionRepository expeditionRepository, BcidService bcidService,
-                             ProjectService projectService, SettingsManager settingsManager) {
+                             ProjectAuthorizer projectAuthorizer, SettingsManager settingsManager) {
         this.expeditionRepository = expeditionRepository;
         this.bcidService = bcidService;
-        this.projectService = projectService;
+        this.projectAuthorizer = projectAuthorizer;
         this.settingsManager = settingsManager;
     }
 
@@ -57,8 +58,9 @@ public class ExpeditionService {
         expedition.setProject(project);
         expedition.setUser(user);
 
-        if (!projectService.isUserMemberOfProject(user, project.getProjectId()))
+        if (!projectAuthorizer.userHasAccess(user, project)) {
             throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
+        }
 
         try {
             checkExpeditionCodeValidAndAvailable(expedition.getExpeditionCode(), projectId);

@@ -161,7 +161,7 @@ public class DatasetValidatorTest {
     }
 
     private Entity entity1() {
-        Entity e = new Entity("event");
+        Entity e = new Entity("event", "someURI");
         e.setUniqueKey("eventId");
         e.setWorksheet("sheet1");
 
@@ -174,7 +174,7 @@ public class DatasetValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("sample");
+        Entity e = new Entity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.setWorksheet("sheet1");

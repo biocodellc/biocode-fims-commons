@@ -2,19 +2,23 @@ package biocode.fims.authorizers;
 
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.repositories.ProjectRepository;
+import biocode.fims.repositories.UserRepository;
 import biocode.fims.service.ProjectService;
 import org.apache.commons.lang.StringUtils;
+
+import javax.persistence.PersistenceUnitUtil;
 
 /**
  * @author rjewing
  */
 public class ProjectAuthorizer {
 
-    private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
     private final String appRoot;
 
-    public ProjectAuthorizer(ProjectService projectService, String appRoot) {
-        this.projectService = projectService;
+    public ProjectAuthorizer(ProjectRepository projectRepository, String appRoot) {
+        this.projectRepository = projectRepository;
         this.appRoot = appRoot;
     }
 
@@ -34,7 +38,11 @@ public class ProjectAuthorizer {
             return project.isPublic();
         }
 
-        return project.isPublic() || projectService.isUserMemberOfProject(user, project.getProjectId());
+        return project.isPublic() || checkUserIsProjectMember(user, project.getProjectId());
+    }
+
+    private boolean checkUserIsProjectMember(User user, int projectId) {
+        return user != null && projectRepository.userIsMember(projectId, user.getUserId());
     }
 
     /**
@@ -44,7 +52,7 @@ public class ProjectAuthorizer {
      * @see ProjectAuthorizer#userHasAccess(User, Project)
      */
     public boolean userHasAccess(User user, int projectId) {
-        Project project = projectService.getProject(projectId);
+        Project project = projectRepository.getProjectByProjectId(projectId, null);
 
         return userHasAccess(user, project);
     }

@@ -83,7 +83,7 @@ abstract class DelimitedTextReaderTest {
     protected ProjectConfig getSingleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity = new Entity("samples");
+        Entity entity = new Entity("samples", "someURI");
         entity.setWorksheet("sheet1");
         config.addEntity(entity);
 
@@ -116,11 +116,11 @@ abstract class DelimitedTextReaderTest {
     protected ProjectConfig getMultipleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity1 = new Entity("samples");
+        Entity entity1 = new Entity("samples", "someURI");
         entity1.setWorksheet("sheet1");
         config.addEntity(entity1);
 
-        Entity entity2 = new Entity("events");
+        Entity entity2 = new Entity("events", "someURI");
         entity2.setWorksheet("sheet1");
         config.addEntity(entity2);
 

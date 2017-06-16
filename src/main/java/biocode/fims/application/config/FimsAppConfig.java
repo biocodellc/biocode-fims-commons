@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.Resolver;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
@@ -24,7 +25,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -51,11 +51,13 @@ public class FimsAppConfig {
     @Autowired
     BcidService bcidService;
     @Autowired
-    ExpeditionService expeditionService;
+    ProjectRepository projectRepository;
     @Autowired
     SettingsManager settingsManager;
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
+    @Autowired
+    ExpeditionService expeditionService;
 
     @Bean
     public Resolver resolver() throws FileNotFoundException {
@@ -107,8 +109,8 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public PostgresRecordRepositoryAdvice recordRepositoryAdvice() {
-        return new PostgresRecordRepositoryAdvice();
+    public PostgresRepositoryAuditAdvice recordRepositoryAdvice() {
+        return new PostgresRepositoryAuditAdvice();
     }
 
     @Bean
@@ -116,7 +118,13 @@ public class FimsAppConfig {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("project-config-repository-sql.yml"));
 
-        return new PostgresProjectConfigRepository((JdbcTemplate) jdbcTemplate.getJdbcOperations(), yaml.getObject(),
+        return new PostgresProjectConfigRepository(jdbcTemplate, yaml.getObject(),
                 settingsManager, expeditionService);
+    }
+
+    @Bean
+    public ProjectAuthorizer projectAuthorizer() {
+        String appRoot = settingsManager.retrieveValue("appRoot");
+        return new ProjectAuthorizer(projectRepository, appRoot);
     }
 }

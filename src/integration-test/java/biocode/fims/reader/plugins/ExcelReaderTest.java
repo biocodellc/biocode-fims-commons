@@ -214,7 +214,7 @@ public class ExcelReaderTest {
     private ProjectConfig getSingleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity = new Entity("samples");
+        Entity entity = new Entity("samples", "someURI");
         entity.setWorksheet("samples");
         config.addEntity(entity);
 
@@ -245,11 +245,11 @@ public class ExcelReaderTest {
     private ProjectConfig getMultipleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity1 = new Entity("samples");
+        Entity entity1 = new Entity("samples", "someURI");
         entity1.setWorksheet("samples");
         config.addEntity(entity1);
 
-        Entity entity2 = new Entity("tissues");
+        Entity entity2 = new Entity("tissues", "someURI");
         entity2.setWorksheet("samples");
         config.addEntity(entity2);
 
@@ -281,7 +281,7 @@ public class ExcelReaderTest {
     private ProjectConfig getMultipleEntityMultiSheetConfig() {
         ProjectConfig config = getMultipleEntityConfig();
 
-        Entity entity = new Entity("events");
+        Entity entity = new Entity("events", "someURI");
         entity.setWorksheet("events");
         config.addEntity(entity);
 

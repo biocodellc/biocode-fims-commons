@@ -7,12 +7,15 @@ import biocode.fims.models.records.Record;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.Assert;
 import org.w3c.dom.Attr;
 
 import java.net.URI;
 import java.util.*;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Entity {
 
     private LinkedList<Attribute> attributes;
@@ -33,8 +36,11 @@ public class Entity {
         attributes = new LinkedList<>();
     } // can make package-private after converting all configs
 
-    public Entity(String conceptAlias) {
+    public Entity(String conceptAlias, String conceptURI) {
+        Assert.notNull(conceptAlias);
+        Assert.notNull(conceptURI);
         this.conceptAlias = conceptAlias;
+        this.conceptURI = conceptURI;
         rules = new LinkedHashSet<>();
         attributes = new LinkedList<>();
     }

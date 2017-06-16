@@ -71,23 +71,23 @@ public class DatasetTest {
     }
 
     private RecordSet grandChildRecordSet() {
-        RecordSet grandChild = new RecordSet(new Entity("grandChild"));
+        RecordSet grandChild = new RecordSet(new Entity("grandChild", "someURI"));
         grandChild.setParent(childRecordSet());
         return grandChild;
     }
 
     private RecordSet childRecordSet() {
-        RecordSet child = new RecordSet(new Entity("child"));
+        RecordSet child = new RecordSet(new Entity("child", "someURI"));
         child.setParent(parentRecordSet());
         return child;
     }
 
     private RecordSet parentRecordSet() {
-        return new RecordSet(new Entity("parent"));
+        return new RecordSet(new Entity("parent", "someURI"));
     }
 
     private RecordSet nonRelatedRecordSet() {
-        return new RecordSet(new Entity("nonRelated"));
+        return new RecordSet(new Entity("nonRelated", "someURI"));
     }
 
 }

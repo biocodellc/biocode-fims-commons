@@ -3,8 +3,10 @@ package biocode.fims.projectConfig;
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.glassfish.jersey.server.JSONP;
 
 import java.util.*;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 /**
  * @author rjewing
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectConfig {
 
@@ -101,6 +104,7 @@ public class ProjectConfig {
     }
 
 
+    @JsonProperty
     public LinkedList<Entity> entities() {
         return entities;
     }
@@ -115,6 +119,7 @@ public class ProjectConfig {
         validated = false;
     }
 
+    @JsonProperty
     public String expeditionForwardingAddress() {
         return expeditionForwardingAddress;
     }
@@ -123,6 +128,7 @@ public class ProjectConfig {
         this.expeditionForwardingAddress = expeditionForwardingAddress;
     }
 
+    @JsonProperty
     public String datasetForwardingAddress() {
         return datasetForwardingAddress;
     }
@@ -195,6 +201,7 @@ public class ProjectConfig {
         }
     }
 
+    @JsonIgnore
     public boolean isValid() {
         ProjectConfigValidator validator = new ProjectConfigValidator(this);
 

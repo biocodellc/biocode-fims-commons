@@ -12,13 +12,13 @@ import java.sql.PreparedStatement;
  * @author rjewing
  */
 @Aspect
-public class PostgresRecordRepositoryAdvice {
+public class PostgresRepositoryAuditAdvice {
     @Autowired(required = false)
     private UserContext userContext;
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    @Before("execution(* biocode.fims.repositories.PostgresRecordRepository.*(..))")
+    @Before("@annotation(SetFimsUser)")
     public void setFimsUser() {
         String user = "anon";
         if (userContext != null && userContext.getUser() != null) {

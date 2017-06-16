@@ -38,6 +38,7 @@ public class ProjectConfigValidator {
 
         for (Entity e : config.entities()) {
             entityConceptAliasOnlyHasValidChars(e);
+            entityHasConceptURI(e);
             entityWithWorksheetHasUniqueKey(e);
             entityUniqueKeysHaveMatchingAttribute(e);
             allChildEntitiesHaveValidParent(e);
@@ -50,6 +51,12 @@ public class ProjectConfigValidator {
         if (!StringUtils.isBlank(e.getConceptAlias())
                 && !e.getConceptAlias().matches("^[a-zA-Z0-9_]+$")) {
             errorMessages.add("Entity conceptAlias contains one or more invalid characters. Only letters, digits, and _ are valid");
+        }
+    }
+
+    private void entityHasConceptURI(Entity e) {
+        if (StringUtils.isBlank(e.getConceptURI())) {
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\" is missing a conceptURI");
         }
     }
 

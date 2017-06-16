@@ -94,7 +94,7 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
     }
 
     private Entity parentEntity() {
-        Entity e = new Entity("event");
+        Entity e = new Entity("event", "someURI");
         e.setUniqueKey("eventId");
 
         e.addAttribute(new Attribute("eventId", "eventId"));

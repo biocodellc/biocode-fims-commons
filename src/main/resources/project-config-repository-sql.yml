@@ -1,10 +1,10 @@
 getConfig: >
   SELECT config
   FROM projects
-  WHERE id = ?;
+  WHERE id = :projectId;
 
 updateConfig: >
-  UPDATE projects SET config = to_jsonb(?) WHERE id = ?;
+  UPDATE projects SET config = to_jsonb(:config::jsonb) WHERE id = :projectId;
 
 createEntityTable: >
   CREATE TABLE ${table}
@@ -29,7 +29,7 @@ createEntityTable: >
 
 createChildEntityTableForeignKey: >
   ALTER TABLE ${table}
-      ADD COLUMN parent_identifier NOT NULL;
+      ADD COLUMN parent_identifier TEXT NOT NULL;
   ALTER TABLE ${table}
       ADD CONSTRAINT project_${projectId}_${conceptAlias}_parent_fkey
       FOREIGN KEY (parent_identifier, expedition_id)

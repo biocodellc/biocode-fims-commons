@@ -136,7 +136,7 @@ public class RecordSetTest {
     }
 
     private Entity entity() {
-        Entity entity = new Entity("resource");
+        Entity entity = new Entity("resource", "someURI");
         entity.setUniqueKey("column1");
 
         entity.addAttribute(new Attribute("column1", "urn:column1"));

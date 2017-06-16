@@ -20,14 +20,24 @@ public class ProjectConfigValidatorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void invalid_if_no_config() {
-
         new ProjectConfigValidator(null);
+    }
+
+    @Test
+    public void invalid_if_entity_missing_conceptURI() {
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(new Entity("testing", ""));
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"testing\" is missing a conceptURI"), validator.errors());
     }
 
     @Test
     public void invalid_if_entity_missing_concept_alias() {
         ProjectConfig config = new ProjectConfig();
-        config.addEntity(new Entity(""));
+        config.addEntity(new Entity("", "someURI"));
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
@@ -39,7 +49,7 @@ public class ProjectConfigValidatorTest {
     public void invalid_if_entity_non_unique_concept_alias() {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(entity1());
-        config.addEntity(new Entity("Resource1"));
+        config.addEntity(new Entity("Resource1", "someURI"));
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
@@ -50,7 +60,7 @@ public class ProjectConfigValidatorTest {
     @Test
     public void invalid_if_entity_concept_alias_not_sql_safe() {
         ProjectConfig config = new ProjectConfig();
-        config.addEntity(new Entity("resource1;select *"));
+        config.addEntity(new Entity("resource1;select *", "someURI"));
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
@@ -215,7 +225,7 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity entity1() {
-        Entity e = new Entity("resource1");
+        Entity e = new Entity("resource1", "someURI");
 
         e.setConceptForwardingAddress("http://example.com");
         e.setConceptURI(RESOURCE_URI);
@@ -228,7 +238,7 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("resource2");
+        Entity e = new Entity("resource2", "someURI");
 
         e.setConceptURI(RESOURCE_URI);
         e.setUniqueKey("column2");

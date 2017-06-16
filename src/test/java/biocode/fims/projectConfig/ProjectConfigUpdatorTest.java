@@ -53,7 +53,7 @@ public class ProjectConfigUpdatorTest {
     }
 
     private Entity entity1() {
-        Entity e = new Entity("resource1");
+        Entity e = new Entity("resource1", "someURI");
 
         e.setConceptForwardingAddress("http://example.com");
         e.setUniqueKey("column1");
@@ -65,7 +65,7 @@ public class ProjectConfigUpdatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("resource2");
+        Entity e = new Entity("resource2", "someURI");
         e.setUniqueKey("column2");
         e.setParentEntity("resource1");
 

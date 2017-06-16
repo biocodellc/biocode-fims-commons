@@ -312,7 +312,7 @@ public class DatasetBuilderTest {
     }
 
     private Entity samplesEntity() {
-        Entity entity = new Entity("sample");
+        Entity entity = new Entity("sample", "someURI");
         entity.setWorksheet("samples");
         entity.setParentEntity("event");
 
@@ -329,7 +329,7 @@ public class DatasetBuilderTest {
     }
 
     private Entity eventsEntity() {
-        Entity entity = new Entity("event");
+        Entity entity = new Entity("event", "someURI");
         entity.setWorksheet("events");
         entity.setUniqueKey("eventID");
 

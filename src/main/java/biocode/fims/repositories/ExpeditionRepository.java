@@ -54,13 +54,13 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
      * @param includePrivate if true, we will include private expeditions in the results
      * @return
      */
-    @Query("select e from Expedition e where projectId=:projectId and userId=:userId and (public=true or public!=:includePrivate)")
+    @Query("select e from Expedition e where project_id=:projectId and user_id=:userId and (public='true' or public!=:includePrivate)")
     List<Expedition> getUserProjectExpeditions(@Param("projectId") int projectId, @Param("userId") int userId, @Param("includePrivate") boolean includePrivate);
 
 
     Long countByExpeditionIdInAndProjectProjectId(List<Integer> expeditionIds, int projectId);
 
-    @Query("select e from Expedition e where projectId=:projectId and (public=true or public!=:includePrivate)")
+    @Query("select e from Expedition e where project_id=:projectId and (public='true' or public!=:includePrivate)")
     List<Expedition> getProjectExpeditions(@Param("projectId") int projectId, @Param("includePrivate") boolean includePrivate);
 
 }

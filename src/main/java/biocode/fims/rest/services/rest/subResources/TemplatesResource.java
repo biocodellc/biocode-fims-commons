@@ -40,10 +40,11 @@ public class TemplatesResource extends FimsService {
     private final FileCache fileCache;
 
     @Autowired
-    public TemplatesResource(ProjectService projectService, FileCache fileCache, SettingsManager settingsManager) {
+    public TemplatesResource(ProjectService projectService, ProjectAuthorizer projectAuthorizer,
+                             FileCache fileCache, SettingsManager settingsManager) {
         super(settingsManager);
         this.projectService = projectService;
-        this.projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
+        this.projectAuthorizer = projectAuthorizer;
         this.fileCache = fileCache;
     }
 

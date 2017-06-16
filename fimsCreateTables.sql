@@ -77,7 +77,6 @@ DECLARE
   audit_table_name text;
   audit_session_user text;
   config jsonb;
-  changed_fields jsonb;
 BEGIN
   IF TG_WHEN <> 'AFTER' THEN
     RAISE EXCEPTION 'project_config_history() may only run as an AFTER trigger';
@@ -96,8 +95,7 @@ BEGIN
 
   IF TG_OP = 'UPDATE' THEN
     config = OLD.config;
-    changed_fields =  jsonb_diff_val(to_jsonb(NEW.config), config);
-    IF changed_fields = '{}'::jsonb THEN
+    IF OLD.config = NEW.config THEN
       -- All changed fields are ignored. Skip this update.
       RETURN NULL;
     END IF;
@@ -110,9 +108,9 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  EXECUTE 'INSERT INTO ' || audit_table_name || ' (user_name, ts, action, config, changed_fields, project_id) ' ||
+  EXECUTE 'INSERT INTO ' || audit_table_name || ' (user_name, ts, action, config, project_id) ' ||
    'VALUES (' || quote_literal(audit_session_user) || ', CURRENT_TIMESTAMP, ' || quote_literal(substring(TG_OP,1,1)) ||
-   ', ' || quote_literal(config) || ', ' || quote_nullable(changed_fields) || quote_literal(NEW.id) || ')';
+   ', ' || quote_literal(config) || ', ' || quote_literal(NEW.id) || ')';
 
   RETURN NULL;
 END;
@@ -222,7 +220,6 @@ CREATE TABLE project_config_history
     ts TIMESTAMP WITH TIME ZONE NOT NULL,
     action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')),
     config jsonb,
-    changed_fields jsonb,
     project_id INTEGER NOT NULL REFERENCES projects (id)
   );
 
@@ -232,7 +229,6 @@ COMMENT ON COLUMN project_config_history.user_name is 'user who made the change'
 COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';
 COMMENT ON COLUMN project_config_history.action is 'INSERT, DELETE, UPDATE, or TRUNCATE';
 COMMENT ON COLUMN project_config_history.config is 'For INSERT this is the new config values. For DELETE and UPDATE it is the old config values.';
-COMMENT ON COLUMN project_config_history.changed_fields is 'Null except UPDATE events. This is the result of jsonb_diff_val(NEW data, OLD data)';
 
 DROP TABLE IF EXISTS user_projects;
 

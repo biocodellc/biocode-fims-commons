@@ -627,7 +627,7 @@ public class QueryBuilderTest {
     }
 
     private Entity event() {
-        Entity e = new Entity("event");
+        Entity e = new Entity("event", "someURI");
         e.setUniqueKey("eventId");
         e.addAttribute(new Attribute("eventId", "eventId"));
         e.addAttribute(new Attribute("col2", "urn:col2"));
@@ -636,7 +636,7 @@ public class QueryBuilderTest {
     }
 
     private Entity sample() {
-        Entity e = new Entity("sample");
+        Entity e = new Entity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.addAttribute(new Attribute("sampleId", "urn:sampleId"));
@@ -647,7 +647,7 @@ public class QueryBuilderTest {
     }
 
     private Entity tissue() {
-        Entity e = new Entity("tissue");
+        Entity e = new Entity("tissue", "someURI");
         e.setParentEntity("sample");
         e.setUniqueKey("tissueId");
         e.addAttribute(new Attribute("tissueId", "urn:tissueId"));
@@ -658,7 +658,7 @@ public class QueryBuilderTest {
     }
 
     private Entity non_linked_entity() {
-        Entity e = new Entity("non-linked");
+        Entity e = new Entity("non-linked", "someURI");
         e.setUniqueKey("id");
         e.addAttribute(new Attribute("id", "urn:id"));
         e.addAttribute(new Attribute("col3", "urn:col3"));
