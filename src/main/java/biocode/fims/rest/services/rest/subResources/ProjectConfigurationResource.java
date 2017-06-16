@@ -5,7 +5,6 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -29,14 +28,11 @@ import java.util.List;
 public class ProjectConfigurationResource extends FimsService {
 
     private final ProjectService projectService;
-    private final ProjectConfigRepository configRepository;
 
     @Autowired
-    public ProjectConfigurationResource(ProjectService projectService, ProjectConfigRepository configRepository,
-                                        SettingsManager settingsManager) {
+    public ProjectConfigurationResource(ProjectService projectService, SettingsManager settingsManager) {
         super(settingsManager);
         this.projectService = projectService;
-        this.configRepository = configRepository;
     }
 
     @GET
@@ -70,7 +66,7 @@ public class ProjectConfigurationResource extends FimsService {
         }
 
         try {
-            configRepository.save(config, projectId);
+            projectService.saveConfig(config, projectId);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.errors())).build();

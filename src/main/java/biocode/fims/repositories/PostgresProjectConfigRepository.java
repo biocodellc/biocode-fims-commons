@@ -1,15 +1,9 @@
 package biocode.fims.repositories;
 
 import biocode.fims.digester.Entity;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.Expedition;
 import biocode.fims.models.dataTypes.JacksonUtil;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigUpdator;
 import biocode.fims.query.PostgresUtils;
-import biocode.fims.service.ExpeditionService;
-import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -25,15 +19,22 @@ import java.util.*;
 public class PostgresProjectConfigRepository implements ProjectConfigRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
-    private final SettingsManager settingsManager;
-    private final ExpeditionService expeditionService;
 
-    public PostgresProjectConfigRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, SettingsManager settingsManager,
-                                           ExpeditionService expeditionService) {
+    public PostgresProjectConfigRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql) {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
-        this.settingsManager = settingsManager;
-        this.expeditionService = expeditionService;
+    }
+
+    @Override
+    public ProjectConfig getConfig(int projectId) {
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("projectId", projectId);
+
+        return jdbcTemplate.queryForObject(
+                sql.getProperty("getConfig"),
+                sqlParams,
+                (rs, rowNum) -> JacksonUtil.fromString(rs.getString("config"), ProjectConfig.class)
+        );
     }
 
     @Override
@@ -46,34 +47,44 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
     }
 
     @Override
-    @SetFimsUser
-    public void save(ProjectConfig config, int projectId) {
-        save(config, projectId, false);
+    public void createEntityTables(List<Entity> entities, int projectId, ProjectConfig config) {
+        if (entities.size() == 0) {
+            return;
+        }
+
+        StringBuilder entityTableSql = new StringBuilder();
+
+        for (Entity e : sortEntities(entities)) {
+            entityTableSql.append((createEntityTableSql(e, projectId, config)));
+        }
+
+        jdbcTemplate.execute(entityTableSql.toString(), PreparedStatement::execute);
+    }
+
+    @Override
+    public void removeEntityTables(List<Entity> entities, int projectId) {
+        if (entities.size() == 0) {
+            return;
+        }
+
+        StringBuilder entityTableSql = new StringBuilder();
+
+        // need to drop any child tables before the parent tables
+        List<Entity> entitiesToRemove = sortEntities(entities);
+        Collections.reverse(entitiesToRemove);
+        for (Entity e : entitiesToRemove) {
+            entityTableSql.append("DROP TABLE ")
+                    .append(PostgresUtils.entityTable(projectId, e.getConceptAlias()))
+                    .append(";");
+        }
+
+        jdbcTemplate.execute(entityTableSql.toString(), PreparedStatement::execute);
     }
 
     @Override
     @SetFimsUser
-    public void save(ProjectConfig config, int projectId, boolean checkForExistingBcids) {
-        config.generateUris();
-
-        if (!config.isValid()) {
-            throw new FimsRuntimeException(ConfigCode.INVALID, 400);
-        }
-
+    public void save(ProjectConfig config, int projectId) {
         Map<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("projectId", projectId);
-
-        ProjectConfig existingConfig = jdbcTemplate.queryForObject(
-                sql.getProperty("getConfig"),
-                sqlParams,
-                (rs, rowNum) -> JacksonUtil.fromString(rs.getString("config"), ProjectConfig.class)
-        );
-
-        if (existingConfig != null) {
-            config = updateConfig(config, projectId, existingConfig, checkForExistingBcids);
-        }
-
-        sqlParams = new HashMap<>();
         sqlParams.put("projectId", projectId);
         sqlParams.put("config", JacksonUtil.toString(config));
 
@@ -81,44 +92,6 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
                 sql.getProperty("updateConfig"),
                 sqlParams
         );
-    }
-
-    private ProjectConfig updateConfig(ProjectConfig config, int projectId, ProjectConfig existingConfig, boolean checkForExistingBcids) {
-        ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
-        config = updator.update(existingConfig);
-
-        StringBuilder entityTableSql = new StringBuilder();
-
-        for (Entity e: sortEntities(updator.newEntities())) {
-            entityTableSql.append((createEntityTableSql(e, projectId, config)));
-        }
-
-        // need to drop any child tables before the parent tables
-        List<Entity> entitiesToRemove = sortEntities(updator.removedEntities());
-        Collections.reverse(entitiesToRemove);
-        for (Entity e: entitiesToRemove) {
-            entityTableSql.append(
-                    "DROP TABLE " + PostgresUtils.entityTable(projectId, e.getConceptAlias() + ";")
-            );
-        }
-
-        if (entityTableSql.toString().length() > 0) {
-            jdbcTemplate.execute(entityTableSql.toString(), PreparedStatement::execute);
-        }
-
-        if (updator.newEntities().size() > 0) {
-            createEntityBcids(updator.newEntities(), projectId, checkForExistingBcids);
-        }
-
-        return config;
-    }
-
-    private void createEntityBcids(List<Entity> entities, int projectId, boolean checkForExistingBcids) {
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
-
-        for (Expedition e: expeditionService.getExpeditions(projectId, true)) {
-            expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser().getUserId(), ezidRequest, checkForExistingBcids);
-        }
     }
 
     private String createEntityTableSql(Entity e, int projectId, ProjectConfig config) {
@@ -143,12 +116,12 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
     private LinkedList<Entity> sortEntities(List<Entity> entities) {
         LinkedList<Entity> sortedEntites = new LinkedList<>();
 
-        for (Entity e: entities) {
+        for (Entity e : entities) {
             if (StringUtils.isBlank(e.getParentEntity())) {
                 sortedEntites.add(0, e);
             } else {
                 int index = 0;
-                for (Entity sortedEntity: sortedEntites) {
+                for (Entity sortedEntity : sortedEntites) {
                     index++;
                     if (StringUtils.isBlank(sortedEntity.getParentEntity())) {
                         continue;

@@ -8,8 +8,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigValidator;
-import biocode.fims.repositories.ProjectConfigRepository;
+import biocode.fims.service.ProjectConfigService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.rules.*;
 import org.slf4j.Logger;
@@ -30,12 +29,10 @@ public class ProjectConfigConverter {
 
     private ProjectService projectService;
     private final String projectUrl;
-    private final ProjectConfigRepository configRepository;
 
-    public ProjectConfigConverter(ProjectService projectService, String projectUrl, ProjectConfigRepository configRepository) {
+    public ProjectConfigConverter(ProjectService projectService, String projectUrl) {
         this.projectService = projectService;
         this.projectUrl = projectUrl;
-        this.configRepository = configRepository;
     }
 
     public void storeConfigs() throws IOException {
@@ -198,11 +195,9 @@ public class ProjectConfigConverter {
 
                 }
 
-//                p.setProjectConfig(config);
                 try {
-                    configRepository.createProjectSchema(p.getProjectId());
-                    configRepository.save(config, p.getProjectId(), true);
-//                    projectService.update(p);
+                    projectService.createProjectSchema(p.getProjectId());
+                    projectService.saveConfig(config, p.getProjectId(), true);
                 } catch (FimsRuntimeException e) {
                     if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                         logger.error("\n\nInvalid project config: " + p.getProjectId());

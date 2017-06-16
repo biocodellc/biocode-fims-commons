@@ -1,13 +1,16 @@
 package biocode.fims.service;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigValidator;
+import biocode.fims.projectConfig.ProjectConfigUpdator;
 import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.ProjectRepository;
+import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,18 +29,23 @@ import java.util.List;
 @Transactional
 public class ProjectService {
 
+    private final ExpeditionService expeditionService;
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager entityManager;
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
     private final ProjectConfigRepository projectConfigRepository;
+    private final SettingsManager settingsManager;
 
     @Autowired
-    public ProjectService(ProjectRepository projectRepository, UserService userService, ProjectConfigRepository projectConfigRepository) {
+    public ProjectService(ProjectRepository projectRepository, ExpeditionService expeditionService,
+                          UserService userService, ProjectConfigRepository projectConfigRepository, SettingsManager settingsManager) {
+        this.expeditionService = expeditionService;
         this.projectRepository = projectRepository;
         this.userService = userService;
         this.projectConfigRepository = projectConfigRepository;
+        this.settingsManager = settingsManager;
     }
 
     public void create(Project project, int userId) {
@@ -53,12 +61,12 @@ public class ProjectService {
 
         project.setProjectConfig(config);
 
-        projectConfigRepository.createProjectSchema(project.getProjectId());
-        projectConfigRepository.save(config, project.getProjectId());
+        createProjectSchema(project.getProjectId());
+        saveConfig(config, project.getProjectId());
     }
 
     public void update(Project project) {
-        projectConfigRepository.save(project.getProjectConfig(), project.getProjectId());
+        saveConfig(project.getProjectConfig(), project.getProjectId());
         projectRepository.save(project);
     }
 
@@ -165,6 +173,55 @@ public class ProjectService {
         }
 
         return filteredProjects;
+    }
+
+    public void createProjectSchema(int projectId) {
+        projectConfigRepository.createProjectSchema(projectId);
+    }
+
+    public void saveConfig(ProjectConfig config, int projectId) {
+        saveConfig(config, projectId, false);
+    }
+
+    /**
+     * This is a temporary method to help with the migration to postgres. This will prevent creating bcids for entities
+     * that are already registered
+     */
+    @Deprecated
+    public void saveConfig(ProjectConfig config, int projectId, boolean checkForExistingBcids) {
+        config.generateUris();
+
+        if (!config.isValid()) {
+            throw new FimsRuntimeException(ConfigCode.INVALID, 400);
+        }
+
+        ProjectConfig existingConfig = projectConfigRepository.getConfig(projectId);
+
+        if (existingConfig == null) {
+            existingConfig = new ProjectConfig();
+        }
+
+        ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
+        config = updator.update(existingConfig);
+
+        if (updator.newEntities().size() > 0) {
+            projectConfigRepository.createEntityTables(updator.newEntities(), projectId, config);
+            createEntityBcids(updator.newEntities(), projectId, checkForExistingBcids);
+        }
+
+        if (updator.removedEntities().size() > 0) {
+            projectConfigRepository.removeEntityTables(updator.removedEntities(), projectId);
+        }
+
+        projectConfigRepository.save(config, projectId);
+    }
+
+    private void createEntityBcids(List<Entity> entities, int projectId, boolean checkForExistingBcids) {
+        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
+
+        for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
+            expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser().getUserId(), ezidRequest, checkForExistingBcids);
+        }
     }
 }
 
