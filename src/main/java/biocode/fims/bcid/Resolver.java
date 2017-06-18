@@ -8,6 +8,7 @@ import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,6 +22,7 @@ import java.util.Map;
  * Resolver first checks if this is a data group.  If so, it then checks if there is a decodable BCID.  If not,
  * then check if there is a suffix and if THAT is resolvable.
  */
+@Service
 public class Resolver {
 
     private BcidService bcidService;

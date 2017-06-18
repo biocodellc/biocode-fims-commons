@@ -5,12 +5,14 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Component;
 
 import java.sql.PreparedStatement;
 
 /**
  * @author rjewing
  */
+@Component
 @Aspect
 public class PostgresRepositoryAuditAdvice {
     @Autowired(required = false)

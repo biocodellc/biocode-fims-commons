@@ -1,7 +1,6 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
-import biocode.fims.bcid.Resolver;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
@@ -13,9 +12,7 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.SpringApplicationContext;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
@@ -23,12 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,15 +34,9 @@ import java.util.Map;
  */
 @Configuration
 @EnableAspectJAutoProxy
-@ComponentScan(basePackages = {"biocode.fims.service"})
-@Import({SettingsManagerConfig.class})
-@ImportResource({
-        "classpath:data-access-config.xml"
-})
+@ComponentScan(basePackages = {"biocode.fims"})
+@Import({SettingsManagerConfig.class, DataAccessConfig.class})
 public class FimsAppConfig {
-    @Autowired
-    Environment env;
-
     @Autowired
     BcidService bcidService;
     @Autowired
@@ -55,19 +44,7 @@ public class FimsAppConfig {
     @Autowired
     SettingsManager settingsManager;
     @Autowired
-    private NamedParameterJdbcTemplate jdbcTemplate;
-    @Autowired
-    ExpeditionService expeditionService;
-
-    @Bean
-    public Resolver resolver() throws FileNotFoundException {
-        return new Resolver(bcidService, settingsManager, expeditionService);
-    }
-
-    @Bean
-    public SpringApplicationContext springApplicationContext() {
-        return new SpringApplicationContext();
-    }
+    NamedParameterJdbcTemplate jdbcTemplate;
 
     @Bean
     public ReloadableResourceBundleMessageSource messageSource() {
@@ -109,17 +86,11 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public PostgresRepositoryAuditAdvice recordRepositoryAdvice() {
-        return new PostgresRepositoryAuditAdvice();
-    }
-
-    @Bean
     public ProjectConfigRepository projectConfigRepository() {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("project-config-repository-sql.yml"));
 
-        return new PostgresProjectConfigRepository(jdbcTemplate, yaml.getObject(),
-                settingsManager, expeditionService);
+        return new PostgresProjectConfigRepository(jdbcTemplate, yaml.getObject());
     }
 
     @Bean

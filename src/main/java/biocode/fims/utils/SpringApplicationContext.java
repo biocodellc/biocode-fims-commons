@@ -3,6 +3,7 @@ package biocode.fims.utils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Service;
 
 /**
  * Wrapper to always return a reference to the Spring Application Context from
@@ -11,6 +12,7 @@ import org.springframework.context.ApplicationContextAware;
  * for this bean to be initialized during application startup. This is useful
  * during the process of refactoring our legacy code
  */
+@Service
 public class SpringApplicationContext implements ApplicationContextAware {
 
     private static ApplicationContext CONTEXT;
