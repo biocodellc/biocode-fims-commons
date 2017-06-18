@@ -380,6 +380,7 @@ CREATE TABLE project_templates (
   user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  sheet_name TEXT NOT NULL,
   attribute_uris jsonb NOT NULL,
   CONSTRAINT project_templates_name_project_id_uniq UNIQUE (name, project_id)
 );

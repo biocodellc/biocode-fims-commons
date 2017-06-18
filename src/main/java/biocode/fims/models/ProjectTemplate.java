@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,16 +18,18 @@ public class ProjectTemplate {
 
     private Integer id;
     private String name;
-    private List<String> attributesUris;
+    private String sheetName;
+    private List<String> attributeUris;
     private Project project;
     private User user;
 
     ProjectTemplate() {
     }
 
-    public ProjectTemplate(String name, List<String> attributeUris, Project project, User user) {
+    public ProjectTemplate(String name, List<String> attributeUris, String sheetName, Project project, User user) {
         this.name = name;
-        this.attributesUris = attributeUris;
+        this.attributeUris = attributeUris;
+        this.sheetName = sheetName;
         this.project = project;
         this.user = user;
     }
@@ -54,15 +55,25 @@ public class ProjectTemplate {
         this.name = name;
     }
 
+    @JsonView(Views.Summary.class)
+    @Column(nullable = false, name = "sheet_name")
+    public String getSheetName() {
+        return sheetName;
+    }
+
+    public void setSheetName(String sheetName) {
+        this.sheetName = sheetName;
+    }
+
     @JsonView(Views.Detailed.class)
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", name = "attribute_uris")
-    public List<String> getAttributesUris() {
-        return attributesUris;
+    public List<String> getAttributeUris() {
+        return attributeUris;
     }
 
-    public void setAttributesUris(List<String> attributesUris) {
-        this.attributesUris = attributesUris;
+    public void setAttributeUris(List<String> attributeUris) {
+        this.attributeUris = attributeUris;
     }
 
     @Override
@@ -88,7 +99,7 @@ public class ProjectTemplate {
     public String toString() {
         return "TemplateConfig{" +
                 "name='" + name + '\'' +
-                ", config='" + attributesUris + '\'' +
+                ", config='" + attributeUris + '\'' +
                 ", project=" + project +
                 ", user=" + user +
                 '}';
