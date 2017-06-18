@@ -5,7 +5,7 @@ import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -83,7 +83,7 @@ public class User {
         }
 
         private boolean validUser() {
-            if (StringUtils.isEmpty(email) || StringUtils.isEmpty(institution) || StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName))
+            if (StringUtils.isBlank(email) || StringUtils.isBlank(institution) || StringUtils.isBlank(firstName) || StringUtils.isBlank(lastName))
                 return false;
 
             return true;
@@ -110,6 +110,29 @@ public class User {
 
     // needed for hibernate
     User() {
+    }
+
+    /**
+     * method to transfer the updated {@link User} object to this existing {@link User}. This
+     * allows us to control which properties can be updated.
+     * Currently allows updating of the following properties : firstName, lastName, email, and institution
+     *
+     * @param user
+     */
+    public void update(User user) {
+        this.setFirstName(user.getFirstName());
+        this.setLastName(user.getLastName());
+        this.setEmail(user.getEmail());
+        this.setInstitution(user.getInstitution());
+    }
+
+    public boolean isValid(boolean requirePassword) {
+        return !StringUtils.isEmpty(this.getUsername()) &&
+                (!StringUtils.isEmpty(this.getPassword()) || !requirePassword) &&
+                !StringUtils.isEmpty(this.getFirstName()) &&
+                !StringUtils.isEmpty(this.getLastName()) &&
+                !StringUtils.isEmpty(this.getEmail()) &&
+                !StringUtils.isEmpty(this.getInstitution());
     }
 
     @Column(name = "id")

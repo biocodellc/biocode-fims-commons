@@ -14,10 +14,10 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -75,6 +75,7 @@ public class UsersResource extends FimsService {
 
     /**
      * create a new user, and send an email to the new user with login information
+     *
      * @param user
      * @responseMessage 400 invalid user object `biocode.fims.utils.ErrorInfo
      */
@@ -85,7 +86,7 @@ public class UsersResource extends FimsService {
     @Authenticated
     public User createUser(User user) {
 
-        if (!isValidUser(user, true)) {
+        if (!user.isValid(true)) {
             throw new BadRequestException("username, password, firstName, lastName, email, and institution are required");
         }
 
@@ -106,14 +107,14 @@ public class UsersResource extends FimsService {
 
         EmailUtils.sendEmail(
                 user.getEmail(),
-                new String[] {userContext.getUser().getEmail()},
+                new String[]{userContext.getUser().getEmail()},
                 messageSource.getMessage(
                         "NewUserEmail__SUBJECT",
                         null,
                         Locale.US),
                 messageSource.getMessage(
                         "NewUserEmail__BODY",
-                        new Object[] {user.getFirstName(), user.getLastName(), appRoot, user.getUsername(), password},
+                        new Object[]{user.getFirstName(), user.getLastName(), appRoot, user.getUsername(), password},
                         Locale.US)
         );
 
@@ -122,6 +123,7 @@ public class UsersResource extends FimsService {
 
     /**
      * update a users profile
+     *
      * @param username
      * @param user
      * @responseMessage 403 you must be authenticated to update a users profile `biocode.fims.utils.ErrorInfo
@@ -144,44 +146,49 @@ public class UsersResource extends FimsService {
             throw new FimsRuntimeException("user not found", 404);
         }
 
-        if (!isValidUser(user, false)) {
+        if (!user.isValid(false)) {
             throw new BadRequestException("firstName, lastName, email, and institution are required");
         }
 
-        updateExistingUser(existingUser, user);
+        existingUser.update(user);
         return userService.update(existingUser);
     }
 
     /**
-     * method to transfer the updated {@link User} object to an existing {@link User}. This
-     * allows us to control which properties can be updated.
-     * Currently allows updating of the following properties : password, firstName, lastName, email, and institution
-     * @param existingUser
-     * @param newUser
+     * update a users password
+     *
+     * @param username
+     * @param currentPassword
+     * @param newPassword
+     * @responseMessage 403 You cannot update another users password. `biocode.fims.utils.ErrorInfo
+     * @responseMessage 400 Invalid current password. `biocode.fims.utils.ErrorInfo
      */
-    private void updateExistingUser(User existingUser, User newUser) {
-        if (!org.apache.commons.lang.StringUtils.isEmpty(newUser.getPassword())) {
-            //user is updating their password, so we need to hash it
-            existingUser.setPassword(PasswordHash.createHash(newUser.getPassword()));
+    @JsonView(Views.Detailed.class)
+    @Path("/{username}/password")
+    @PUT
+    @Authenticated
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public User updateUserPassword(@PathParam("username") String username,
+                                   @FormParam("currentPassword") String currentPassword,
+                                   @FormParam("newPassword") String newPassword) {
+        User user = userContext.getUser();
+        if (StringUtils.isBlank(currentPassword) ||
+                StringUtils.isBlank(newPassword)) {
+            throw new BadRequestException("currentPassword and newPassword must not be blank");
+        }
+        if (!user.getUsername().equals(username)) {
+            throw new ForbiddenRequestException("You cannot update another users password.");
         }
 
-        existingUser.setFirstName(newUser.getFirstName());
-        existingUser.setLastName(newUser.getLastName());
-        existingUser.setEmail(newUser.getEmail());
-        existingUser.setInstitution(newUser.getInstitution());
-    }
+        if (!user.equals(userService.getUser(username, currentPassword))) {
+            throw new BadRequestException("Invalid current password.");
+        }
 
-    /**
-     * check that all required fields are present on the User object
-     * @param user
-     * @return
-     */
-    private boolean isValidUser(User user, boolean requirePassword) {
-        return !StringUtils.isEmpty(user.getUsername()) &&
-                (!StringUtils.isEmpty(user.getPassword()) || !requirePassword) &&
-                !StringUtils.isEmpty(user.getFirstName()) &&
-                !StringUtils.isEmpty(user.getLastName()) &&
-                !StringUtils.isEmpty(user.getEmail()) &&
-                !StringUtils.isEmpty(user.getInstitution());
+        // TODO impose minimum newPassword strength
+
+        // hash the users password
+        user.setPassword(PasswordHash.createHash(newPassword));
+
+        return userService.update(user);
     }
 }
