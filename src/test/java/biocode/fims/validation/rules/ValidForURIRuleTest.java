@@ -76,7 +76,7 @@ public class ValidForURIRuleTest extends AbstractRuleTest {
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "validUri");
         Record r2 = new GenericRecord();
-        r2.set("urn:col1", "123AOl");
+        r2.set("urn:col1", "123AOl+=:._(~*)");
         Record r3 = new GenericRecord();
         r3.set("urn:col1", "");
         return recordSet;
@@ -100,14 +100,12 @@ public class ValidForURIRuleTest extends AbstractRuleTest {
                 "test%",
                 "test$",
                 "test&",
-                "test+",
                 "test,",
                 "test/",
-                "test:",
                 "test;",
-                "test=",
                 "test?",
                 "test@",
+                "test-",
                 "test<",
                 "test>",
                 "test#",

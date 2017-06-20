@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
 public class ValidForURIRule extends SingleColumnRule {
     private static final String NAME = "ValidForURI";
     private static final String GROUP_MESSAGE = "Non-valid URI characters";
-    private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
+//    private static final Pattern pattern = Pattern.compile("[^ %$&+,\\\\/:;=?@<>#%\\\\]+");
+    private static final Pattern pattern = Pattern.compile("[a-zA-Z0-9+=:._()~*]+");
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
     private ValidForURIRule() {}
