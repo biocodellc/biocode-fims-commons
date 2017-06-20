@@ -38,7 +38,7 @@ public class EncodeURIcomponent {
         Iterator i = tests.iterator();
         while (i.hasNext()) {
             String value = (String) i.next();
-             String encoded = e.encode(value);
+            String encoded = e.encode(value);
             try {
                 String decoded = URLDecoder.decode(encoded, "utf-8");
                 System.out.println(value + ";" + encoded + ";" + decoded);
@@ -50,10 +50,11 @@ public class EncodeURIcomponent {
         }
         return true;
     }
+
     /**
      * Converts a string into something you can safely insert into a URL.
      */
-    public  String encode(String s) {
+    public String encode(String s) {
         StringBuilder o = new StringBuilder();
         for (char ch : s.toCharArray()) {
             if (isUnsafe(ch)) {
@@ -70,9 +71,11 @@ public class EncodeURIcomponent {
     }
 
     private static boolean isUnsafe(char ch) {
-        if (ch > 128 || ch < 0)
-            return true;
-        return " %$&+,/:;=?@<>#%\\".indexOf(ch) >= 0;
+        if ((ch >= 65 && ch <= 90) // A-Z
+                || (ch >= 97 && ch <= 122) // a-z
+                || (ch >= 48 && ch <= 57)) // 0-9
+            return false;
+        return "+=:._()~*".indexOf(ch) == -1;
     }
 
 }
