@@ -74,7 +74,6 @@ public class ExpeditionService {
 
         Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
         expedition.setIdentifier(bcid.getIdentifier());
-        expedition.setExpeditionBcid(bcid);
         List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), userId, ezidRequest, false);
         expedition.setEntityIdentifiers(entityIdentifiers);
         expeditionRepository.save(expedition);
@@ -86,11 +85,7 @@ public class ExpeditionService {
 
     @Transactional(readOnly = true)
     public Expedition getExpedition(String expeditionCode, int projectId) {
-        Expedition expedition = expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
-        if (expedition != null) {
-            attachExpeditionBcids(expedition);
-        }
-        return expedition;
+        return expeditionRepository.findByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
     }
 
     @Transactional(readOnly = true)
@@ -99,7 +94,6 @@ public class ExpeditionService {
         Bcid bcid = bcidService.getBcid(identifier);
         if (bcid != null) {
             expedition = bcid.getExpedition();
-            expedition.setExpeditionBcid(bcid);
         }
         return expedition;
     }
@@ -128,47 +122,22 @@ public class ExpeditionService {
 
     @Transactional(readOnly = true)
     public Page<Expedition> getExpeditions(int projectId, int userId, Pageable pageRequest) {
-        Page<Expedition> expeditions = expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
-
-        for (Expedition expedition : expeditions) {
-            attachExpeditionBcids(expedition);
-        }
-        return expeditions;
+        return expeditionRepository.findByProjectProjectIdAndProjectUserUserId(projectId, userId, pageRequest);
     }
 
     @Transactional(readOnly = true)
     public List<Expedition> getExpeditionsForUser(int projectId, int userId, boolean includePrivate) {
-        List<Expedition> expeditions;
-
-        expeditions = expeditionRepository.getUserProjectExpeditions(projectId, userId, includePrivate);
-
-        for (Expedition expedition : expeditions) {
-            attachExpeditionBcids(expedition);
-        }
-
-        return expeditions;
+        return expeditionRepository.getUserProjectExpeditions(projectId, userId, includePrivate);
     }
 
     @Transactional(readOnly = true)
     public List<Expedition> getExpeditions(int projectId, boolean includePrivate) {
-        List<Expedition> expeditions;
-
-        expeditions = expeditionRepository.getProjectExpeditions(projectId, includePrivate);
-
-        for (Expedition expedition : expeditions) {
-            attachExpeditionBcids(expedition);
-        }
-
-        return expeditions;
+        return expeditionRepository.getProjectExpeditions(projectId, includePrivate);
     }
 
     @Transactional(readOnly = true)
     public Expedition getExpedition(int expeditionId) {
-        Expedition expedition = expeditionRepository.findByExpeditionId(expeditionId);
-        if (expedition != null) {
-            attachExpeditionBcids(expedition);
-        }
-        return expedition;
+        return expeditionRepository.findByExpeditionId(expeditionId);
     }
 
     public void delete(int expeditionId) {
@@ -177,29 +146,6 @@ public class ExpeditionService {
 
     public void delete(String expeditionCode, int projectId) {
         expeditionRepository.deleteByExpeditionCodeAndProjectProjectId(expeditionCode, projectId);
-    }
-
-    /**
-     * set the {@link Bcid} identifier for each {@link Entity} in the {@link Mapping}
-     *
-     * @param mapping
-     * @param expeditionCode
-     * @param projectId
-     */
-    @Transactional(readOnly = true)
-    public void setEntityIdentifiers(Mapping mapping, String expeditionCode, int projectId) {
-        Expedition expedition = getExpedition(expeditionCode, projectId);
-        List<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
-
-        for (Bcid bcid : expeditionEntityBcids) {
-            for (Entity entity : mapping.getEntities()) {
-                if (bcid.getTitle().equals(entity.getConceptAlias())) {
-                    entity.setIdentifier(bcid.getIdentifier());
-                    break;
-                }
-            }
-        }
-
     }
 
     /**
@@ -246,7 +192,6 @@ public class ExpeditionService {
                 bcidService.create(bcid, userId);
                 bcidService.attachBcidToExpedition(bcid, expeditionId);
 
-                entity.setIdentifier(bcid.getIdentifier());
                 identifiers.add(
                         new EntityIdentifier(entity.getConceptAlias(), bcid.getIdentifier())
                 );
@@ -275,20 +220,6 @@ public class ExpeditionService {
 
         if (getExpedition(expeditionCode, projectId) != null)
             throw new FimsException("Expedition Code " + expeditionCode + " already exists.");
-    }
-
-    /**
-     * attach the expedition bcid and expedition entity bcids to the {@link Expedition} object
-     *
-     * @param expedition
-     */
-    private void attachExpeditionBcids(Expedition expedition) {
-        expedition.setExpeditionBcid(
-                bcidService.getBcid(
-                        expedition.getExpeditionId(),
-                        Expedition.EXPEDITION_RESOURCE_TYPE
-                ));
-        expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getExpeditionId()));
     }
 
     public List<Expedition> getPublicExpeditions(int projectId) {

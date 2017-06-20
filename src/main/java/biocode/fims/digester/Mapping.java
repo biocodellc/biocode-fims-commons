@@ -59,23 +59,6 @@ public class Mapping {
     }
 
     /**
-     * Get the conceptForwardingAddress for the entity with the given identifier
-     *
-     * @return
-     */
-    @JsonIgnore
-    public String getConceptForwardingAddress(String identifier) {
-        String forwardingAddress = null;
-        for (Entity entity : entities) {
-            if (StringUtils.equals(String.valueOf(entity.getIdentifier()), identifier)) {
-                forwardingAddress = entity.getConceptForwardingAddress();
-                break;
-            }
-        }
-        return forwardingAddress;
-    }
-
-    /**
      * The default unique key is the one referenced by the root entity
      *
      * @return

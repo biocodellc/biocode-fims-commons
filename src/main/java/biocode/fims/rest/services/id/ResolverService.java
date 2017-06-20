@@ -11,6 +11,7 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.models.Bcid;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ProjectService;
@@ -82,20 +83,15 @@ public class ResolverService extends FimsService {
             String response = new RDFRenderer(bcid, bcidMetadataSchema).render();
             return Response.ok(response).build();
         } else {
-            Mapping mapping = null;
+            ProjectConfig config = null;
 
                 Expedition expedition = bcid.getExpedition();
 
             if (expedition != null) {
-                File configFile = new ConfigurationFileFetcher(
-                        expedition.getProject().getProjectId(), defaultOutputDirectory(), true
-                ).getOutputFile();
-
-                mapping = new Mapping();
-                mapping.addMappingRules(configFile);
+                config = expedition.getProject().getProjectConfig();
             }
 
-            URI resolution = resolver.resolveIdentifier(identifierString, mapping);
+            URI resolution = resolver.resolveIdentifier(identifierString, config);
 
             if (accept.equalsIgnoreCase("application/json"))
                 return Response.ok("{\"url\": \"" + resolution + "\"}").build();

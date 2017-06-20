@@ -30,11 +30,8 @@ public class Expedition {
     private ExpeditionVisibility visibility;
     private URI identifier;
     private List<EntityIdentifier> entityIdentifiers;
-    private Set<Bcid> bcids;
     private Project project;
     private User user;
-    private Bcid expeditionBcid;
-    private List<Bcid> entityBcids;
 
     public static class ExpeditionBuilder {
 
@@ -221,19 +218,6 @@ public class Expedition {
                 '}';
     }
 
-    @JsonIgnore
-    @OneToMany(targetEntity = Bcid.class,
-            mappedBy = "expedition",
-            fetch = FetchType.LAZY
-    )
-    public Set<Bcid> getBcids() {
-        return bcids;
-    }
-
-    private void setBcids(Set<Bcid> bcids) {
-        this.bcids = bcids;
-    }
-
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
@@ -264,27 +248,5 @@ public class Expedition {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    @JsonView(Views.Detailed.class)
-    @JsonViewOverride(Views.Summary.class)
-    @Transient
-    public Bcid getExpeditionBcid() {
-        return expeditionBcid;
-    }
-
-    public void setExpeditionBcid(Bcid bcid) {
-        expeditionBcid = bcid;
-    }
-
-    @JsonView(Views.Detailed.class)
-    @JsonViewOverride(Views.Summary.class)
-    @Transient
-    public List<Bcid> getEntityBcids() {
-        return entityBcids;
-    }
-
-    public void setEntityBcids(List<Bcid> entityBcids) {
-        this.entityBcids = entityBcids;
     }
 }

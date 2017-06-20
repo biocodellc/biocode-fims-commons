@@ -28,7 +28,6 @@ public class Entity {
     private String parentEntity;
     private boolean esNestedObject = false;
     private Class<? extends Record> recordType = GenericRecord.class;
-    private URI identifier;
 
     // needed for jackson deserialization
     public Entity() {
@@ -185,15 +184,6 @@ public class Entity {
     }
 
     @JsonIgnore
-    public URI getIdentifier() {
-        return identifier;
-    }
-
-    public void setIdentifier(URI identifier) {
-        this.identifier = identifier;
-    }
-
-    @JsonIgnore
     public boolean isValueObject() {
         return getUniqueKey() != null && getUniqueKey().contains("HASH");
     }
@@ -285,9 +275,7 @@ public class Entity {
             return false;
         if (getParentEntity() != null ? !getParentEntity().equals(entity.getParentEntity()) : entity.getParentEntity() != null)
             return false;
-        if (getRecordType() != null ? !getRecordType().equals(entity.getRecordType()) : entity.getRecordType() != null)
-            return false;
-        return getIdentifier() != null ? getIdentifier().equals(entity.getIdentifier()) : entity.getIdentifier() == null;
+        return getRecordType() != null ? getRecordType().equals(entity.getRecordType()) : entity.getRecordType() == null;
     }
 
     @Override
@@ -302,7 +290,6 @@ public class Entity {
         result = 31 * result + (getParentEntity() != null ? getParentEntity().hashCode() : 0);
         result = 31 * result + (isEsNestedObject() ? 1 : 0);
         result = 31 * result + (getRecordType() != null ? getRecordType().hashCode() : 0);
-        result = 31 * result + (getIdentifier() != null ? getIdentifier().hashCode() : 0);
         return result;
     }
 }

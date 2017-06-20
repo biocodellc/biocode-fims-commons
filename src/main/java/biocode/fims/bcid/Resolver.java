@@ -1,11 +1,12 @@
 package biocode.fims.bcid;
 
-import biocode.fims.digester.Mapping;
+import biocode.fims.digester.Entity;
 import biocode.fims.models.Bcid;
+import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,11 @@ public class Resolver {
 
     private BcidService bcidService;
     private SettingsManager settingsManager;
-    private ExpeditionService expeditionService;
 
     @Autowired
-    public Resolver(BcidService bcidService, SettingsManager settingsManager, ExpeditionService expeditionService) {
+    public Resolver(BcidService bcidService, SettingsManager settingsManager) {
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
-        this.expeditionService = expeditionService;
     }
 
     /**
@@ -41,7 +40,7 @@ public class Resolver {
      *
      * @return URI content location URL
      */
-    public URI resolveIdentifier(String identifierString, Mapping mapping) {
+    public URI resolveIdentifier(String identifierString, ProjectConfig projectConfig) {
         URI resolution = null;
         String resolverMetadataPrefix = settingsManager.retrieveValue("resolverMetadataPrefix");
         String divider = settingsManager.retrieveValue("divider");
@@ -56,9 +55,8 @@ public class Resolver {
                 case Expedition.EXPEDITION_RESOURCE_TYPE:
                     if (hasWebAddress)
                         resolution = bcid.getWebAddress();
-                    else if (mapping != null) {
-                        // Try and get expeditionForwardingAddress in Mapping.metadata
-                        String expeditionForwardingAddress = mapping.getMetadata().getExpeditionForwardingAddress();
+                    else if (projectConfig != null) {
+                        String expeditionForwardingAddress = projectConfig.expeditionForwardingAddress();
 
                         if (!StringUtils.isEmpty(expeditionForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(expeditionForwardingAddress)
@@ -69,9 +67,8 @@ public class Resolver {
                 case ResourceTypes.DATASET_RESOURCE_TYPE:
                     if (hasWebAddress) {
                         resolution = bcid.getWebAddress();
-                    } else if (mapping != null) {
-                        // Try and get datasetForwardingAddress in Mapping.metadata
-                        String datasetForwardingAddress = mapping.getMetadata().getDatasetForwardingAddress();
+                    } else if (projectConfig != null) {
+                        String datasetForwardingAddress = projectConfig.datasetForwardingAddress();
 
                         if (!StringUtils.isEmpty(datasetForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(datasetForwardingAddress)
@@ -85,9 +82,17 @@ public class Resolver {
                             resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
                         else {
                             if (bcid.getExpedition() != null) {
-                                expeditionService.setEntityIdentifiers(mapping, bcid.getExpedition().getExpeditionCode(),
-                                        bcid.getExpedition().getProject().getProjectId());
-                                String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcid.getIdentifier()));
+                                String conceptForwardingAddress = null;
+
+                                for (EntityIdentifier entityIdentifier: bcid.getExpedition().getEntityIdentifiers()) {
+                                    if (entityIdentifier.getIdentifier().toString().equals(identifier.getBcidIdentifier())) {
+                                        Entity entity = projectConfig.entity(entityIdentifier.getConceptAlias());
+                                        if (entity != null) {
+                                        conceptForwardingAddress = entity.getConceptForwardingAddress();
+                                        break;
+                                        }
+                                    }
+                                }
 
                                 if (!StringUtils.isEmpty(conceptForwardingAddress)) {
                                     Map<String, String> urlMap = new HashMap();

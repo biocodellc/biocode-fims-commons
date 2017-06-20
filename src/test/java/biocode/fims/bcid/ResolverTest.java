@@ -1,24 +1,24 @@
 package biocode.fims.bcid;
 
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Metadata;
+import biocode.fims.digester.Entity;
 import biocode.fims.models.Bcid;
+import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.net.URI;
+import java.util.Collections;
 
 /**
  * Tests for the Resolver class
@@ -43,8 +43,6 @@ public class ResolverTest {
     private BcidService bcidService;
     @Mock
     private SettingsManager settingsManager;
-    @Mock
-    private ExpeditionService expeditionService;
 
     @Before
     public void initMocks() {
@@ -87,15 +85,10 @@ public class ResolverTest {
         Bcid bcid = new biocode.fims.models.Bcid.BcidBuilder("Resource")
                 .build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        Metadata metadata = PowerMockito.spy(new Metadata());
-        mapping.addMetadata(metadata);
-        PowerMockito.doReturn(null).when(metadata).getExpeditionForwardingAddress();
-
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, new ProjectConfig());
 
         Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
@@ -105,19 +98,21 @@ public class ResolverTest {
         Project project = new Project.ProjectBuilder("DEMO", "DEMO Project", null, "http://example.com/").build();
         project.setProjectId(1);
         Expedition expedition = new Expedition.ExpeditionBuilder("DEMO").build();
+        expedition.setEntityIdentifiers(Collections.singletonList(new EntityIdentifier("Resource", new URI(IDENTIFIER))));
         expedition.setProject(project);
+
         Bcid bcid = new Bcid.BcidBuilder("Resource").build();
         bcid.setExpedition(expedition);
 
-
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        PowerMockito.doReturn(WEBADRESS + "{ark}/test/{suffix}").when(mapping).getConceptForwardingAddress(IDENTIFIER);
+        Entity entity = new Entity("Resource", "someURI");
+        entity.setConceptForwardingAddress(WEBADRESS + "{ark}/test/{suffix}");
+        ProjectConfig config = new ProjectConfig();
+        config.addEntity(entity);
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
-        Mockito.doNothing().when(expeditionService).setEntityIdentifiers(mapping, expedition.getExpeditionCode(), project.getProjectId());
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, config);
 
         Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER + "/test/" + SUFFIX), location);
     }
@@ -154,15 +149,13 @@ public class ResolverTest {
     public void should_return_default_expeditionForwardingAddress_plus_identifier_for_expedition_with_suffix_no_webAddress() throws Exception {
         Bcid bcid = new biocode.fims.models.Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE).build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        Metadata metadata = PowerMockito.spy(new Metadata());
-        mapping.addMetadata(metadata);
-        PowerMockito.doReturn(WEBADRESS + "{ark}").when(metadata).getExpeditionForwardingAddress();
+        ProjectConfig config = new ProjectConfig();
+        config.setExpeditionForwardingAddress(WEBADRESS + "{ark}");
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, config);
 
         Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER), location);
     }
@@ -171,15 +164,10 @@ public class ResolverTest {
     public void should_return_resolverMetadataPrefix_plus_identifier_for_expedition_no_expeditionForwardingAddress_no_webAddress() throws Exception {
         Bcid bcid = new biocode.fims.models.Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE).build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        Metadata metadata = PowerMockito.spy(new Metadata());
-        mapping.addMetadata(metadata);
-        PowerMockito.doReturn(null).when(metadata).getExpeditionForwardingAddress();
-
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, new ProjectConfig());
 
         Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
@@ -188,15 +176,13 @@ public class ResolverTest {
     public void should_return_default_datasetForwardingAddress_plus_identifier_for_dataset_with_suffix_no_webAddress() throws Exception {
         Bcid bcid = new biocode.fims.models.Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE).build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        Metadata metadata = PowerMockito.spy(new Metadata());
-        mapping.addMetadata(metadata);
-        PowerMockito.doReturn(WEBADRESS + "{ark}").when(metadata).getDatasetForwardingAddress();
+        ProjectConfig config = new ProjectConfig();
+        config.setDatasetForwardingAddress(WEBADRESS + "{ark}");
 
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, config);
 
         Assert.assertEquals(new URI(WEBADRESS + IDENTIFIER), location);
     }
@@ -205,15 +191,10 @@ public class ResolverTest {
     public void should_return_resolverMetadataPrefix_plus_identifier_for_dataset_no_datasetForwardingAddress_no_webAddress() throws Exception {
         Bcid bcid = new biocode.fims.models.Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE).build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-        Metadata metadata = PowerMockito.spy(new Metadata());
-        mapping.addMetadata(metadata);
-        PowerMockito.doReturn(null).when(metadata).getDatasetForwardingAddress();
-
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, new ProjectConfig());
 
         Assert.assertEquals(new URI(RESOLVER_METADATA_PREFIX_VALUE + IDENTIFIER + SUFFIX), location);
     }
@@ -224,12 +205,10 @@ public class ResolverTest {
                 .webAddress(new URI(WEBADRESS))
                 .build();
 
-        Mapping mapping = PowerMockito.spy(new Mapping());
-
         bcid.setIdentifier(new URI(IDENTIFIER));
         Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);
 
-        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, mapping);
+        URI location = resolver.resolveIdentifier(IDENTIFIER + SUFFIX, new ProjectConfig());
 
         Assert.assertEquals(new URI(WEBADRESS), location);
     }
