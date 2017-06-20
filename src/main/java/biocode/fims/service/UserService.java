@@ -1,21 +1,32 @@
 package biocode.fims.service;
 
 import biocode.fims.auth.PasswordHash;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.UserCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.models.UserInvite;
+import biocode.fims.repositories.ProjectRepository;
+import biocode.fims.repositories.UserInviteRepository;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.EmailUtils;
 import biocode.fims.utils.StringGenerator;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
+
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 
 /**
@@ -25,19 +36,59 @@ import java.util.List;
 @Service
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static long INVITE_EXPIRATION_INTEVAL = SECONDS.convert(7, DAYS); // also need to change postgresql cleanup trigger
 
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager entityManager;
 
     private final UserRepository userRepository;
+    private final UserInviteRepository userInviteRepository;
     private final SettingsManager settingsManager;
+    private final MessageSource messageSource;
+    private final ProjectRepository projectRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, SettingsManager settingsManager) {
+    public UserService(UserRepository userRepository, UserInviteRepository userInviteRepository,
+                       ProjectRepository projectRepository,
+                       SettingsManager settingsManager, MessageSource messageSource) {
         this.userRepository = userRepository;
+        this.userInviteRepository = userInviteRepository;
+        this.projectRepository = projectRepository;
         this.settingsManager = settingsManager;
+        this.messageSource = messageSource;
     }
 
+
+    public User create(User user, String password, UUID inviteId) {
+        UserInvite invite = userInviteRepository.getInvite(inviteId, INVITE_EXPIRATION_INTEVAL);
+
+        if (invite == null) {
+            throw new FimsRuntimeException(UserCode.INVALID_INVITE, 400);
+        }
+
+        if (!user.isValid(true)) {
+            throw new FimsRuntimeException(UserCode.INVALID, 400);
+        }
+
+        if (getUser(user.getUsername()) != null) {
+            throw new FimsRuntimeException(UserCode.DUPLICATE_USERNAME, 400);
+        }
+
+        // hash the users password
+        user.setPassword(PasswordHash.createHash(password));
+
+        // add user to project members
+        Project project = projectRepository.getProjectByProjectId(invite.getProject().getProjectId(), "Project.withMembers");
+        project.getProjectMembers().add(user);
+        user.getProjectsMemberOf().add(project);
+
+        user = userRepository.save(user);
+        userInviteRepository.delete(invite);
+
+        return user;
+    }
+
+    @Deprecated
     public User create(User user) {
         return userRepository.save(user);
     }
@@ -136,7 +187,7 @@ public class UserService {
             user = getUserWithProjects(user.getUsername());
         }
 
-        for (Project project: user.getProjects()) {
+        for (Project project : user.getProjects()) {
             if (project.getProjectUrl().equals(appRoot)) {
                 return true;
             }
@@ -172,5 +223,40 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public boolean userExists(String email) {
+        return userRepository.userExists(email);
+    }
+
+    public UserInvite inviteUser(String email, Project project, User inviter) {
+        try {
+            UserInvite invite = userInviteRepository.save(new UserInvite(email, project, inviter));
+
+            String appRoot = settingsManager.retrieveValue("appRoot");
+            String accountCreateUrl = appRoot + settingsManager.retrieveValue("accountCreatePath");
+
+            Map<String, String> paramMap = new HashMap<>();
+            paramMap.put("id", invite.getId().toString());
+            paramMap.put("email", invite.getEmail());
+
+
+            EmailUtils.sendEmail(
+                    email,
+                    messageSource.getMessage(
+                            "UserInviteEmail__SUBJECT",
+                            null,
+                            Locale.US),
+                    messageSource.getMessage(
+                            "UserInviteEmail__BODY",
+                            new Object[]{StrSubstitutor.replace(accountCreateUrl, paramMap), project.getProjectTitle()},
+                            Locale.US)
+            );
+
+            return invite;
+
+        } catch (DataIntegrityViolationException e) {
+            throw new FimsRuntimeException(UserCode.DUPLICATE_INVITE, 400);
+        }
     }
 }

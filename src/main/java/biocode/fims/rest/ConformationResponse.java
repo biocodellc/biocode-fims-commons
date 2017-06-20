@@ -6,8 +6,8 @@ package biocode.fims.rest;
 public class ConformationResponse {
     private final boolean success;
 
-    public ConformationResponse(boolean sucess) {
-        this.success = sucess;
+    public ConformationResponse(boolean success) {
+        this.success = success;
     }
 
     public boolean isSuccess() {

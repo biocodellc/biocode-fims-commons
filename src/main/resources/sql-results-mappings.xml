@@ -15,4 +15,8 @@
         <entity-result entity-class="biocode.fims.models.User"/>
     </sql-result-set-mapping>
 
+    <sql-result-set-mapping name="UserInvite">
+        <entity-result entity-class="biocode.fims.models.UserInvite"/>
+    </sql-result-set-mapping>
+
 </entity-mappings>

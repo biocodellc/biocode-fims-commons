@@ -22,4 +22,12 @@
         </query>
     </named-native-query>
 
+    <named-native-query name="UserInvite.getInvite" result-set-mapping="UserInvite">
+        <query>
+            SELECT u.*
+            from user_invite u
+            where u.id = :id and EXTRACT( EPOCH FROM age(now(), u.created) ) &lt;= :expirationInterval
+        </query>
+    </named-native-query>
+
 </entity-mappings>

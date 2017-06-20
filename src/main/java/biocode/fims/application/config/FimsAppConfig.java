@@ -19,7 +19,6 @@ import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -35,7 +34,7 @@ import java.util.Map;
 @Configuration
 @EnableAspectJAutoProxy
 @ComponentScan(basePackages = {"biocode.fims"})
-@Import({SettingsManagerConfig.class, DataAccessConfig.class})
+@Import({SettingsManagerConfig.class, DataAccessConfig.class, MessageSourceConfig.class})
 public class FimsAppConfig {
     @Autowired
     BcidService bcidService;
@@ -45,14 +44,6 @@ public class FimsAppConfig {
     SettingsManager settingsManager;
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Bean
-    public ReloadableResourceBundleMessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:locale/messages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
-    }
 
     @Bean
     public DataReaderFactory dataReaderFactory() {

@@ -1,15 +1,18 @@
 package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.auth.PasswordHash;
+import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.rest.AcknowledgedResponse;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
+import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
@@ -23,6 +26,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * @author RJ Ewing
@@ -32,12 +36,15 @@ import java.util.Locale;
 public class UsersResource extends FimsService {
     private final UserService userService;
     private final MessageSource messageSource;
+    private final ProjectService projectService;
 
     @Autowired
-    public UsersResource(UserService userService, MessageSource messageSource, SettingsManager settingsManager) {
+    public UsersResource(UserService userService, MessageSource messageSource, ProjectService projectService,
+                         SettingsManager settingsManager) {
         super(settingsManager);
         this.userService = userService;
         this.messageSource = messageSource;
+        this.projectService = projectService;
     }
 
     /**
@@ -74,51 +81,18 @@ public class UsersResource extends FimsService {
     }
 
     /**
-     * create a new user, and send an email to the new user with login information
+     * create a new user. must have a valid invite token
      *
      * @param user
      * @responseMessage 400 invalid user object `biocode.fims.utils.ErrorInfo
+     * @responseMessage 400 invalid invite code `biocode.fims.utils.ErrorInfo
+     * @responseMessage 400 duplicate username `biocode.fims.utils.ErrorInfo
      */
     @JsonView(Views.Detailed.class)
-    @UserEntityGraph("User.withProjects")
     @POST
-    @Admin
-    @Authenticated
-    public User createUser(User user) {
-
-        if (!user.isValid(true)) {
-            throw new BadRequestException("username, password, firstName, lastName, email, and institution are required");
-        }
-
-        // check that a valid email is given
-        if (!user.getEmail().toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
-            throw new BadRequestException("please enter a valid email");
-        }
-
-        if (userService.getUser(user.getUsername()) != null) {
-            throw new BadRequestException("username already exists");
-        }
-
-        String password = user.getPassword();
-
-        // hash the users password
-        user.setPassword(PasswordHash.createHash(password));
-        user = userService.create(user);
-
-        EmailUtils.sendEmail(
-                user.getEmail(),
-                new String[]{userContext.getUser().getEmail()},
-                messageSource.getMessage(
-                        "NewUserEmail__SUBJECT",
-                        null,
-                        Locale.US),
-                messageSource.getMessage(
-                        "NewUserEmail__BODY",
-                        new Object[]{user.getFirstName(), user.getLastName(), appRoot, user.getUsername(), password},
-                        Locale.US)
-        );
-
-        return user;
+    public User createUser(@QueryParam("id") UUID inviteId,
+                           User user) {
+        return userService.create(user, user.getPassword(), inviteId);
     }
 
     /**
@@ -141,7 +115,7 @@ public class UsersResource extends FimsService {
         }
 
         if (!user.isValid(false)) {
-            throw new BadRequestException("firstName, lastName, email, and institution are required");
+            throw new BadRequestException("firstName, lastName, email are required");
         }
 
         user.update(updatedUser);
@@ -184,5 +158,35 @@ public class UsersResource extends FimsService {
         user.setPassword(PasswordHash.createHash(newPassword));
 
         return userService.update(user);
+    }
+
+    @Authenticated
+    @POST
+    @Path("/invite")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public AcknowledgedResponse inviteUser(@FormParam("projectId") int projectId,
+                                           @FormParam("email") String email) {
+        if (email == null) {
+            throw new BadRequestException("Email must not be null");
+        }
+
+        Project project = projectService.getProject(projectId, settingsManager.retrieveValue("appRoot"));
+
+        if (project == null || !project.getUser().equals(userContext.getUser())) {
+            throw new BadRequestException("Only admins can invite users to their project.");
+        }
+
+        // check that a valid email is given
+        if (!email.toUpperCase().matches("[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}")) {
+            throw new BadRequestException("Please enter a valid email.");
+        }
+
+        if (userService.userExists(email)) {
+            throw new BadRequestException("User with that email already exists.");
+        }
+
+        userService.inviteUser(email, project, userContext.getUser());
+
+        return new AcknowledgedResponse(true);
     }
 }

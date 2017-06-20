@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -106,10 +107,12 @@ public class User {
         firstName = builder.firstName;
         lastName = builder.lastName;
         hasSetPassword = builder.hasSetPassword;
+        projectsMemberOf = new ArrayList<>();
     }
 
     // needed for hibernate
     User() {
+        projectsMemberOf = new ArrayList<>();
     }
 
     /**
@@ -131,8 +134,7 @@ public class User {
                 (!StringUtils.isEmpty(this.getPassword()) || !requirePassword) &&
                 !StringUtils.isEmpty(this.getFirstName()) &&
                 !StringUtils.isEmpty(this.getLastName()) &&
-                !StringUtils.isEmpty(this.getEmail()) &&
-                !StringUtils.isEmpty(this.getInstitution());
+                !StringUtils.isEmpty(this.getEmail());
     }
 
     @Column(name = "id")

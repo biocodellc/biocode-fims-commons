@@ -241,6 +241,28 @@ CREATE TABLE user_projects (
 CREATE INDEX user_projects_project_id_idx ON projects (id);
 CREATE INDEX user_projects_user_id_idx ON users (id);
 
+DROP TABLE IF EXISTS user_invite;
+
+CREATE TABLE user_invite (
+  id UUID NOT NULL PRIMARY KEY ,
+  project_id INTEGER NOT NULL REFERENCES projects (id),
+  invited_by_id INTEGER NOT NULL REFERENCES users (id),
+  email TEXT NOT NULL UNIQUE,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TRIGGER set_user_invite_createdtime BEFORE INSERT ON user_invite FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+CREATE OR REPLACE FUNCTION delete_expired_user_invites()
+  RETURNS TRIGGER AS $$
+BEGIN
+  DELETE FROM user_invite WHERE created < now() - INTERVAL '7 DAYS';
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER delete_expired_user_invites AFTER INSERT ON user_invite EXECUTE PROCEDURE delete_expired_user_invites();
+
 DROP TABLE IF EXISTS expeditions;
 
 CREATE TABLE expeditions (

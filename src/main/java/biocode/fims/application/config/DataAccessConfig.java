@@ -23,7 +23,7 @@ import java.util.Properties;
  */
 @Configuration
 @EnableJpaRepositories(basePackages = "biocode.fims.repositories")
-@Import({SettingsManagerConfig.class})
+@Import({SettingsManagerConfig.class, MessageSourceConfig.class})
 @PropertySource("classpath:biocode-fims-database.properties")
 @EnableTransactionManagement
 public class DataAccessConfig {
