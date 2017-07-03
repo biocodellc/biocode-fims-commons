@@ -30,7 +30,7 @@ public class Bcid {
     private String publisher;
 
 
-    private Bcid(BcidBuilder builder) {
+    private Bcid(Bcid.BcidBuilder builder) {
         resourceType = builder.resourceType;
         ezidRequest = builder.ezidRequest;
         doi = builder.doi;
