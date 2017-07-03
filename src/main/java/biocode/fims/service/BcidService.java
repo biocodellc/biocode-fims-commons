@@ -4,7 +4,9 @@ import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.*;
 import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.*;
+import biocode.fims.repositories.BcidRepository;
 import biocode.fims.repositories.BcidTmpRepository;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +24,15 @@ public class BcidService {
     @PersistenceContext(unitName = "entityManagerFactory")
     private EntityManager entityManager;
 
+    private final BcidRepository bcidRepository;
     private final BcidTmpRepository bcidTmpRepository;
     protected final FimsProperties props;
     private final UserService userService;
 
     @Autowired
-    public BcidService(BcidTmpRepository bcidTmpRepository, FimsProperties props,
+    public BcidService(BcidRepository bcidRepository, BcidTmpRepository bcidTmpRepository, FimsProperties props,
                        UserService userService) {
+        this.bcidRepository = bcidRepository;
         this.bcidTmpRepository = bcidTmpRepository;
         this.props = props;
         this.userService = userService;
@@ -43,9 +47,13 @@ public class BcidService {
         // if the user is demo, never create ezid's
         if (bcidTmp.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
             bcidTmp.setEzidRequest(false);
-        bcidTmpRepository.save(bcidTmp);
 
-        // generate the identifier
+        String creator = (StringUtils.isEmpty(props.creator())) ? user.getFullName() + "<" + user.getEmail() + ">" : props.creator();
+        Bcid bcid = Bcid.fromBcidTmp(bcidTmp, creator);
+
+        bcid = bcidRepository.create(bcid);
+
+        bcidTmp.setIdentifier(bcid.identifier());
         bcidTmpRepository.save(bcidTmp);
 
         return bcidTmp;

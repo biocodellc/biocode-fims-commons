@@ -7,6 +7,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.Map;
 
 /**
@@ -23,6 +25,7 @@ public class AbstractRequest<T> implements Request<T> {
     private Map<String, Object[]> queryParams;
     private MediaType accepts;
     private Entity httpEntity;
+    private MultivaluedMap<String, Object> headers;
 
     public AbstractRequest(String method, Class<T> responseClass, Client client, String path, String baseUrl) {
         this.method = method;
@@ -30,6 +33,7 @@ public class AbstractRequest<T> implements Request<T> {
         this.client = client;
         this.path = path;
         this.baseUrl = baseUrl;
+        this.headers = new MultivaluedHashMap<>();
     }
 
     private void registerDefaultClientFeatures() {
@@ -51,6 +55,7 @@ public class AbstractRequest<T> implements Request<T> {
 
         return target.request()
                 .accept(accepts)
+                .headers(headers)
                 .method(method, httpEntity, responseClass);
     }
 
@@ -76,5 +81,9 @@ public class AbstractRequest<T> implements Request<T> {
 
     protected void setAccepts(MediaType accepts) {
         this.accepts = accepts;
+    }
+
+    public void addHeader(String name, String val) {
+        this.headers.putSingle(name, val);
     }
 }

@@ -1,5 +1,6 @@
 package biocode.fims.bcid;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Metadata;
 import biocode.fims.entities.BcidTmp;
@@ -16,6 +17,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.mock.env.MockEnvironment;
 
 import java.net.URI;
 
@@ -40,7 +42,6 @@ public class ResolverTest {
 
     @Mock
     private BcidService bcidService;
-    @Mock
     private FimsProperties props;
     @Mock
     private ExpeditionService expeditionService;
@@ -49,8 +50,10 @@ public class ResolverTest {
     public void initMocks() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(settingsManager.retrieveValue(RESOLVER_METADATA_PREFIX_KEY)).thenReturn(RESOLVER_METADATA_PREFIX_VALUE);
-        Mockito.when(settingsManager.retrieveValue(DIVIDER_KEY)).thenReturn(DIVIDER_VALUE);
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty(RESOLVER_METADATA_PREFIX_KEY, RESOLVER_METADATA_PREFIX_VALUE);
+        env.setProperty(DIVIDER_KEY, DIVIDER_VALUE);
+        this.props = new FimsProperties(env);
 
     }
 
