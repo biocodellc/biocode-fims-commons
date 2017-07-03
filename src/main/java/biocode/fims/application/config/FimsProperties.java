@@ -79,4 +79,16 @@ public class FimsProperties {
     public String rights() {
         return env.getRequiredProperty("rights");
     }
+
+    public String bcidUrl() {
+        return env.getRequiredProperty("bcidUrl");
+    }
+
+    public String bcidClientId() {
+        return env.getRequiredProperty("bcid.clientId");
+    }
+
+    public String bcidClientSecret() {
+        return env.getRequiredProperty("bcid.clientSecret");
+    }
 }

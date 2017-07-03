@@ -120,9 +120,14 @@ public class Bcid {
         }
     }
 
-    public static Bcid fromBcidTmp(BcidTmp bcidTmp) {
+    public static Bcid fromBcidTmp(BcidTmp bcidTmp, String creator) {
         // TODO check creator prop which will override the user setting
-        return new BcidBuilder(bcidTmp.getResourceType(), bcidTmp.getUser().getFullName() + " <" + bcidTmp.getUser().getEmail() + ">")
+        return new BcidBuilder(bcidTmp.getResourceType(), creator)
+                .doi(bcidTmp.getDoi())
+                .ezidRequest(bcidTmp.isEzidRequest())
+                .title(bcidTmp.getTitle())
+                .webAddress(bcidTmp.getWebAddress())
+                .userId(bcidTmp.getUser().getUUID())
                 .build();
     }
 
