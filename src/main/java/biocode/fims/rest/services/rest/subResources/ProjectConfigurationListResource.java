@@ -1,11 +1,11 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Field;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.rest.FimsService;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -27,8 +27,8 @@ public class ProjectConfigurationListResource extends FimsService {
 
 
     @Autowired
-    public ProjectConfigurationListResource(SettingsManager settingsManager) {
-        super(settingsManager);
+    public ProjectConfigurationListResource(FimsProperties props) {
+        super(props);
     }
 
     /**

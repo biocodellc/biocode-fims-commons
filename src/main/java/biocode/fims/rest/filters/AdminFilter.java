@@ -1,18 +1,15 @@
 package biocode.fims.rest.filters;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.UserContext;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Priority;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
@@ -28,12 +25,12 @@ public class AdminFilter implements ContainerRequestFilter {
     @Autowired
     private UserContext userContext;
     @Autowired
-    private SettingsManager settingsManager;
+    private FimsProperties props;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
             throws IOException {
-        if (userContext.getUser() == null || !userService.isAProjectAdmin(userContext.getUser(), settingsManager.retrieveValue("appRoot"))) {
+        if (userContext.getUser() == null || !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
             throw new ForbiddenRequestException("You must be an admin to access this service.");
         }
     }

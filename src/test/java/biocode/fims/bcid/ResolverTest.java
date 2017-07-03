@@ -42,7 +42,7 @@ public class ResolverTest {
     @Mock
     private BcidService bcidService;
     @Mock
-    private SettingsManager settingsManager;
+    private FimsProperties props;
     @Mock
     private ExpeditionService expeditionService;
 

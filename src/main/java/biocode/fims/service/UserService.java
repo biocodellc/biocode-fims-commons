@@ -1,10 +1,10 @@
 package biocode.fims.service;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.repositories.UserRepository;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.StringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ public class UserService {
     private EntityManager entityManager;
 
     private final UserRepository userRepository;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
 
     @Autowired
-    public UserService(UserRepository userRepository, SettingsManager settingsManager) {
+    public UserService(UserRepository userRepository, FimsProperties props) {
         this.userRepository = userRepository;
-        this.settingsManager = settingsManager;
+        this.props = props;
     }
 
     public User create(User user) {
@@ -82,7 +82,6 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public boolean userBelongsToInstanceProject(User user) {
-        String appRoot = settingsManager.retrieveValue("appRoot");
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
@@ -90,7 +89,7 @@ public class UserService {
         }
 
         for (Project project : user.getProjectsMemberOf()) {
-            if (project.getProjectUrl().equals(appRoot))
+            if (project.getProjectUrl().equals(props.appRoot()))
                 return true;
         }
 

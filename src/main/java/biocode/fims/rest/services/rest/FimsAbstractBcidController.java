@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.JSONRenderer;
@@ -37,8 +38,8 @@ public abstract class FimsAbstractBcidController extends FimsService {
     private final ProjectService projectService;
 
     @Autowired
-    FimsAbstractBcidController(BcidService bcidService, ProjectService projectService, SettingsManager settingsManager) {
-        super(settingsManager);
+    FimsAbstractBcidController(BcidService bcidService, ProjectService projectService, FimsProperties props) {
+        super(props);
         this.bcidService = bcidService;
         this.projectService = projectService;
     }
@@ -86,7 +87,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         }
 
         Bcid.BcidBuilder builder = new Bcid.BcidBuilder(resourceTypeString)
-                .ezidRequest(Boolean.valueOf(settingsManager.retrieveValue("ezidRequests")))
+                .ezidRequest(props.ezidRequests())
                 .doi(doi)
                 .title(title)
                 .graph(graph)

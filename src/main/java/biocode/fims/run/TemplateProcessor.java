@@ -4,7 +4,6 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.settings.PathManager;
-import biocode.fims.settings.SettingsManager;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -62,11 +61,10 @@ public class TemplateProcessor {
     Integer projectId;
     private String username = null;
 
-    public TemplateProcessor(Integer projectId, String outputFolder, XSSFWorkbook workbook) {
+    public TemplateProcessor(Integer projectId, String outputFolder, XSSFWorkbook workbook, int naan) {
         this.projectId = projectId;
         ConfigurationFileFetcher configFile = new ConfigurationFileFetcher(projectId, outputFolder, true);
-        SettingsManager sm = SettingsManager.getInstance();
-        naan = Integer.parseInt(sm.retrieveValue("naan"));
+        this.naan = naan;
 
         mapping = new Mapping();
         mapping.addMappingRules(configFile.getOutputFile());
@@ -106,11 +104,9 @@ public class TemplateProcessor {
      *
      * @param file
      */
-    private void instantiateTemplateProcessor(File file) {
+    private void instantiateTemplateProcessor(File file, int naan) {
         configFile = file;
-
-        SettingsManager sm = SettingsManager.getInstance();
-        naan = Integer.parseInt(sm.retrieveValue("naan"));
+        this.naan = naan;
 
         mapping = new Mapping();
         mapping.addMappingRules(configFile);
@@ -150,10 +146,10 @@ public class TemplateProcessor {
      * @param projectId
      * @param outputFolder
      */
-    public void instantiateTemplateProcessor(Integer projectId, String outputFolder) {
+    public void instantiateTemplateProcessor(Integer projectId, String outputFolder, int naan) {
         this.projectId = projectId;
         ConfigurationFileFetcher fetcher = new ConfigurationFileFetcher(projectId, outputFolder, true);
-        instantiateTemplateProcessor(fetcher.getOutputFile());
+        instantiateTemplateProcessor(fetcher.getOutputFile(), naan);
     }
 
 
@@ -166,7 +162,7 @@ public class TemplateProcessor {
      * @param datasetCode
      */
     public TemplateProcessor(Integer projectId, String outputFolder,
-                             String accessionNumber, String datasetCode, String identifier, String username) {
+                             String accessionNumber, String datasetCode, String identifier, String username, int naan) {
         // we can't have a null value for accessionNumber or datasetCode if using this constructor
         if (accessionNumber == null || datasetCode == null) {
             throw new FimsRuntimeException("dataset code and accession number are required", 500);
@@ -175,7 +171,7 @@ public class TemplateProcessor {
         this.accessionNumber = accessionNumber;
         this.datasetCode = datasetCode;
         this.identifier = identifier;
-        instantiateTemplateProcessor(projectId, outputFolder);
+        instantiateTemplateProcessor(projectId, outputFolder, naan);
     }
 
     /**
@@ -185,7 +181,7 @@ public class TemplateProcessor {
      * @param accessionNumber
      * @param datasetCode
      */
-    public TemplateProcessor(File file, String accessionNumber, String datasetCode, String identifier) {
+    public TemplateProcessor(File file, String accessionNumber, String datasetCode, String identifier, int naan) {
         // we can't have a null value for accessionNumber or datasetCode if using this constructor
         if (accessionNumber == null || datasetCode == null) {
             throw new FimsRuntimeException("dataset code and accession number are required", 500);
@@ -193,11 +189,11 @@ public class TemplateProcessor {
         this.accessionNumber = accessionNumber;
         this.datasetCode = datasetCode;
         this.identifier = identifier;
-        instantiateTemplateProcessor(file);
+        instantiateTemplateProcessor(file, naan);
     }
 
-    public TemplateProcessor(Integer projectId, String outputFolder) {
-        instantiateTemplateProcessor(projectId, outputFolder);
+    public TemplateProcessor(Integer projectId, String outputFolder, int naan) {
+        instantiateTemplateProcessor(projectId, outputFolder, naan);
     }
 
     public Mapping getMapping() {

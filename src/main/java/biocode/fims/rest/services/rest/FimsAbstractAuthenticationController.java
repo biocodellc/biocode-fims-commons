@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.BasicAuthDecoder;
 import biocode.fims.entities.OAuthClient;
 import biocode.fims.entities.OAuthNonce;
@@ -10,7 +11,6 @@ import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.ErrorInfo;
 import biocode.fims.utils.QueryParams;
 import org.slf4j.Logger;
@@ -43,8 +43,8 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
 
     @Autowired
     public FimsAbstractAuthenticationController(OAuthProviderService oAuthProviderService,
-                                                UserService userService, SettingsManager settingsManager) {
-        super(settingsManager);
+                                                UserService userService, FimsProperties props) {
+        super(props);
         this.oAuthProviderService = oAuthProviderService;
         this.userService = userService;
     }
@@ -75,13 +75,13 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
                 session.setAttribute("user", user);
 
                 // Check if the user is an admin for any projects
-                if (userService.isAProjectAdmin(user, appRoot)) {
+                if (userService.isAProjectAdmin(user, props.appRoot())) {
                     session.setAttribute("projectAdmin", true);
                 }
 
                 // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
                 if (!user.getHasSetPassword()) {
-                    return Response.ok("{\"url\": \"" + appRoot + "secure/profile?error=Update Your Password" +
+                    return Response.ok("{\"url\": \"" + props.appRoot() + "secure/profile?error=Update Your Password" +
                             new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
                             .build();
                 }
@@ -99,7 +99,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
                             new QueryParams().getQueryParams(request.getParameterMap(), true) + "\"}")
                             .build();
                 } else {
-                    return Response.ok("{\"url\": \"" + appRoot + "\"}").build();
+                    return Response.ok("{\"url\": \"" + props.appRoot() + "\"}").build();
                 }
             }
             // stored and entered passwords don't match, invalidate the session to be sure that a user is not in the session
@@ -160,7 +160,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
             // need the user to login
             try {
                 return Response.status(Response.Status.TEMPORARY_REDIRECT)
-                        .location(new URI(appRoot + "login?return_to=/id/authenticationService/oauth/authorize?"
+                        .location(new URI(props.appRoot()+ "login?return_to=/id/authenticationService/oauth/authorize?"
                                 + request.getQueryString()))
                         .build();
             } catch (URISyntaxException e) {
@@ -302,7 +302,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
         session.invalidate();
         userContext.setUser(null);
         try {
-            return Response.seeOther(new URI(appRoot)).build();
+            return Response.seeOther(new URI(props.appRoot())).build();
         } catch (URISyntaxException e) {
             throw new ServerErrorException(e);
         }

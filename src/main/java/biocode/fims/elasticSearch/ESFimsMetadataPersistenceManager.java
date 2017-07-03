@@ -1,21 +1,17 @@
 package biocode.fims.elasticSearch;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Attribute;
 import biocode.fims.fileManagers.fimsMetadata.AbstractFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.run.ProcessController;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.search.SearchHit;
-import org.json.simple.JSONArray;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +24,8 @@ public class ESFimsMetadataPersistenceManager extends AbstractFimsMetadataPersis
     private final Client client;
     private String graph;
 
-    public ESFimsMetadataPersistenceManager(Client client, SettingsManager settingsManager) {
-        super(settingsManager);
+    public ESFimsMetadataPersistenceManager(Client client, FimsProperties props) {
+        super(props);
         this.client = client;
     }
 

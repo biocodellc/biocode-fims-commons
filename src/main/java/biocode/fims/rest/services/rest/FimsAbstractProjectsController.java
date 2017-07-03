@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.entities.Project;
@@ -13,7 +14,6 @@ import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -36,9 +36,9 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     protected ExpeditionService expeditionService;
     protected ProjectService projectService;
 
-    FimsAbstractProjectsController(ExpeditionService expeditionService, SettingsManager settingsManager,
+    FimsAbstractProjectsController(ExpeditionService expeditionService, FimsProperties props,
                                    ProjectService projectService) {
-        super(settingsManager);
+        super(props);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
     }
@@ -82,7 +82,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAbstract(@PathParam("projectId") int projectId) {
         JSONObject obj = new JSONObject();
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
 
         // Write the all of the checkbox definitions to a String Variable
         //obj.put("abstract", JSONValue.escape(t.printAbstract()));
@@ -194,7 +194,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Path("/user/list")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Project> getUserProjects() {
-        return projectService.getProjects(appRoot, userContext.getUser(), false);
+        return projectService.getProjects(props.appRoot(), userContext.getUser(), false);
     }
 
     /**
@@ -338,7 +338,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
     @Path("/config/refreshCache")
     public Response refreshAllCache() {
         logger.info("refreshing project config caches");
-        List<Project> projects = projectService.getProjects(settingsManager.retrieveValue("appRoot"));
+        List<Project> projects = projectService.getProjects(props.appRoot());
 
         for (Project p: projects) {
             refreshCache(p.getProjectId());

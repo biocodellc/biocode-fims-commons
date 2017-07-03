@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.id;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Identifier;
@@ -40,16 +41,16 @@ public class ResolverService extends FimsService {
 
     private final BcidService bcidService;
     private final ProjectService projectService;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
     private final Resolver resolver;
 
     @Autowired
     ResolverService(BcidService bcidService, ProjectService projectService,
-                    SettingsManager settingsManager, Resolver resolver) {
-        super(settingsManager);
+                    FimsProperties props, Resolver resolver) {
+        super(props);
         this.bcidService = bcidService;
         this.projectService = projectService;
-        this.settingsManager = settingsManager;
+        this.props = props;
         this.resolver = resolver;
     }
 
@@ -66,7 +67,7 @@ public class ResolverService extends FimsService {
             @HeaderParam("accept") String accept) {
         Bcid bcid;
 
-        String divider = settingsManager.retrieveValue("divider");
+        String divider = props.divider();
         Identifier identifier = new Identifier(identifierString, divider);
         try {
             bcid = bcidService.getBcid(identifier.getBcidIdentifier());

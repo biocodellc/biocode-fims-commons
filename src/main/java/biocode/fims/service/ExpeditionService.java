@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.*;
@@ -11,7 +12,6 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.ExpeditionRepository;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -38,15 +38,15 @@ public class ExpeditionService {
     private final ExpeditionRepository expeditionRepository;
     private final ProjectService projectService;
     private final BcidService bcidService;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
 
     @Autowired
     public ExpeditionService(ExpeditionRepository expeditionRepository, BcidService bcidService,
-                             ProjectService projectService, SettingsManager settingsManager) {
+                             ProjectService projectService, FimsProperties props) {
         this.expeditionRepository = expeditionRepository;
         this.bcidService = bcidService;
         this.projectService = projectService;
-        this.settingsManager = settingsManager;
+        this.props = props;
     }
 
     public void create(Expedition expedition, int userId, int projectId, URI webAddress, Mapping mapping) {
@@ -67,11 +67,9 @@ public class ExpeditionService {
 
         expeditionRepository.save(expedition);
 
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
-
-        Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
+        Bcid bcid = createExpeditionBcid(expedition, webAddress, props.ezidRequests());
         expedition.setExpeditionBcid(bcid);
-        createEntityBcids(mapping, expedition.getExpeditionId(), userId, ezidRequest);
+        createEntityBcids(mapping, expedition.getExpeditionId(), userId, props.ezidRequests());
     }
 
     public void update(Expedition expedition) {

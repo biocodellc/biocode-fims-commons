@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -11,7 +12,6 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,8 @@ public class UsersResource extends FimsService {
     private final MessageSource messageSource;
 
     @Autowired
-    public UsersResource(UserService userService, MessageSource messageSource, SettingsManager settingsManager) {
-        super(settingsManager);
+    public UsersResource(UserService userService, MessageSource messageSource, FimsProperties props) {
+        super(props);
         this.userService = userService;
         this.messageSource = messageSource;
     }
@@ -66,7 +66,7 @@ public class UsersResource extends FimsService {
     @Authenticated
     public User getUser(@PathParam("username") String username) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
+                !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 
@@ -113,7 +113,7 @@ public class UsersResource extends FimsService {
                         Locale.US),
                 messageSource.getMessage(
                         "NewUserEmail__BODY",
-                        new Object[] {user.getFirstName(), user.getLastName(), appRoot, user.getUsername(), password},
+                        new Object[] {user.getFirstName(), user.getLastName(), props.appRoot(), user.getUsername(), password},
                         Locale.US)
         );
 
@@ -135,7 +135,7 @@ public class UsersResource extends FimsService {
     public User updateUser(@PathParam("username") String username,
                            User user) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
+                !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 

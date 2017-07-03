@@ -1,5 +1,6 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
@@ -16,7 +17,6 @@ import biocode.fims.renderers.RowMessage;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,7 +35,7 @@ public class FimsMetadataFileManager implements FileManager {
     public static final String DATASET_RESOURCE_SUB_TYPE = "FimsMetadata";
 
     private final FimsMetadataPersistenceManager persistenceManager;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
     private final ExpeditionService expeditionService;
     private final BcidService bcidService;
     private final MessageSource messageSource;
@@ -43,10 +43,10 @@ public class FimsMetadataFileManager implements FileManager {
     private String filename;
     private ArrayNode fimsMetadata;
 
-    public FimsMetadataFileManager(FimsMetadataPersistenceManager persistenceManager, SettingsManager settingsManager,
+    public FimsMetadataFileManager(FimsMetadataPersistenceManager persistenceManager, FimsProperties props,
                                    ExpeditionService expeditionService, BcidService bcidService, MessageSource messageSource) {
         this.persistenceManager = persistenceManager;
-        this.settingsManager = settingsManager;
+        this.props = props;
         this.expeditionService = expeditionService;
         this.bcidService = bcidService;
         this.messageSource = messageSource;
@@ -110,7 +110,7 @@ public class FimsMetadataFileManager implements FileManager {
             URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : null;
 
             Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
-                    .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
+                    .ezidRequest(props.ezidRequests())
                     .title("Fims Metadata Dataset: " + processController.getExpeditionCode())
                     .webAddress(webaddress)
                     .graph(persistenceManager.getGraph())

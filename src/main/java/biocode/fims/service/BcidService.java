@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.*;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
@@ -36,21 +37,20 @@ public class BcidService {
     EntityManager entityManager;
 
     private final BcidRepository bcidRepository;
-    protected final SettingsManager settingsManager;
+    protected final FimsProperties props;
     private final UserService userService;
     private final BcidEncoder bcidEncoder = new BcidEncoder();
 
     @Autowired
-    public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
+    public BcidService(BcidRepository bcidRepository, FimsProperties props,
                        UserService userService) {
         this.bcidRepository = bcidRepository;
-        this.settingsManager = settingsManager;
+        this.props = props;
         this.userService = userService;
     }
 
     @Transactional
     public Bcid create(Bcid bcid, int userId) {
-        int naan = new Integer(settingsManager.retrieveValue("naan"));
 
         User user = userService.getUser(userId);
         bcid.setUser(user);
@@ -62,7 +62,7 @@ public class BcidService {
 
         // generate the identifier
         try {
-            bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), naan));
+            bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), props.naan()));
         } catch (URISyntaxException e) {
             throw new ServerErrorException("Server Error", String.format(
                     "URISyntaxException while generating identifier for bcid: %s", bcid),
