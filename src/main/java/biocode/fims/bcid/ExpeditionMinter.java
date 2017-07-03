@@ -1,8 +1,9 @@
 package biocode.fims.bcid;
 
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.repositories.BcidRepository;
+import biocode.fims.repositories.BcidTmpRepository;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SpringApplicationContext;
 import org.json.simple.JSONArray;
@@ -26,10 +27,10 @@ public class ExpeditionMinter {
      */
     public void attachReferenceToExpedition(String expeditionCode, String identifier, Integer projectId) {
         Integer expeditionId = getExpeditionId(expeditionCode, projectId);
-        BcidRepository bcidRepository = (BcidRepository) SpringApplicationContext.getBean("bcidRepository");
-        biocode.fims.entities.Bcid bcid = bcidRepository.findByIdentifier(identifier);
+        BcidTmpRepository bcidTmpRepository = (BcidTmpRepository) SpringApplicationContext.getBean("bcidTmpRepository");
+        BcidTmp bcidTmp = bcidTmpRepository.findByIdentifier(identifier);
 
-        attachReferenceToExpedition(expeditionId, bcid.getBcidId());
+        attachReferenceToExpedition(expeditionId, bcidTmp.getBcidId());
     }
 
     private void attachReferenceToExpedition(Integer expeditionId, Integer bcidId) {

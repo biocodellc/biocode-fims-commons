@@ -4,7 +4,7 @@ import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.entities.*;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -67,8 +67,8 @@ public class ExpeditionService {
 
         expeditionRepository.save(expedition);
 
-        Bcid bcid = createExpeditionBcid(expedition, webAddress, props.ezidRequests());
-        expedition.setExpeditionBcid(bcid);
+        BcidTmp bcidTmp = createExpeditionBcid(expedition, webAddress, props.ezidRequests());
+        expedition.setExpeditionBcidTmp(bcidTmp);
         createEntityBcids(mapping, expedition.getExpeditionId(), userId, props.ezidRequests());
     }
 
@@ -88,10 +88,10 @@ public class ExpeditionService {
     @Transactional(readOnly = true)
     public Expedition getExpedition(String identifier) {
         Expedition expedition = null;
-        Bcid bcid = bcidService.getBcid(identifier);
-        if (bcid != null) {
-            expedition = bcid.getExpedition();
-            expedition.setExpeditionBcid(bcid);
+        BcidTmp bcidTmp = bcidService.getBcid(identifier);
+        if (bcidTmp != null) {
+            expedition = bcidTmp.getExpedition();
+            expedition.setExpeditionBcidTmp(bcidTmp);
         }
         return expedition;
     }
@@ -104,7 +104,7 @@ public class ExpeditionService {
      * @return returns the BCID for this expedition and conceptURI combination
      */
     @Transactional(readOnly = true)
-    public Bcid getEntityBcid(String expeditionCode, int projectId, String conceptAlias) {
+    public BcidTmp getEntityBcid(String expeditionCode, int projectId, String conceptAlias) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
 
         if (expedition == null) {
@@ -172,7 +172,7 @@ public class ExpeditionService {
     }
 
     /**
-     * set the {@link Bcid} identifier for each {@link Entity} in the {@link Mapping}
+     * set the {@link BcidTmp} identifier for each {@link Entity} in the {@link Mapping}
      *
      * @param mapping
      * @param expeditionCode
@@ -181,12 +181,12 @@ public class ExpeditionService {
     @Transactional(readOnly = true)
     public void setEntityIdentifiers(Mapping mapping, String expeditionCode, int projectId) {
         Expedition expedition = getExpedition(expeditionCode, projectId);
-        List<Bcid> expeditionEntityBcids = bcidService.getEntityBcids(expedition.getExpeditionId());
+        List<BcidTmp> expeditionEntityBcidTmps = bcidService.getEntityBcids(expedition.getExpeditionId());
 
-        for (Bcid bcid : expeditionEntityBcids) {
+        for (BcidTmp bcidTmp : expeditionEntityBcidTmps) {
             for (Entity entity : mapping.getEntities()) {
-                if (bcid.getTitle().equals(entity.getConceptAlias())) {
-                    entity.setIdentifier(bcid.getIdentifier());
+                if (bcidTmp.getTitle().equals(entity.getConceptAlias())) {
+                    entity.setIdentifier(bcidTmp.getIdentifier());
                     break;
                 }
             }
@@ -201,26 +201,26 @@ public class ExpeditionService {
      * @param webAddress
      * @return
      */
-    private Bcid createExpeditionBcid(Expedition expedition, URI webAddress, boolean ezidRequest) {
+    private BcidTmp createExpeditionBcid(Expedition expedition, URI webAddress, boolean ezidRequest) {
 
-        Bcid expditionBcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
+        BcidTmp expditionBcidTmp = new BcidTmp.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
                 .webAddress(webAddress)
                 .title("Expedition: " + expedition.getExpeditionTitle())
                 .ezidRequest(ezidRequest)
                 .build();
 
-        bcidService.create(expditionBcid, expedition.getUser().getUserId());
-        bcidService.attachBcidToExpedition(expditionBcid, expedition.getExpeditionId());
-        return expditionBcid;
+        bcidService.create(expditionBcidTmp, expedition.getUser().getUserId());
+        bcidService.attachBcidToExpedition(expditionBcidTmp, expedition.getExpeditionId());
+        return expditionBcidTmp;
     }
 
     private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
         for (Entity entity : mapping.getEntities()) {
-            Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
-            bcidService.create(bcid, userId);
-            bcidService.attachBcidToExpedition(bcid, expeditionId);
+            BcidTmp bcidTmp = EntityToBcidMapper.map(entity, ezidRequest);
+            bcidService.create(bcidTmp, userId);
+            bcidService.attachBcidToExpedition(bcidTmp, expeditionId);
 
-            entity.setIdentifier(bcid.getIdentifier());
+            entity.setIdentifier(bcidTmp.getIdentifier());
         }
     }
 
@@ -251,12 +251,12 @@ public class ExpeditionService {
      * @param expedition
      */
     private void attachExpeditionBcids(Expedition expedition) {
-        expedition.setExpeditionBcid(
+        expedition.setExpeditionBcidTmp(
                 bcidService.getBcid(
                         expedition.getExpeditionId(),
                         Expedition.EXPEDITION_RESOURCE_TYPE
                 ));
-        expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getExpeditionId()));
+        expedition.setEntityBcidTmps(bcidService.getEntityBcids(expedition.getExpeditionId()));
     }
 
     public List<Expedition> getPublicExpeditions(int projectId) {

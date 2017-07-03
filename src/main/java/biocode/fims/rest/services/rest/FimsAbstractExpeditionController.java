@@ -5,7 +5,7 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -132,9 +132,9 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         }
 
         try {
-            Bcid bcid = expeditionService.getEntityBcid(expeditionCode, projectId, conceptAlias);
+            BcidTmp bcidTmp = expeditionService.getEntityBcid(expeditionCode, projectId, conceptAlias);
 
-            return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
+            return Response.ok("{\"identifier\": \"" + bcidTmp.getIdentifier() + "\"}").build();
 
         } catch (EmptyResultDataAccessException e) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();

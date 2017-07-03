@@ -2,7 +2,7 @@ package biocode.fims.bcid.Renderer;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.ServerErrorException;
@@ -34,9 +34,9 @@ public class JSONRenderer extends Renderer {
     /**
      * constructor for displaying private dataset information
      */
-    public JSONRenderer(User user, Bcid bcid, ProjectAuthorizer projectAuthorizer, BcidService bcidService,
+    public JSONRenderer(User user, BcidTmp bcidTmp, ProjectAuthorizer projectAuthorizer, BcidService bcidService,
                         BcidMetadataSchema bcidMetadataSchema, String appRoot) {
-        super(bcid, bcidMetadataSchema);
+        super(bcidTmp, bcidMetadataSchema);
         this.user = user;
         this.projectAuthorizer = projectAuthorizer;
         this.bcidService = bcidService;
@@ -59,7 +59,7 @@ public class JSONRenderer extends Renderer {
     }
 
     public boolean validIdentifier() {
-        if (this.bcid == null) {
+        if (this.bcidTmp == null) {
             outputSB.append("{\"Identifier\":{\"status\":\"not found\"}}");
             return false;
         } else {
@@ -115,7 +115,7 @@ public class JSONRenderer extends Renderer {
     }
 
     private void appendExpeditionDatasets() {
-        Expedition expedition = bcid.getExpedition();
+        Expedition expedition = bcidTmp.getExpedition();
         if (expedition == null) {
             json.put("message", "This Expedition has been deleted. Contact the project administrator if you need access to the datasets");
         } else if (displayDatasets(expedition)) {
@@ -137,7 +137,7 @@ public class JSONRenderer extends Renderer {
     }
 
     private void appendDataset() {
-        Expedition expedition = bcid.getExpedition();
+        Expedition expedition = bcidTmp.getExpedition();
         if (expedition == null) {
             json.put("message", "This dataset has been deleted. Contact the project administrator if you need access.");
         } else if (displayDatasets(expedition)) {

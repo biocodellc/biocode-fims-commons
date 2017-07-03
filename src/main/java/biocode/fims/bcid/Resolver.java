@@ -1,7 +1,7 @@
 package biocode.fims.bcid;
 
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.service.BcidService;
@@ -45,51 +45,51 @@ public class Resolver {
         String divider = settingsManager.retrieveValue("divider");
 
         Identifier identifier = new Identifier(identifierString, divider);
-        Bcid bcid = bcidService.getBcid(identifier.getBcidIdentifier());
+        BcidTmp bcidTmp = bcidService.getBcid(identifier.getBcidIdentifier());
 
-        boolean hasWebAddress = (bcid.getWebAddress() != null && !String.valueOf(bcid.getWebAddress()).isEmpty());
+        boolean hasWebAddress = (bcidTmp.getWebAddress() != null && !String.valueOf(bcidTmp.getWebAddress()).isEmpty());
 
         try {
-            switch (bcid.getResourceType()) {
+            switch (bcidTmp.getResourceType()) {
                 case Expedition.EXPEDITION_RESOURCE_TYPE:
                     if (hasWebAddress)
-                        resolution = bcid.getWebAddress();
+                        resolution = bcidTmp.getWebAddress();
                     else if (mapping != null) {
                         // Try and get expeditionForwardingAddress in Mapping.metadata
                         String expeditionForwardingAddress = mapping.getMetadata().getExpeditionForwardingAddress();
 
                         if (!StringUtils.isEmpty(expeditionForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(expeditionForwardingAddress)
-                                    .buildAndExpand(bcid.getIdentifier()).toUri();
+                                    .buildAndExpand(bcidTmp.getIdentifier()).toUri();
                         }
                     }
                     break;
                 case ResourceTypes.DATASET_RESOURCE_TYPE:
                     if (hasWebAddress) {
-                        resolution = bcid.getWebAddress();
+                        resolution = bcidTmp.getWebAddress();
                     } else if (mapping != null) {
                         // Try and get datasetForwardingAddress in Mapping.metadata
                         String datasetForwardingAddress = mapping.getMetadata().getDatasetForwardingAddress();
 
                         if (!StringUtils.isEmpty(datasetForwardingAddress)) {
                             resolution = UriComponentsBuilder.fromUriString(datasetForwardingAddress)
-                                    .buildAndExpand(bcid.getIdentifier()).toUri();
+                                    .buildAndExpand(bcidTmp.getIdentifier()).toUri();
                         }
                     }
                     break;
                 default:
                     if (identifier.hasSuffix()) {
                         if (hasWebAddress)
-                            resolution = new URI(bcid.getWebAddress() + identifier.getSuffix());
+                            resolution = new URI(bcidTmp.getWebAddress() + identifier.getSuffix());
                         else {
-                            if (bcid.getExpedition() != null) {
-                                expeditionService.setEntityIdentifiers(mapping, bcid.getExpedition().getExpeditionCode(),
-                                        bcid.getExpedition().getProject().getProjectId());
-                                String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcid.getIdentifier()));
+                            if (bcidTmp.getExpedition() != null) {
+                                expeditionService.setEntityIdentifiers(mapping, bcidTmp.getExpedition().getExpeditionCode(),
+                                        bcidTmp.getExpedition().getProject().getProjectId());
+                                String conceptForwardingAddress = mapping.getConceptForwardingAddress(String.valueOf(bcidTmp.getIdentifier()));
 
                                 if (!StringUtils.isEmpty(conceptForwardingAddress)) {
                                     Map<String, String> urlMap = new HashMap();
-                                    urlMap.put("ark", String.valueOf(bcid.getIdentifier()));
+                                    urlMap.put("ark", String.valueOf(bcidTmp.getIdentifier()));
                                     urlMap.put("suffix", String.valueOf(identifier.getSuffix()));
                                     resolution = UriComponentsBuilder.fromUriString(conceptForwardingAddress)
                                             .buildAndExpand(urlMap).toUri();
@@ -106,7 +106,7 @@ public class Resolver {
             }
         } catch(URISyntaxException e) {
             throw new ServerErrorException("Server Error", "Syntax exception thrown for metadataTargetPrefix: \"" +
-                    resolverMetadataPrefix + "\" and bcid: \"" + bcid + "\"", e);
+                    resolverMetadataPrefix + "\" and bcid: \"" + bcidTmp + "\"", e);
         }
 
         return resolution;

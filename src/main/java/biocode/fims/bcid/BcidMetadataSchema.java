@@ -1,9 +1,8 @@
 package biocode.fims.bcid;
 
-import biocode.fims.entities.Bcid;
+import biocode.fims.application.config.FimsProperties;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
-import biocode.fims.settings.SettingsManager;
-import org.springframework.util.StringUtils;
 
 /**
  * Metadata Schema for Describing a Bcid--
@@ -26,41 +25,41 @@ public class BcidMetadataSchema {
     public metadataElement identifier;
     public metadataElement isPublic;
 
-    private final Bcid bcid;
+    private final BcidTmp bcidTmp;
+    private final FimsProperties properties;
     private final Identifier identifierObject;
-    private final SettingsManager settingsManager;
 
-    public BcidMetadataSchema(Bcid bcid, SettingsManager settingsManager, Identifier identifier) {
-        this.bcid = bcid;
+    public BcidMetadataSchema(BcidTmp bcidTmp, FimsProperties properties, Identifier identifier) {
+        this.bcidTmp = bcidTmp;
+        this.properties = properties;
         this.identifierObject = identifier;
-        this.settingsManager = settingsManager;
         registerMetadataElements();
         setMetadataElements();
     }
 
     private void setMetadataElements() {
-        Expedition expedition = bcid.getExpedition();
+        Expedition expedition = bcidTmp.getExpedition();
         if (expedition != null && expedition.getProject() != null) {
             dcPublisher.setValue(expedition.getProject().getProjectCode());
             isPublic.setValue(String.valueOf(expedition.getProject().isPublic()));
         }
 
-        identifier.setValue(String.valueOf(bcid.getIdentifier()));
-        about.setValue(settingsManager.retrieveValue("resolverTargetPrefix") + identifierObject.getIdentifier());
-        resource.setValue(bcid.getResourceType());
+        identifier.setValue(String.valueOf(bcidTmp.getIdentifier()));
+        about.setValue(properties.resolverTargetPrefix() + identifierObject.getIdentifier());
+        resource.setValue(bcidTmp.getResourceType());
 
-        dcDate.setValue(String.valueOf(bcid.getTs()));
-        dcCreator.setValue(bcid.getUser().getFullName());
-        dcTitle.setValue(bcid.getTitle());
+        dcDate.setValue(String.valueOf(bcidTmp.getTs()));
+        dcCreator.setValue(bcidTmp.getUser().getFullName());
+        dcTitle.setValue(bcidTmp.getTitle());
         dcSource.setValue(identifierObject.getSuffix());
-        dcRights.setValue(settingsManager.retrieveValue("rights"));
+        dcRights.setValue(properties.rights());
 
-        if (!bcid.getUser().getFullName().equals("Test Account")) {
-            dcIsReferencedBy.setValue("http://n2t.net/" + bcid.getIdentifier());
+        if (!bcidTmp.getUser().getFullName().equals("Test Account")) {
+            dcIsReferencedBy.setValue("http://n2t.net/" + bcidTmp.getIdentifier());
         }
 
-        if (bcid.getDoi() != null) {
-            String doi = bcid.getDoi().replace("doi:", "http://dx.doi.org/");
+        if (bcidTmp.getDoi() != null) {
+            String doi = bcidTmp.getDoi().replace("doi:", "http://dx.doi.org/");
             dcIsPartOf.setValue(doi);
         }
 

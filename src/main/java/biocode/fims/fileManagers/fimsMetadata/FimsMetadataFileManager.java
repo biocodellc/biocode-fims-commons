@@ -6,7 +6,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.FileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -109,7 +109,7 @@ public class FimsMetadataFileManager implements FileManager {
 
             URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : null;
 
-            Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
+            BcidTmp bcidTmp = new BcidTmp.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(props.ezidRequests())
                     .title("Fims Metadata Dataset: " + processController.getExpeditionCode())
                     .webAddress(webaddress)
@@ -118,7 +118,7 @@ public class FimsMetadataFileManager implements FileManager {
                     .finalCopy(processController.getFinalCopy())
                     .build();
 
-            bcidService.create(bcid, processController.getUserId());
+            bcidService.create(bcidTmp, processController.getUserId());
 
             Expedition expedition = expeditionService.getExpedition(
                     processController.getExpeditionCode(),
@@ -126,19 +126,19 @@ public class FimsMetadataFileManager implements FileManager {
             );
 
             bcidService.attachBcidToExpedition(
-                    bcid,
+                    bcidTmp,
                     expedition.getExpeditionId()
             );
 
             // save the spreadsheet on the server
             File inputFile = new File(filename);
 
-            bcid.setSourceFile(persistenceManager.writeSourceFile(inputFile, bcid.getBcidId()));
-            bcidService.update(bcid);
+            bcidTmp.setSourceFile(persistenceManager.writeSourceFile(inputFile, processController.getProjectId(), processController.getExpeditionCode()));
+            bcidService.update(bcidTmp);
 
             // TODO this should include all entity identifiers
             Object[] messagesArgs = new Object[] {
-                    bcid.getIdentifier(),
+                    bcidTmp.getIdentifier(),
                     processController.getExpeditionCode(),
                     processController.getMapping().getRootEntity().getIdentifier()
             };
@@ -161,14 +161,14 @@ public class FimsMetadataFileManager implements FileManager {
         ArrayNode dataset = getDataset();
 
         Entity rootEntity = processController.getMapping().getRootEntity();
-        Bcid rootEntityBcid = expeditionService.getEntityBcid(
+        BcidTmp rootEntityBcidTmp = expeditionService.getEntityBcid(
                 processController.getExpeditionCode(), processController.getProjectId(), rootEntity.getConceptAlias());
 
-        if (rootEntityBcid == null) {
+        if (rootEntityBcidTmp == null) {
             throw new FimsRuntimeException("Server Error", "rootEntityBcid is null", 500);
         }
 
-        return prepareIndex(dataset, String.valueOf(rootEntityBcid.getIdentifier()));
+        return prepareIndex(dataset, String.valueOf(rootEntityBcidTmp.getIdentifier()));
     }
 
     public boolean isNewDataset() {

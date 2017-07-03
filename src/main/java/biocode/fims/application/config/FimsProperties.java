@@ -71,4 +71,12 @@ public class FimsProperties {
     public String mapboxAccessToken() {
         return env.getRequiredProperty("mapboxAccessToken");
     }
+
+    public String resolverTargetPrefix() {
+        return env.getRequiredProperty("resolverTargetPrefix");
+    }
+
+    public String rights() {
+        return env.getRequiredProperty("rights");
+    }
 }

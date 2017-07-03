@@ -9,13 +9,12 @@ import biocode.fims.bcid.Renderer.RDFRenderer;
 import biocode.fims.bcid.Resolver;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
@@ -65,12 +64,12 @@ public class ResolverService extends FimsService {
     public Response run(
             @PathParam("identifier") String identifierString,
             @HeaderParam("accept") String accept) {
-        Bcid bcid;
+        BcidTmp bcidTmp;
 
         String divider = props.divider();
         Identifier identifier = new Identifier(identifierString, divider);
         try {
-            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
+            bcidTmp = bcidService.getBcid(identifier.getBcidIdentifier());
         } catch (EmptyResultDataAccessException e) {
             // TODO probably want to return Viewable here
             throw new BadRequestException("Invalid Identifier");
@@ -79,13 +78,13 @@ public class ResolverService extends FimsService {
         // When the Accept Header = "application/rdf+xml" return Metadata as RDF
         if (accept.equalsIgnoreCase("application/rdf+xml")) {
             // Return RDF when the Accepts header specifies rdf+xml
-            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
-            String response = new RDFRenderer(bcid, bcidMetadataSchema).render();
+            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcidTmp, props, identifier);
+            String response = new RDFRenderer(bcidTmp, bcidMetadataSchema).render();
             return Response.ok(response).build();
         } else {
             Mapping mapping = null;
 
-                Expedition expedition = bcid.getExpedition();
+                Expedition expedition = bcidTmp.getExpedition();
 
             if (expedition != null) {
                 File configFile = new ConfigurationFileFetcher(
@@ -110,26 +109,25 @@ public class ResolverService extends FimsService {
     @Path("metadata/{identifier: .+}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response metadata (@PathParam("identifier") String identifierString) {
-        Bcid bcid;
-        String divider = settingsManager.retrieveValue("divider");
-        Identifier identifier = new Identifier(identifierString, divider);
+        BcidTmp bcidTmp;
+        Identifier identifier = new Identifier(identifierString, props.divider());
 
         try {
-            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
+            bcidTmp = bcidService.getBcid(identifier.getBcidIdentifier());
         } catch (EmptyResultDataAccessException e) {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
-        BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, props.appRoot());
+        BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcidTmp, props, identifier);
 
         JSONRenderer renderer = new JSONRenderer(
                 userContext.getUser(),
-                bcid,
+                bcidTmp,
                 projectAuthorizer,
                 bcidService,
                 bcidMetadataSchema,
-                appRoot
+                props.appRoot()
         );
 
         return Response.ok(renderer.getMetadata()).build();
