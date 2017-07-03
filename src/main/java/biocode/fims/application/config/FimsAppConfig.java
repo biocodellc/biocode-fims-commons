@@ -1,6 +1,7 @@
 package biocode.fims.application.config;
 
 import biocode.fims.bcid.Resolver;
+import biocode.fims.repositories.BcidRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 
+import javax.ws.rs.client.ClientBuilder;
 import java.io.FileNotFoundException;
 
 /**
@@ -31,7 +33,6 @@ public class FimsAppConfig {
     ExpeditionService expeditionService;
     @Autowired
     SettingsManager settingsManager;
-    FimsProperties props;
 
     @Bean
     public Resolver resolver() throws FileNotFoundException {
@@ -49,6 +50,11 @@ public class FimsAppConfig {
         messageSource.setBasename("classpath:locale/messages");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+
+    @Bean
+    public BcidRepository bcidRepository(FimsProperties fimsProperties) {
+        return new BcidRepository(ClientBuilder.newClient(), fimsProperties);
     }
 
     @Bean
