@@ -1,8 +1,9 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.models.Bcid;
+import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -13,7 +14,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
@@ -21,7 +21,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.ws.rs.*;
@@ -31,6 +30,7 @@ import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.util.NoSuchElementException;
 
 /**
  * REST interface calls for working with expeditions.  This includes creating, updating and deleting expeditions.
@@ -44,8 +44,8 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
 
     @Autowired
     public FimsAbstractExpeditionController(ExpeditionService expeditionService, ProjectService projectService,
-                                            SettingsManager settingsManager) {
-        super(settingsManager);
+                                            FimsProperties props) {
+        super(props);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
     }
@@ -124,11 +124,16 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         }
 
         try {
-            Bcid bcid = expeditionService.getEntityBcid(expeditionCode, projectId, conceptAlias);
+            Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+            EntityIdentifier entityIdentifier = expedition.getEntityIdentifiers()
+                    .stream()
+                    .filter(e -> e.getConceptAlias().equals(conceptAlias))
+                    .findFirst()
+                    .get();
 
-            return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
+            return Response.ok("{\"identifier\": \"" + entityIdentifier.getIdentifier() + "\"}").build();
 
-        } catch (EmptyResultDataAccessException e) {
+        } catch (NoSuchElementException e) {
             return Response.status(Response.Status.NO_CONTENT).entity("{\"identifier\": \"\"}").build();
         }
     }
@@ -287,23 +292,5 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
             }
         }
     }
-
-    @POST
-    @Authenticated
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("/associate")
-    public Response associate(@FormParam("expeditionCode") String expeditionCode,
-                              @FormParam("bcid") String identifier,
-                              @FormParam("projectId") Integer projectId) {
-        ExpeditionMinter expedition = new ExpeditionMinter();
-        if (identifier == null || expeditionCode == null) {
-            throw new BadRequestException("bcid and expeditionCode must not be null.");
-        }
-        expedition.attachReferenceToExpedition(expeditionCode, identifier, projectId);
-
-        return Response.ok("{\"success\": \"Data Elements Root: " + expeditionCode + "\"}").build();
-    }
-
 }
 

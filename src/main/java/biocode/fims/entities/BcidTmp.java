@@ -1,8 +1,9 @@
-package biocode.fims.models;
+package biocode.fims.entities;
 
-import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.models.Expedition;
+import biocode.fims.models.User;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -18,10 +19,12 @@ import java.util.Objects;
 
 /**
  * Bcid Entity object
+ * TODO remove after running ProjectConfigConverter
  */
+@Deprecated
 @Entity
-@Table(name = "bcids")
-public class Bcid {
+@Table(name = "bcids_tmp")
+public class BcidTmp {
     private int bcidId;
     private boolean ezidMade;
     private boolean ezidRequest;
@@ -31,10 +34,10 @@ public class Bcid {
     private URI webAddress;
     private String resourceType;
     private String subResourceType;
-    private Date created;
-    private Date modified;
+    private Date ts;
     private String graph;
     private String sourceFile;
+    private boolean finalCopy;
     private Expedition expedition;
     private User user;
 
@@ -52,6 +55,7 @@ public class Bcid {
         private URI webAddress;
         private String graph;
         private String sourceFile;
+        private boolean finalCopy = false;
 
         public BcidBuilder(String resourceType) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
@@ -89,18 +93,23 @@ public class Bcid {
             return this;
         }
 
+        public BcidBuilder finalCopy(boolean finalCopy) {
+            this.finalCopy = finalCopy;
+            return this;
+        }
+
         public BcidBuilder subResourceType(String subResourceType) {
             this.subResourceType = subResourceType;
             return this;
         }
 
-        public Bcid build() {
-            return new Bcid(this);
+        public BcidTmp build() {
+            return new BcidTmp(this);
         }
 
     }
 
-    private Bcid(BcidBuilder builder) {
+    private BcidTmp(BcidBuilder builder) {
         resourceType = builder.resourceType;
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
@@ -109,17 +118,17 @@ public class Bcid {
         webAddress = builder.webAddress;
         graph = builder.graph;
         sourceFile = builder.sourceFile;
+        finalCopy = builder.finalCopy;
         subResourceType = builder.subResourceType;
     }
 
     // needed for hibernate
-    Bcid() {
+    BcidTmp() {
     }
 
     @JsonView(Views.Detailed.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     public int getBcidId() {
         return bcidId;
     }
@@ -129,7 +138,7 @@ public class Bcid {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "bit", name = "ezid_made")
+    @Column(columnDefinition = "bit")
     public boolean isEzidMade() {
         return ezidMade;
     }
@@ -139,7 +148,7 @@ public class Bcid {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(columnDefinition = "bit not null", name = "ezid_request")
+    @Column(columnDefinition = "bit not null")
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -180,7 +189,6 @@ public class Bcid {
 
     @JsonView(Views.Detailed.class)
     @Convert(converter = UriPersistenceConverter.class)
-    @Column(name = "web_address")
     public URI getWebAddress() {
         // TODO move the following to the BcidService.create after all Bcid creation is done via BcidService class
         if (identifier != null && webAddress != null && webAddress.toString().contains("%7Bark%7D")) {
@@ -197,7 +205,6 @@ public class Bcid {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(name = "sub_resource_type")
     public String getSubResourceType() {
         return subResourceType;
     }
@@ -209,10 +216,10 @@ public class Bcid {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Bcid)) return false;
+        if (!(o instanceof BcidTmp)) return false;
 
-        Bcid bcid = (Bcid) o;
-        return getIdentifier() != null && Objects.equals(getIdentifier(), bcid.getIdentifier());
+        BcidTmp bcidTmp = (BcidTmp) o;
+        return getIdentifier() != null && Objects.equals(getIdentifier(), bcidTmp.getIdentifier());
     }
 
     @Override
@@ -226,7 +233,7 @@ public class Bcid {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, name = "resource_type")
+    @Column(nullable = false)
     public String getResourceType() {
         return resourceType;
     }
@@ -237,23 +244,12 @@ public class Bcid {
 
     @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getModified() {
-        return modified;
+    public Date getTs() {
+        return ts;
     }
 
-    public void setModified(Date modified) {
-        this.modified = modified;
-    }
-
-    @Column(updatable = false)
-    @JsonView(Views.Summary.class)
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date getCreated() {
-        return created;
-    }
-
-    private void setCreated(Date created) {
-        this.created = created;
+    public void setTs(Date ts) {
+        this.ts = ts;
     }
 
     @JsonView(Views.Detailed.class)
@@ -266,13 +262,22 @@ public class Bcid {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(name="source_file")
     public String getSourceFile() {
         return sourceFile;
     }
 
     public void setSourceFile(String sourceFile) {
         this.sourceFile = sourceFile;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Column(columnDefinition = "bit not null")
+    public boolean isFinalCopy() {
+        return finalCopy;
+    }
+
+    public void setFinalCopy(boolean finalCopy) {
+        this.finalCopy = finalCopy;
     }
 
     @Override
@@ -287,9 +292,9 @@ public class Bcid {
                 ", webAddress='" + webAddress + '\'' +
                 ", resourceType='" + resourceType + '\'' +
                 ", subResourceType='" + subResourceType + '\'' +
-                ", created=" + created +
-                ", modified=" + modified +
+                ", ts=" + ts +
                 ", graph='" + graph + '\'' +
+                ", finalCopy=" + finalCopy +
                 ", expedition=" + expedition +
                 ", user=" + user +
                 '}';
@@ -298,11 +303,11 @@ public class Bcid {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinTable(name = "expedition_bcids",
-            joinColumns = @JoinColumn(name = "bcid_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "expedition_id", referencedColumnName = "id"),
-            foreignKey = @ForeignKey(name = "FK_expedition_bcids_bcid_id"),
-            inverseForeignKey = @ForeignKey(name = "FK_expedition_bcids_expedition_id")
+    @JoinTable(name = "expeditionBcids",
+            joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
+            inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
+            foreignKey = @ForeignKey(name = "FK_expeditionBcids_bcidId"),
+            inverseForeignKey = @ForeignKey(name = "FK_expeditionBcids_expedition_id")
     )
     public Expedition getExpedition() {
         return expedition;
@@ -315,8 +320,8 @@ public class Bcid {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "user_id",
-            referencedColumnName = "id",
+    @JoinColumn(name = "userId",
+            referencedColumnName = "userId",
             foreignKey = @ForeignKey(name = "FK_bcids_userId"),
             nullable = false
     )

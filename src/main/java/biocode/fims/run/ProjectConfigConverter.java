@@ -8,7 +8,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.service.ProjectConfigService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.rules.*;
 import org.slf4j.Logger;

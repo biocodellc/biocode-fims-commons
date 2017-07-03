@@ -2,6 +2,7 @@ package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.AcknowledgedResponse;
 import biocode.fims.rest.FimsService;
@@ -11,7 +12,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +33,8 @@ public class ExpeditionsResource extends FimsService {
 
     @Autowired
     public ExpeditionsResource(ExpeditionService expeditionService, ProjectService projectService,
-                               SettingsManager settingsManager) {
-        super(settingsManager);
+                               FimsProperties props) {
+        super(props);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
     }
@@ -166,7 +166,7 @@ public class ExpeditionsResource extends FimsService {
                                         Expedition expedition) {
         Expedition existingExpedition = expeditionService.getExpedition(expeditionCode, projectId);
 
-        if (existingExpedition == null || !existingExpedition.getProject().getProjectUrl().equals(appRoot)) {
+        if (existingExpedition == null || !existingExpedition.getProject().getProjectUrl().equals(props.appRoot())) {
             throw new FimsRuntimeException("project not found", 404);
         }
 
@@ -213,7 +213,7 @@ public class ExpeditionsResource extends FimsService {
                                                  @PathParam("expeditionCode") String expeditionCode) {
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
-        if (expedition == null || !expedition.getProject().getProjectUrl().equals(appRoot)) {
+        if (expedition == null || !expedition.getProject().getProjectUrl().equals(props.appRoot())) {
             throw new FimsRuntimeException("expedition not found", 404);
         }
 

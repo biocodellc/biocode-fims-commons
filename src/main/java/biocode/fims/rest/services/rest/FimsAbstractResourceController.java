@@ -1,9 +1,9 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
@@ -20,8 +20,8 @@ import javax.ws.rs.core.Response;
 public abstract class FimsAbstractResourceController extends FimsService {
 
     @Autowired
-    FimsAbstractResourceController(SettingsManager settingsManager) {
-        super(settingsManager);
+    FimsAbstractResourceController(FimsProperties props) {
+        super(props);
     }
 
     /**

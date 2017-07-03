@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UserCode;
@@ -9,7 +10,6 @@ import biocode.fims.models.UserInvite;
 import biocode.fims.repositories.ProjectRepository;
 import biocode.fims.repositories.UserInviteRepository;
 import biocode.fims.repositories.UserRepository;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import biocode.fims.utils.StringGenerator;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -43,19 +43,19 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserInviteRepository userInviteRepository;
-    private final SettingsManager settingsManager;
     private final MessageSource messageSource;
     private final ProjectRepository projectRepository;
+    private final FimsProperties props;
 
     @Autowired
     public UserService(UserRepository userRepository, UserInviteRepository userInviteRepository,
                        ProjectRepository projectRepository,
-                       SettingsManager settingsManager, MessageSource messageSource) {
+                       FimsProperties props, MessageSource messageSource) {
         this.userRepository = userRepository;
         this.userInviteRepository = userInviteRepository;
         this.projectRepository = projectRepository;
-        this.settingsManager = settingsManager;
         this.messageSource = messageSource;
+        this.props = props;
     }
 
 
@@ -133,7 +133,6 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public boolean userBelongsToInstanceProject(User user) {
-        String appRoot = settingsManager.retrieveValue("appRoot");
 
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
@@ -141,7 +140,7 @@ public class UserService {
         }
 
         for (Project project : user.getProjectsMemberOf()) {
-            if (project.getProjectUrl().equals(appRoot))
+            if (project.getProjectUrl().equals(props.appRoot()))
                 return true;
         }
 
@@ -233,8 +232,7 @@ public class UserService {
         try {
             UserInvite invite = userInviteRepository.save(new UserInvite(email, project, inviter));
 
-            String appRoot = settingsManager.retrieveValue("appRoot");
-            String accountCreateUrl = appRoot + settingsManager.retrieveValue("accountCreatePath");
+            String accountCreateUrl = props.appRoot() + props.accountCreatePath();
 
             Map<String, String> paramMap = new HashMap<>();
             paramMap.put("id", invite.getId().toString());
@@ -258,5 +256,9 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new FimsRuntimeException(UserCode.DUPLICATE_INVITE, 400);
         }
+    }
+
+    public User getUser(UUID id) {
+        return userRepository.findByUUID(id);
     }
 }

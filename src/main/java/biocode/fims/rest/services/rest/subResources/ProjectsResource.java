@@ -1,6 +1,7 @@
 package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.models.Project;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.FimsService;
@@ -8,7 +9,6 @@ import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,8 @@ public class ProjectsResource extends FimsService {
 
     @Autowired
     public ProjectsResource(ProjectService projectService,
-                            SettingsManager settingsManager) {
-        super(settingsManager);
+                            FimsProperties props) {
+        super(props);
         this.projectService = projectService;
     }
 
@@ -50,11 +50,11 @@ public class ProjectsResource extends FimsService {
         if (admin.isPresent()) {
             return userContext.getUser().getProjects()
                     .stream()
-                    .filter(p -> p.getProjectUrl().equals(appRoot))
+                    .filter(p -> p.getProjectUrl().equals(props.appRoot()))
                     .collect(Collectors.toList());
         }
 
-        return projectService.getProjects(appRoot, userContext.getUser(), includePublic);
+        return projectService.getProjects(props.appRoot(), userContext.getUser(), includePublic);
     }
 
 
@@ -81,7 +81,7 @@ public class ProjectsResource extends FimsService {
 
         Project existingProject = projectService.getProject(projectId);
 
-        if (existingProject == null || !existingProject.getProjectUrl().equals(appRoot)) {
+        if (existingProject == null || !existingProject.getProjectUrl().equals(props.appRoot())) {
             throw new FimsRuntimeException("project not found", 404);
         }
 

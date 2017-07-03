@@ -217,10 +217,8 @@ public class ProjectService {
     }
 
     private void createEntityBcids(List<Entity> entities, int projectId, boolean checkForExistingBcids) {
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
-
         for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser().getUserId(), ezidRequest, checkForExistingBcids);
+            expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser(), checkForExistingBcids);
         }
     }
 }

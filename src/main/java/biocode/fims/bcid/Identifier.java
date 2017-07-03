@@ -1,5 +1,7 @@
 package biocode.fims.bcid;
 
+import biocode.fims.entities.BcidTmp;
+
 /**
  * Class for decoding an identifier. An identifier consists of the schema, naan, shoulder, and suffix.
  * This class decodes an identifier in order to get the {@link biocode.fims.models.Bcid} identifier value

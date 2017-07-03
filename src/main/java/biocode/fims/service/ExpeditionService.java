@@ -1,20 +1,18 @@
 package biocode.fims.service;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
+import biocode.fims.application.config.FimsProperties;
+import biocode.fims.bcid.Bcid;
 import biocode.fims.digester.Entity;
-import biocode.fims.digester.Mapping;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.models.*;
-import biocode.fims.models.Bcid;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
-import biocode.fims.mappers.EntityToBcidMapper;
 import biocode.fims.repositories.ExpeditionRepository;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,15 +39,15 @@ public class ExpeditionService {
     private final ExpeditionRepository expeditionRepository;
     private final BcidService bcidService;
     private final ProjectAuthorizer projectAuthorizer;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
 
     @Autowired
     public ExpeditionService(ExpeditionRepository expeditionRepository, BcidService bcidService,
-                             ProjectAuthorizer projectAuthorizer, SettingsManager settingsManager) {
+                             ProjectAuthorizer projectAuthorizer, FimsProperties props) {
         this.expeditionRepository = expeditionRepository;
         this.bcidService = bcidService;
         this.projectAuthorizer = projectAuthorizer;
-        this.settingsManager = settingsManager;
+        this.props = props;
     }
 
     public void create(Expedition expedition, int userId, int projectId, URI webAddress) {
@@ -70,11 +69,9 @@ public class ExpeditionService {
 
         expeditionRepository.save(expedition);
 
-        boolean ezidRequest = Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests"));
-
-        Bcid bcid = createExpeditionBcid(expedition, webAddress, ezidRequest);
-        expedition.setIdentifier(bcid.getIdentifier());
-        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), userId, ezidRequest, false);
+        Bcid bcid = createExpeditionBcid(expedition, webAddress, expedition.getUser());
+        expedition.setIdentifier(bcid.identifier());
+        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), expedition.getUser(), false);
         expedition.setEntityIdentifiers(entityIdentifiers);
         expeditionRepository.save(expedition);
     }
@@ -90,34 +87,11 @@ public class ExpeditionService {
 
     @Transactional(readOnly = true)
     public Expedition getExpedition(String identifier) {
-        Expedition expedition = null;
-        Bcid bcid = bcidService.getBcid(identifier);
-        if (bcid != null) {
-            expedition = bcid.getExpedition();
+        try {
+            return expeditionRepository.findByIdentifier(new URI(identifier));
+        } catch(URISyntaxException e) {
+            throw new BadRequestException("Malformed identifier");
         }
-        return expedition;
-    }
-
-    /**
-     * Find the appropriate entity Bcid for this expedition given an conceptAlias.
-     *
-     * @param expeditionCode defines the BCID expeditionCode to lookup
-     * @param conceptAlias   the Expedition entity conceptAlias
-     * @return returns the BCID for this expedition and conceptURI combination
-     */
-    @Transactional(readOnly = true)
-    public Bcid getEntityBcid(String expeditionCode, int projectId, String conceptAlias) {
-        Expedition expedition = getExpedition(expeditionCode, projectId);
-
-        if (expedition == null) {
-            throw new EmptyResultDataAccessException(1);
-        }
-
-        // conceptAlias is the Bcid title
-        return bcidService.getBcidByTitle(
-                expedition.getExpeditionId(),
-                conceptAlias
-        );
     }
 
     @Transactional(readOnly = true)
@@ -155,26 +129,25 @@ public class ExpeditionService {
      * @param webAddress
      * @return
      */
-    private Bcid createExpeditionBcid(Expedition expedition, URI webAddress, boolean ezidRequest) {
+    private Bcid createExpeditionBcid(Expedition expedition, URI webAddress, User user) {
 
-        Bcid expditionBcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE)
+        Bcid bcid = new Bcid.BcidBuilder(Expedition.EXPEDITION_RESOURCE_TYPE, props.publisher())
                 .webAddress(webAddress)
                 .title("Expedition: " + expedition.getExpeditionTitle())
-                .ezidRequest(ezidRequest)
+                .ezidRequest(props.ezidRequests())
+                .creator(user, props.creator())
                 .build();
 
-        bcidService.create(expditionBcid, expedition.getUser().getUserId());
-        bcidService.attachBcidToExpedition(expditionBcid, expedition.getExpeditionId());
-        return expditionBcid;
+        return bcidService.create(bcid);
     }
 
-    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, int userId, boolean ezidRequest, boolean checkForExistingBcids) {
+    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, User user, boolean checkForExistingBcids) {
         List<EntityIdentifier> identifiers = new ArrayList<>();
 
         List<Entity> entitiesToSkip = new ArrayList<>();
-        // temporary check to ease postgres migration
+        // temporary check to ease postgres migration TODO remove this after running ProjectConfigConverter script
         if (checkForExistingBcids) {
-            List<Bcid> entityBcids = bcidService.getEntityBcids(expeditionId);
+            List<BcidTmp> entityBcids = bcidService.getEntityBcids(expeditionId);
 
 
             for (Entity e: entities) {
@@ -188,13 +161,15 @@ public class ExpeditionService {
 
         for (Entity entity : entities) {
             if (!entitiesToSkip.contains(entity)) {
-                Bcid bcid = EntityToBcidMapper.map(entity, ezidRequest);
-                bcidService.create(bcid, userId);
-                bcidService.attachBcidToExpedition(bcid, expeditionId);
+                Bcid bcid = new Bcid.BcidBuilder(entity.getConceptAlias(), props.publisher())
+                        .creator(user, props.creator())
+                        .title(entity.getConceptAlias())
+                        .userId(user.getUUID())
+                        .build();
 
-                identifiers.add(
-                        new EntityIdentifier(entity.getConceptAlias(), bcid.getIdentifier())
-                );
+                bcid = bcidService.create(bcid);
+
+                identifiers.add(new EntityIdentifier(entity.getConceptAlias(), bcid.identifier()));
             }
         }
 
@@ -220,10 +195,6 @@ public class ExpeditionService {
 
         if (getExpedition(expeditionCode, projectId) != null)
             throw new FimsException("Expedition Code " + expeditionCode + " already exists.");
-    }
-
-    public List<Expedition> getPublicExpeditions(int projectId) {
-        return expeditionRepository.findByPublicTrueAndProjectProjectId(projectId);
     }
 
     /**

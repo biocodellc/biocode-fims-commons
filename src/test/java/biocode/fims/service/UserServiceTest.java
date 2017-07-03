@@ -1,5 +1,6 @@
 package biocode.fims.service;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
@@ -9,6 +10,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.*;
+import org.springframework.mock.env.MockEnvironment;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
@@ -32,8 +34,7 @@ public class UserServiceTest {
     private UserService userService;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private SettingsManager settingsManager;
+    private FimsProperties props;
     @Mock
     private EntityManager entityManager;
 
@@ -46,7 +47,9 @@ public class UserServiceTest {
                 .institution("biocode")
                 .build());
 
-        Mockito.when(settingsManager.retrieveValue("appRoot")).thenReturn(APP_ROOT);
+        MockEnvironment env = new MockEnvironment();
+        env.setProperty("appRoot", APP_ROOT);
+        this.props = new FimsProperties(env);
     }
 
     @Test

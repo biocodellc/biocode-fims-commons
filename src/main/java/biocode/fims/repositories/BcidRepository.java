@@ -1,69 +1,126 @@
 package biocode.fims.repositories;
 
-import biocode.fims.bcid.ResourceTypes;
-import biocode.fims.models.Bcid;
+import biocode.fims.api.services.AbstractRequest;
+import biocode.fims.application.config.FimsProperties;
+import biocode.fims.bcid.Bcid;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.query.QueryByExampleExecutor;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Set;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
 
 /**
- * This repositories provides CRUD operations for {@link Bcid} objects
+ * @author rjewing
  */
-@Transactional
-public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampleExecutor<Bcid> {
+public class BcidRepository {
+    private final static Logger logger = LoggerFactory.getLogger(BcidRepository.class);
 
-    @Modifying
-    void delete(Bcid bcid);
+    private final Client client;
+    private final FimsProperties props;
+    private AccessToken accessToken;
+    private boolean triedRefresh;
 
-    void save(Bcid bcid);
+    public BcidRepository(Client client, FimsProperties props) {
+        this.client = client;
+        this.props = props;
+    }
 
-    @Modifying
-    @Query(value = "update bcids set modified=CURRENT_TIMESTAMP where id=:bcidId", nativeQuery = true)
-    void updateModifiedTs(@Param("bcidId") int bcidId);
+    public Bcid create(Bcid toMint) {
+        if (!authenticated() && !authenticate()) {
+            throw new FimsRuntimeException("Unable to authenticate with the bcid system", 500);
+        }
 
-    /**
-     * This method invokes the SQL query that is configured by using the {@code @Query} annotation.
-     *
-     * @param identifier the identifier of the {@link Bcid} to fetch
-     * @return the {@link Bcid} with the provided identifier
-     */
-    Bcid findOneByIdentifier(@Param("identifier") String identifier);
+        return executeRequest(new MintBcid(client, props.bcidUrl(), toMint));
+    }
 
-    Bcid findByBcidId(int bcidId);
+    public Bcid get(String identifier) {
+        return new FetchBcid(client, props.bcidUrl(), identifier).execute();
+    }
 
-    Set<Bcid> findAllByEzidRequestTrue();
+    private <T> T executeRequest(AbstractRequest<T> request) {
+        try {
+            request.addHeader("Authorization", "Bearer " + accessToken.accessToken);
+            return request.execute();
+        } catch (WebApplicationException e) {
+            if (e instanceof NotAuthorizedException && !triedRefresh) {
+                this.triedRefresh = true;
+                if (authenticate()) {
+                    return executeRequest(request);
+                }
+            }
+            throw e;
+        }
+    }
 
-    Bcid findByExpeditionExpeditionIdAndResourceTypeIn(int expeditionId, String... resourceType);
+    private boolean authenticated() {
+        return this.accessToken != null;
+    }
 
-    void deleteByBcidId(int bcidId);
+    private boolean authenticate() {
+        try {
+            this.accessToken = new Authenticate(client, props.bcidUrl(), props.bcidClientId(), props.bcidClientSecret())
+                    .execute();
+        } catch (WebApplicationException e) {
+            logger.error("Bcid authentication error", e);
+            return false;
+        }
 
-    List<Bcid> findByExpeditionExpeditionIdAndResourceTypeNotIn(int expeditionId, String... datasetResourceType);
+        this.triedRefresh = false;
+        return true;
+    }
 
-    Bcid findOneByTitleAndExpeditionExpeditionId(String title, int expeditionId);
 
-    Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse();
+    private static final class FetchBcid extends AbstractRequest<Bcid> {
+        private static final String path = "/";
 
-    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
-            "and b.resourceType=:resourceType and b.subResourceType=:subResourceType order by b.created desc ")
-    List<Bcid> findAllByResourceTypeAndSubResourceType(@Param("projectId") int projectId,
-                                                       @Param("expeditionCode") String expeditionCode,
-                                                       @Param("resourceType") String resourceType,
-                                                       @Param("subResourceType") String subResourceType);
+        public FetchBcid(Client client, String baseUrl, String identifier) {
+            super("GET", Bcid.class, client, path + identifier, baseUrl);
 
-    @Query("select b from Bcid b where b.expedition.project.projectId=:projectId and b.expedition.expeditionCode=:expeditionCode " +
-            "and b.resourceType=:resourceType order by b.created desc ")
-    List<Bcid> findAllByResourceType(@Param("projectId") int projectId,
-                                     @Param("expeditionCode") String expeditionCode,
-                                     @Param("resourceType") String resourceType);
+            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+        }
+    }
 
-    List<Bcid> findAllByGraphIn(List<String> graph);
+    private static final class MintBcid extends AbstractRequest<Bcid> {
+        private static final String path = "/";
 
-    List<Bcid> findAllByEzidRequestFalse();
+        public MintBcid(Client client, String baseUrl, Bcid toMint) {
+            super("POST", Bcid.class, client, path, baseUrl);
+
+            this.setHttpEntity(Entity.entity(toMint, MediaType.APPLICATION_JSON));
+            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+        }
+    }
+
+    private static final class Authenticate extends AbstractRequest<AccessToken> {
+        private static final String PATH = "/oAuth2/token";
+        private static final String GRANT_TYPE = "client_credentials";
+
+        public Authenticate(Client client, String baseUrl, String id, String secret) {
+            super("POST", AccessToken.class, client, PATH, baseUrl);
+
+
+            Form form = new Form("grant_type", GRANT_TYPE)
+                    .param("client_id", id)
+                    .param("client_secret", secret);
+
+            this.setHttpEntity(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+        }
+
+    }
+
+    private static class AccessToken {
+        @JsonProperty("token_type")
+        public String tokenType;
+        @JsonProperty("expires_in")
+        public int expiresIn;
+        @JsonProperty("access_token")
+        public String accessToken;
+    }
 }

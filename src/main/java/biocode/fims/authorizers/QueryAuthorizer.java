@@ -3,10 +3,10 @@ package biocode.fims.authorizers;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -25,11 +25,11 @@ public class QueryAuthorizer {
     private final static Logger logger = LoggerFactory.getLogger(QueryAuthorizer.class);
 
     private final ProjectService projectService;
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
 
-    public QueryAuthorizer(ProjectService projectService, SettingsManager settingsManager) {
+    public QueryAuthorizer(ProjectService projectService, FimsProperties props) {
         this.projectService = projectService;
-        this.settingsManager = settingsManager;
+        this.props = props;
     }
 
     /**
@@ -48,7 +48,7 @@ public class QueryAuthorizer {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT_LIST, 500);
         }
 
-        List<Project> projects = projectService.getProjectsWithExpeditions(settingsManager.retrieveValue("appRoot"));
+        List<Project> projects = projectService.getProjectsWithExpeditions(props.appRoot());
 
         if (expeditionCodes.size() > 0) {
             return authorizedExpeditionAccess(projectIds, expeditionCodes, projects, user);

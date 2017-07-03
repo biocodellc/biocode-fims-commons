@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
@@ -14,7 +15,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
@@ -40,8 +40,8 @@ public class UsersResource extends FimsService {
 
     @Autowired
     public UsersResource(UserService userService, MessageSource messageSource, ProjectService projectService,
-                         SettingsManager settingsManager) {
-        super(settingsManager);
+                         FimsProperties props) {
+        super(props);
         this.userService = userService;
         this.messageSource = messageSource;
         this.projectService = projectService;
@@ -73,7 +73,7 @@ public class UsersResource extends FimsService {
     @Authenticated
     public User getUser(@PathParam("username") String username) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
+                !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 
@@ -170,7 +170,7 @@ public class UsersResource extends FimsService {
             throw new BadRequestException("Email must not be null");
         }
 
-        Project project = projectService.getProject(projectId, settingsManager.retrieveValue("appRoot"));
+        Project project = projectService.getProject(projectId, props.appRoot());
 
         if (project == null || !project.getUser().equals(userContext.getUser())) {
             throw new BadRequestException("Only admins can invite users to their project.");

@@ -12,6 +12,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -63,4 +64,5 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     @Query("select e from Expedition e where project_id=:projectId and (public='true' or public!=:includePrivate)")
     List<Expedition> getProjectExpeditions(@Param("projectId") int projectId, @Param("includePrivate") boolean includePrivate);
 
+    Expedition findByIdentifier(URI identifier);
 }

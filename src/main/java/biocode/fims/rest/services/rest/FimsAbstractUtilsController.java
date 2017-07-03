@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import org.apache.commons.lang.StringUtils;
@@ -23,8 +23,8 @@ public abstract class FimsAbstractUtilsController extends FimsService {
     private final FileCache fileCache;
 
     @Autowired
-    FimsAbstractUtilsController(FileCache fileCache, SettingsManager settingsManager) {
-        super(settingsManager);
+    FimsAbstractUtilsController(FileCache fileCache, FimsProperties props) {
+        super(props);
         this.fileCache = fileCache;
     }
 
@@ -32,9 +32,7 @@ public abstract class FimsAbstractUtilsController extends FimsService {
     @Path("/getNAAN")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNAAN() {
-        String naan = settingsManager.retrieveValue("naan");
-
-        return Response.ok("{\"naan\": \"" + naan + "\"}").build();
+        return Response.ok("{\"naan\": \"" + props.naan() + "\"}").build();
     }
 
     @GET

@@ -9,8 +9,8 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import biocode.fims.application.config.FimsProperties;
 import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,8 +30,8 @@ public class ProjectConfigurationResource extends FimsService {
     private final ProjectService projectService;
 
     @Autowired
-    public ProjectConfigurationResource(ProjectService projectService, SettingsManager settingsManager) {
-        super(settingsManager);
+    public ProjectConfigurationResource(ProjectService projectService, FimsProperties props) {
+        super(props);
         this.projectService = projectService;
     }
 
@@ -39,7 +39,7 @@ public class ProjectConfigurationResource extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public ProjectConfig getConfig(@PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProject(projectId, appRoot);
+        Project project = projectService.getProject(projectId, props.appRoot());
 
         if (project == null) {
             throw new BadRequestException("Invalid projectId");

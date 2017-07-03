@@ -2,6 +2,7 @@ package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
@@ -10,7 +11,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,8 +31,8 @@ public class ProjectMembersResource extends FimsService {
 
     @Autowired
     public ProjectMembersResource(ProjectService projectService, UserService userService,
-                                  SettingsManager settingsManager) {
-        super(settingsManager);
+                                  FimsProperties props) {
+        super(props);
         this.projectService = projectService;
         this.userService = userService;
     }

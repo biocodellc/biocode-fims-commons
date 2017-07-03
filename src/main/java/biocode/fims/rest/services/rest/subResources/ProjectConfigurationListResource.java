@@ -1,10 +1,10 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Field;
 import biocode.fims.models.Project;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -22,8 +22,8 @@ public class ProjectConfigurationListResource extends FimsService {
     private final ProjectService projectService;
 
     @Autowired
-    public ProjectConfigurationListResource(SettingsManager settingsManager, ProjectService projectService) {
-        super(settingsManager);
+    public ProjectConfigurationListResource(FimsProperties props, ProjectService projectService) {
+        super(props);
         this.projectService = projectService;
     }
 
@@ -38,7 +38,7 @@ public class ProjectConfigurationListResource extends FimsService {
     public List<Field> getListFields(@PathParam("projectId") Integer projectId,
                                      @PathParam("listName") String listName) {
 
-        Project project = projectService.getProject(projectId, appRoot);
+        Project project = projectService.getProject(projectId, props.appRoot());
 
         if (project == null) {
             throw new BadRequestException("invalid projectId");

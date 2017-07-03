@@ -11,6 +11,8 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
+import biocode.fims.bcid.Resolver;
+import biocode.fims.repositories.BcidRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.validation.RecordValidator;
@@ -19,6 +21,7 @@ import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -27,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.ws.rs.client.ClientBuilder;
 
 /**
  * Configuration for resource needed for all biocode-fims applications. This includes web and cli apps
@@ -44,6 +48,8 @@ public class FimsAppConfig {
     SettingsManager settingsManager;
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
+    @Autowired
+    Environment env;
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -88,5 +94,15 @@ public class FimsAppConfig {
     public ProjectAuthorizer projectAuthorizer() {
         String appRoot = settingsManager.retrieveValue("appRoot");
         return new ProjectAuthorizer(projectRepository, appRoot);
+    }
+
+    @Bean
+    public BcidRepository bcidRepository(FimsProperties fimsProperties) {
+        return new BcidRepository(ClientBuilder.newClient(), fimsProperties);
+    }
+
+    @Bean
+    public FimsProperties fimsProperties() {
+        return new FimsProperties(env);
     }
 }

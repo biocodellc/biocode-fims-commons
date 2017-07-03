@@ -145,7 +145,7 @@ public class Expedition {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(name="visibility", nullable = false)
+    @Column(name = "visibility", nullable = false)
     @Enumerated(EnumType.STRING)
     public ExpeditionVisibility getVisibility() {
         return visibility;
@@ -172,7 +172,7 @@ public class Expedition {
 
     @JsonView(Views.Detailed.class)
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name="expedition_id", nullable = false)
+    @JoinColumn(name = "expedition_id", nullable = false)
     public List<EntityIdentifier> getEntityIdentifiers() {
         return entityIdentifiers;
     }

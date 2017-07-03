@@ -1,22 +1,17 @@
 package biocode.fims.rest.services.rest.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
-import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.StringGenerator;
 import com.fasterxml.jackson.annotation.JsonView;
-import org.glassfish.jersey.server.model.Resource;
-import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -41,8 +36,8 @@ public class TemplatesResource extends FimsService {
 
     @Autowired
     public TemplatesResource(ProjectService projectService, ProjectAuthorizer projectAuthorizer,
-                             FileCache fileCache, SettingsManager settingsManager) {
-        super(settingsManager);
+                             FileCache fileCache, FimsProperties props) {
+        super(props);
         this.projectService = projectService;
         this.projectAuthorizer = projectAuthorizer;
         this.fileCache = fileCache;
@@ -53,7 +48,7 @@ public class TemplatesResource extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Set<ProjectTemplate> getTemplates(@PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProjectWithTemplates(projectId, appRoot);
+        Project project = projectService.getProjectWithTemplates(projectId, props.appRoot());
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
             throw new BadRequestException("you do not have the necessary permissions to access this project");
@@ -71,14 +66,14 @@ public class TemplatesResource extends FimsService {
             @FormParam("sheetName") String sheetName,
             @PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProjectWithTemplates(projectId, appRoot);
+        Project project = projectService.getProjectWithTemplates(projectId, props.appRoot());
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
             throw new BadRequestException("you do not have the necessary permissions to access this project");
         }
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
 
         File file = t.createExcelFile(sheetName, defaultOutputDirectory(), columns);
 

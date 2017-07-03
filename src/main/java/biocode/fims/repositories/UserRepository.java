@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * This repositories provides CRUD operations for {@link User} objects
@@ -42,4 +43,6 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     @Query("select (COUNT(u) > 0) from User u where u.email = :email")
     boolean userExists(@Param("email") String email);
+
+    User findByUUID(UUID id);
 }
