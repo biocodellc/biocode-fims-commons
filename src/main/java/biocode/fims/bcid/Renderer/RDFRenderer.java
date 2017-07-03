@@ -1,15 +1,15 @@
 package biocode.fims.bcid.Renderer;
 
 import biocode.fims.bcid.BcidMetadataSchema;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 
 /**
  * Renders a BCID as RDF.  This is for machine negotiation of an Bcid
  */
 public class RDFRenderer extends Renderer {
 
-    public RDFRenderer(Bcid bcid, BcidMetadataSchema bcidMetadataSchema) {
-        super(bcid, bcidMetadataSchema);
+    public RDFRenderer(BcidTmp bcidTmp, BcidMetadataSchema bcidMetadataSchema) {
+        super(bcidTmp, bcidMetadataSchema);
     }
 
     public void enter() {
@@ -19,7 +19,7 @@ public class RDFRenderer extends Renderer {
                 "\txmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"\n" +
                 "\txmlns:bsc=\"http://biscicol.org/terms/index.html#\"\n" +
                 "\txmlns:dcterms=\"http://purl.org/dc/terms/\">\n");
-        outputSB.append("<rdf:Description rdf:about=\"" + this.bcid.toString() + "\">\n");
+        outputSB.append("<rdf:Description rdf:about=\"" + this.bcidTmp.toString() + "\">\n");
     }
 
     public void printMetadata() {
@@ -40,7 +40,7 @@ public class RDFRenderer extends Renderer {
     }
 
     public boolean validIdentifier() {
-        if (this.bcid == null) {
+        if (this.bcidTmp == null) {
             outputSB.append("bcid is null");
             return false;
         } else {

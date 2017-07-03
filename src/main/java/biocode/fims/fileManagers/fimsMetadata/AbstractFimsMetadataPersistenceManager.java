@@ -8,6 +8,7 @@ import biocode.fims.utils.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 
 /**
  * Abstract FimsMetadataPersistenceManager providing common code for {@link FimsMetadataPersistenceManager} implementations
@@ -20,9 +21,9 @@ public abstract class AbstractFimsMetadataPersistenceManager implements FimsMeta
         this.props = props;
     }
 
-    public String writeSourceFile(File sourceFile, int bcidId) {
+    public String writeSourceFile(File sourceFile, int projectId, String expeditionCode) {
         String ext = FileUtils.getExtension(sourceFile.getName(), null);
-        String filename = "fims_metadata_bcid_id_" + bcidId + "." + ext;
+        String filename = "fims_metadata_project_" + projectId + "_expedition_" + expeditionCode + "_" + new Date().getTime() + "." + ext;
         File outputFile = new File(props.serverRoot() + filename);
 
         try {

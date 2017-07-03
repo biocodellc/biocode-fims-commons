@@ -1,7 +1,7 @@
 package biocode.fims.run;
 
 import biocode.fims.application.config.FimsAppConfig;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.FimsPrinter;
 import org.apache.commons.cli.*;
@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,27 +30,27 @@ public class BcidTsFixer {
     }
 
     public void fixBcidTs(String resourceType) {
-        List<Bcid> bcids = bcidService.getBcidsWithOutEzidRequest();
+        List<BcidTmp> bcidTmps = bcidService.getBcidsWithOutEzidRequest();
 
         // sort on bcidId desc
-        bcids.sort(Comparator.comparingInt(Bcid::getBcidId).reversed());
+        bcidTmps.sort(Comparator.comparingInt(BcidTmp::getBcidId).reversed());
 
         Calendar now = Calendar.getInstance();
 
-        for (Bcid bcid : bcids) {
+        for (BcidTmp bcidTmp : bcidTmps) {
             if (resourceType != null) {
-                if (resourceType.equals(bcid.getResourceType())) {
-                    bcid.setTs(now.getTime());
+                if (resourceType.equals(bcidTmp.getResourceType())) {
+                    bcidTmp.setTs(now.getTime());
 
-                    bcidService.update(bcid);
+                    bcidService.update(bcidTmp);
 
                     now.add(Calendar.SECOND, -1);
                 }
             } else {
 
-                bcid.setTs(now.getTime());
+                bcidTmp.setTs(now.getTime());
 
-                bcidService.update(bcid);
+                bcidService.update(bcidTmp);
 
                 now.add(Calendar.SECOND, -1);
 

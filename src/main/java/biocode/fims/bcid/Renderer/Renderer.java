@@ -1,6 +1,6 @@
 package biocode.fims.bcid.Renderer;
 
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.bcid.BcidMetadataSchema;
 
 /**
@@ -9,16 +9,16 @@ import biocode.fims.bcid.BcidMetadataSchema;
  */
 public abstract class Renderer implements RendererInterface {
     protected StringBuilder outputSB;
-    protected Bcid bcid;
+    protected BcidTmp bcidTmp;
     protected BcidMetadataSchema bcidMetadataSchema;
 
-    public Renderer(Bcid bcid, BcidMetadataSchema bcidMetadataSchema) {
-        this.bcid = bcid;
+    public Renderer(BcidTmp bcidTmp, BcidMetadataSchema bcidMetadataSchema) {
+        this.bcidTmp = bcidTmp;
         this.bcidMetadataSchema = bcidMetadataSchema;
     }
 
-    public void setBcid(Bcid bcid) {
-        this.bcid = bcid;
+    public void setBcidTmp(BcidTmp bcidTmp) {
+        this.bcidTmp = bcidTmp;
     }
 
     /**

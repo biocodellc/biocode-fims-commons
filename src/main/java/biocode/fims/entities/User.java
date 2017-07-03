@@ -39,7 +39,7 @@ public class User {
     private String lastName;
     private String passwordResetToken;
     private Date passwordResetExpiration;
-    private Set<Bcid> bcids;
+    private Set<BcidTmp> bcidTmps;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
     private List<Project> projectsMemberOf;
@@ -256,12 +256,12 @@ public class User {
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
-    public Set<Bcid> getBcids() {
-        return bcids;
+    public Set<BcidTmp> getBcidTmps() {
+        return bcidTmps;
     }
 
-    private void setBcids(Set<Bcid> bcids) {
-        this.bcids = bcids;
+    private void setBcidTmps(Set<BcidTmp> bcidTmps) {
+        this.bcidTmps = bcidTmps;
     }
 
     @JsonIgnore

@@ -20,8 +20,8 @@ import java.util.Objects;
  * Bcid Entity object
  */
 @Entity
-@Table(name = "bcids")
-public class Bcid {
+@Table(name = "bcids_tmp")
+public class BcidTmp {
     private int bcidId;
     private boolean ezidMade;
     private boolean ezidRequest;
@@ -100,13 +100,13 @@ public class Bcid {
             return this;
         }
 
-        public Bcid build() {
-            return new Bcid(this);
+        public BcidTmp build() {
+            return new BcidTmp(this);
         }
 
     }
 
-    private Bcid(BcidBuilder builder) {
+    private BcidTmp(BcidBuilder builder) {
         resourceType = builder.resourceType;
         ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
@@ -120,7 +120,7 @@ public class Bcid {
     }
 
     // needed for hibernate
-    Bcid() {
+    BcidTmp() {
     }
 
     @JsonView(Views.Detailed.class)
@@ -213,10 +213,10 @@ public class Bcid {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Bcid)) return false;
+        if (!(o instanceof BcidTmp)) return false;
 
-        Bcid bcid = (Bcid) o;
-        return getIdentifier() != null && Objects.equals(getIdentifier(), bcid.getIdentifier());
+        BcidTmp bcidTmp = (BcidTmp) o;
+        return getIdentifier() != null && Objects.equals(getIdentifier(), bcidTmp.getIdentifier());
     }
 
     @Override

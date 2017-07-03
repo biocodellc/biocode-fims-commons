@@ -1,15 +1,15 @@
 package biocode.fims.mappers;
 
 import biocode.fims.digester.Entity;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 
 /**
- * Class to map {@link Entity} to {@link Bcid}
+ * Class to map {@link Entity} to {@link BcidTmp}
  */
 public class EntityToBcidMapper {
 
-    public static Bcid map(Entity entity, boolean ezidRequest) {
-        return new Bcid.BcidBuilder(entity.getConceptURI())
+    public static BcidTmp map(Entity entity, boolean ezidRequest) {
+        return new BcidTmp.BcidBuilder(entity.getConceptURI())
                 .title(entity.getConceptAlias())
                 .ezidRequest(ezidRequest)
                 .build();

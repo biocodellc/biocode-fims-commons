@@ -3,17 +3,14 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.*;
-import biocode.fims.bcid.Renderer.JSONRenderer;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.*;
-import biocode.fims.settings.SettingsManager;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.util.UriComponents;
@@ -23,7 +20,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.util.Hashtable;
 
 /**
  * REST interface calls for working with bcids.    This includes creating a bcid, looking up
@@ -86,7 +82,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
             title = resourceTypeString;
         }
 
-        Bcid.BcidBuilder builder = new Bcid.BcidBuilder(resourceTypeString)
+        BcidTmp.BcidBuilder builder = new BcidTmp.BcidBuilder(resourceTypeString)
                 .ezidRequest(props.ezidRequests())
                 .doi(doi)
                 .title(title)
@@ -98,143 +94,79 @@ public abstract class FimsAbstractBcidController extends FimsService {
             builder.webAddress(webAddressComponents.toUri());
         }
 
-        Bcid bcid = builder.build();
-        bcidService.create(bcid, userContext.getUser().getUserId());
+        BcidTmp bcidTmp = builder.build();
+        bcidService.create(bcidTmp, userContext.getUser().getUserId());
 
         // TODO return the bcid object here
-        return Response.ok("{\"identifier\": \"" + bcid.getIdentifier() + "\"}").build();
+        return Response.ok("{\"identifier\": \"" + bcidTmp.getIdentifier() + "\"}").build();
     }
 
-    /**
-     * Return a JSON representation of bcids metadata
-     *
-     *
-     * @param bcidId
-     * @return
-     */
-    @GET
-    @Path("/metadata/{bcidId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response run(@PathParam("bcidId") Integer bcidId) {
-        String response;
+//    /**
+//     * Service to update a Bcid's metadata
+//     *
+//     * @param doi
+//     * @param webAddress
+//     * @param title
+//     * @param resourceTypeString
+//     * @param resourceTypesMinusDataset
+//     * @param identifier
+//     *
+//     * @return
+//     */
+//    @POST
+//    @Authenticated
+//    @Path("/update")
+//    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response bcidUpdate(@FormParam("doi") String doi,
+//                               @FormParam("webAddress") String webAddress,
+//                               @FormParam("title") String title,
+//                               @FormParam("resourceType") String resourceTypeString,
+//                               @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
+//                               @FormParam("identifier") String identifier) {
+//        Hashtable<String, String> metadata;
+//        Hashtable<String, String> update = new Hashtable<String, String>();
+//        BcidMinter bcidMinter = new BcidMinter();
+//
+//        if (identifier == null || identifier.isEmpty()) {
+//            throw new BadRequestException("You must include an identifier.");
+//        }
+//        if (!bcidMinter.userOwnsBcid(identifier, userContext.getUser().getUserId())) {
+//            throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
+//        }
+//
+//        // get this BCID's metadata
+//        metadata = bcidMinter.getBcidMetadata(identifier);
+//
+//        if (resourceTypesMinusDataset != null && resourceTypesMinusDataset > 0) {
+//            resourceTypeString = new ResourceTypes().get(resourceTypesMinusDataset).string;
+//        }
+//
+//        // compare every field and if they don't match, add them to the update hashtable
+//        if (doi != null && (!metadata.containsKey("doi") || !metadata.get("doi").equals(doi))) {
+//            update.put("doi", doi);
+//        }
+//        if (webAddress != null && (!metadata.containsKey("webAddress") || !metadata.get("webAddress").equals(webAddress))) {
+//            update.put("webAddress", webAddress);
+//        }
+//        if (title != null && (!metadata.containsKey("title") || !metadata.get("title").equals(title))) {
+//            update.put("title", title);
+//        }
+//        if (resourceTypeString != null && (!metadata.containsKey("resourceType") || !metadata.get("resourceType").equals(resourceTypeString))) {
+//            update.put("resourceTypeString", resourceTypeString);
+//        }
+//
+//        if (update.isEmpty()) {
+//            return Response.ok("{\"success\": \"Nothing needed to be updated.\"}").build();
+//        // try to update the metadata by calling d.updateBcidMetadata
+//        } else if (bcidMinter.updateBcidMetadata(update, identifier)) {
+//            return Response.ok("{\"success\": \"BCID successfully updated.\"}").build();
+//        } else {
+//            // if we are here, the Bcid wasn't found
+//            throw new BadRequestException("Bcid wasn't found");
+//        }
 
-        try {
-            Bcid bcid = bcidService.getBcid(bcidId);
-            BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(
-                    bcid,
-                    settingsManager,
-                    new Identifier(
-                            String.valueOf(bcid.getIdentifier()),
-                            settingsManager.retrieveValue("divider")
-                            )
-            );
-
-            ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
-
-            JSONRenderer renderer = new JSONRenderer(
-                    userContext.getUser(),
-                    bcid,
-                    projectAuthorizer,
-                    bcidService,
-                    bcidMetadataSchema,
-                    appRoot
-            );
-
-            response = renderer.render();
-
-        } catch (EmptyResultDataAccessException e) {
-            response = "{\"Identifier\":{\"status\":\"not found\"}}";
-        }
-
-        return Response.ok(response).build();
-    }
-
-    /**
-     * Return JSON response showing data groups available to this user
-     *
-     * @return String with JSON response
-     */
-    @GET
-    @Authenticated
-    @Path("/list")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response bcidList() {
-        BcidMinter bcidMinter = new BcidMinter();
-        String username = null;
-        if (userContext.getUser() != null) {
-            username = userContext.getUser().getUsername();
-        }
-        JSONArray response = bcidMinter.bcidList(username);
-
-        return Response.ok(response.toJSONString()).build();
-    }
-
-    /**
-     * Service to update a Bcid's metadata
-     *
-     * @param doi
-     * @param webAddress
-     * @param title
-     * @param resourceTypeString
-     * @param resourceTypesMinusDataset
-     * @param identifier
-     *
-     * @return
-     */
-    @POST
-    @Authenticated
-    @Path("/update")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response bcidUpdate(@FormParam("doi") String doi,
-                               @FormParam("webAddress") String webAddress,
-                               @FormParam("title") String title,
-                               @FormParam("resourceType") String resourceTypeString,
-                               @FormParam("resourceTypesMinusDataset") Integer resourceTypesMinusDataset,
-                               @FormParam("identifier") String identifier) {
-        Hashtable<String, String> metadata;
-        Hashtable<String, String> update = new Hashtable<String, String>();
-        BcidMinter bcidMinter = new BcidMinter();
-
-        if (identifier == null || identifier.isEmpty()) {
-            throw new BadRequestException("You must include an identifier.");
-        }
-        if (!bcidMinter.userOwnsBcid(identifier, userContext.getUser().getUserId())) {
-            throw new BadRequestException("Either the identifier doesn't exist or you are not the owner.");
-        }
-
-        // get this BCID's metadata
-        metadata = bcidMinter.getBcidMetadata(identifier);
-
-        if (resourceTypesMinusDataset != null && resourceTypesMinusDataset > 0) {
-            resourceTypeString = new ResourceTypes().get(resourceTypesMinusDataset).string;
-        }
-
-        // compare every field and if they don't match, add them to the update hashtable
-        if (doi != null && (!metadata.containsKey("doi") || !metadata.get("doi").equals(doi))) {
-            update.put("doi", doi);
-        }
-        if (webAddress != null && (!metadata.containsKey("webAddress") || !metadata.get("webAddress").equals(webAddress))) {
-            update.put("webAddress", webAddress);
-        }
-        if (title != null && (!metadata.containsKey("title") || !metadata.get("title").equals(title))) {
-            update.put("title", title);
-        }
-        if (resourceTypeString != null && (!metadata.containsKey("resourceType") || !metadata.get("resourceType").equals(resourceTypeString))) {
-            update.put("resourceTypeString", resourceTypeString);
-        }
-
-        if (update.isEmpty()) {
-            return Response.ok("{\"success\": \"Nothing needed to be updated.\"}").build();
-        // try to update the metadata by calling d.updateBcidMetadata
-        } else if (bcidMinter.updateBcidMetadata(update, identifier)) {
-            return Response.ok("{\"success\": \"BCID successfully updated.\"}").build();
-        } else {
-            // if we are here, the Bcid wasn't found
-            throw new BadRequestException("Bcid wasn't found");
-        }
-
-    }
+//    }
 
     /**
      * Get the dataset BCID uploaded source file.
@@ -247,34 +179,34 @@ public abstract class FimsAbstractBcidController extends FimsService {
     @GET
     @Path("/dataset/{identifier: .+}")
     public Response getSource(@PathParam("identifier") String identifierString) {
-        String divider = settingsManager.retrieveValue("divider");
+        String divider = props.divider();
         Identifier identifier = new Identifier(identifierString, divider);
 
-        Bcid bcid = null;
+        BcidTmp bcidTmp = null;
         try {
-            bcid = bcidService.getBcid(identifier.getBcidIdentifier());
+            bcidTmp = bcidService.getBcid(identifier.getBcidIdentifier());
         } catch (EmptyResultDataAccessException e) {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        if (!bcid.getResourceType().equals(ResourceTypes.DATASET_RESOURCE_TYPE)) {
+        if (!bcidTmp.getResourceType().equals(ResourceTypes.DATASET_RESOURCE_TYPE)) {
             throw new BadRequestException("BCID is not a dataset");
         }
 
-        if (bcid.getSourceFile() == null) {
+        if (bcidTmp.getSourceFile() == null) {
             throw new ServerErrorException("Error downloading bcid dataset.", "Bcid sourceFile is null");
         }
 
-        if (bcid.getExpedition() == null) {
+        if (bcidTmp.getExpedition() == null) {
             throw new UnauthorizedRequestException("Talk to the project admin to download this bcid.");
         }
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
-        if (!projectAuthorizer.userHasAccess(userContext.getUser(), bcid.getExpedition().getProject())) {
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, props.appRoot());
+        if (!projectAuthorizer.userHasAccess(userContext.getUser(), bcidTmp.getExpedition().getProject())) {
             throw new UnauthorizedRequestException("You are not authorized to download this private dataset.");
         }
 
-        File file = new File(settingsManager.retrieveValue("serverRoot") + bcid.getSourceFile());
+        File file = new File(props.serverRoot() + bcidTmp.getSourceFile());
 
         if (!file.exists()) {
             throw new ServerErrorException("Error downloading bcid dataset.", "can't find file");

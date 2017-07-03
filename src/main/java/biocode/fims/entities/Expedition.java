@@ -22,11 +22,11 @@ public class Expedition {
     private String expeditionTitle;
     private Date ts;
     private boolean isPublic;
-    private Set<Bcid> bcids;
+    private Set<BcidTmp> bcidTmps;
     private Project project;
     private User user;
-    private Bcid expeditionBcid;
-    private List<Bcid> entityBcids;
+    private BcidTmp expeditionBcidTmp;
+    private List<BcidTmp> entityBcidTmps;
 
     public static class ExpeditionBuilder {
 
@@ -152,16 +152,16 @@ public class Expedition {
     }
 
     @JsonIgnore
-    @OneToMany(targetEntity = Bcid.class,
+    @OneToMany(targetEntity = BcidTmp.class,
             mappedBy = "expedition",
             fetch = FetchType.LAZY
     )
-    public Set<Bcid> getBcids() {
-        return bcids;
+    public Set<BcidTmp> getBcidTmps() {
+        return bcidTmps;
     }
 
-    private void setBcids(Set<Bcid> bcids) {
-        this.bcids = bcids;
+    private void setBcidTmps(Set<BcidTmp> bcidTmps) {
+        this.bcidTmps = bcidTmps;
     }
 
     @JsonView(Views.Detailed.class)
@@ -199,22 +199,22 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @Transient
-    public Bcid getExpeditionBcid() {
-        return expeditionBcid;
+    public BcidTmp getExpeditionBcidTmp() {
+        return expeditionBcidTmp;
     }
 
-    public void setExpeditionBcid(Bcid bcid) {
-        expeditionBcid = bcid;
+    public void setExpeditionBcidTmp(BcidTmp bcidTmp) {
+        expeditionBcidTmp = bcidTmp;
     }
 
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @Transient
-    public List<Bcid> getEntityBcids() {
-        return entityBcids;
+    public List<BcidTmp> getEntityBcidTmps() {
+        return entityBcidTmps;
     }
 
-    public void setEntityBcids(List<Bcid> entityBcids) {
-        this.entityBcids = entityBcids;
+    public void setEntityBcidTmps(List<BcidTmp> entityBcidTmps) {
+        this.entityBcidTmps = entityBcidTmps;
     }
 }

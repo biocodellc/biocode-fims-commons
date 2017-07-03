@@ -14,7 +14,7 @@ public interface FimsMetadataPersistenceManager {
 
     boolean validate(ProcessController processController);
 
-    String writeSourceFile(File sourceFile, int bcidId);
+    String writeSourceFile(File sourceFile, int projectId, String expeditionCode);
 
     String getWebAddress();
 
