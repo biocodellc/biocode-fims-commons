@@ -1,8 +1,8 @@
 package biocode.fims.fileManagers.fimsMetadata;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 
 import java.io.File;
@@ -14,16 +14,16 @@ import java.nio.file.Files;
  * @author RJ Ewing
  */
 public abstract class AbstractFimsMetadataPersistenceManager implements FimsMetadataPersistenceManager {
-    private final SettingsManager settingsManager;
+    private final FimsProperties props;
 
-    protected AbstractFimsMetadataPersistenceManager(SettingsManager settingsManager) {
-        this.settingsManager = settingsManager;
+    protected AbstractFimsMetadataPersistenceManager(FimsProperties props) {
+        this.props = props;
     }
 
     public String writeSourceFile(File sourceFile, int bcidId) {
         String ext = FileUtils.getExtension(sourceFile.getName(), null);
         String filename = "fims_metadata_bcid_id_" + bcidId + "." + ext;
-        File outputFile = new File(settingsManager.retrieveValue("serverRoot") + filename);
+        File outputFile = new File(props.serverRoot() + filename);
 
         try {
             Files.copy(sourceFile.toPath(), outputFile.toPath());

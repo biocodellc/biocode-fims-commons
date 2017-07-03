@@ -1,8 +1,8 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -12,7 +12,6 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.services.rest.subResources.UsersResource;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.server.model.Resource;
 import org.json.simple.JSONObject;
 import org.springframework.util.StringUtils;
@@ -29,8 +28,8 @@ public abstract class FimsAbstractUserController extends FimsService {
 
     protected final UserService userService;
 
-    FimsAbstractUserController(UserService userService, SettingsManager settingsManager) {
-        super(settingsManager);
+    FimsAbstractUserController(UserService userService, FimsProperties props) {
+        super(props);
         this.userService = userService;
     }
 
@@ -135,7 +134,7 @@ public abstract class FimsAbstractUserController extends FimsService {
         User userToUpdate = this.userContext.getUser();
 
         if (!userContext.getUser().getUsername().equals(updateUsername.trim())) {
-            if (!userService.isAProjectAdmin(userContext.getUser(), appRoot)) {
+            if (!userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
                 throw new ForbiddenRequestException("You must be a project admin to update someone else's profile.");
             } else {
                 adminAccess = true;
@@ -195,7 +194,7 @@ public abstract class FimsAbstractUserController extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserData() {
         if (userContext.getUser() != null) {
-            userContext.getUser().setAdmin(userService.isAProjectAdmin(userContext.getUser(), appRoot));
+            userContext.getUser().setAdmin(userService.isAProjectAdmin(userContext.getUser(), props.appRoot()));
             return Response.ok(userContext.getUser()).build();
         }
         throw new BadRequestException("invalid_grant", "access_token was null");

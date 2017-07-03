@@ -31,6 +31,7 @@ public class FimsAppConfig {
     ExpeditionService expeditionService;
     @Autowired
     SettingsManager settingsManager;
+    FimsProperties props;
 
     @Bean
     public Resolver resolver() throws FileNotFoundException {
@@ -48,5 +49,10 @@ public class FimsAppConfig {
         messageSource.setBasename("classpath:locale/messages");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+
+    @Bean
+    public FimsProperties fimsProperties() {
+        return new FimsProperties(env);
     }
 }

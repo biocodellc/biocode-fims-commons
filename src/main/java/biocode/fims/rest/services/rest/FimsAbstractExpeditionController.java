@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
@@ -15,7 +16,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
@@ -47,8 +47,8 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
 
     @Autowired
     public FimsAbstractExpeditionController(ExpeditionService expeditionService, ProjectService projectService,
-                                            SettingsManager settingsManager) {
-        super(settingsManager);
+                                            FimsProperties props) {
+        super(props);
         this.expeditionService = expeditionService;
         this.projectService = projectService;
     }

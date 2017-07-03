@@ -38,7 +38,7 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private SettingsManager settingsManager;
+    private FimsProperties props;
     @Mock
     private EntityManager entityManager;
 
