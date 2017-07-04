@@ -93,14 +93,15 @@ BEGIN
     audit_session_user = 'postgres_role: ' || session_user::text;
   END IF;
 
+  RAISE INFO 'OP_CODE %s', TG_OP;
   IF TG_OP = 'UPDATE' THEN
     config = OLD.config;
     IF OLD.config = NEW.config THEN
       -- All changed fields are ignored. Skip this update.
       RETURN NULL;
     END IF;
-  ELSIF TG_OP = 'DELETE' THEN
-    config = OLD.config;
+--   ELSIF TG_OP = 'DELETE' THEN
+--     config = OLD.config;
   ELSIF TG_OP = 'INSERT' THEN
     config = NEW.config;
   ELSE
@@ -121,7 +122,7 @@ SECURITY DEFINER;
 COMMENT ON FUNCTION project_config_history() IS $body$
 Track changes to the projects.config column.
 
-This will create an entry in the project_config_history for each config that is updated, inserted, or deleted.
+This will create an entry in the project_config_history for each config that is updated or inserted.
 This is useful for creating a history of all changes to project configs.
 $body$;
 
@@ -137,7 +138,8 @@ CREATE TABLE users (
   institution TEXT,
   has_set_password BOOLEAN NOT NULL DEFAULT '0',
   password_reset_token TEXT,
-  password_reset_expiration TIMESTAMP
+  password_reset_expiration TIMESTAMP,
+  uuid UUID NOT NULL
 );
 
 COMMENT ON COLUMN users.password_reset_token is 'Unique token used to reset a users password';
@@ -220,10 +222,10 @@ CREATE TABLE project_config_history
     ts TIMESTAMP WITH TIME ZONE NOT NULL,
     action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')),
     config jsonb,
-    project_id INTEGER NOT NULL REFERENCES projects (id)
+    project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE
   );
 
-CREATE TRIGGER config_history AFTER INSERT OR DELETE OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
+CREATE TRIGGER config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
 
 COMMENT ON COLUMN project_config_history.user_name is 'user who made the change';
 COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';

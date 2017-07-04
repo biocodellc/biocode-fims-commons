@@ -11,7 +11,6 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
-import biocode.fims.bcid.Resolver;
 import biocode.fims.repositories.BcidRepository;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
