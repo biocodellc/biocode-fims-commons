@@ -1,6 +1,7 @@
 package biocode.fims.bcid;
 
 import biocode.fims.entities.BcidTmp;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
@@ -13,6 +14,7 @@ import java.util.UUID;
 /**
  * Bcid Entity object
  */
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Bcid {
     private boolean ezidMade;
     private boolean ezidRequest;
@@ -25,7 +27,7 @@ public class Bcid {
     private Date modified;
     private UUID userId;
     private String creator;
-    private int client_id;
+    private String publisher;
 
 
     private Bcid(BcidBuilder builder) {
@@ -35,6 +37,7 @@ public class Bcid {
         title = builder.title;
         webAddress = builder.webAddress;
         creator = builder.creator;
+        publisher = builder.publisher;
         userId = builder.userId;
     }
 
@@ -87,6 +90,10 @@ public class Bcid {
         return creator;
     }
 
+    public String publisher() {
+        return publisher;
+    }
+
     public Date modified() {
         return modified;
     }
@@ -120,9 +127,9 @@ public class Bcid {
         }
     }
 
-    public static Bcid fromBcidTmp(BcidTmp bcidTmp, String creator) {
+    public static Bcid fromBcidTmp(BcidTmp bcidTmp, String creator, String publisher) {
         // TODO check creator prop which will override the user setting
-        return new BcidBuilder(bcidTmp.getResourceType(), creator)
+        return new BcidBuilder(bcidTmp.getResourceType(), creator, publisher)
                 .doi(bcidTmp.getDoi())
                 .ezidRequest(bcidTmp.isEzidRequest())
                 .title(bcidTmp.getTitle())
@@ -136,6 +143,7 @@ public class Bcid {
         // Required parameters
         private String resourceType;
         private String creator;
+        private String publisher;
 
         //Optional parameters
         private boolean ezidRequest = true;
@@ -144,12 +152,14 @@ public class Bcid {
         private URI webAddress;
         private UUID userId;
 
-        public BcidBuilder(String resourceType, String creator) {
+        public BcidBuilder(String resourceType, String creator, String publisher) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
             Assert.notNull(creator, "Bcid creator must not be null");
+            Assert.notNull(publisher, "Bcid publisher must not be null");
 
             this.resourceType = resourceType;
             this.creator = creator;
+            this.publisher = publisher;
         }
 
         public BcidBuilder ezidRequest(boolean val) {

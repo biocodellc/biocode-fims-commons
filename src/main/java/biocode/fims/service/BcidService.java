@@ -48,8 +48,8 @@ public class BcidService {
         if (bcidTmp.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
             bcidTmp.setEzidRequest(false);
 
-        String creator = (StringUtils.isEmpty(props.creator())) ? user.getFullName() + "<" + user.getEmail() + ">" : props.creator();
-        Bcid bcid = Bcid.fromBcidTmp(bcidTmp, creator);
+        String creator = (StringUtils.isEmpty(props.creator())) ? user.getFullName() + " <" + user.getEmail() + ">" : props.creator();
+        Bcid bcid = Bcid.fromBcidTmp(bcidTmp, creator, props.publisher());
 
         bcid = bcidRepository.create(bcid);
 

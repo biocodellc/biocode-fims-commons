@@ -9,6 +9,7 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,6 +35,7 @@ public class AbstractRequest<T> implements Request<T> {
         this.path = path;
         this.baseUrl = baseUrl;
         this.headers = new MultivaluedHashMap<>();
+        this.queryParams = new HashMap<>();
     }
 
     private void registerDefaultClientFeatures() {
@@ -69,10 +71,6 @@ public class AbstractRequest<T> implements Request<T> {
 
     public void addQueryParam(String key, Object... value) {
         queryParams.put(key, value);
-    }
-
-    protected void setQueryParams(Map<String, Object[]> queryParams) {
-        this.queryParams = queryParams;
     }
 
     protected void setHttpEntity(Entity entity) {
