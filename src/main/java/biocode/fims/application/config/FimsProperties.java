@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class FimsProperties {
-    private final Environment env;
+    protected final Environment env;
 
     @Autowired
     public FimsProperties(Environment env) {
