@@ -29,7 +29,7 @@ public class FimsProperties {
     }
 
     public String creator() {
-        return env.getRequiredProperty("creator");
+        return env.getProperty("creator");
     }
 
     public String serverRoot() {
@@ -81,7 +81,7 @@ public class FimsProperties {
     }
 
     public String bcidUrl() {
-        return env.getRequiredProperty("bcidUrl");
+        return env.getRequiredProperty("bcid.url");
     }
 
     public String bcidClientId() {
