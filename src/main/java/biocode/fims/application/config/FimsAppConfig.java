@@ -57,6 +57,7 @@ public class FimsAppConfig {
         return new BcidRepository(ClientBuilder.newClient(), fimsProperties);
     }
 
+    @Primary
     @Bean
     public FimsProperties fimsProperties() {
         return new FimsProperties(env);
