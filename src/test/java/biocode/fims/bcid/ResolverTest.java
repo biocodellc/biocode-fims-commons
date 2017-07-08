@@ -10,6 +10,7 @@ import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -24,6 +25,7 @@ import java.net.URI;
 /**
  * Tests for the Resolver class
  */
+@Ignore
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("biocode.fims.bcid.BcidDatabase")
 @PrepareForTest(BcidDatabase.class)
