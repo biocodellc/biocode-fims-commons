@@ -69,7 +69,7 @@ public class ExpeditionService {
 
         BcidTmp bcidTmp = createExpeditionBcid(expedition, webAddress, props.ezidRequests());
         expedition.setExpeditionBcidTmp(bcidTmp);
-        createEntityBcids(mapping, expedition.getExpeditionId(), userId, props.ezidRequests());
+        createEntityBcids(mapping, expedition.getExpeditionId(), user);
     }
 
     public void update(Expedition expedition) {
@@ -209,15 +209,15 @@ public class ExpeditionService {
                 .ezidRequest(ezidRequest)
                 .build();
 
-        bcidService.create(expditionBcidTmp, expedition.getUser().getUserId());
+        bcidService.create(expditionBcidTmp, expedition.getUser());
         bcidService.attachBcidToExpedition(expditionBcidTmp, expedition.getExpeditionId());
         return expditionBcidTmp;
     }
 
-    private void createEntityBcids(Mapping mapping, int expeditionId, int userId, boolean ezidRequest) {
+    private void createEntityBcids(Mapping mapping, int expeditionId, User user) {
         for (Entity entity : mapping.getEntities()) {
-            BcidTmp bcidTmp = EntityToBcidMapper.map(entity, ezidRequest);
-            bcidService.create(bcidTmp, userId);
+            BcidTmp bcidTmp = EntityToBcidMapper.map(entity, props.ezidRequests());
+            bcidService.create(bcidTmp, user);
             bcidService.attachBcidToExpedition(bcidTmp, expeditionId);
 
             entity.setIdentifier(bcidTmp.getIdentifier());

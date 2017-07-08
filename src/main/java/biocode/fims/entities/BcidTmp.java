@@ -20,7 +20,7 @@ import java.util.Objects;
  * Bcid Entity object
  */
 @Entity
-@Table(name = "bcids_tmp")
+@Table(name = "bcids")
 public class BcidTmp {
     private int bcidId;
     private boolean ezidMade;
