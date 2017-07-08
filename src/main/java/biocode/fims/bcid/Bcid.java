@@ -16,16 +16,12 @@ import java.util.UUID;
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Bcid {
-    private boolean ezidMade;
     private boolean ezidRequest;
     private URI identifier;
     private String doi;
     private String title;
     private URI webAddress;
     private String resourceType;
-    private Date created;
-    private Date modified;
-    private UUID userId;
     private String creator;
     private String publisher;
 
@@ -38,19 +34,10 @@ public class Bcid {
         webAddress = builder.webAddress;
         creator = builder.creator;
         publisher = builder.publisher;
-        userId = builder.userId;
     }
 
     // needed for Jackson
     Bcid() {
-    }
-
-    public boolean ezidMade() {
-        return ezidMade;
-    }
-
-    public boolean ezidRequest() {
-        return ezidRequest;
     }
 
     public void setEzidRequest(boolean ezidRequest) {
@@ -82,24 +69,12 @@ public class Bcid {
         return resourceType;
     }
 
-    public UUID userId() {
-        return userId;
-    }
-
     public String creator() {
         return creator;
     }
 
     public String publisher() {
         return publisher;
-    }
-
-    public Date modified() {
-        return modified;
-    }
-
-    public Date created() {
-        return created;
     }
 
     @Override
@@ -134,7 +109,6 @@ public class Bcid {
                 .ezidRequest(bcidTmp.isEzidRequest())
                 .title(bcidTmp.getTitle())
                 .webAddress(bcidTmp.getWebAddress())
-                .userId(bcidTmp.getUser().getUUID())
                 .build();
     }
 
@@ -150,7 +124,6 @@ public class Bcid {
         private String doi;
         private String title;
         private URI webAddress;
-        private UUID userId;
 
         public BcidBuilder(String resourceType, String creator, String publisher) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
@@ -180,11 +153,6 @@ public class Bcid {
         public BcidBuilder webAddress(URI val) {
             isValidUrl(val);
             webAddress = val;
-            return this;
-        }
-
-        public BcidBuilder userId(UUID val) {
-            userId = val;
             return this;
         }
 

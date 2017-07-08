@@ -39,10 +39,6 @@ public class BcidRepository {
         return executeRequest(new MintBcid(client, props.bcidUrl(), toMint));
     }
 
-    public Bcid get(String identifier) {
-        return new FetchBcid(client, props.bcidUrl(), identifier).execute();
-    }
-
     private <T> T executeRequest(AbstractRequest<T> request) {
         try {
             request.addHeader("Authorization", "Bearer " + accessToken.accessToken);
@@ -73,17 +69,6 @@ public class BcidRepository {
 
         this.triedRefresh = false;
         return true;
-    }
-
-
-    private static final class FetchBcid extends AbstractRequest<Bcid> {
-        private static final String path = "/";
-
-        public FetchBcid(Client client, String baseUrl, String identifier) {
-            super("GET", Bcid.class, client, path + identifier, baseUrl);
-
-            setAccepts(MediaType.APPLICATION_JSON_TYPE);
-        }
     }
 
     private static final class MintBcid extends AbstractRequest<Bcid> {

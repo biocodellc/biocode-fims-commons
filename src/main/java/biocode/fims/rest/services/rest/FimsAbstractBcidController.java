@@ -95,7 +95,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
         }
 
         BcidTmp bcidTmp = builder.build();
-        bcidService.create(bcidTmp, userContext.getUser().getUserId());
+        bcidService.create(bcidTmp, userContext.getUser());
 
         // TODO return the bcid object here
         return Response.ok("{\"identifier\": \"" + bcidTmp.getIdentifier() + "\"}").build();

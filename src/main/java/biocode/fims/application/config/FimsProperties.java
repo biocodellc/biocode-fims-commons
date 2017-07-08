@@ -25,11 +25,11 @@ public class FimsProperties {
     }
 
     public String publisher() {
-        return env.getRequiredProperty("publisher");
+        return env.getRequiredProperty("bcid.publisher");
     }
 
     public String creator() {
-        return env.getProperty("creator");
+        return env.getProperty("bcid.creator");
     }
 
     public String serverRoot() {

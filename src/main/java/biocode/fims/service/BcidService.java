@@ -39,13 +39,10 @@ public class BcidService {
     }
 
     @Transactional
-    public BcidTmp create(BcidTmp bcidTmp, int userId) {
-
-        User user = userService.getUser(userId);
-        bcidTmp.setUser(user);
+    public BcidTmp create(BcidTmp bcidTmp, User user) {
 
         // if the user is demo, never create ezid's
-        if (bcidTmp.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
+        if (bcidTmp.isEzidRequest() && user.getUsername().equals("demo"))
             bcidTmp.setEzidRequest(false);
 
         String creator = (StringUtils.isEmpty(props.creator())) ? user.getFullName() + " <" + user.getEmail() + ">" : props.creator();
@@ -53,11 +50,16 @@ public class BcidService {
 
         bcid = bcidRepository.create(bcid);
 
+        bcidTmp.setUser(user);
         bcidTmp.setIdentifier(bcid.identifier());
         bcidTmpRepository.save(bcidTmp);
 
         return bcidTmp;
 
+    }
+
+    public BcidTmp create(BcidTmp bcidTmp, int userId) {
+        return create(bcidTmp, userService.getUser(userId));
     }
 
     public BcidTmp attachBcidToExpedition(BcidTmp bcidTmp, int expeditionId) {
