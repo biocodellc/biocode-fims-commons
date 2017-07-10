@@ -257,7 +257,7 @@ public class ExpeditionService {
                         expedition.getExpeditionId(),
                         Expedition.EXPEDITION_RESOURCE_TYPE
                 ));
-        expedition.setEntityBcid(bcidService.getEntityBcids(expedition.getExpeditionId()));
+        expedition.setEntityBcids(bcidService.getEntityBcids(expedition.getExpeditionId()));
     }
 
     public List<Expedition> getPublicExpeditions(int projectId) {
