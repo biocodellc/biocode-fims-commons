@@ -107,7 +107,7 @@ public class FimsMetadataFileManager implements FileManager {
         if (filename != null) {
             persistenceManager.upload(processController, fimsMetadata, filename);
 
-            URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : null;
+            URI webaddress = persistenceManager.getWebAddress() != null ? URI.create(persistenceManager.getWebAddress()) : props.datasetResolverTarget();
 
             BcidTmp bcidTmp = new BcidTmp.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(props.ezidRequests())

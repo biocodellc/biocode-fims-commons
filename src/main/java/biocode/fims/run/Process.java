@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileTester;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
@@ -37,11 +38,13 @@ public class Process {
     private final ProcessController processController;
     private final ElasticSearchIndexer esIndexer;
     private final File configFile;
+    private final FimsProperties props;
 
     public static class ProcessBuilder {
         // Required
         FimsMetadataFileManager FimsMetadataFileManager;
         ProcessController processController;
+        private final FimsProperties props;
         Map<String, Map<String, Object>> fmProperties;
         File configFile;
 
@@ -49,9 +52,10 @@ public class Process {
         List<AuxilaryFileManager> additionalFileManagers = new ArrayList<>();
         public ElasticSearchIndexer esIndexer;
 
-        public ProcessBuilder(FimsMetadataFileManager FimsMetadataFileManager, ProcessController processController) {
+        public ProcessBuilder(FimsMetadataFileManager FimsMetadataFileManager, ProcessController processController, FimsProperties props) {
             this.FimsMetadataFileManager = FimsMetadataFileManager;
             this.processController = processController;
+            this.props = props;
         }
 
         /**
@@ -115,6 +119,7 @@ public class Process {
         fileManagers = builder.additionalFileManagers;
         configFile = builder.configFile;
         esIndexer = builder.esIndexer;
+        props = builder.props;
         addFmProperties(builder.fmProperties);
 
         if (processController.getMapping() == null) {
@@ -219,7 +224,7 @@ public class Process {
                 expedition,
                 processController.getUserId(),
                 processController.getProjectId(),
-                null,
+                props.expeditionResolverTarget(),
                 processController.getMapping()
         );
     }
