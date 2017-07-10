@@ -88,7 +88,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
         if (!StringUtils.isEmpty(webAddress)) {
             uri = UriComponentsBuilder.fromUriString(webAddress).build().toUri();
         } else {
-            uri = null;
+            uri = props.expeditionResolverTarget();
         }
         expeditionService.create(expedition, userContext.getUser().getUserId(), projectId, uri, mapping);
 

@@ -217,6 +217,7 @@ public class ExpeditionService {
     private void createEntityBcids(Mapping mapping, int expeditionId, User user) {
         for (Entity entity : mapping.getEntities()) {
             BcidTmp bcidTmp = EntityToBcidMapper.map(entity, props.ezidRequests());
+            bcidTmp.setWebAddress(props.entityResolverTarget());
             bcidService.create(bcidTmp, user);
             bcidService.attachBcidToExpedition(bcidTmp, expeditionId);
 
