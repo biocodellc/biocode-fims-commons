@@ -26,7 +26,7 @@ public class Expedition {
     private Project project;
     private User user;
     private BcidTmp expeditionBcid;
-    private List<BcidTmp> entityBcid;
+    private List<BcidTmp> entityBcids;
 
     public static class ExpeditionBuilder {
 
@@ -210,11 +210,11 @@ public class Expedition {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @Transient
-    public List<BcidTmp> getEntityBcid() {
-        return entityBcid;
+    public List<BcidTmp> getEntityBcids() {
+        return entityBcids;
     }
 
-    public void setEntityBcid(List<BcidTmp> entityBcid) {
-        this.entityBcid = entityBcid;
+    public void setEntityBcids(List<BcidTmp> entityBcids) {
+        this.entityBcids = entityBcids;
     }
 }
