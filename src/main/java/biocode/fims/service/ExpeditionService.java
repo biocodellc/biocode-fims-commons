@@ -68,7 +68,7 @@ public class ExpeditionService {
         expeditionRepository.save(expedition);
 
         BcidTmp bcidTmp = createExpeditionBcid(expedition, webAddress, props.ezidRequests());
-        expedition.setExpeditionBcidTmp(bcidTmp);
+        expedition.setExpeditionBcid(bcidTmp);
         createEntityBcids(mapping, expedition.getExpeditionId(), user);
     }
 
@@ -91,7 +91,7 @@ public class ExpeditionService {
         BcidTmp bcidTmp = bcidService.getBcid(identifier);
         if (bcidTmp != null) {
             expedition = bcidTmp.getExpedition();
-            expedition.setExpeditionBcidTmp(bcidTmp);
+            expedition.setExpeditionBcid(bcidTmp);
         }
         return expedition;
     }
@@ -252,12 +252,12 @@ public class ExpeditionService {
      * @param expedition
      */
     private void attachExpeditionBcids(Expedition expedition) {
-        expedition.setExpeditionBcidTmp(
+        expedition.setExpeditionBcid(
                 bcidService.getBcid(
                         expedition.getExpeditionId(),
                         Expedition.EXPEDITION_RESOURCE_TYPE
                 ));
-        expedition.setEntityBcidTmps(bcidService.getEntityBcids(expedition.getExpeditionId()));
+        expedition.setEntityBcid(bcidService.getEntityBcids(expedition.getExpeditionId()));
     }
 
     public List<Expedition> getPublicExpeditions(int projectId) {
