@@ -1,7 +1,6 @@
 package biocode.fims.rest;
 
 import biocode.fims.application.config.SettingsManagerConfig;
-import biocode.fims.bcid.Resolver;
 //import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.*;
@@ -64,11 +63,6 @@ public class FimsRestTestAppConfig {
 
     @Bean
     public TransportClient transportClient() {
-        return null;
-    }
-
-    @Bean
-    public Resolver resolver() {
         return null;
     }
 

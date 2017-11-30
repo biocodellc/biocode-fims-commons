@@ -43,6 +43,4 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     @Query("select (COUNT(u) > 0) from User u where u.email = :email")
     boolean userExists(@Param("email") String email);
-
-    User findByUUID(UUID id);
 }

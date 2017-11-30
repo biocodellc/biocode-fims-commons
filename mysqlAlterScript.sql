@@ -26,6 +26,7 @@ ALTER TABLE `bcids` CHANGE `webAddress` `web_address` VARCHAR(2083)  CHARACTER S
 ALTER TABLE `bcids` CHANGE `resourceType` `resource_type` VARCHAR(2083)  CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  DEFAULT '';
 ALTER TABLE `bcids` CHANGE `sourceFile` `source_file` VARCHAR(255)  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL  DEFAULT NULL;
 ALTER TABLE `bcids` CHANGE `subResourceType` `sub_resource_type` VARCHAR(20)  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL  DEFAULT NULL;
+RENAME TABLE `bcids` TO `bcids_tmp`;
 
 alter table expeditions drop internalId;
 alter table expeditions change column ts created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;

@@ -1,5 +1,16 @@
 /**
 * SQL for Fims postgresql tables
+*
+* NOTE: some triggers have been commented out that are required. They are commented out incase you are
+* migrating/restoring any data, as these trigger should not be run during a restore/migration.
+*
+* If you are restoring/migrating data:
+*   1. run this script
+*   2. import data
+*   3. run triggers.sql script
+*
+* If you are creating a new instance, you can either uncomment the triggers here, or run this script
+* followed by the trigger.sql script
 */
 
 CREATE OR REPLACE FUNCTION update_modified_column()
@@ -93,7 +104,7 @@ BEGIN
     audit_session_user = 'postgres_role: ' || session_user::text;
   END IF;
 
-  RAISE INFO 'OP_CODE %s', TG_OP;
+  RAISE INFO 'OP_CODE %', TG_OP;
   IF TG_OP = 'UPDATE' THEN
     config = OLD.config;
     IF OLD.config = NEW.config THEN
@@ -138,51 +149,12 @@ CREATE TABLE users (
   institution TEXT,
   has_set_password BOOLEAN NOT NULL DEFAULT '0',
   password_reset_token TEXT,
-  password_reset_expiration TIMESTAMP,
-  uuid UUID NOT NULL
+  password_reset_expiration TIMESTAMP
 );
 
 COMMENT ON COLUMN users.password_reset_token is 'Unique token used to reset a users password';
 COMMENT ON COLUMN users.password_reset_expiration is 'time when the reset token expires';
 
-DROP TABLE IF EXISTS bcids;
-
-CREATE TABLE bcids (
-  id SERIAL PRIMARY KEY NOT NULL,
-  ezid_made BOOLEAN NOT NULL DEFAULT '0',
-  ezid_request BOOLEAN NOT NULL DEFAULT '1',
-  identifier TEXT,
-  user_id INTEGER NOT NULL REFERENCES users (id),
-  doi TEXT,
-  title TEXT,
-  web_address TEXT,
-  graph TEXT,
-  source_file TEXT,
-  resource_type TEXT NOT NULL,
-  sub_resource_type TEXT,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX bcids_identifier_idx on bcids (identifier);
-CREATE INDEX bcids_userId_idx on bcids (user_id);
-CREATE INDEX bcids_resourceType_idx on bcids (resource_type);
-
-CREATE TRIGGER update_bcids_modtime BEFORE INSERT OR UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-CREATE TRIGGER set_bcids_createdtime BEFORE INSERT ON bcids FOR EACH ROW EXECUTE PROCEDURE set_created_column();
-
-COMMENT ON COLUMN bcids.ezid_made is 'indicates if EZID has been made';
-COMMENT ON COLUMN bcids.ezid_request is 'indicates if we want system to request EZID, all bcids by default get an EZID request';
-COMMENT ON COLUMN bcids.identifier is 'ark:/1234/ab1';
-COMMENT ON COLUMN bcids.user_id is 'who created this data';
-COMMENT ON COLUMN bcids.title is 'title for this bcid';
-COMMENT ON COLUMN bcids.web_address is 'the target URL for this bcid';
-COMMENT ON COLUMN bcids.graph is 'A reference to a graph, used by the biocode-fims expedition for storing graph references for a particular bcid';
-COMMENT ON COLUMN bcids.source_file is 'The name of the source file for this bcid. This is useful for dataset backups.';
-COMMENT ON COLUMN bcids.resource_type is 'resource type for this bcid, stored as a URI';
-COMMENT ON COLUMN bcids.sub_resource_type is 'sub resource type for this bcid, stored as a URI';
-COMMENT ON COLUMN bcids.created is 'timestamp of insertion';
-COMMENT ON COLUMN bcids.modified is 'timestamp of last update';
 
 DROP TABLE IF EXISTS projects;
 CREATE DOMAIN project_code as text CHECK (length(value) <= 10);
@@ -193,8 +165,7 @@ CREATE TABLE projects (
   project_title TEXT,
   project_url TEXT NOT NULL,
   description TEXT,
-  validation_xml TEXT NOT NULL,
-  config JSONB,
+  config JSONB NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_id INTEGER NOT NULL REFERENCES users (id),
@@ -208,7 +179,7 @@ CREATE UNIQUE INDEX projects_project_code_idx ON projects (project_code);
 ALTER TABLE projects ADD CONSTRAINT projects_project_code_uniq UNIQUE USING INDEX projects_project_code_idx;
 
 CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+-- CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN projects.project_code is 'The short name for this project';
 COMMENT ON COLUMN projects.project_url is 'Where this project is located on the web';
@@ -225,7 +196,7 @@ CREATE TABLE project_config_history
     project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE
   );
 
-CREATE TRIGGER config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
+-- CREATE TRIGGER config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
 
 COMMENT ON COLUMN project_config_history.user_name is 'user who made the change';
 COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';
@@ -253,7 +224,7 @@ CREATE TABLE user_invite (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TRIGGER set_user_invite_createdtime BEFORE INSERT ON user_invite FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+-- CREATE TRIGGER set_user_invite_createdtime BEFORE INSERT ON user_invite FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 CREATE OR REPLACE FUNCTION delete_expired_user_invites()
   RETURNS TRIGGER AS $$
@@ -272,7 +243,7 @@ CREATE TABLE expeditions (
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   expedition_code TEXT NOT NULL,
   expedition_title TEXT,
-  identifier TEXT,
+  identifier TEXT NOT NULL,
   visibility TEXT NOT NULL,
   user_id INTEGER NOT NULL REFERENCES users (id),
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -284,20 +255,10 @@ CREATE TABLE expeditions (
 CREATE INDEX expeditions_project_id_idx ON expeditions (project_id);
 
 CREATE TRIGGER update_expeditions_modtime BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+-- CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN expeditions.expedition_code is 'The short name for this expedition';
 COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedition';
-
-DROP TABLE IF EXISTS expedition_bcids;
-
-CREATE TABLE expedition_bcids (
-  expedition_id INTEGER NOT NULL REFERENCES expeditions (id) ON DELETE CASCADE,
-  bcid_id INTEGER NOT NULL REFERENCES bcids (id)
-);
-
-CREATE INDEX expedition_bcids_expedition_id_idx ON expedition_bcids (expedition_id);
-CREATE INDEX expedition_bcids_bcid_id_idx ON expedition_bcids (bcid_id);
 
 DROP TABLE IF EXISTS entity_identifiers;
 
@@ -337,7 +298,7 @@ CREATE TABLE oauth_nonces (
 
 CREATE INDEX oauth_nonces_code_idx ON oauth_nonces (code);
 
-CREATE TRIGGER set_oouth_nonces_createdtime BEFORE INSERT ON oauth_nonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+-- CREATE TRIGGER set_oouth_nonces_createdtime BEFORE INSERT ON oauth_nonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN oauth_nonces.code is 'The generated code the client app can exchange for an access token';
 COMMENT ON COLUMN oauth_nonces.redirect_uri is 'The redirectUri associated with this code';
@@ -356,7 +317,7 @@ CREATE TABLE oauth_tokens (
 CREATE INDEX oauth_tokens_token_idx on oauth_tokens (token);
 CREATE INDEX oauth_tokens_refresh_token_idx on oauth_tokens (refresh_token);
 
-CREATE TRIGGER set_oauth_tokens_createdtime BEFORE INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+-- CREATE TRIGGER set_oauth_tokens_createdtime BEFORE INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN oauth_tokens.token is 'The generated token used by the client app';
 COMMENT ON COLUMN oauth_tokens.refresh_token is 'The generated token used to gain a new access_token';

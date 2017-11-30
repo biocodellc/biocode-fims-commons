@@ -37,7 +37,6 @@ public class BcidTmp {
     private Date ts;
     private String graph;
     private String sourceFile;
-    private boolean finalCopy;
     private Expedition expedition;
     private User user;
 
@@ -55,7 +54,6 @@ public class BcidTmp {
         private URI webAddress;
         private String graph;
         private String sourceFile;
-        private boolean finalCopy = false;
 
         public BcidBuilder(String resourceType) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
@@ -93,11 +91,6 @@ public class BcidTmp {
             return this;
         }
 
-        public BcidBuilder finalCopy(boolean finalCopy) {
-            this.finalCopy = finalCopy;
-            return this;
-        }
-
         public BcidBuilder subResourceType(String subResourceType) {
             this.subResourceType = subResourceType;
             return this;
@@ -118,7 +111,6 @@ public class BcidTmp {
         webAddress = builder.webAddress;
         graph = builder.graph;
         sourceFile = builder.sourceFile;
-        finalCopy = builder.finalCopy;
         subResourceType = builder.subResourceType;
     }
 
@@ -129,6 +121,7 @@ public class BcidTmp {
     @JsonView(Views.Detailed.class)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public int getBcidId() {
         return bcidId;
     }
@@ -138,7 +131,7 @@ public class BcidTmp {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "bit")
+    @Column(columnDefinition = "bit", name = "ezid_made")
     public boolean isEzidMade() {
         return ezidMade;
     }
@@ -148,7 +141,7 @@ public class BcidTmp {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(columnDefinition = "bit not null")
+    @Column(columnDefinition = "bit not null", name = "ezid_request")
     public boolean isEzidRequest() {
         return ezidRequest;
     }
@@ -189,6 +182,7 @@ public class BcidTmp {
 
     @JsonView(Views.Detailed.class)
     @Convert(converter = UriPersistenceConverter.class)
+    @Column(name = "web_address")
     public URI getWebAddress() {
         // TODO move the following to the BcidService.create after all Bcid creation is done via BcidService class
         if (identifier != null && webAddress != null && webAddress.toString().contains("%7Bark%7D")) {
@@ -205,6 +199,7 @@ public class BcidTmp {
     }
 
     @JsonView(Views.Summary.class)
+    @Column(name = "sub_resource_type")
     public String getSubResourceType() {
         return subResourceType;
     }
@@ -233,7 +228,7 @@ public class BcidTmp {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "resource_type")
     public String getResourceType() {
         return resourceType;
     }
@@ -244,6 +239,7 @@ public class BcidTmp {
 
     @JsonView(Views.Summary.class)
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created")
     public Date getTs() {
         return ts;
     }
@@ -262,22 +258,13 @@ public class BcidTmp {
     }
 
     @JsonView(Views.Detailed.class)
+    @Column(name = "source_file")
     public String getSourceFile() {
         return sourceFile;
     }
 
     public void setSourceFile(String sourceFile) {
         this.sourceFile = sourceFile;
-    }
-
-    @JsonView(Views.Detailed.class)
-    @Column(columnDefinition = "bit not null")
-    public boolean isFinalCopy() {
-        return finalCopy;
-    }
-
-    public void setFinalCopy(boolean finalCopy) {
-        this.finalCopy = finalCopy;
     }
 
     @Override
@@ -294,7 +281,6 @@ public class BcidTmp {
                 ", subResourceType='" + subResourceType + '\'' +
                 ", ts=" + ts +
                 ", graph='" + graph + '\'' +
-                ", finalCopy=" + finalCopy +
                 ", expedition=" + expedition +
                 ", user=" + user +
                 '}';
@@ -303,9 +289,9 @@ public class BcidTmp {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinTable(name = "expeditionBcids",
-            joinColumns = @JoinColumn(name = "bcidId", referencedColumnName = "bcidId"),
-            inverseJoinColumns = @JoinColumn(name = "expeditionId", referencedColumnName = "expeditionId"),
+    @JoinTable(name = "expedition_bcids",
+            joinColumns = @JoinColumn(name = "bcid_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "expedition_id", referencedColumnName = "id"),
             foreignKey = @ForeignKey(name = "FK_expeditionBcids_bcidId"),
             inverseForeignKey = @ForeignKey(name = "FK_expeditionBcids_expedition_id")
     )
@@ -320,8 +306,8 @@ public class BcidTmp {
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne
-    @JoinColumn(name = "userId",
-            referencedColumnName = "userId",
+    @JoinColumn(name = "user_id",
+            referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_bcids_userId"),
             nullable = false
     )

@@ -29,10 +29,28 @@ public class BcidService {
         this.bcidTmpRepository = bcidTmpRepository;
     }
 
-    @Transactional
-    public Bcid create(Bcid bcid) {
+//    @Transactional
+//    public BcidTmp create(BcidTmp bcidTmp, User user) {
+//
+//        // if the user is demo, never create ezid's
+//        if (bcidTmp.isEzidRequest() && user.getUsername().equals("demo"))
+//            bcidTmp.setEzidRequest(false);
+//
+//        String creator = (StringUtils.isEmpty(props.creator())) ? user.getFullName() + " <" + user.getEmail() + ">" : props.creator();
+//        Bcid bcid = Bcid.fromBcidTmp(bcidTmp, creator, props.publisher());
+//
+//        bcid = bcidRepository.create(bcid);
+//
+//        bcidTmp.setUser(user);
+//        bcidTmp.setIdentifier(bcid.identifier());
+//        bcidTmpRepository.save(bcidTmp);
+//
+//        return bcidTmp;
+//
+//    }
 
-        User user = userService.getUser(bcid.userId());
+    @Transactional
+    public Bcid create(Bcid bcid, User user) {
 
         // if the user is demo, never create ezid's
         if (bcid.ezidRequest() && user.getUsername().equals("demo"))

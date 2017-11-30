@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.sql.PreparedStatement;
 
 /**
+ * AOP Advice methods affecting postgres repositories
  * @author rjewing
  */
 @Component
@@ -20,6 +21,11 @@ public class PostgresRepositoryAuditAdvice {
     @Autowired
     private NamedParameterJdbcTemplate jdbcTemplate;
 
+    /**
+     * when the @SetFimsUser annotation is present for a method,
+     * this method executes immediatly before the annotated method, setting the
+     * psql variable fims.username to the current user
+     */
     @Before("@annotation(SetFimsUser)")
     public void setFimsUser() {
         String user = "anon";

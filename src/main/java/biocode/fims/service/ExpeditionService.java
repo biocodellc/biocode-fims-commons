@@ -138,7 +138,7 @@ public class ExpeditionService {
                 .creator(user, props.creator())
                 .build();
 
-        return bcidService.create(bcid);
+        return bcidService.create(bcid, user);
     }
 
     public List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, User user, boolean checkForExistingBcids) {
@@ -164,10 +164,10 @@ public class ExpeditionService {
                 Bcid bcid = new Bcid.BcidBuilder(entity.getConceptAlias(), props.publisher())
                         .creator(user, props.creator())
                         .title(entity.getConceptAlias())
-                        .userId(user.getUUID())
+                        .webAddress(props.entityResolverTarget())
                         .build();
 
-                bcid = bcidService.create(bcid);
+                bcid = bcidService.create(bcid, user);
 
                 identifiers.add(new EntityIdentifier(entity.getConceptAlias(), bcid.identifier()));
             }

@@ -1,8 +1,10 @@
 # simple script to load exported mysql data
 import argparse, os, subprocess
 
-TABLES = ["users", "projects", "expeditions", "bcids", "expedition_bcids", "oauth_clients", "oauth_nonces", "oauth_tokens",
-          "template_configs", "user_projects"]
+TABLES = ["users", "projects", "expeditions", "bcids_tmp", "expedition_bcids", "oauth_clients", "oauth_nonces", "oauth_tokens",
+          "project_templates", "user_projects"]
+
+NO_SEQUENCE_TABLES = ["expedition_bcids", "oauth_clients", "user_projects"]
 
 COL_NAMES = "head -1 {}"
 
@@ -17,8 +19,14 @@ def dump(db, psql_user, input_dir):
         cols = subprocess.check_output(COL_NAMES.format(in_file), shell=True).decode("utf-8")
         cols = cols.strip("\n")
 
-        print(PSQL_IMPORT.format(psql_user, db, table, cols, in_file, table, table))
-        subprocess.check_call(PSQL_IMPORT.format(psql_user, db, table, cols, in_file, table, table), shell=True)
+        cmd = PSQL_IMPORT.format(psql_user, db, table, cols, in_file, table, table)
+
+        if table in NO_SEQUENCE_TABLES:
+            # remove setval
+            cmd = cmd.split(';')[0] + ";\""
+
+        print(cmd)
+        subprocess.check_call(cmd, shell=True)
 
 
 if __name__ == '__main__':

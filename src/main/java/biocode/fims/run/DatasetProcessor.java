@@ -20,6 +20,7 @@ import biocode.fims.validation.RecordValidatorFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -92,7 +93,7 @@ public class DatasetProcessor {
         return valid;
     }
 
-    public boolean upload(boolean createExpedition) {
+    public boolean upload(boolean createExpedition, URI expeditionResolverTarget) {
         if (dataset == null) {
             if (!validate() && hasError) {
                 return false;
@@ -108,7 +109,8 @@ public class DatasetProcessor {
         }
 
         if (createExpedition) {
-            createExpedition(expeditionService);
+            // TODO can expeditionService be removed since it is a property?
+            createExpedition(expeditionService, expeditionResolverTarget);
         }
 
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
@@ -148,7 +150,7 @@ public class DatasetProcessor {
         return processorStatus;
     }
 
-    private void createExpedition(ExpeditionService expeditionService) {
+    private void createExpedition(ExpeditionService expeditionService, URI expeditionResolverTarget) {
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
         if (expedition != null) {
@@ -174,7 +176,7 @@ public class DatasetProcessor {
                 expedition,
                 user.getUserId(),
                 projectId,
-                null
+                expeditionResolverTarget
         );
     }
 

@@ -4,6 +4,7 @@ import biocode.fims.rest.UserContext;
 import biocode.fims.rest.versioning.VersionTransformer;
 import biocode.fims.rest.versioning.VersionUrlConfig;
 import biocode.fims.tools.FileCache;
+import biocode.fims.utils.SpringApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,5 +49,10 @@ public class FimsWebAppConfig {
     @Bean
     public FileCache fileCache() {
         return new FileCache();
+    }
+
+    @Bean
+    public SpringApplicationContext springApplicationContext() {
+        return new SpringApplicationContext();
     }
 }

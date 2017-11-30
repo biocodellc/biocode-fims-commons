@@ -6,14 +6,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * User entity object
@@ -39,7 +37,6 @@ public class User {
     private String institution;
     private String firstName;
     private String lastName;
-    private UUID uuid;
     private String passwordResetToken;
     private Date passwordResetExpiration;
     private Set<Expedition> expeditions;
@@ -55,7 +52,6 @@ public class User {
         private String institution;
         private String firstName;
         private String lastName;
-        private UUID uuid;
 
         // Optional
         private boolean hasSetPassword = false;
@@ -98,7 +94,6 @@ public class User {
                 throw new FimsRuntimeException("", "Trying to create an invalid User. " +
                         "username, password, email, institution, firstName, and lastName are must not be null", 500);
 
-            this.uuid = UUID.randomUUID();
             return new User(this);
         }
     }
@@ -112,7 +107,6 @@ public class User {
         lastName = builder.lastName;
         hasSetPassword = builder.hasSetPassword;
         projectsMemberOf = new ArrayList<>();
-        uuid = builder.uuid;
     }
 
     // needed for hibernate
@@ -259,18 +253,6 @@ public class User {
 
     public void setPasswordResetExpiration(Date passwordResetExpiration) {
         this.passwordResetExpiration = passwordResetExpiration;
-    }
-
-    @JsonIgnore
-    @Type(type = "java.util.UUID")
-    @Column(columnDefinition = "char(36) not null", updatable = false)
-    public UUID getUUID() {
-        return uuid;
-    }
-
-    public void setUUID(UUID UUID) {
-        // tmp function
-        this.uuid = UUID;
     }
 
     @JsonIgnore

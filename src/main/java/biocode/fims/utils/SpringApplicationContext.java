@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
  * for this bean to be initialized during application startup. This is useful
  * during the process of refactoring our legacy code
  */
-@Service
 public class SpringApplicationContext implements ApplicationContextAware {
 
     private static ApplicationContext CONTEXT;

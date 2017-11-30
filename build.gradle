@@ -78,7 +78,7 @@ dependencies {
 
     server 'org.springframework:spring-jdbc:3.2.16.RELEASE'
     // TODO migrate to rest client when it becomes more mature
-    server group: 'org.elasticsearch.client', name: 'transport', version: '5.0.0'
+    server group: 'org.elasticsearch.client', name: 'transport', version: '5.0.1'
     // required for elasticsearch
     server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
 

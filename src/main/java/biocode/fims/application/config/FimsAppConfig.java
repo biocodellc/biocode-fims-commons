@@ -20,7 +20,6 @@ import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -36,8 +35,8 @@ import javax.ws.rs.client.ClientBuilder;
  */
 @Configuration
 @EnableAspectJAutoProxy
-@ComponentScan(basePackages = {"biocode.fims"})
-@Import({SettingsManagerConfig.class, DataAccessConfig.class, MessageSourceConfig.class})
+@ComponentScan(basePackages = {"biocode.fims.service"})
+@Import({SettingsManagerConfig.class, DataAccessConfig.class, MessageSourceConfig.class, FimsProperties.class})
 public class FimsAppConfig {
     @Autowired
     BcidService bcidService;
@@ -47,8 +46,6 @@ public class FimsAppConfig {
     SettingsManager settingsManager;
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
-    @Autowired
-    Environment env;
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -98,10 +95,5 @@ public class FimsAppConfig {
     @Bean
     public BcidRepository bcidRepository(FimsProperties fimsProperties) {
         return new BcidRepository(ClientBuilder.newClient(), fimsProperties);
-    }
-
-    @Bean
-    public FimsProperties fimsProperties() {
-        return new FimsProperties(env);
     }
 }

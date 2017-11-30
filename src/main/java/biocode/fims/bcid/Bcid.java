@@ -2,51 +2,40 @@ package biocode.fims.bcid;
 
 import biocode.fims.models.User;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.util.Assert;
 
 import javax.ws.rs.BadRequestException;
 import java.net.URI;
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * Bcid Entity object
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Bcid {
-    private boolean ezidMade;
     private boolean ezidRequest;
     private URI identifier;
-    private String doi;
     private String title;
     private URI webAddress;
     private String resourceType;
-    private Date created;
-    private Date modified;
-    private UUID userId;
     private String creator;
     private String publisher;
 
 
-    private Bcid(BcidBuilder builder) {
+    private Bcid(Bcid.BcidBuilder builder) {
         resourceType = builder.resourceType;
         ezidRequest = builder.ezidRequest;
-        doi = builder.doi;
         title = builder.title;
         webAddress = builder.webAddress;
         publisher = builder.publisher;
-        userId = builder.userId;
         setCreator(builder.user, builder.creatorOverride);
     }
 
     // needed for Jackson
     Bcid() {
-    }
-
-    public boolean ezidMade() {
-        return ezidMade;
     }
 
     public boolean ezidRequest() {
@@ -59,10 +48,6 @@ public class Bcid {
 
     public URI identifier() {
         return identifier;
-    }
-
-    public String doi() {
-        return doi;
     }
 
     public String title() {
@@ -82,24 +67,12 @@ public class Bcid {
         return resourceType;
     }
 
-    public UUID userId() {
-        return userId;
-    }
-
     public String creator() {
         return creator;
     }
 
     public String publisher() {
         return publisher;
-    }
-
-    public Date modified() {
-        return modified;
-    }
-
-    public Date created() {
-        return created;
     }
 
     public void setCreator(User user, String creatorProperty) {
@@ -141,10 +114,8 @@ public class Bcid {
 
         //Optional parameters
         private boolean ezidRequest = true;
-        private String doi;
         private String title;
         private URI webAddress;
-        private UUID userId;
 
         public BcidBuilder(String resourceType, String publisher) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
@@ -165,11 +136,6 @@ public class Bcid {
             return this;
         }
 
-        public BcidBuilder doi(String val) {
-            doi = val;
-            return this;
-        }
-
         public BcidBuilder title(String val) {
             title = val;
             return this;
@@ -178,11 +144,6 @@ public class Bcid {
         public BcidBuilder webAddress(URI val) {
             isValidUrl(val);
             webAddress = val;
-            return this;
-        }
-
-        public BcidBuilder userId(UUID val) {
-            userId = val;
             return this;
         }
 

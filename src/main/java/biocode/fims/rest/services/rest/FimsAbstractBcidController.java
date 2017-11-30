@@ -48,7 +48,7 @@ public abstract class FimsAbstractBcidController extends FimsService {
 
         bcid.setCreator(userContext.getUser(), props.creator());
 
-        return bcidService.create(bcid);
+        return bcidService.create(bcid, userContext.getUser());
     }
 
     //TODO figure out what to do here. If were not creating dataset BCIDS, this won't work

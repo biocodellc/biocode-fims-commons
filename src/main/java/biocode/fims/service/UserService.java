@@ -257,8 +257,4 @@ public class UserService {
             throw new FimsRuntimeException(UserCode.DUPLICATE_INVITE, 400);
         }
     }
-
-    public User getUser(UUID id) {
-        return userRepository.findByUUID(id);
-    }
 }

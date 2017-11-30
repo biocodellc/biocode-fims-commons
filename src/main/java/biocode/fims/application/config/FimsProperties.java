@@ -4,9 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+
 /**
  * @author rjewing
  */
+//@Primary
 @Component
 public class FimsProperties {
     protected final Environment env;
@@ -25,11 +28,11 @@ public class FimsProperties {
     }
 
     public String publisher() {
-        return env.getRequiredProperty("publisher");
+        return env.getRequiredProperty("bcid.publisher");
     }
 
     public String creator() {
-        return env.getProperty("creator");
+        return env.getProperty("bcid.creator");
     }
 
     public String serverRoot() {
@@ -94,5 +97,13 @@ public class FimsProperties {
 
     public String bcidClientSecret() {
         return env.getRequiredProperty("bcid.clientSecret");
+    }
+
+    public URI entityResolverTarget() {
+        return env.getRequiredProperty("bcid.resolverTargets.entity", URI.class);
+    }
+
+    public URI expeditionResolverTarget() {
+        return env.getRequiredProperty("bcid.resolverTargets.expedition", URI.class);
     }
 }

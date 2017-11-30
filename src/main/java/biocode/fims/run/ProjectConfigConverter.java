@@ -208,6 +208,7 @@ public class ProjectConfigConverter {
                     }
                 }
             } catch (FimsAbstractException e) {
+                logger.error("\n\nInvalid project config: " + p.getProjectId());
                 e.printStackTrace();
             }
 
