@@ -5,13 +5,12 @@ import biocode.fims.models.dataTypes.converters.UriPersistenceConverter;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.*;
+import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.net.URI;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Expedition Entity object
@@ -30,6 +29,7 @@ public class Expedition {
     private ExpeditionVisibility visibility;
     private URI identifier;
     private List<EntityIdentifier> entityIdentifiers;
+    private Map<String, Object> metadata;
     private Project project;
     private User user;
 
@@ -41,9 +41,11 @@ public class Expedition {
         private String expeditionTitle;
         private boolean isPublic = true;
         private ExpeditionVisibility visibility = ExpeditionVisibility.EXPEDITION;
+        private Map<String, Object> metadata;
 
         public ExpeditionBuilder(String expeditionCode) {
             this.expeditionCode = expeditionCode;
+            this.metadata = new HashMap<>();
         }
 
         public ExpeditionBuilder expeditionTitle(String expeditionTitle) {
@@ -53,6 +55,11 @@ public class Expedition {
 
         public ExpeditionBuilder isPublic(boolean isPublic) {
             this.isPublic = isPublic;
+            return this;
+        }
+
+        public ExpeditionBuilder setMetadata(Map<String, Object> metadata) {
+            this.metadata = metadata;
             return this;
         }
 
@@ -74,6 +81,7 @@ public class Expedition {
         expeditionTitle = builder.expeditionTitle;
         isPublic = builder.isPublic;
         visibility = builder.visibility;
+        metadata = builder.metadata;
     }
 
     // needed for hibernate
@@ -182,6 +190,18 @@ public class Expedition {
         if (this.entityIdentifiers == null) {
             this.entityIdentifiers = entityIdentifiers;
         }
+    }
+
+    @JsonView(Views.Summary.class)
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "metadata")
+    public Map<String, Object> getMetadata() {
+        return this.metadata;
+    }
+
+    @JsonIgnore
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
     }
 
     @Override

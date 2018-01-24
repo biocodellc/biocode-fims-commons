@@ -1,13 +1,12 @@
 package biocode.fims.projectConfig;
 
 import biocode.fims.digester.*;
-import biocode.fims.validation.rules.CompositeUniqueValueRule;
+import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -218,6 +217,23 @@ public class ProjectConfigValidatorTest {
                 "Invalid Attribute uri \"null\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters.",
                 "Invalid Attribute uri \"some uri\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters."
         );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+
+    }
+
+    @Test
+    public void invalid_if_expeditionMetadata_missing_name() {
+        ProjectConfig config = new ProjectConfig();
+
+        List<ExpeditionMetadataProperty> m = new ArrayList<>();
+        m.add(new ExpeditionMetadataProperty(" ", null, false));
+        config.setExpeditionMetadatumProperties(m);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList("ExpeditionMetadataProperty is missing a name.");
 
         assertFalse(validator.isValid());
         assertEquals(expected, validator.errors());

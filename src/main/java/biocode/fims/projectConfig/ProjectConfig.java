@@ -2,11 +2,11 @@ package biocode.fims.projectConfig;
 
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.models.ExpeditionMetadataProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.glassfish.jersey.server.JSONP;
 
 import java.util.*;
 import java.util.List;
@@ -24,12 +24,14 @@ public class ProjectConfig {
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
+    private List<ExpeditionMetadataProperty> expeditionMetadatumProperties;
     private List<String> errors;
     private boolean validated = false;
 
     public ProjectConfig() {
         this.entities = new LinkedList<>();
         this.lists = new LinkedList<>();
+        this.expeditionMetadatumProperties = new ArrayList<>();
     }
 
     /**
@@ -135,6 +137,15 @@ public class ProjectConfig {
 
     public void setDatasetForwardingAddress(String datasetForwardingAddress) {
         this.datasetForwardingAddress = datasetForwardingAddress;
+    }
+
+    @JsonProperty
+    public List<ExpeditionMetadataProperty> expeditionMetadata() {
+        return expeditionMetadatumProperties;
+    }
+
+    public void setExpeditionMetadatumProperties(List<ExpeditionMetadataProperty> expeditionMetadatumProperties) {
+        this.expeditionMetadatumProperties = expeditionMetadatumProperties;
     }
 
     @JsonIgnore

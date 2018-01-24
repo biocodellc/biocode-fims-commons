@@ -249,6 +249,7 @@ CREATE TABLE expeditions (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   public BOOLEAN NOT NULL DEFAULT '1',
+  metadata jsonb,
   CONSTRAINT expeditions_code_project_id_uniq UNIQUE (expedition_code, project_id)
 );
 

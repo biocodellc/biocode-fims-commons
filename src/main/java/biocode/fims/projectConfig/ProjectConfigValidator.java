@@ -3,6 +3,7 @@ package biocode.fims.projectConfig;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
+import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
@@ -35,6 +36,7 @@ public class ProjectConfigValidator {
         allEntitiesHaveUniqueConceptAlias();
         allAttributesHaveUniqueAndValidUri();
         allAttributesHaveUniqueColumn();
+        allExpeditionMetadataHaveName();
 
         for (Entity e : config.entities()) {
             entityConceptAliasOnlyHasValidChars(e);
@@ -155,6 +157,14 @@ public class ProjectConfigValidator {
                             "Duplicate Attribute column \"" + a.getColumn() + "\" found in entity \"" + e.getConceptAlias() + "\""
                     );
                 }
+            }
+        }
+    }
+
+    private void allExpeditionMetadataHaveName() {
+        for (ExpeditionMetadataProperty e: config.expeditionMetadata()) {
+            if (StringUtils.isBlank(e.name())) {
+                errorMessages.add("ExpeditionMetadataProperty is missing a name.");
             }
         }
     }

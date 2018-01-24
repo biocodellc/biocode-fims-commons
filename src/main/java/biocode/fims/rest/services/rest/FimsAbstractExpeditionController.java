@@ -60,6 +60,7 @@ public abstract class FimsAbstractExpeditionController extends FimsService {
      *
      * @return
      */
+    @Deprecated
     @JsonView(Views.Detailed.class)
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
