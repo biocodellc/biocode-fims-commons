@@ -20,7 +20,6 @@ import biocode.fims.validation.RecordValidatorFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -42,7 +41,6 @@ public class DatasetProcessor {
     private final Map<String, RecordMetadata> datasetSources;
     private final boolean reloadDataset;
     private final boolean ignoreUser;
-    private final boolean publicStatus;
     private final String serverDataDir;
     private Dataset dataset;
     private boolean hasError = false;
@@ -62,7 +60,6 @@ public class DatasetProcessor {
         datasetSources = builder.datasets;
         reloadDataset = builder.reloadDataset;
         ignoreUser = builder.ignoreUser;
-        publicStatus = builder.publicStatus;
         serverDataDir = builder.serverDataDir;
         messages = Collections.emptyList();
     }
@@ -93,7 +90,7 @@ public class DatasetProcessor {
         return valid;
     }
 
-    public boolean upload(boolean createExpedition, URI expeditionResolverTarget) {
+    public boolean upload() {
         if (dataset == null) {
             if (!validate() && hasError) {
                 return false;
@@ -108,27 +105,17 @@ public class DatasetProcessor {
             throw new FimsRuntimeException("you must be logged in to upload", 400);
         }
 
-        if (createExpedition) {
-            // TODO can expeditionService be removed since it is a property?
-            createExpedition(expeditionService, expeditionResolverTarget);
-        }
-
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
         if (expedition == null) {
-            throw new FimsRuntimeException(UploadCode.EXPEDITION_CREATE, 400, expeditionCode);
+            throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, expeditionCode);
         } else if (!ignoreUser) {
             if (expedition.getUser().getUserId() != user.getUserId()) {
                 throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
             }
         }
 
-        recordRepository.save(dataset, expedition.getProject().getProjectId(), expedition.getExpeditionId());
-
-        if (expedition.isPublic() != publicStatus) {
-            expedition.setPublic(publicStatus);
-            expeditionService.update(expedition);
-        }
+        recordRepository.save(dataset, projectId, expedition.getExpeditionId());
 
         writeDataSources();
         return true;
@@ -150,43 +137,13 @@ public class DatasetProcessor {
         return processorStatus;
     }
 
-    private void createExpedition(ExpeditionService expeditionService, URI expeditionResolverTarget) {
-        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
-
-        if (expedition != null) {
-            if (expedition.getUser() != user) {
-                throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
-            } else {
-                // expedition already exists and the user owns the expedition
-                return;
-            }
-        }
-
-        String status = "\n\tCreating expedition " + expeditionCode + " ... this is a one time process " +
-                "before loading each spreadsheet and may take a minute...\n";
-        processorStatus.appendStatus(status);
-
-        expedition = new Expedition.ExpeditionBuilder(
-                expeditionCode)
-                .expeditionTitle(expeditionCode + " Dataset")
-                .isPublic(publicStatus)
-                .build();
-
-        expeditionService.create(
-                expedition,
-                user.getUserId(),
-                projectId,
-                expeditionResolverTarget
-        );
-    }
-
     private void writeDataSources() {
 
         if (workbookFile != null) {
             writeFileToServer(workbookFile);
         }
 
-        for (Map.Entry<String, RecordMetadata> entry :datasetSources.entrySet()) {
+        for (Map.Entry<String, RecordMetadata> entry : datasetSources.entrySet()) {
             writeFileToServer(entry.getKey());
         }
     }
@@ -222,7 +179,6 @@ public class DatasetProcessor {
         private User user;
         private boolean reloadDataset = false;
         private boolean ignoreUser = false;
-        private boolean publicStatus = false;
 
         public Builder(int projectId, String expeditionCode, ProcessorStatus processorStatus) {
             this.projectId = projectId;
@@ -276,11 +232,6 @@ public class DatasetProcessor {
             return this;
         }
 
-        public Builder publicStatus(boolean publicStatus) {
-            this.publicStatus = publicStatus;
-            return this;
-        }
-
         /**
          * Is this a complete dataset reload? All previous records will be deleted
          *
@@ -298,8 +249,9 @@ public class DatasetProcessor {
         }
 
         private boolean isValid() {
-            return expeditionCode != null &&
-                    processorStatus != null &&
+            //TODO need to handle cases w/ parent entities & null expeditionCode
+//            return expeditionCode != null &&
+            return processorStatus != null &&
                     validatorFactory != null &&
                     recordRepository != null &&
                     readerFactory != null &&

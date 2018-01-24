@@ -25,6 +25,12 @@ import java.util.*;
  * Finally, note that this class expects text to consist of simple ASCII
  * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
  * empty whitespace and ignored (unless they occur within a quoted string).
+ *
+ *
+ * This Reader expects the following RecordMetadata:
+ *
+ *     - sheetName
+ *
  */
 abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";

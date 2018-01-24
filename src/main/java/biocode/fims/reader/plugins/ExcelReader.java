@@ -30,6 +30,9 @@ import java.util.*;
  * "1904 Date System".  Also, the first row in each worksheet is assumed to
  * contain the column headers for the data and determines how many columns are
  * examined for all subsequent rows.
+ *
+ * The Reader does not use any RecordMetadata
+ *
  */
 public class ExcelReader extends AbstractTabularDataReader {
     public static final List<String> EXTS = Arrays.asList("xlsx", "xls");

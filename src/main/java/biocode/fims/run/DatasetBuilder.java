@@ -52,6 +52,8 @@ public class DatasetBuilder {
     }
 
     public DatasetBuilder addWorkbook(String workbookFile) {
+        if (workbookFile == null) return this;
+
         String ext = FileUtils.getExtension(workbookFile, "");
 
         if (!ExcelReader.EXTS.contains(ext.toLowerCase())) {
