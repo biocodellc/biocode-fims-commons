@@ -50,7 +50,7 @@ public class ExpeditionService {
         this.props = props;
     }
 
-    public void create(Expedition expedition, int userId, int projectId, URI webAddress) {
+    public Expedition create(Expedition expedition, int userId, int projectId, URI webAddress) {
         Project project = entityManager.getReference(Project.class, projectId);
         User user = entityManager.getReference(User.class, userId);
 
@@ -73,7 +73,7 @@ public class ExpeditionService {
         expedition.setIdentifier(bcid.identifier());
         List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), expedition.getUser(), false);
         expedition.setEntityIdentifiers(entityIdentifiers);
-        expeditionRepository.save(expedition);
+        return expeditionRepository.save(expedition);
     }
 
     public void update(Expedition expedition) {

@@ -147,6 +147,31 @@ public class ExpeditionsResource extends FimsService {
     }
 
     /**
+     * create a new expedition.
+     *
+     * @param expedition
+     * @responseMessage 400 invalid expedition object `biocode.fims.utils.ErrorInfo
+     * @responseMessage 400 duplicate expeditionCode `biocode.fims.utils.ErrorInfo
+     * @responseMessage 403 not allowed to create expedition in this project `biocode.fims.utils.ErrorInfo
+     */
+    @JsonView(Views.Detailed.class)
+    @POST
+    @Authenticated
+    @Path("/{expeditionCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Expedition createExpedition(@PathParam("projectId") Integer projectId,
+                                       @PathParam("expeditionCode") String expeditionCode,
+                                       Expedition expedition) {
+        expedition.setExpeditionCode(expeditionCode);
+        return expeditionService.create(
+                expedition,
+                userContext.getUser().getUserId(),
+                projectId,
+                props.expeditionResolverTarget());
+    }
+
+    /**
      * update Expedition
      *
      * @param projectId      The projectId the expedition belongs to

@@ -30,7 +30,7 @@ public interface ExpeditionRepository extends Repository<Expedition, Integer>, J
     @Modifying
     void deleteByExpeditionCodeAndProjectProjectId(String expeditionCode, int projectId);
 
-    void save(Expedition expedition);
+    Expedition save(Expedition expedition);
 
     Expedition findByExpeditionId(int expeditionId);
 
