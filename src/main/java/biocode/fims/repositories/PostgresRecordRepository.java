@@ -75,12 +75,15 @@ public class PostgresRecordRepository implements RecordRepository {
 
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
                 ObjectMapper mapper = new SpringObjectMapper();
+                List<String> localIdentifiers = new ArrayList<>();
 
                 for (Record record : recordSet.recordsToPersist()) {
 
                     HashMap<String, Object> recordParams = new HashMap<>();
                     recordParams.put("expeditionId", expeditionId);
-                    recordParams.put("identifier", record.get(localIdentifierUri));
+                    String localIdentifier = record.get(localIdentifierUri);
+                    recordParams.put("identifier", localIdentifier);
+                    localIdentifiers.add(localIdentifier);
 
                     if (recordSet.hasParent()) {
                         String parentEntityIdColumn = recordSet.parent().entity().getUniqueKey();
@@ -104,6 +107,18 @@ public class PostgresRecordRepository implements RecordRepository {
                 jdbcTemplate.batchUpdate(
                         StrSubstitutor.replace(sqlString, tableMap),
                         insertParams.toArray(new HashMap[insertParams.size()])
+                );
+
+                //TODO maybe make this a toggle?
+                // Delete any records not in the RecordSet
+                String deleteSql = sql.getProperty("deleteRecords");
+                HashMap<String, Object> deleteParams= new HashMap<>();
+                deleteParams.put("expeditionId", expeditionId);
+                deleteParams.put("identifiers", localIdentifiers);
+
+                jdbcTemplate.update(
+                        StrSubstitutor.replace(deleteSql, tableMap),
+                        deleteParams
                 );
 
             }

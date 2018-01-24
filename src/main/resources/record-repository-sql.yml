@@ -19,3 +19,8 @@ selectRecords: >
   FROM ${table} AS r
     INNER JOIN expeditions e on r.expediton_id = e.id
   WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
+
+deleteRecords: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = :expeditionId and local_identifier not in (:identifiers)
