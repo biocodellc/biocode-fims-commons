@@ -224,12 +224,12 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
-    public void invalid_if_expeditionMetadata_missing_name() {
+    public void invalid_if_expeditionMetadataProperty_missing_name() {
         ProjectConfig config = new ProjectConfig();
 
         List<ExpeditionMetadataProperty> m = new ArrayList<>();
-        m.add(new ExpeditionMetadataProperty(" ", null, false));
-        config.setExpeditionMetadatumProperties(m);
+        m.add(new ExpeditionMetadataProperty(" ", false));
+        config.setExpeditionMetadataProperties(m);
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 

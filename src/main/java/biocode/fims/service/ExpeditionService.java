@@ -217,7 +217,7 @@ public class ExpeditionService {
         Map<String, Object> metadata = expedition.getMetadata();
 
         List<String> missingMetadata = new ArrayList<>();
-        for (ExpeditionMetadataProperty m: config.expeditionMetadata()) {
+        for (ExpeditionMetadataProperty m: config.expeditionMetadataProperties()) {
             if (m.isRequired() && !metadata.containsKey(m.name())) {
                 missingMetadata.add(m.name());
             }

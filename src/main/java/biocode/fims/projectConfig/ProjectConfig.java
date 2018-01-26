@@ -24,14 +24,14 @@ public class ProjectConfig {
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
-    private List<ExpeditionMetadataProperty> expeditionMetadatumProperties;
+    private List<ExpeditionMetadataProperty> expeditionMetadataProperties;
     private List<String> errors;
     private boolean validated = false;
 
     public ProjectConfig() {
         this.entities = new LinkedList<>();
         this.lists = new LinkedList<>();
-        this.expeditionMetadatumProperties = new ArrayList<>();
+        this.expeditionMetadataProperties = new ArrayList<>();
     }
 
     /**
@@ -140,12 +140,12 @@ public class ProjectConfig {
     }
 
     @JsonProperty
-    public List<ExpeditionMetadataProperty> expeditionMetadata() {
-        return expeditionMetadatumProperties;
+    public List<ExpeditionMetadataProperty> expeditionMetadataProperties() {
+        return expeditionMetadataProperties;
     }
 
-    public void setExpeditionMetadatumProperties(List<ExpeditionMetadataProperty> expeditionMetadatumProperties) {
-        this.expeditionMetadatumProperties = expeditionMetadatumProperties;
+    public void setExpeditionMetadataProperties(List<ExpeditionMetadataProperty> expeditionMetadataProperties) {
+        this.expeditionMetadataProperties = expeditionMetadataProperties;
     }
 
     @JsonIgnore

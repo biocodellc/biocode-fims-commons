@@ -1,5 +1,6 @@
 package biocode.fims.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.util.Assert;
 
 /**
@@ -7,9 +8,13 @@ import org.springframework.util.Assert;
  *
  * @author rjewing
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExpeditionMetadataProperty {
-    private final String name;
-    private final boolean required;
+    private String name;
+    private boolean required;
+
+    // needed for jackson deserialization
+    ExpeditionMetadataProperty() {}
 
     /**
      * @param name      The name of the metadata property
