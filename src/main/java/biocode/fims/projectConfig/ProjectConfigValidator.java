@@ -162,8 +162,8 @@ public class ProjectConfigValidator {
     }
 
     private void allExpeditionMetadataHaveName() {
-        for (ExpeditionMetadataProperty e: config.expeditionMetadataProperties()) {
-            if (StringUtils.isBlank(e.name())) {
+        for (ExpeditionMetadataProperty p: config.expeditionMetadataProperties()) {
+            if (StringUtils.isBlank(p.getName())) {
                 errorMessages.add("ExpeditionMetadataProperty is missing a name.");
             }
         }

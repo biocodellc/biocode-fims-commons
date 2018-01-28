@@ -1,6 +1,5 @@
 package biocode.fims.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.util.Assert;
 
 /**
@@ -8,7 +7,6 @@ import org.springframework.util.Assert;
  *
  * @author rjewing
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExpeditionMetadataProperty {
     private String name;
     private boolean required;
@@ -26,7 +24,7 @@ public class ExpeditionMetadataProperty {
         this.required = required;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 

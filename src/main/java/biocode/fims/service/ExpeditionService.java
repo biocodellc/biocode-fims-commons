@@ -75,10 +75,10 @@ public class ExpeditionService {
             throw new BadRequestException(e.getMessage());
         }
 
-        expeditionRepository.save(expedition);
-
         Bcid bcid = createExpeditionBcid(expedition, webAddress, expedition.getUser());
         expedition.setIdentifier(bcid.identifier());
+        expeditionRepository.save(expedition);
+
         List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), expedition.getUser(), false);
         expedition.setEntityIdentifiers(entityIdentifiers);
         return expeditionRepository.save(expedition);
@@ -217,9 +217,9 @@ public class ExpeditionService {
         Map<String, Object> metadata = expedition.getMetadata();
 
         List<String> missingMetadata = new ArrayList<>();
-        for (ExpeditionMetadataProperty m: config.expeditionMetadataProperties()) {
-            if (m.isRequired() && !metadata.containsKey(m.name())) {
-                missingMetadata.add(m.name());
+        for (ExpeditionMetadataProperty p: config.expeditionMetadataProperties()) {
+            if (p.isRequired() && !metadata.containsKey(p.getName())) {
+                missingMetadata.add(p.getName());
             }
         }
 
