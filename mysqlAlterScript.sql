@@ -1,4 +1,18 @@
-SET FOREIGN_KEY_CHECKS=0;
+-- SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE bcids DROP FOREIGN KEY FK_bcids_userId;
+ALTER TABLE expeditionBcids DROP FOREIGN KEY expeditionBcids_ibfk_1;
+ALTER TABLE expeditionBcids DROP FOREIGN KEY FK_expeditionBcids_bcidId;
+ALTER TABLE expeditions DROP FOREIGN KEY expeditions_ibfk_1;
+ALTER TABLE expeditions DROP FOREIGN KEY FK_expeditions_userId;
+ALTER TABLE oAuthNonces DROP FOREIGN KEY FK_oAuthNonces_clientId;
+ALTER TABLE oAuthNonces DROP FOREIGN KEY FK_oAuthNonces_userId;
+ALTER TABLE oAuthTokens DROP FOREIGN KEY FK_oAuthTokens_clientId;
+ALTER TABLE oAuthTokens DROP FOREIGN KEY FK_oAuthTokens_userId;
+ALTER TABLE projects DROP FOREIGN KEY FK_projects_userId;
+ALTER TABLE templateConfigs DROP FOREIGN KEY FK_templateConfigs_projectId;
+ALTER TABLE templateConfigs DROP FOREIGN KEY FK_templateConfigs_userId;
+ALTER TABLE userProjects DROP FOREIGN KEY FK_userProjects_userId;
+ALTER TABLE userProjects DROP FOREIGN KEY userProjects_ibfk_1;
 
 alter table users drop column enabled;
 alter table users drop column admin;
@@ -77,4 +91,19 @@ ALTER TABLE `oAuthTokens` CHANGE `userId` `user_id` INT(11)  UNSIGNED  NOT NULL;
 ALTER TABLE `oAuthTokens` CHANGE `refreshToken` `refresh_token` CHAR(20)  CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  DEFAULT '';
 RENAME TABLE `oAuthTokens` TO `oauth_tokens`;
 
-SET FOREIGN_KEY_CHECKS=1;
+
+-- ALTER TABLE bcids ADD CONSTRAINT FK_bcids_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                                   |
+-- ALTER TABLE expeditionBcids ADD CONSTRAINT expeditionBcids_ibfk_1 FOREIGN KEY (expeditionId) REFERENCES expeditions(expeditionId);                                                |
+-- ALTER TABLE expeditionBcids ADD CONSTRAINT FK_expeditionBcids_bcidId FOREIGN KEY (bcidId) REFERENCES bcids(bcidId);                                                               |
+-- ALTER TABLE expeditions ADD CONSTRAINT expeditions_ibfk_1 FOREIGN KEY (projectId) REFERENCES projects(projectId);                                                                 |
+-- ALTER TABLE expeditions ADD CONSTRAINT FK_expeditions_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                       |
+-- ALTER TABLE oAuthNonces ADD CONSTRAINT FK_oAuthNonces_clientId FOREIGN KEY (clientId) REFERENCES oAuthClients(clientId);                                                          |
+-- ALTER TABLE oAuthNonces ADD CONSTRAINT FK_oAuthNonces_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                       |
+-- ALTER TABLE oAuthTokens ADD CONSTRAINT FK_oAuthTokens_clientId FOREIGN KEY (clientId) REFERENCES oAuthClients(clientId);                                                          |
+-- ALTER TABLE oAuthTokens ADD CONSTRAINT FK_oAuthTokens_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                       |
+-- ALTER TABLE projects ADD CONSTRAINT FK_projects_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                             |
+-- ALTER TABLE templateConfigs ADD CONSTRAINT FK_templateConfigs_projectId FOREIGN KEY (projectId) REFERENCES projects(projectId);                                                   |
+-- ALTER TABLE templateConfigs ADD CONSTRAINT FK_templateConfigs_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                               |
+-- ALTER TABLE userProjects ADD CONSTRAINT FK_userProjects_userId FOREIGN KEY (userId) REFERENCES users(userId);                                                                     |
+-- ALTER TABLE userProjects ADD CONSTRAINT userProjects_ibfk_1 FOREIGN KEY (projectId) REFERENCES projects(projectId);
+-- SET FOREIGN_KEY_CHECKS=1;
