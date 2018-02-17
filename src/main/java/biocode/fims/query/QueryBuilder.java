@@ -71,7 +71,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
             whereBuilder
                     .append(conceptAlias)
-                    .append(".data ?");
+                    .append(".data ??");
 
             if (columns.size() == 1) {
 

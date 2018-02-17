@@ -244,7 +244,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "urn:col2");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT data FROM project_1.event AS event WHERE event.data ? :1",
+                "SELECT data FROM project_1.event AS event WHERE event.data ?? :1",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -259,7 +259,7 @@ public class QueryBuilderTest {
         params.put("1", "urn:col2");
         params.put("2", "urn:event_col3");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT data FROM project_1.event AS event WHERE event.data ?& array[:1, :2]",
+                "SELECT data FROM project_1.event AS event WHERE event.data ??& array[:1, :2]",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -277,7 +277,7 @@ public class QueryBuilderTest {
         ParametrizedQuery expected = new ParametrizedQuery(
                 "SELECT data FROM project_1.event AS event " +
                         "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
-                        "WHERE (event.data ?& array[:1, :2] AND sample.data ? :3)",
+                        "WHERE (event.data ??& array[:1, :2] AND sample.data ?? :3)",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -404,7 +404,7 @@ public class QueryBuilderTest {
         String expectedSql = "SELECT data FROM project_1.event AS event " +
                 "WHERE " +
                 "event.data->>'urn:col2' <= :1 AND event.data->>'urn:event_col3' = :2 " +
-                "OR event.data ? :3";
+                "OR event.data ?? :3";
 
         Map<String, String> params = new HashMap<>();
         params.put("1", "1");
@@ -513,7 +513,7 @@ public class QueryBuilderTest {
                 "WHERE " +
                 "event.data->>'eventId' <= :1 AND " +
                 "(event.data->>'urn:col2' <= :2 OR event.data->>'urn:col2' = :3) " +
-                "AND event.data ? :4";
+                "AND event.data ?? :4";
 
         Map<String, String> params = new HashMap<>();
         params.put("1", "100");
