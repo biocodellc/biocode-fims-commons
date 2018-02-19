@@ -2,11 +2,13 @@ package biocode.fims.projectConfig;
 
 import biocode.fims.digester.*;
 import biocode.fims.models.ExpeditionMetadataProperty;
+import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import org.junit.Test;
+import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -240,6 +242,18 @@ public class ProjectConfigValidatorTest {
 
     }
 
+    @Test
+    public void invalid_if_entity_isValid_returns_false() {
+        ProjectConfig config = new ProjectConfig();
+        Entity e = customEntity();
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Test entity validation message"), validator.errors());
+    }
+
     private Entity entity1() {
         Entity e = new Entity("resource1", "someURI");
 
@@ -259,6 +273,30 @@ public class ProjectConfigValidatorTest {
         e.setConceptURI(RESOURCE_URI);
         e.setUniqueKey("column2");
         e.setWorksheet("worksheet2");
+
+        attributesList1().forEach(e::addAttribute);
+
+        return e;
+    }
+
+    private Entity customEntity() {
+        Entity e = new Entity("resource1", "someURI"){
+            @Override
+            public boolean isValid(ProjectConfig config) {
+                Assert.notNull(config, "ProjectConfig is null");
+                return false;
+            }
+
+            @Override
+            public List<String> validationErrorMessages() {
+                return Collections.singletonList("Test entity validation message");
+            }
+        };
+
+        e.setConceptForwardingAddress("http://example.com");
+        e.setConceptURI(RESOURCE_URI);
+        e.setUniqueKey("column1");
+        e.setWorksheet("worksheet1");
 
         attributesList1().forEach(e::addAttribute);
 

@@ -4,6 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,7 +15,15 @@ import org.w3c.dom.Attr;
 
 import java.net.URI;
 import java.util.*;
+import java.util.List;
 
+/**
+ * This is the base Entity within the fims system. This class can be extended to provide a more
+ * specific Entity. When extending, note that the base `Entity.isValid(config)` always returns
+ * true, but can be overridden to provide additional entity specific validation that the `ProjectConfigValidator`
+ * does not provide. `Entity.validationErrorMessages` can be overridden to return the List<String> of valdation
+ * error messages to return if `Entity.isValid` returns false
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Entity {
 
@@ -27,7 +36,7 @@ public class Entity {
     private String conceptForwardingAddress;
     private String parentEntity;
     private boolean esNestedObject = false;
-    private Class<? extends Record> recordType = GenericRecord.class;
+    protected Class<? extends Record> recordType = GenericRecord.class;
 
     // needed for jackson deserialization
     public Entity() {
@@ -237,6 +246,14 @@ public class Entity {
                 a.setUri(uri);
             }
         }
+    }
+
+    public boolean isValid(ProjectConfig config) {
+        return true;
+    }
+
+    public List<String> validationErrorMessages() {
+        return Collections.<String>emptyList();
     }
 
     private java.util.List<String> getExistingUris() {

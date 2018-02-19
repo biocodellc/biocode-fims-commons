@@ -46,6 +46,7 @@ public class ProjectConfigValidator {
             allChildEntitiesHaveValidParent(e);
             dateTimeAttributesHaveDataFormat(e);
             allRulesHaveValidConfiguration(e);
+            checkIsValid(e);
         }
     }
 
@@ -126,6 +127,12 @@ public class ProjectConfigValidator {
         }
 
         errorMessages.addAll(messages);
+    }
+
+    private void checkIsValid(Entity e) {
+        if (!e.isValid(config)) {
+            errorMessages.addAll(e.validationErrorMessages());
+        }
     }
 
     private void allAttributesHaveUniqueAndValidUri() {
