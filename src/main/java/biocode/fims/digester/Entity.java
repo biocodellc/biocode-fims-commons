@@ -5,15 +5,16 @@ import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
-import org.w3c.dom.Attr;
 
-import java.net.URI;
 import java.util.*;
 import java.util.List;
 
@@ -23,9 +24,14 @@ import java.util.List;
  * true, but can be overridden to provide additional entity specific validation that the `ProjectConfigValidator`
  * does not provide. `Entity.validationErrorMessages` can be overridden to return the List<String> of valdation
  * error messages to return if `Entity.isValid` returns false
+ *
+ * Subclasses should override the type() method, as this is used for polymorphic deserialization
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeIdResolver(EntityTypeIdResolver.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Entity {
+    private static final String TYPE = "Entity";
 
     private LinkedList<Attribute> attributes;
     private LinkedHashSet<Rule> rules;
@@ -268,6 +274,11 @@ public class Entity {
 
     private String normalizeColumn(String column) {
         return column.replaceAll(" ", "_").replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+    }
+
+    @JsonIgnore
+    public String type() {
+        return TYPE;
     }
 
     @Override
