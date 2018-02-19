@@ -8,7 +8,7 @@ import java.util.Map;
  * @author rjewing
  */
 public class GenericRecord implements Record {
-    private Map<String, String> properties;
+    protected Map<String, String> properties;
     private boolean persist = true;
 
     public GenericRecord(Map<String, String> properties, boolean shouldPersist) {

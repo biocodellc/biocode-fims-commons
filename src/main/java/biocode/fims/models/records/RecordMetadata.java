@@ -47,6 +47,8 @@ public class RecordMetadata {
         return metadata.keySet().contains(key);
     }
 
+    public Map<String, Object> metadata() { return metadata; }
+
     public DataReader.DataReaderType readerType() {
         return readerType;
     }
