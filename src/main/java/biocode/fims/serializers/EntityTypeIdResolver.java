@@ -23,6 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Jackson TypIdResolver for polymorphic deserialization.
+ *
+ * This will dynamically register the Entity class and all the Entity subclasses that
+ * exist in the same package as the {@link Entity} class. This allows for packages to provide
+ * custom Entities (ex. biocode-fims-sequences FastaEntity) and for those entites to be
+ * correctly serialized & deserialized.
+ *
  * @author rjewing
  */
 public class EntityTypeIdResolver implements TypeIdResolver {

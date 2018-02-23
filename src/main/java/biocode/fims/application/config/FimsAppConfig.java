@@ -12,6 +12,7 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
 import biocode.fims.repositories.BcidRepository;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.validation.RecordValidator;
@@ -24,10 +25,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.ws.rs.client.ClientBuilder;
 
 /**

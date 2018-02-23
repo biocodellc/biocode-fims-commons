@@ -10,7 +10,7 @@ import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.Query;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.run.Dataset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +24,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
 import java.util.*;
 
 /**
@@ -74,7 +73,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 Map<String, Object> tableMap = getTableMap(projectId, table);
 
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
-                ObjectMapper mapper = new SpringObjectMapper();
+                ObjectMapper mapper = new FimsObjectMapper();
                 List<String> localIdentifiers = new ArrayList<>();
 
                 for (Record record : recordSet.recordsToPersist()) {

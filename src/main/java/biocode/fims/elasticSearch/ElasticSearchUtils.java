@@ -2,7 +2,7 @@ package biocode.fims.elasticSearch;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -18,7 +18,7 @@ public class ElasticSearchUtils {
      */
     public static ObjectNode transformResource(Map<String, Object> source, List<Attribute> attributes) {
         Mapping mapping = new Mapping();
-        ObjectMapper objectMapper = new SpringObjectMapper();
+        ObjectMapper objectMapper = new FimsObjectMapper();
         ObjectNode transformedSource = objectMapper.createObjectNode();
 
         for (String key: source.keySet()) {

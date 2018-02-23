@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 
 /**
- * Jackson ObjectMapper with hibernate support
+ * Jackson ObjectMapper with hibernate support & JsonView
  */
 @Component
-public class SpringObjectMapper extends ObjectMapper {
+public class FimsObjectMapper extends ObjectMapper {
 
-    public SpringObjectMapper() {
+    public FimsObjectMapper() {
         Hibernate5Module hm = new Hibernate5Module();
         hm.configure(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION, false);
         this.registerModule(hm);

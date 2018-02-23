@@ -1,14 +1,14 @@
 package biocode.fims.models.dataTypes;
 
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * code from https://vladmihalcea.com/2016/06/20/how-to-map-json-objects-using-generic-hibernate-types/
@@ -20,7 +20,7 @@ public class JacksonUtil {
     public static final ObjectMapper OBJECT_MAPPER;
 
     static {
-        OBJECT_MAPPER = new SpringObjectMapper();
+        OBJECT_MAPPER = new FimsObjectMapper();
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     }
 

@@ -4,7 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -42,7 +42,7 @@ public class ElasticSearchQuerier {
 
 
     public Page<ObjectNode> getPageableResults() {
-        ObjectMapper objectMapper = new SpringObjectMapper();
+        ObjectMapper objectMapper = new FimsObjectMapper();
         SearchRequestBuilder searchRequestBuilder = getPageableSearchRequestBuilder();
         SearchResponse response = getResponse(searchRequestBuilder);
 
@@ -62,7 +62,7 @@ public class ElasticSearchQuerier {
     }
 
     public ArrayNode getAllResults() {
-        ObjectMapper objectMapper = new SpringObjectMapper();
+        ObjectMapper objectMapper = new FimsObjectMapper();
         ArrayNode resources = objectMapper.createArrayNode();
 
         SearchRequestBuilder searchRequestBuilder = getScrollableSearchRequestBuilder();

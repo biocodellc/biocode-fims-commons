@@ -23,11 +23,13 @@ import java.util.List;
  * specific Entity. When extending, note that the base `Entity.isValid(config)` always returns
  * true, but can be overridden to provide additional entity specific validation that the `ProjectConfigValidator`
  * does not provide. `Entity.validationErrorMessages` can be overridden to return the List<String> of valdation
- * error messages to return if `Entity.isValid` returns false
+ * error messages to return if `Entity.isValid` returns false.
+ *
+ * overriding `Entity.configure` allows subclass to dynamically configure themselves
  *
  * Subclasses should override the type() method, as this is used for polymorphic deserialization
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type", defaultImpl = Entity.class)
 @JsonTypeIdResolver(EntityTypeIdResolver.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Entity {
@@ -254,6 +256,10 @@ public class Entity {
         }
     }
 
+    public void configure(ProjectConfig config) {
+        return;
+    }
+
     public boolean isValid(ProjectConfig config) {
         return true;
     }
@@ -276,7 +282,6 @@ public class Entity {
         return column.replaceAll(" ", "_").replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
     }
 
-    @JsonIgnore
     public String type() {
         return TYPE;
     }

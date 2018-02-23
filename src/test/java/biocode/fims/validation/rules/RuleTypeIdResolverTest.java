@@ -1,6 +1,6 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.validation.RuleInWrongPackage;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +22,7 @@ public class RuleTypeIdResolverTest {
 
     @BeforeClass
     public static void setUp() {
-        mapper = new SpringObjectMapper();
+        mapper = new FimsObjectMapper();
     }
 
     @Test

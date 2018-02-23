@@ -4,11 +4,12 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.reader.plugins.TabularDataReader;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -27,7 +28,7 @@ public class JsonTabularDataConverter {
      * Reads the source data and converts it to a JSONArray.
      */
     public ArrayNode convert(List<Attribute> attributes, String sheetName) {
-        ArrayNode sheet = new SpringObjectMapper().createArrayNode();
+        ArrayNode sheet = new FimsObjectMapper().createArrayNode();
         source.setTable(sheetName);
 
         if (!source.tableHasNextRow()) {

@@ -33,6 +33,9 @@ public class ProjectConfigValidator {
     }
 
     private void validateMapping() {
+        // allow entities to dynamic configure themselves
+        config.entities().forEach(e -> e.configure(config));
+
         allEntitiesHaveUniqueConceptAlias();
         allAttributesHaveUniqueAndValidUri();
         allAttributesHaveUniqueColumn();
@@ -103,6 +106,8 @@ public class ProjectConfigValidator {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
             } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey");
+            } else if (parentEntity.equals(e)) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is itself");
             }
         }
     }

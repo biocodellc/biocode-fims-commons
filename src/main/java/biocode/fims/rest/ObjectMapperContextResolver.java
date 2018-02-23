@@ -13,7 +13,7 @@ import javax.ws.rs.ext.Provider;
 public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper> {
 
     @Autowired
-    private SpringObjectMapper objectMapper;
+    private FimsObjectMapper objectMapper;
 
     public ObjectMapperContextResolver() {
         super();

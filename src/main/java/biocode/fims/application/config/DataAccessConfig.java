@@ -50,7 +50,7 @@ public class DataAccessConfig {
         Properties jpaProperties = new Properties();
         jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect");
         jpaProperties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
-        jpaProperties.setProperty("hibernate.formate_sql", env.getProperty("hibernate.format_sql"));
+        jpaProperties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
         jpaProperties.setProperty("hibernate.id.new_generator_mappings", "true");
         jpaProperties.setProperty("hibernate.max_fetch_depth", "3");
 

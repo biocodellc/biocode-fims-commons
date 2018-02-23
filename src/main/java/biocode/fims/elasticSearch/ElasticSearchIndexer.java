@@ -1,6 +1,6 @@
 package biocode.fims.elasticSearch;
 
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +16,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryAction;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ public class ElasticSearchIndexer {
         deleteDataset(projectId, expeditionCode);
 
         try {
-            ObjectMapper objectMapper = new SpringObjectMapper();
+            ObjectMapper objectMapper = new FimsObjectMapper();
             for (JsonNode node : dataset) {
                 ObjectNode resource = (ObjectNode) node;
 

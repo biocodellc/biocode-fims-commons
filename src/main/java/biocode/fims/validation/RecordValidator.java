@@ -56,7 +56,7 @@ public class RecordValidator {
         return isValid;
     }
 
-    private void addDefaultRules(Set<Rule> rules, RecordSet recordSet) {
+    protected void addDefaultRules(Set<Rule> rules, RecordSet recordSet) {
         Entity entity = recordSet.entity();
 
         rules.add(new ValidDataTypeFormatRule());

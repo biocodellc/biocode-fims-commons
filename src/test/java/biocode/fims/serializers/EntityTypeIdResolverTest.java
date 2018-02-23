@@ -2,7 +2,7 @@ package biocode.fims.serializers;
 
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.TestEntity;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
@@ -23,7 +23,7 @@ public class EntityTypeIdResolverTest {
 
     @BeforeClass
     public static void setUp() {
-        mapper = new SpringObjectMapper();
+        mapper = new FimsObjectMapper();
     }
 
     @Test
