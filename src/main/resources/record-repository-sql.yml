@@ -17,7 +17,7 @@ insertChildRecord: >
 selectRecords: >
   SELECT r.data as data
   FROM ${table} AS r
-    INNER JOIN expeditions e on r.expediton_id = e.id
+    INNER JOIN expeditions e on r.expedition_id = e.id
   WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
 
 deleteRecords: >

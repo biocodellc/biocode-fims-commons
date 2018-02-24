@@ -7,7 +7,6 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.ListMessage;
-import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonStreamContext;

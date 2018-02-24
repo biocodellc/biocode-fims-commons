@@ -57,7 +57,7 @@ public class EntityTypeIdResolver implements TypeIdResolver {
             PathMatchingResourcePatternResolver scanner = new PathMatchingResourcePatternResolver();
             metadataReaderFactory = new CachingMetadataReaderFactory(scanner);
 
-            Resource[] resources = scanner.getResources(ENTITY_PACKAGE.replaceAll("\\.", "/") + "/*.class");
+            Resource[] resources = scanner.getResources("classpath*:" + ENTITY_PACKAGE.replaceAll("\\.", "/") + "/*.class");
 
             for (Resource r : resources) {
                 Class resourceClass = getClassFromResource(r);
