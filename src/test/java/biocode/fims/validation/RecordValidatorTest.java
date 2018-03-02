@@ -101,16 +101,20 @@ public class RecordValidatorTest {
                 new Message("\"col2\" contains non-integer value \"nonInteger\"")
         );
         expectedMessages.addErrorMessage(
-                "Unique value constraint did not pass",
-                new Message("\"eventId\" column is defined as unique but some values used more than once: \"1234\"")
-        );
-        expectedMessages.addErrorMessage(
                 "Non-valid URI characters",
                 new Message("\"eventId\" contains some invalid URI characters: \"\"")
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
+                new Message("\"parentId\" has a missing cell value")
+        );
+        expectedMessages.addErrorMessage(
+                "Missing column(s)",
                 new Message("\"eventId\" has a missing cell value")
+        );
+        expectedMessages.addErrorMessage(
+                "Unique value constraint did not pass",
+                new Message("(\"parentId\", \"eventId\") is defined as a composite unique key, but some value combinations were used more than once: (\"parent1\", \"1234\")")
         );
         expectedMessages.addErrorMessage(
                 "Invalid parent identifier(s)",

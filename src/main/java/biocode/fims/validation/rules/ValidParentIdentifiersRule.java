@@ -7,10 +7,10 @@ import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Checks that the each value specified in the parent id column exists in the parent RecordSet
@@ -37,12 +37,11 @@ public class ValidParentIdentifiersRule extends AbstractRule {
             throw new IllegalStateException("Entity \"" + recordSet.entity().getConceptAlias() + "\" is a child entity, but the RecordSet.parent() was null");
         }
 
-        Set<String> parentIdentifiers = new HashSet<>();
         String parentIdentifierUri = recordSet.parent().entity().getUniqueKeyURI();
 
-        for (Record r : recordSet.parent().records()) {
-            parentIdentifiers.add(r.get(parentIdentifierUri));
-        }
+        Set<String> parentIdentifiers = recordSet.parent().records().stream()
+                .map(r -> r.get(parentIdentifierUri))
+                .collect(Collectors.toSet());
 
         String uri = recordSet.entity().getAttributeUri(recordSet.parent().entity().getUniqueKey());
         List<String> invalidIdentifiers = new LinkedList<>();

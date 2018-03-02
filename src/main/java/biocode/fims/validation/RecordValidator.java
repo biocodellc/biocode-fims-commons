@@ -60,7 +60,6 @@ public class RecordValidator {
         Entity entity = recordSet.entity();
 
         rules.add(new ValidDataTypeFormatRule());
-        rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
         rules.add(new ValidForURIRule(entity.getUniqueKey(), RuleLevel.ERROR));
 
         RequiredValueRule requiredValueRule = entity.getRule(RequiredValueRule.class, RuleLevel.ERROR);
@@ -73,7 +72,16 @@ public class RecordValidator {
         requiredValueRule.addColumn(entity.getUniqueKey());
 
         if (entity.isChildEntity()) {
+            Entity parentEntity = config.entity(entity.getParentEntity());
+
+            requiredValueRule.addColumn(parentEntity.getUniqueKey());
+
+            LinkedHashSet<String> compositeKey = new LinkedHashSet<>(Arrays.asList(parentEntity.getUniqueKey(), entity.getUniqueKey()));
+            rules.add(new CompositeUniqueValueRule(compositeKey, RuleLevel.ERROR));
+
             rules.add(new ValidParentIdentifiersRule());
+        } else {
+            rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
         }
     }
 

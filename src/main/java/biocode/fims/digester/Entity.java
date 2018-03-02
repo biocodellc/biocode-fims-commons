@@ -38,6 +38,8 @@ public class Entity {
     private LinkedList<Attribute> attributes;
     private LinkedHashSet<Rule> rules;
     private String worksheet;
+    // note: if Entity.isChildEntity() == true, then this is
+    // a composite unique key (parentEntityUniqueKey_EntityUniqueKey)
     private String uniqueKey;
     private String conceptAlias;
     private String conceptURI;
