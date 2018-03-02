@@ -27,14 +27,14 @@ public class ValidForURIRuleTest extends AbstractRuleTest {
     @Test
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new ValidForURIRule("col1");
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_null_column() {
         Rule rule = new ValidForURIRule(null);
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -49,7 +49,7 @@ public class ValidForURIRuleTest extends AbstractRuleTest {
     @Test
     public void should_not_be_valid_for_any_invalid_URI_chars() {
         Rule rule = new ValidForURIRule("col1", RuleLevel.ERROR);
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         List<Record> invalidRecords = getInvalidRecords();
         invalidRecords.forEach(recordSet::add);

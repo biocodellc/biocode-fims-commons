@@ -27,9 +27,9 @@ public class DatasetValidatorTest {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
         Dataset dataset = new Dataset();
 
-        RecordSet events = new RecordSet(entity1());
+        RecordSet events = new RecordSet(entity1(), false);
         dataset.add(events);
-        RecordSet samples = new RecordSet(entity2());
+        RecordSet samples = new RecordSet(entity2(), false);
         samples.setParent(events);
         dataset.add(samples);
 
@@ -73,8 +73,8 @@ public class DatasetValidatorTest {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
         Dataset dataset = new Dataset();
 
-        RecordSet events = new RecordSet(entity1());
-        RecordSet samples = new RecordSet(entity2());
+        RecordSet events = new RecordSet(entity1(), false);
+        RecordSet samples = new RecordSet(entity2(), false);
         samples.setParent(events);
 
         dataset.add(events);
@@ -107,8 +107,8 @@ public class DatasetValidatorTest {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
         Dataset dataset = new Dataset();
 
-        RecordSet events = new RecordSet(entity1());
-        RecordSet samples = new RecordSet(entity2());
+        RecordSet events = new RecordSet(entity1(), false);
+        RecordSet samples = new RecordSet(entity2(), false);
         samples.setParent(events);
 
         dataset.add(events);

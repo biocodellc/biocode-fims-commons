@@ -39,7 +39,7 @@ public class DatasetProcessor {
     private final User user;
     private final String workbookFile;
     private final Map<String, RecordMetadata> datasetSources;
-    private final boolean reloadDataset;
+    private final boolean reloadWorkbooks;
     private final boolean ignoreUser;
     private final String serverDataDir;
     private Dataset dataset;
@@ -58,7 +58,7 @@ public class DatasetProcessor {
         processorStatus = builder.processorStatus;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
-        reloadDataset = builder.reloadDataset;
+        reloadWorkbooks = builder.reloadWorkbooks;
         ignoreUser = builder.ignoreUser;
         serverDataDir = builder.serverDataDir;
         messages = Collections.emptyList();
@@ -69,7 +69,7 @@ public class DatasetProcessor {
 
         DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, recordRepository, projectConfig,
                 projectId, expeditionCode)
-                .reloadDataset(reloadDataset)
+                .reloadWorkbooks(reloadWorkbooks)
                 .addWorkbook(workbookFile);
 
         for (Map.Entry<String, RecordMetadata> dataset : datasetSources.entrySet()) {
@@ -177,7 +177,7 @@ public class DatasetProcessor {
 
         // Optional
         private User user;
-        private boolean reloadDataset = false;
+        private boolean reloadWorkbooks = false;
         private boolean ignoreUser = false;
 
         public Builder(int projectId, String expeditionCode, ProcessorStatus processorStatus) {
@@ -233,13 +233,13 @@ public class DatasetProcessor {
         }
 
         /**
-         * Is this a complete dataset reload? All previous records will be deleted
+         * Is this a complete dataset reload? All previous records will be deleted if the entity allows
          *
-         * @param reloadDataset
+         * @param reloadWorkbooks
          * @return
          */
-        public Builder reloadDataset(boolean reloadDataset) {
-            this.reloadDataset = reloadDataset;
+        public Builder reloadWorkbooks(boolean reloadWorkbooks) {
+            this.reloadWorkbooks = reloadWorkbooks;
             return this;
         }
 

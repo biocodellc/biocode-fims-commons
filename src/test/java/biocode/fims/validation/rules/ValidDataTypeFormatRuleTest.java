@@ -26,7 +26,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     @Test
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new ValidDataTypeFormatRule();
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     private RecordSet getIntegerDataTypeRecordSet() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col1", "1");
@@ -154,7 +154,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     private RecordSet getFloatDataTypeRecordSet() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col2", "10");
@@ -176,7 +176,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     private RecordSet getDateTimeDataTypeRecordSet() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col3", "02:12 12-1984");
@@ -198,7 +198,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     private RecordSet getDateDataTypeRecordSet() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col4", "12-16");
@@ -220,7 +220,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     private RecordSet getTimeDataTypeRecordSet() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col5", "00:00");

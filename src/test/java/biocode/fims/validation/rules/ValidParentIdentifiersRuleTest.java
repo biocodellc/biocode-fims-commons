@@ -26,8 +26,8 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new ValidParentIdentifiersRule();
 
-        RecordSet recordSet = new RecordSet(entity());
-        RecordSet parentSet = new RecordSet(parentEntity());
+        RecordSet recordSet = new RecordSet(entity(), false);
+        RecordSet parentSet = new RecordSet(parentEntity(), false);
         recordSet.setParent(parentSet);
 
         assertTrue(rule.run(recordSet, messages));
@@ -37,7 +37,7 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
     public void should_be_valid_for_non_child_recordSet() {
         Rule rule = new ValidParentIdentifiersRule();
 
-        RecordSet recordSet = new RecordSet(parentEntity());
+        RecordSet recordSet = new RecordSet(parentEntity(), false);
 
         assertTrue(rule.run(recordSet, messages));
     }
@@ -46,15 +46,15 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
     public void should_throw_exception_if_parent_entity_is_null() {
         Rule rule = new ValidParentIdentifiersRule();
 
-        rule.run(new RecordSet(entity()), messages);
+        rule.run(new RecordSet(entity(), false), messages);
     }
 
     @Test
     public void should_not_validate_if_parent_identifiers_dont_exist() {
         Rule rule = new ValidParentIdentifiersRule();
 
-        RecordSet parentSet = new RecordSet(parentEntity());
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet parentSet = new RecordSet(parentEntity(), false);
+        RecordSet recordSet = new RecordSet(entity(), false);
         recordSet.setParent(parentSet);
 
         Record parent = new GenericRecord();

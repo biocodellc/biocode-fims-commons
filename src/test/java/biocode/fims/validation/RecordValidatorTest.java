@@ -45,8 +45,8 @@ public class RecordValidatorTest {
 
     @Test
     public void should_validate_and_have_empty_messages_with_empty_record_set() {
-        RecordSet recordSet = new RecordSet(entity1());
-        recordSet.setParent(new RecordSet(entity2()));
+        RecordSet recordSet = new RecordSet(entity1(), false);
+        recordSet.setParent(new RecordSet(entity2(), false));
 
         assertTrue(validator.validate(recordSet));
         assertEquals(validator.messages(), new EntityMessages(entity1().getConceptAlias(), entity1().getWorksheet()));
@@ -54,13 +54,13 @@ public class RecordValidatorTest {
 
     @Test
     public void should_add_default_rules_to_record_set() {
-        RecordSet parent = new RecordSet(entity2());
+        RecordSet parent = new RecordSet(entity2(), false);
 
         Record p1 = new GenericRecord();
         p1.set("parentId", "parent1");
         parent.add(p1);
 
-        RecordSet recordSet = new RecordSet(entity1());
+        RecordSet recordSet = new RecordSet(entity1(), false);
         recordSet.setParent(parent);
 
         Record r1 = new GenericRecord();
@@ -106,7 +106,7 @@ public class RecordValidatorTest {
         );
         expectedMessages.addErrorMessage(
                 "Non-valid URI characters",
-                new Message("\"eventId\" contains some invalid URI characters: \"nonUri=\", \"\"")
+                new Message("\"eventId\" contains some invalid URI characters: \"\"")
         );
         expectedMessages.addErrorMessage(
                 "Missing column(s)",
@@ -124,7 +124,7 @@ public class RecordValidatorTest {
 
     @Test
     public void should_call_rule_setConfig_before_running_rule() {
-        RecordSet recordSet = new RecordSet(entity2());
+        RecordSet recordSet = new RecordSet(entity2(), false);
 
         Record p1 = new GenericRecord();
         p1.set("parentId", "parent1");

@@ -38,7 +38,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_only_1_column() {
         Rule rule = new MinMaxNumberRule("col1", null);
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -55,14 +55,14 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_be_valid_for_missing_value_from_min_col() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col2", "14");
@@ -83,7 +83,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_for_missing_value_from_max_col() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col1", "14");
@@ -104,7 +104,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_for_non_numeric_values() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col1", "14");
@@ -135,7 +135,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_if_2nd_col_is_greater_then_first() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col1", "14");
@@ -162,7 +162,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     public void should_be_valid() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
         r.set("urn:col1", "14");

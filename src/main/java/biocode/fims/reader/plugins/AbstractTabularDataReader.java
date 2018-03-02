@@ -58,7 +58,7 @@ abstract class AbstractTabularDataReader implements DataReader {
 
         for (Map.Entry<Entity, List<Record>> e : entityRecords.entrySet()) {
             recordSets.add(
-                    new RecordSet(e.getKey(), e.getValue())
+                    new RecordSet(e.getKey(), e.getValue(), recordMetadata.reload())
             );
         }
 

@@ -27,14 +27,14 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new RequireValueIfOtherColumnRule("col1", "col2");
 
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_column() {
         Rule rule = new RequireValueIfOtherColumnRule(null, "col2");
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -50,7 +50,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_empty_otherColumn() {
         Rule rule = new RequireValueIfOtherColumnRule("col1", "");
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -66,7 +66,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_no_attribute_for_otherColumn() {
         Rule rule = new RequireValueIfOtherColumnRule("col2", "fake_column");
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -82,7 +82,7 @@ public class RequireValueIfOtherColumnRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_when_column_missing_value() {
         Rule rule = new RequireValueIfOtherColumnRule("col1", "col2");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);

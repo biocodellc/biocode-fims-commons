@@ -33,7 +33,7 @@ public class DatasetBuilder {
     private final int projectId;
     private final String expeditionCode;
 
-    private boolean isUpdate = true;
+    private boolean reloadWorkbooks = false;
     private final ArrayList<String> workbooks;
     private final ArrayList<DataSource> dataSources;
     private final ArrayList<RecordSet> recordSets;
@@ -70,8 +70,8 @@ public class DatasetBuilder {
         return this;
     }
 
-    public DatasetBuilder reloadDataset(boolean reload) {
-        this.isUpdate = !reload;
+    public DatasetBuilder reloadWorkbooks(boolean reload) {
+        this.reloadWorkbooks = reload;
         return this;
     }
 
@@ -99,7 +99,7 @@ public class DatasetBuilder {
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE));
+            DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
 
             recordSets.addAll(reader.getRecordSets());
         }
@@ -134,8 +134,11 @@ public class DatasetBuilder {
     }
 
     private boolean fetchRecordSet(Entity entity) {
-        return isUpdate || recordSets.stream()
-                .noneMatch(r -> r.entity().equals(entity));
+        return recordSets.stream()
+                .filter(r -> r.entity().equals(entity))
+                .findFirst()
+                .map(r -> !r.reload())
+                .orElse(true);
     }
 
     private void mergeRecords(Entity entity, List<? extends Record> records) {
@@ -145,7 +148,7 @@ public class DatasetBuilder {
                 .orElse(null);
 
         if (recordSet == null) {
-            recordSet = new RecordSet(entity);
+            recordSet = new RecordSet(entity, false);
             recordSets.add(recordSet);
         }
 
@@ -171,7 +174,7 @@ public class DatasetBuilder {
             }
         }
 
-        return new RecordSet(config.entity(conceptAlias));
+        return new RecordSet(config.entity(conceptAlias), false);
     }
 
     private static class DataSource {

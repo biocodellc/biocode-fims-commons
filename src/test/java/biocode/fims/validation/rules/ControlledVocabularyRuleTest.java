@@ -29,21 +29,21 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     @Test(expected = IllegalStateException.class)
     public void should_throw_exception_for_null_config() {
         Rule rule = new ControlledVocabularyRule("col1", "", null);
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new ControlledVocabularyRule("col1", "yesNo", config());
 
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_column() {
         Rule rule = new ControlledVocabularyRule(null, "yesNo", config());
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -59,7 +59,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_no_listName() {
         Rule rule = new ControlledVocabularyRule("col1", null, config());
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -75,7 +75,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_cant_find_list() {
         Rule rule = new ControlledVocabularyRule("col1", "list1", config());
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -92,7 +92,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
         Rule rule = new ControlledVocabularyRule("col1", "yesNo", config());
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "Yes");
@@ -117,7 +117,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
 
         Rule rule = new ControlledVocabularyRule("col1", "trueFalse", config());
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "True");

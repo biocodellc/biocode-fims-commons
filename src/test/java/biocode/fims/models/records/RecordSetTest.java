@@ -20,7 +20,7 @@ public class RecordSetTest {
 
     @Test
     public void is_empty_with_no_records() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         assertTrue(recordSet.isEmpty());
         assertEquals("resource", recordSet.conceptAlias());
@@ -28,7 +28,7 @@ public class RecordSetTest {
 
     @Test
     public void has_records() {
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
         Record r = record1();
         recordSet.add(r);
 
@@ -40,7 +40,7 @@ public class RecordSetTest {
     public void has_records_from_constructor() {
         List<Record> records = Collections.singletonList(record1());
 
-        RecordSet recordSet = new RecordSet(entity(), records);
+        RecordSet recordSet = new RecordSet(entity(), records, false);
 
         assertFalse(recordSet.isEmpty());
         assertEquals(records, recordSet.records());
@@ -50,7 +50,7 @@ public class RecordSetTest {
     public void should_add_new_records_when_merge() {
         List<Record> startingRecords = Collections.singletonList(record1());
 
-        RecordSet recordSet = new RecordSet(entity(), startingRecords);
+        RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
         recordSet.merge(Collections.singletonList(record2()));
 
         assertEquals(2, recordSet.records().size());
@@ -77,7 +77,7 @@ public class RecordSetTest {
     public void should_not_add_duplicate_records_when_merge() {
         List<Record> startingRecords = Collections.singletonList(record1());
 
-        RecordSet recordSet = new RecordSet(entity(), startingRecords);
+        RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
         recordSet.merge(Collections.singletonList(record1()));
 
         assertEquals(1, recordSet.records().size());
@@ -92,7 +92,7 @@ public class RecordSetTest {
         r2.set("urn:column2", "another value");
         records.add(r2);
 
-        RecordSet recordSet = new RecordSet(entity(), records);
+        RecordSet recordSet = new RecordSet(entity(), records, false);
 
         try {
             recordSet.removeDuplicates();
@@ -109,7 +109,7 @@ public class RecordSetTest {
         records.add(record1());
         records.add(record2());
 
-        RecordSet recordSet = new RecordSet(entity(), records);
+        RecordSet recordSet = new RecordSet(entity(), records, false);
 
         recordSet.removeDuplicates();
 

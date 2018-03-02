@@ -18,10 +18,17 @@ public class DataSourceMetadata {
     @JsonProperty
     private String filename;
     @JsonProperty
+    private boolean reload = false;
+    @JsonProperty
     private Map<String, Object> metadata;
 
     // for jackson
     private DataSourceMetadata() {}
+
+    public DataSourceMetadata(String dataType, String filename, boolean reload, Map<String, Object> metadata) {
+        this(dataType, filename, metadata);
+        this.reload = reload;
+    }
 
     public DataSourceMetadata(String dataType, String filename, Map<String, Object> metadata) {
         this.dataType = dataType;
@@ -46,6 +53,6 @@ public class DataSourceMetadata {
             throw new FimsRuntimeException(DataReaderCode.NOT_FOUND, 400);
         }
 
-        return new RecordMetadata(readerType, metadata);
+        return new RecordMetadata(readerType, reload, metadata);
     }
 }

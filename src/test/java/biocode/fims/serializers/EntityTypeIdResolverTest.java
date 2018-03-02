@@ -49,10 +49,10 @@ public class EntityTypeIdResolverTest {
         }
     }
 
-    @Test(expected = JsonMappingException.class)
-    public void should_throw_exception_if_entity_name_missing_from_json() throws IOException {
+    public void should_default_to_entity_class_if_entity_type_missing_from_json() throws IOException {
         String entityString = "{\"property1\": \"some property\"}";
         Entity entity = mapper.readValue(entityString, Entity.class);
+        assertTrue(entity.getClass().equals(Entity.class));
     }
 
     @Test

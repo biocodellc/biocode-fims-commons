@@ -24,9 +24,9 @@ import java.util.List;
  * true, but can be overridden to provide additional entity specific validation that the `ProjectConfigValidator`
  * does not provide. `Entity.validationErrorMessages` can be overridden to return the List<String> of valdation
  * error messages to return if `Entity.isValid` returns false.
- *
+ * <p>
  * overriding `Entity.configure` allows subclass to dynamically configure themselves
- *
+ * <p>
  * Subclasses should override the type() method, as this is used for polymorphic deserialization
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type", defaultImpl = Entity.class)
@@ -150,7 +150,7 @@ public class Entity {
     }
 
     public String getAttributeColumn(String uri) {
-        for (Attribute a: attributes) {
+        for (Attribute a : attributes) {
             if (a.getUri().equals(uri)) {
                 return a.getColumn();
             }
@@ -211,7 +211,7 @@ public class Entity {
     }
 
     public Attribute getAttribute(String column) {
-        for (Attribute a: attributes) {
+        for (Attribute a : attributes) {
             if (a.getColumn().equals(column)) {
                 return a;
             }
@@ -234,7 +234,7 @@ public class Entity {
     public void generateUris() {
         java.util.List<String> existingUris = getExistingUris();
 
-        for (Attribute a: attributes) {
+        for (Attribute a : attributes) {
             if (StringUtils.isBlank(a.getUri())) {
 
                 String normalizedCol = normalizeColumn(a.getColumn());
@@ -256,22 +256,42 @@ public class Entity {
         }
     }
 
+    /**
+     * Allows the entity to self-configure when the config is updated.
+     *
+     * @param config
+     */
     public void configure(ProjectConfig config) {
         return;
     }
 
+    /**
+     * Allows the entity to provide custom validation
+     *
+     * @param config
+     */
     public boolean isValid(ProjectConfig config) {
         return true;
     }
 
+    /**
+     * @return List of errorMessages from `isValid` call
+     */
     public List<String> validationErrorMessages() {
-        return Collections.<String>emptyList();
+        return Collections.emptyList();
+    }
+
+    /**
+     * Specify if datasets for this entity can be reloaded (removing all records not in current upload).
+     */
+    public boolean canReload() {
+        return true;
     }
 
     private java.util.List<String> getExistingUris() {
         java.util.List<String> uris = new ArrayList<>();
 
-        for (Attribute a: attributes) {
+        for (Attribute a : attributes) {
             uris.add(a.getUri());
         }
 

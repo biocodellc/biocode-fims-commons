@@ -17,17 +17,19 @@ public class RecordSet {
     private List<Record> records;
     private RecordSet parent;
     private Entity entity;
+    private boolean reload;
 
     private boolean deduplicated = false;
 
-    public RecordSet(Entity entity) {
+    public RecordSet(Entity entity, boolean reload) {
         Assert.notNull(entity);
         this.entity = entity;
+        this.reload = reload;
         this.records = new ArrayList<>();
     }
 
-    public RecordSet(Entity entity, List<Record> records) {
-        this(entity);
+    public RecordSet(Entity entity, List<Record> records, boolean reload) {
+        this(entity, reload);
         this.records.addAll(records);
     }
 
@@ -41,6 +43,10 @@ public class RecordSet {
 
     public boolean isEmpty() {
         return records.isEmpty();
+    }
+
+    public boolean reload() {
+        return this.reload && entity.canReload();
     }
 
     public void add(Record record) {

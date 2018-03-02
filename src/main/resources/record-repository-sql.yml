@@ -24,3 +24,8 @@ deleteRecords: >
   DELETE
   FROM ${table}
   WHERE expedition_id = :expeditionId and local_identifier not in (:identifiers)
+
+deleteChildRecords: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = :expeditionId and parent_identifier, local_identifier not in (:identifiers)

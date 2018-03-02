@@ -55,6 +55,11 @@ public class ProjectConfigConverter {
                 config.setExpeditionForwardingAddress(mapping.getMetadata().getDatasetForwardingAddress());
                 p.setDescription(mapping.getMetadata().getTextAbstract());
 
+                mapping.getRelations().forEach(r -> {
+                    Entity childEntity = config.entity(r.getSubject());
+                    childEntity.setParentEntity(r.getObject());
+                });
+
                 for (Worksheet w : validation.getWorksheets()) {
 
                     java.util.List<Entity> entitiesForSheet = config.entitiesForSheet(w.getSheetname());

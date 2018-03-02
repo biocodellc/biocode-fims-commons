@@ -59,7 +59,7 @@ public class DatasetBuilderTest {
     @Test
     public void should_return_record_sets_for_workbook_file() {
         TestDataReader reader = new TestDataReader();
-        reader.addRecordSet("dataSource.xls", eventRecordSet());
+        reader.addRecordSet("dataSource.xls", eventRecordSet(false));
 
         DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
@@ -73,13 +73,13 @@ public class DatasetBuilderTest {
     @Test
     public void should_return_record_sets_for_non_workbook_file() {
         TestDataReader reader = new TestDataReader();
-        reader.addRecordSet("dataSource.xls", eventRecordSet());
+        reader.addRecordSet("dataSource.xls", eventRecordSet(false));
         reader.addRecordSet("samples.csv", sampleRecordSet());
 
         DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
-        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE);
+        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
         builder.addDatasource("samples.csv", samplesMetadata);
 
@@ -107,7 +107,7 @@ public class DatasetBuilderTest {
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord1());
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
 
-        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE);
+        RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
 
         Dataset dataset = new DatasetBuilder(
@@ -138,7 +138,7 @@ public class DatasetBuilderTest {
     public void should_fetch_stored_parent_records_for_child_entities_with_parent_entity_upload_when_updating_dataset() {
         TestDataReader reader = new TestDataReader();
         reader.addRecordSet("workbook.xlsx", sampleRecordSet());
-        reader.addRecordSet("workbook.xlsx", eventRecordSet());
+        reader.addRecordSet("workbook.xlsx", eventRecordSet(false));
 
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
@@ -174,7 +174,7 @@ public class DatasetBuilderTest {
 
         Record e1 = eventRecord1();
         Record e2 = eventRecord2();
-        RecordSet recordSet = new RecordSet(eventsEntity(), Arrays.asList(e1, e2));
+        RecordSet recordSet = new RecordSet(eventsEntity(), Arrays.asList(e1, e2), false);
         reader.addRecordSet("workbook.xlsx", recordSet);
 
         TestRecordRepository repository = new TestRecordRepository();
@@ -208,7 +208,7 @@ public class DatasetBuilderTest {
     public void should_not_fetch_stored_parent_records_for_child_entities_when_reloading_dataset() {
         TestDataReader reader = new TestDataReader();
         reader.addRecordSet("workbook.xlsx", sampleRecordSet());
-        reader.addRecordSet("workbook.xlsx", eventRecordSet());
+        reader.addRecordSet("workbook.xlsx", eventRecordSet(true));
 
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
@@ -221,7 +221,7 @@ public class DatasetBuilderTest {
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
-                .reloadDataset(true)
+                .reloadWorkbooks(true)
                 .build();
 
         assertEquals(2, dataset.size());
@@ -239,8 +239,8 @@ public class DatasetBuilderTest {
     }
 
 
-    private RecordSet eventRecordSet() {
-        return new RecordSet(eventsEntity(), Collections.singletonList(eventRecord1()));
+    private RecordSet eventRecordSet(boolean reload) {
+        return new RecordSet(eventsEntity(), Collections.singletonList(eventRecord1()), reload);
     }
 
     private Record eventRecord1() {
@@ -299,7 +299,7 @@ public class DatasetBuilderTest {
         r4.set("urn:species", "pulchella");
         records.add(r4);
 
-        return new RecordSet(samplesEntity(), records);
+        return new RecordSet(samplesEntity(), records, false);
     }
 
     private ProjectConfig config() {

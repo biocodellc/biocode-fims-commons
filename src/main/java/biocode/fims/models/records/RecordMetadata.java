@@ -16,18 +16,21 @@ import java.util.Map;
  */
 public class RecordMetadata {
     private DataReader.DataReaderType readerType;
+    private boolean reload;
     private final Map<String, Object> metadata;
 
-    public RecordMetadata(DataReader.DataReaderType readerType) {
+    public RecordMetadata(DataReader.DataReaderType readerType, boolean reload) {
         Assert.notNull(readerType);
         this.readerType = readerType;
+        this.reload = reload;
         this.metadata = new HashMap();
     }
 
-    public RecordMetadata(DataReader.DataReaderType readerType, Map<String, Object> metadata) {
+    public RecordMetadata(DataReader.DataReaderType readerType, boolean reload, Map<String, Object> metadata) {
         Assert.notNull(readerType);
         Assert.notNull(metadata);
         this.readerType = readerType;
+        this.reload = reload;
         this.metadata = metadata;
     }
 
@@ -47,7 +50,13 @@ public class RecordMetadata {
         return metadata.keySet().contains(key);
     }
 
-    public Map<String, Object> metadata() { return metadata; }
+    public boolean reload() {
+        return reload;
+    }
+
+    public Map<String, Object> metadata() {
+        return metadata;
+    }
 
     public DataReader.DataReaderType readerType() {
         return readerType;

@@ -30,14 +30,14 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
     @Test
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new RequiredValueInGroupRule(new LinkedHashSet(Arrays.asList("col2", "col3")));
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_columns() {
         Rule rule = new RequiredValueInGroupRule(new LinkedHashSet<>(Collections.emptyList()));
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -53,7 +53,7 @@ public class RequiredValueInGroupRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_when_all_columns_are_missing_value() {
         Rule rule = new RequiredValueInGroupRule(new LinkedHashSet<>(Arrays.asList("col2", "col3")), RuleLevel.ERROR);
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "record1");

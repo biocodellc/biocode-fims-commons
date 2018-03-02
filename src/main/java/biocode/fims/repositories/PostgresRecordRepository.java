@@ -75,6 +75,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
                 ObjectMapper mapper = new FimsObjectMapper();
                 List<String> localIdentifiers = new ArrayList<>();
+                List<String> parentIdentifiers = new ArrayList<>();
 
                 for (Record record : recordSet.recordsToPersist()) {
 
@@ -87,7 +88,9 @@ public class PostgresRecordRepository implements RecordRepository {
                     if (recordSet.hasParent()) {
                         String parentEntityIdColumn = recordSet.parent().entity().getUniqueKey();
                         String parentIdentifierUri = recordSet.entity().getAttributeUri(parentEntityIdColumn);
-                        recordParams.put("parent_identifier", record.get(parentIdentifierUri));
+                        String parentIdentifier = record.get(parentIdentifierUri);
+                        recordParams.put("parent_identifier", parentIdentifier);
+                        parentIdentifiers.add(parentIdentifier);
                     }
 
                     Map<String, String> properties = record.properties();
@@ -108,17 +111,33 @@ public class PostgresRecordRepository implements RecordRepository {
                         insertParams.toArray(new HashMap[insertParams.size()])
                 );
 
-                //TODO maybe make this a toggle?
-                // Delete any records not in the RecordSet
-                String deleteSql = sql.getProperty("deleteRecords");
-                HashMap<String, Object> deleteParams= new HashMap<>();
-                deleteParams.put("expeditionId", expeditionId);
-                deleteParams.put("identifiers", localIdentifiers);
+                // Delete any records not in the current RecordSet
+                if (recordSet.reload()) {
+                    String deleteSql;
+                    HashMap<String, Object> deleteParams = new HashMap<>();
+                    deleteParams.put("expeditionId", expeditionId);
 
-                jdbcTemplate.update(
-                        StrSubstitutor.replace(deleteSql, tableMap),
-                        deleteParams
-                );
+                    if (recordSet.hasParent()) {
+                        deleteSql = sql.getProperty("deleteChildRecords");
+                        List<Object[]> identifierTuples = new ArrayList<>(localIdentifiers.size());
+
+                        for (int i = 0; i < localIdentifiers.size(); i++) {
+                            identifierTuples.add(
+                                    new Object[]{parentIdentifiers.get(i), localIdentifiers.get(i)}
+                            );
+                        }
+
+                        deleteParams.put("identifiers", identifierTuples);
+                    } else {
+                        deleteSql = sql.getProperty("deleteRecords");
+                        deleteParams.put("identifiers", localIdentifiers);
+                    }
+
+                    jdbcTemplate.update(
+                            StrSubstitutor.replace(deleteSql, tableMap),
+                            deleteParams
+                    );
+                }
 
             }
         } catch (JsonProcessingException e) {

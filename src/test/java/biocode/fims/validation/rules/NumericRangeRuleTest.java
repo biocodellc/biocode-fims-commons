@@ -24,14 +24,14 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new NumericRangeRule("col1", ">0");
 
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_columns() {
         Rule rule = new NumericRangeRule(null, ">0");
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -47,7 +47,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
     public void should_not_validate_if_no_range() {
         Rule rule = new NumericRangeRule("col1", null);
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -62,7 +62,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
     @Test
     public void should_not_validate_if_malformed_range() {
         Rule rule = new NumericRangeRule("col1", "0");
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
@@ -75,7 +75,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         messages = new EntityMessages("Samples");
         rule = new NumericRangeRule("col1", "abc");
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
 
         expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
@@ -88,7 +88,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         messages = new EntityMessages("Samples");
         rule = new NumericRangeRule("col1", "=123");
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
 
         expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
@@ -104,7 +104,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         Rule rule = new NumericRangeRule("col1", "<10");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "-11");
@@ -130,7 +130,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         Rule rule = new NumericRangeRule("col1", "<=10");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "10.00");
@@ -156,7 +156,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         Rule rule = new NumericRangeRule("col1", ">10");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "0.00");
@@ -182,7 +182,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         Rule rule = new NumericRangeRule("col1", ">=0");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "0.00");
@@ -208,7 +208,7 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
 
         Rule rule = new NumericRangeRule("col1", ">=0 | <=10");
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "0.00");

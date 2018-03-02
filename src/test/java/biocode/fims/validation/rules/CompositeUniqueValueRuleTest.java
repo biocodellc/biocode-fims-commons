@@ -26,14 +26,14 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
     @Test
     public void should_be_valid_for_empty_recordSet() {
         Rule rule = new CompositeUniqueValueRule(new LinkedHashSet(Arrays.asList("col1", "col2")));
-        assertTrue(rule.run(new RecordSet(entity()), messages));
+        assertTrue(rule.run(new RecordSet(entity(), false), messages));
     }
 
     @Test
     public void should_not_validate_if_empty_columns() {
         Rule rule = new CompositeUniqueValueRule(new LinkedHashSet<>(Collections.emptyList()));
 
-        assertFalse(rule.run(new RecordSet(entity()), messages));
+        assertFalse(rule.run(new RecordSet(entity(), false), messages));
         assertTrue(rule.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("Samples");
@@ -49,7 +49,7 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
     public void should_not_be_valid_when_duplicate_values() {
         Rule rule = new CompositeUniqueValueRule(new LinkedHashSet<>(Arrays.asList("col1", "col2")), RuleLevel.ERROR);
 
-        RecordSet recordSet = new RecordSet(entity());
+        RecordSet recordSet = new RecordSet(entity(), false);
 
         List<Record> invalidRecords = getInvalidRecords();
         invalidRecords.forEach(recordSet::add);
