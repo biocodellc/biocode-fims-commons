@@ -255,11 +255,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
         }
 
-        String sql = "SELECT data FROM " +
+        String sql = "SELECT data, entity_identifiers.identifier AS root_identifier FROM " +
                 buildTable(queryEntity.getConceptAlias());
 
         if (allQuery && !onlyPublicExpeditions) {
-            return new ParametrizedQuery(sql, params);
+            return new ParametrizedQuery(sql + joinBuilder.build(), params);
         }
 
         if (onlyPublicExpeditions) {

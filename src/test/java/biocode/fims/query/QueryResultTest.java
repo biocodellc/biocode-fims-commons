@@ -31,7 +31,7 @@ public class QueryResultTest {
 
         records.add(r1);
 
-        QueryResult result = new QueryResult(records, sample());
+        QueryResult result = new QueryResult(records, sample(), null);
 
         List<Map<String, String>> expected = new ArrayList<>();
         Map<String, String> expectedR1 = new HashMap<>();
@@ -57,7 +57,7 @@ public class QueryResultTest {
 
         records.add(r1);
 
-        QueryResult result = new QueryResult(records, sample());
+        QueryResult result = new QueryResult(records, sample(), null);
 
         List<Map<String, String>> expected = new ArrayList<>();
         Map<String, String> expectedR1 = new HashMap<>();

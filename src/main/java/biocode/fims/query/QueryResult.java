@@ -13,14 +13,20 @@ public class QueryResult {
 
     private final List<Record> records;
     private final Entity entity;
+    private final String rootIdentifier;
 
-    public QueryResult(List<Record> records, Entity entity) {
+    public QueryResult(List<Record> records, Entity entity, String rootIdentifier) {
         this.records = records;
         this.entity = entity;
+        this.rootIdentifier = rootIdentifier;
     }
 
     public Entity entity() {
         return entity;
+    }
+
+    public String rootIdentifier() {
+        return rootIdentifier;
     }
 
     /**

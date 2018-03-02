@@ -161,6 +161,10 @@ public class Entity {
         return null;
     }
 
+    public String buildChildIdentifier(String parentIdentifier, String localIdentifier) {
+        return parentIdentifier + "_" + localIdentifier;
+    }
+
     /**
      * If this entity is represented as a worksheet
      *

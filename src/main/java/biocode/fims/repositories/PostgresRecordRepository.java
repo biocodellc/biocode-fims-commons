@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.GenericRecord;
@@ -20,10 +21,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -150,9 +154,10 @@ public class PostgresRecordRepository implements RecordRepository {
     public QueryResult query(Query query) {
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
-        List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.entity());
+        jdbcTemplate.query(q.sql(), q.params(), handler);
 
-        return new QueryResult(records, query.entity());
+        return new QueryResult(handler.records, query.entity(), handler.rootIdentifier);
     }
 
     @Override
@@ -161,13 +166,15 @@ public class PostgresRecordRepository implements RecordRepository {
         // naive implementation that will work for now. Probably better to use postgres to paginate
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
-        List<Record> records = (List<Record>) jdbcTemplate.query(q.sql(), q.params(), rowMappers.get(GenericRecord.class));
 
-        int total = records.size();
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.entity());
+        jdbcTemplate.query(q.sql(), q.params(), handler);
+
+        int total = handler.records.size();
         int from = page * limit;
         int to = (from + limit < total) ? from + limit : total;
 
-        QueryResult queryResult = new QueryResult(records.subList(from, to), query.entity());
+        QueryResult queryResult = new QueryResult(handler.records.subList(from, to), query.entity(), handler.rootIdentifier);
 
         Pageable pageable = new PageRequest(page, limit);
         return new PageImpl<>(queryResult.get(includeEmptyProperties), pageable, total);
@@ -194,5 +201,29 @@ public class PostgresRecordRepository implements RecordRepository {
         }
 
         return nonEmptyProps;
+    }
+
+    private class RecordRowCallbackHandler implements RowCallbackHandler {
+        private RowMapper<? extends Record> rowMapper;
+        final List<Record> records;
+        String rootIdentifier;
+
+        private RecordRowCallbackHandler(Entity entity) {
+            this.rowMapper = rowMappers.get(entity.getRecordType());
+            if (this.rowMapper == null) {
+                this.rowMapper = rowMappers.get(GenericRecord.class);
+            }
+            this.records = new ArrayList<>();
+        }
+
+
+        @Override
+        public void processRow(ResultSet rs) throws SQLException {
+            if (rootIdentifier == null) {
+                rootIdentifier = rs.getString("root_identifier");
+            }
+            records.add(rowMapper.mapRow(rs, records.size() - 1));
+        }
+
     }
 }

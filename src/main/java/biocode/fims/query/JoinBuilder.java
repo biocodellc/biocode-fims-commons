@@ -54,6 +54,7 @@ public class JoinBuilder {
         }
 
         buildJoinEntities();
+        appendEntityIdentifiersJoin();
 
         return joinString.toString();
     }
@@ -63,6 +64,15 @@ public class JoinBuilder {
                 .append(" JOIN expeditions ON expeditions.id = ")
                 .append(queryEntity.getConceptAlias())
                 .append(".expedition_id");
+    }
+
+    private void appendEntityIdentifiersJoin() {
+        joinString
+                .append(" JOIN entity_identifiers ON entity_identifiers.expedition_id = ")
+                .append(queryEntity.getConceptAlias())
+                .append(".expedition_id and entity_identifiers.concept_alias = '")
+                .append(queryEntity.getConceptAlias())
+                .append("'");
     }
 
     private void buildJoinEntities() {
