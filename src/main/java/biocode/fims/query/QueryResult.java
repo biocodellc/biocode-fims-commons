@@ -29,6 +29,10 @@ public class QueryResult {
         return rootIdentifier;
     }
 
+    public List<Record> records() {
+        return Collections.unmodifiableList(records);
+    }
+
     /**
      * Returns a list of {@link Record#properties()} as a {@link Map} of column->value pairs
      *
@@ -41,19 +45,21 @@ public class QueryResult {
         for (Record record : records) {
             Map<String, String> properties = new LinkedHashMap<>();
 
-            if (!includeEmpty) {
-                for (Map.Entry<String, String> e : record.properties().entrySet()) {
-                    properties.put(
-                            entity.getAttributeColumn(e.getKey()),
-                            e.getValue()
-                    );
-                }
-            } else {
+            for (Map.Entry<String, String> e : record.properties().entrySet()) {
+                properties.put(
+                        entity.getAttributeColumn(e.getKey()),
+                        e.getValue()
+                );
+            }
+
+            if (includeEmpty) {
                 for (Attribute a : entity.getAttributes()) {
-                    properties.put(
-                            a.getColumn(),
-                            record.get(a.getUri())
-                    );
+                    if (!properties.containsKey(a.getColumn())) {
+                        properties.put(
+                                a.getColumn(),
+                                record.get(a.getUri())
+                        );
+                    }
                 }
             }
 

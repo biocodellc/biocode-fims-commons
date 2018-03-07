@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * This is the base Entity within the fims system. This class can be extended to provide a more
  * specific Entity. When extending, note that the base `Entity.isValid(config)` always returns
- * true, but can be overridden to provide additional entity specific validation that the `ProjectConfigValidator`
+ * true, but can be overridden to provide additional queryEntity specific validation that the `ProjectConfigValidator`
  * does not provide. `Entity.validationErrorMessages` can be overridden to return the List<String> of valdation
  * error messages to return if `Entity.isValid` returns false.
  * <p>
@@ -92,7 +92,7 @@ public class Entity {
     }
 
     /**
-     * returns the uri for the column that designates unique records for this entity
+     * returns the uri for the column that designates unique records for this queryEntity
      *
      * @return
      */
@@ -110,7 +110,7 @@ public class Entity {
     }
 
     /**
-     * column of the {@link Attribute} that designates unique records for this entity
+     * column of the {@link Attribute} that designates unique records for this queryEntity
      *
      * @param uniqueKey
      */
@@ -166,7 +166,7 @@ public class Entity {
     }
 
     /**
-     * If this entity is represented as a worksheet
+     * If this queryEntity is represented as a worksheet
      *
      * @return
      */
@@ -263,7 +263,7 @@ public class Entity {
     }
 
     /**
-     * Allows the entity to self-configure when the config is updated.
+     * Allows the queryEntity to self-configure when the config is updated.
      *
      * @param config
      */
@@ -272,7 +272,7 @@ public class Entity {
     }
 
     /**
-     * Allows the entity to provide custom validation
+     * Allows the queryEntity to provide custom validation
      *
      * @param config
      */
@@ -288,7 +288,7 @@ public class Entity {
     }
 
     /**
-     * Specify if datasets for this entity can be reloaded (removing all records not in current upload).
+     * Specify if datasets for this queryEntity can be reloaded (removing all records not in current upload).
      */
     public boolean canReload() {
         return true;

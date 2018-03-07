@@ -118,7 +118,7 @@ public class RecordValidatorTest {
         );
         expectedMessages.addErrorMessage(
                 "Invalid parent identifier(s)",
-                new Message("The following identifiers do not exist in the parent entity \"parent\": [\"\", \"parent2\"]")
+                new Message("The following identifiers do not exist in the parent queryEntity \"parent\": [\"\", \"parent2\"]")
         );
 
         assertEquals(expectedMessages, validator.messages());

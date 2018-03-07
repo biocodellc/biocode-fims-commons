@@ -4,7 +4,9 @@ import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,26 +15,27 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author RJ Ewing
  */
-public class DelimitedTextQueryWriter implements QueryWriter {
-    private final QueryResult queryResult;
+public class DelimitedTextQueryWriter extends AbstractQueryWriter {
     private final String delimiter;
     private boolean isCsv;
 
     private Set<String> columns;
 
-    public DelimitedTextQueryWriter(QueryResult queryResult, String delimiter) {
-        this.queryResult = queryResult;
+    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter) {
+        super(queryResults);
         this.delimiter = delimiter;
         isCsv = StringUtils.equals(delimiter.trim(), ",");
     }
 
     @Override
-    public File write() {
-        File file = PathManager.createUniqueFile("output.txt", System.getProperty("java.io.tmpdir"));
+    protected File writeResult(QueryResult queryResult) {
+        String ext = (isCsv) ? "csv" : "txt";
+        File file = PathManager.createUniqueFile(queryResult.entity().getConceptAlias() + "_output." + ext, System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
@@ -60,7 +63,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
 
             for (Map<String, String> record : records) {
 
-                for (String column: columns) {
+                for (String column : columns) {
                     String val = record.getOrDefault(column, "");
                     if (isCsv) {
                         StringEscapeUtils.escapeCsv(writer, val);

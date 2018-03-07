@@ -48,7 +48,7 @@ public class DataReaderFactoryTest {
         DataReaderFactory rf = new DataReaderFactory(new HashMap<>());
 
         try {
-            rf.getReader(classLoader.getResource("testDataset.csv").getFile(), null, new RecordMetadata(TabularDataReaderType.READER_TYPE));
+            rf.getReader(classLoader.getResource("testDataset.csv").getFile(), null, new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NOT_FOUND, e.getErrorCode());
@@ -62,7 +62,7 @@ public class DataReaderFactoryTest {
 
         DataReaderFactory rf = new DataReaderFactory(dataReaders);
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add("sheetName", "test");
 
         DataReader reader = rf.getReader(classLoader.getResource("testDataset.csv").getFile(), new ProjectConfig(), rm);

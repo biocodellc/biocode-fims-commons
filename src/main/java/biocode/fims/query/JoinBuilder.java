@@ -23,6 +23,7 @@ import java.util.List;
 public class JoinBuilder {
 
     private final Set<Entity> joinEntities;
+    private final Set<Entity> selectEntities;
     private final Entity queryEntity;
     private final ProjectConfig config;
     private final int projectId;
@@ -35,6 +36,7 @@ public class JoinBuilder {
         this.config = config;
         this.projectId = projectId;
         this.joinEntities = new HashSet<>();
+        this.selectEntities = new HashSet<>();
         this.joinedEntities = new ArrayList<>();
         this.joinString = new StringBuilder();
         this.expeditions = false;
@@ -42,6 +44,15 @@ public class JoinBuilder {
 
     public void add(Entity entity) {
         joinEntities.add(entity);
+    }
+
+    public void addSelect(Entity entity) {
+        add(entity);
+        selectEntities.add(entity);
+    }
+
+    public List<Entity> selectEntities() {
+        return new ArrayList<>(selectEntities);
     }
 
     void joinExpeditions(boolean val) {
@@ -68,11 +79,33 @@ public class JoinBuilder {
 
     private void appendEntityIdentifiersJoin() {
         joinString
-                .append(" JOIN entity_identifiers ON entity_identifiers.expedition_id = ")
+                .append(" JOIN entity_identifiers AS ")
                 .append(queryEntity.getConceptAlias())
-                .append(".expedition_id and entity_identifiers.concept_alias = '")
+                .append("_entity_identifiers ON ")
+                .append(queryEntity.getConceptAlias())
+                .append("_entity_identifiers.expedition_id = ")
+                .append(queryEntity.getConceptAlias())
+                .append(".expedition_id and ")
+                .append(queryEntity.getConceptAlias())
+                .append("_entity_identifiers.concept_alias = '")
                 .append(queryEntity.getConceptAlias())
                 .append("'");
+
+        for (Entity e : selectEntities) {
+            verifyRelated(e);
+            joinString
+                    .append(" JOIN entity_identifiers AS ")
+                    .append(e.getConceptAlias())
+                    .append("_entity_identifiers ON ")
+                    .append(e.getConceptAlias())
+                    .append("_entity_identifiers.expedition_id = ")
+                    .append(e.getConceptAlias())
+                    .append(".expedition_id and ")
+                    .append(e.getConceptAlias())
+                    .append("_entity_identifiers.concept_alias = '")
+                    .append(e.getConceptAlias())
+                    .append("'");
+        }
     }
 
     private void buildJoinEntities() {

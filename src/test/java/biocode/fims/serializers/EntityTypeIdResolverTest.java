@@ -40,12 +40,12 @@ public class EntityTypeIdResolverTest {
 
     @Test
     public void should_throw_exception_if_entity_implementation_not_found() throws IOException {
-        String entityString = "{\"type\": \"non existent entity\"}";
+        String entityString = "{\"type\": \"non existent queryEntity\"}";
         try {
             Entity entity = mapper.readValue(entityString, Entity.class);
             fail();
         } catch (IllegalStateException e) {
-            assertEquals("Could not find Entity subclass with type: \"non existent entity\" in package: biocode.fims.digester", e.getMessage());
+            assertEquals("Could not find Entity subclass with type: \"non existent queryEntity\" in package: biocode.fims.digester", e.getMessage());
         }
     }
 

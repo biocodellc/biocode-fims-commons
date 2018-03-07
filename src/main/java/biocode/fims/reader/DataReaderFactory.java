@@ -34,9 +34,6 @@ public class DataReaderFactory {
 
         for (DataReader reader : dataReaders.getOrDefault(recordMetadata.readerType(), Collections.emptyList())) {
 
-            // TODO: this naive implementation only looks at the file ext, but readers should open the file
-            // and attempt to parse it to determine if they can actually read it. this would allow the same
-            // .ext to be used for different file types (ex. fasta_file.txt & tab_delimited_sheet.txt)
             if (reader.handlesExtension(ext)) {
                 return reader.newInstance(file, projectConfig, recordMetadata);
             }

@@ -12,7 +12,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * OAuthToken entity object
+ * OAuthToken queryEntity object
  */
 @JsonSerialize(using = OAuthTokenSerializer.class)
 @Entity

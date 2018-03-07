@@ -113,10 +113,10 @@
 //        Bcid bcid = new Bcid.BcidBuilder("Resource").build();
 //        bcid.setExpedition(expedition);
 //
-//        Entity entity = new Entity("Resource", "someURI");
-//        entity.setConceptForwardingAddress(WEBADRESS + "{ark}/test/{suffix}");
+//        Entity queryEntity = new Entity("Resource", "someURI");
+//        queryEntity.setConceptForwardingAddress(WEBADRESS + "{ark}/test/{suffix}");
 //        ProjectConfig config = new ProjectConfig();
-//        config.addEntity(entity);
+//        config.addEntity(queryEntity);
 //
 //        bcid.setIdentifier(new URI(IDENTIFIER));
 //        Mockito.when(bcidService.getBcid(IDENTIFIER)).thenReturn(bcid);

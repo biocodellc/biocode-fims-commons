@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public class GenericRecord implements Record {
     protected Map<String, String> properties;
-    private boolean persist = true;
+    protected boolean persist = true;
 
     public GenericRecord(Map<String, String> properties, boolean shouldPersist) {
         this.properties = properties;

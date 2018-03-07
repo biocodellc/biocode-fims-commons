@@ -2,6 +2,7 @@ package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
 import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ public interface RecordRepository {
 
     void save(Dataset dataset, int projectId, int expeditionId);
 
-    QueryResult query(Query query);
+    QueryResults query(Query query);
 
     Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties);
 }

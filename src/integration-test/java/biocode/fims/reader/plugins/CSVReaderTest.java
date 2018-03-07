@@ -44,7 +44,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_single_entity_mappping() {
         File csvFile = new File(classLoader.getResource("testDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
@@ -55,7 +55,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_multiple_entity_mappping() {
         File csvFile = new File(classLoader.getResource("testDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getMultipleEntityConfig(), rm);
 
@@ -66,7 +66,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_throw_exception_with_duplicate_columns() {
         File csvFile = new File(classLoader.getResource("duplicateColumnDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
@@ -82,7 +82,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_throw_exception_if_only_headers() {
         File csvFile = new File(classLoader.getResource("onlyHeadersDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
@@ -98,7 +98,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
     public void should_throw_exception_if_no_data() {
         File csvFile = new File(classLoader.getResource("noDataDataset.csv").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(DelimitedTextReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 

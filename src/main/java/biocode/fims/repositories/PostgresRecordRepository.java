@@ -2,6 +2,7 @@ package biocode.fims.repositories;
 
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
@@ -10,6 +11,7 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.run.Dataset;
@@ -27,6 +29,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -71,7 +74,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
 
                 if (StringUtils.isBlank(table)) {
-                    throw new IllegalStateException("entity conceptAlias must not be null");
+                    throw new IllegalStateException("queryEntity conceptAlias must not be null");
                 }
 
                 Map<String, Object> tableMap = getTableMap(projectId, table);
@@ -151,33 +154,41 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public QueryResult query(Query query) {
+    public QueryResults query(Query query) {
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
-        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.entity());
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList<>(query.entities()));
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
-        return new QueryResult(handler.records, query.entity(), handler.rootIdentifier);
+        return handler.results();
     }
 
     @Override
     @SuppressWarnings({"unchecked"})
     public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
+        if (query.entities().size() > 1) {
+            // TODO, remove this limitation. either implement pagination in psql query, or we need to
+            // return a result which contains the current page for the queryEntity, and filter all
+            // "related" entities from the current page
+            throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, 400);
+        }
         // naive implementation that will work for now. Probably better to use postgres to paginate
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
 
-        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.entity());
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList(query.entities()));
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
         int total = handler.records.size();
         int from = page * limit;
         int to = (from + limit < total) ? from + limit : total;
 
-        QueryResult queryResult = new QueryResult(handler.records.subList(from, to), query.entity(), handler.rootIdentifier);
+        QueryResults queryResults = handler.results();
+        QueryResult queryResult = queryResults.getResult(query.queryEntity().getConceptAlias());
+        QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity(), queryResult.rootIdentifier());
 
         Pageable pageable = new PageRequest(page, limit);
-        return new PageImpl<>(queryResult.get(includeEmptyProperties), pageable, total);
+        return new PageImpl<>(result.get(includeEmptyProperties), pageable, total);
     }
 
 
@@ -204,26 +215,64 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     private class RecordRowCallbackHandler implements RowCallbackHandler {
-        private RowMapper<? extends Record> rowMapper;
-        final List<Record> records;
-        String rootIdentifier;
+        private final List<Entity> entities;
+        final Map<String, List<Record>> records;
+        final Map<String, String> rootIdentifiers;
 
-        private RecordRowCallbackHandler(Entity entity) {
-            this.rowMapper = rowMappers.get(entity.getRecordType());
-            if (this.rowMapper == null) {
-                this.rowMapper = rowMappers.get(GenericRecord.class);
-            }
-            this.records = new ArrayList<>();
+        private RecordRowCallbackHandler(List<Entity> entities) {
+            this.entities = entities;
+            this.records = new HashMap<>();
+            this.rootIdentifiers = new HashMap<>();
         }
-
 
         @Override
         public void processRow(ResultSet rs) throws SQLException {
-            if (rootIdentifier == null) {
-                rootIdentifier = rs.getString("root_identifier");
+            // TODO is it possible to get determine the column labels here?
+            // if so, we can build a query that will allow us to select ancestor data at the same time
+            // would need to update queryBuilder to generate the correct select statement
+            // and would need to pass in a list of entities to this class
+            // we can select data & root_identifier for each queryEntity
+            // labels can be something like alias.root_identifier and alias.data
+            ResultSetMetaData metadata = rs.getMetaData();
+            for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                // for some reason, the columnLabels are 1 indexed, not 0 indexed
+                String label = metadata.getColumnLabel(i);
+
+                if (label.endsWith("_root_identifier")) {
+                    rootIdentifiers.put(label.split("_root_identifier")[0], rs.getString(label));
+                } else {
+                    String conceptAlias = label.split("_data")[0];
+
+                    records.computeIfAbsent(conceptAlias, k -> new ArrayList<>())
+                            .add(getRowMapper(conceptAlias).mapRow(rs, records.get(conceptAlias).size() - 1));
+                }
             }
-            records.add(rowMapper.mapRow(rs, records.size() - 1));
         }
 
+        public QueryResults results() {
+            List<QueryResult> results = new ArrayList<>();
+
+            for (String conceptAlias : records.keySet()) {
+                results.add(new QueryResult(records.get(conceptAlias), getEntity(conceptAlias), rootIdentifiers.get(conceptAlias)));
+            }
+
+            return new QueryResults(results);
+        }
+
+        private RowMapper<? extends Record> getRowMapper(String conceptAlias) {
+            RowMapper<? extends Record> rowMapper = rowMappers.get(getEntity(conceptAlias).getRecordType());
+            if (rowMapper == null) {
+                rowMapper = rowMappers.get(GenericRecord.class);
+            }
+
+            return rowMapper;
+        }
+
+        private Entity getEntity(String conceptAlias) {
+            for (Entity e : entities) {
+                if (e.getConceptAlias().equals(conceptAlias)) return e;
+            }
+            throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 500);
+        }
     }
 }

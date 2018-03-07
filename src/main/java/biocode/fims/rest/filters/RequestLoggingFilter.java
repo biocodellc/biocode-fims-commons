@@ -118,7 +118,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
      * <p>
      * See {@link #READABLE_APP_MEDIA_TYPES}.
      *
-     * @param mediaType the media type of the entity
+     * @param mediaType the media type of the queryEntity
      * @return {@code true} if specified {@link MediaType} is considered textual.
      */
     private static boolean isReadable(MediaType mediaType) {
@@ -143,7 +143,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
 
         String e = new String(entity, 0, Math.min(entitySize, MAX_ENTITY_SIZE), charset);
         if (e.toLowerCase().contains("password")) {
-            b.append("entity contains password, not logging");
+            b.append("queryEntity contains password, not logging");
         } else {
             b.append(e);
             if (entitySize > MAX_ENTITY_SIZE) {

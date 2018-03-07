@@ -233,7 +233,7 @@ public class DatasetProcessor {
         }
 
         /**
-         * Is this a complete dataset reload? All previous records will be deleted if the entity allows
+         * Is this a complete dataset reload? All previous records will be deleted if the queryEntity allows
          *
          * @param reloadWorkbooks
          * @return

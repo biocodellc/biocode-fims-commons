@@ -40,7 +40,7 @@ public class ProjectConfigUpdator {
     }
 
     /**
-     * parentEntity and uniqueKey can not be changed after entity creation
+     * parentEntity and uniqueKey can not be changed after queryEntity creation
      *
      * @param updatedEntity
      * @param origEntity

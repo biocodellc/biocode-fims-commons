@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Mint new expeditions.  Includes the automatic creation of a core set of entity types
+ * Mint new expeditions.  Includes the automatic creation of a core set of queryEntity types
  */
 public class ProjectMinter {
 

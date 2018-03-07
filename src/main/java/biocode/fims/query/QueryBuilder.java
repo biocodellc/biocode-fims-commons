@@ -132,6 +132,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public void visit(SelectExpression expression) {
+        expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(this.project.getProjectConfig().entity(conceptAlias)));
+    }
+
+    @Override
     public void visit(FTSExpression expression) {
         String key = putParam(expression.term());
         if (StringUtils.isBlank(expression.column())) {
@@ -255,7 +260,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
         }
 
-        String sql = "SELECT data, entity_identifiers.identifier AS root_identifier FROM " +
+        String sql = buildSelect() + "FROM " +
                 buildTable(queryEntity.getConceptAlias());
 
         if (allQuery && !onlyPublicExpeditions) {
@@ -284,6 +289,37 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     private String buildTable(String conceptAlias) {
         return PostgresUtils.entityTableAs(project.getProjectId(), conceptAlias);
+    }
+
+    private String buildSelect() {
+        StringBuilder s = new StringBuilder();
+
+        s
+                .append("SELECT ")
+                .append(queryEntity.getConceptAlias())
+                .append(".data AS ")
+                .append(queryEntity.getConceptAlias())
+                .append("_data, ")
+                .append(queryEntity.getConceptAlias())
+                .append("_entity_identifiers.identifier AS ")
+                .append(queryEntity.getConceptAlias())
+                .append("_root_identifier");
+
+        for (Entity e : joinBuilder.selectEntities()) {
+            s
+                    .append(", ")
+                    .append(e.getConceptAlias())
+                    .append(".data AS ")
+                    .append(e.getConceptAlias())
+                    .append("_data, ")
+                    .append(e.getConceptAlias())
+                    .append("_entity_identifiers.identifier AS ")
+                    .append(e.getConceptAlias())
+                    .append("_root_identifier");
+        }
+        s.append(" ");
+
+        return s.toString();
     }
 
     private ColumnUri lookupColumnUri(String column) {

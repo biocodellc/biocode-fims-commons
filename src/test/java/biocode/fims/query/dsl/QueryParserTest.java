@@ -23,14 +23,14 @@ public class QueryParserTest {
     @Before
     public void setUp() throws Exception {
         queryBuilder = new QueryBuilder(project(), "event");
-        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder);
+        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, null);
         parseRunner = new ReportingParseRunner<>(parser.Parse());
     }
 
     @Test
     public void should_return_empty_query_given_empty_string() {
         Query result = parseRunner.run("").resultValue;
-        assertEquals(new Query(queryBuilder, new EmptyExpression()), result);
+        assertEquals(new Query(queryBuilder, null, new EmptyExpression()), result);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new AllExpression());
+        Query expected = new Query(queryBuilder, null, new AllExpression());
 
         assertEquals(expected, result);
     }
@@ -50,7 +50,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new FTSExpression(null, "value1"));
+        Query expected = new Query(queryBuilder, null, new FTSExpression(null, "value1"));
 
         assertEquals(expected, result);
     }
@@ -61,7 +61,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new FTSExpression("col1", "value1"));
+        Query expected = new Query(queryBuilder, null, new FTSExpression("col1", "value1"));
 
         assertEquals(expected, result);
     }
@@ -72,7 +72,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.EQUALS));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.EQUALS));
 
         assertEquals(expected, result);
     }
@@ -83,7 +83,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN));
 
         assertEquals(expected, result);
     }
@@ -94,7 +94,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN_EQUAL));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.GREATER_THEN_EQUAL));
 
         assertEquals(expected, result);
     }
@@ -105,7 +105,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN));
 
         assertEquals(expected, result);
     }
@@ -116,7 +116,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN_EQUAL));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.LESS_THEN_EQUAL));
 
         assertEquals(expected, result);
     }
@@ -127,7 +127,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", "value1", ComparisonOperator.NOT_EQUALS));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", "value1", ComparisonOperator.NOT_EQUALS));
 
         assertEquals(expected, result);
     }
@@ -138,7 +138,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ComparisonExpression("col1", " some and value\"1", ComparisonOperator.EQUALS));
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("col1", " some and value\"1", ComparisonOperator.EQUALS));
 
         assertEquals(expected, result);
     }
@@ -149,7 +149,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new LikeExpression("col1", "%some value and another%"));
+        Query expected = new Query(queryBuilder, null, new LikeExpression("col1", "%some value and another%"));
 
         assertEquals(expected, result);
     }
@@ -160,7 +160,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new RangeExpression("col1", "[* TO 10}"));
+        Query expected = new Query(queryBuilder, null, new RangeExpression("col1", "[* TO 10}"));
 
         assertEquals(expected, result);
     }
@@ -171,7 +171,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new LikeExpression("col1", "%test"));
+        Query expected = new Query(queryBuilder, null, new LikeExpression("col1", "%test"));
 
         assertEquals(expected, result);
     }
@@ -182,7 +182,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ExistsExpression("col1"));
+        Query expected = new Query(queryBuilder, null, new ExistsExpression("col1"));
 
         assertEquals(expected, result);
     }
@@ -193,7 +193,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ExistsExpression("col1, col2"));
+        Query expected = new Query(queryBuilder, null, new ExistsExpression("col1, col2"));
 
         assertEquals(expected, result);
     }
@@ -204,7 +204,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ExpeditionExpression("exp_1"));
+        Query expected = new Query(queryBuilder, null, new ExpeditionExpression("exp_1"));
 
         assertEquals(expected, result);
     }
@@ -215,7 +215,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, new ExpeditionExpression("exp_1, exp_2"));
+        Query expected = new Query(queryBuilder, null, new ExpeditionExpression("exp_1, exp_2"));
 
         assertEquals(expected, result);
     }
@@ -237,7 +237,7 @@ public class QueryParserTest {
                 new FTSExpression(null, "value2")
         );
 
-        Query expected = new Query(queryBuilder, l2);
+        Query expected = new Query(queryBuilder, null, l2);
 
         assertEquals(expected, result);
     }
@@ -271,7 +271,7 @@ public class QueryParserTest {
                 r1
         );
 
-        Query expected = new Query(queryBuilder, root);
+        Query expected = new Query(queryBuilder, null, root);
 
         assertEquals(expected, result);
     }

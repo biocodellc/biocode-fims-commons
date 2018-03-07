@@ -39,7 +39,7 @@ public class Mapping {
     }
 
     /**
-     * The default sheetname is the one referenced by the root entity
+     * The default sheetname is the one referenced by the root queryEntity
      *
      * @return
      */
@@ -49,7 +49,7 @@ public class Mapping {
     }
 
     /**
-     * the root entity is the first entity
+     * the root queryEntity is the first queryEntity
      *
      * @return
      */
@@ -59,7 +59,7 @@ public class Mapping {
     }
 
     /**
-     * The default unique key is the one referenced by the root entity
+     * The default unique key is the one referenced by the root queryEntity
      *
      * @return
      */
@@ -69,7 +69,7 @@ public class Mapping {
     }
 
     /**
-     * Get a list of the column names for each entity in the mapping
+     * Get a list of the column names for each queryEntity in the mapping
      *
      * @return LinkedList<String> of columnNames
      */
@@ -134,7 +134,7 @@ public class Mapping {
     }
 
     /**
-     * find entity with the given conceptUri
+     * find queryEntity with the given conceptUri
      *
      * @param conceptUri
      * @return
@@ -261,21 +261,21 @@ public class Mapping {
         Digester d = new Digester();
         d.push(this);
 
-        // Create entity objects
-        d.addObjectCreate("fims/mapping/entity", Entity.class);
+        // Create queryEntity objects
+        d.addObjectCreate("fims/mapping/queryEntity", Entity.class);
         // the last 2 params provide backwards compatibility for config files that still use worksheetUniqueKey
-        d.addSetProperties("fims/mapping/entity", "worksheetUniqueKey", "uniqueKey");
-        d.addSetNext("fims/mapping/entity", "addEntity");
+        d.addSetProperties("fims/mapping/queryEntity", "worksheetUniqueKey", "uniqueKey");
+        d.addSetNext("fims/mapping/queryEntity", "addEntity");
 
-        // Add attributes associated with this entity
-        d.addObjectCreate("fims/mapping/entity/attribute", Attribute.class);
-        d.addSetProperties("fims/mapping/entity/attribute");
-        d.addCallMethod("fims/mapping/entity/attribute", "addDefinition", 0);
+        // Add attributes associated with this queryEntity
+        d.addObjectCreate("fims/mapping/queryEntity/attribute", Attribute.class);
+        d.addSetProperties("fims/mapping/queryEntity/attribute");
+        d.addCallMethod("fims/mapping/queryEntity/attribute", "addDefinition", 0);
         // Next two lines are newer, may not appear in all configuration files
-        d.addCallMethod("fims/mapping/entity/attribute/synonyms", "addSynonyms", 0);
-        d.addSetNext("fims/mapping/entity/attribute", "addAttribute");
+        d.addCallMethod("fims/mapping/queryEntity/attribute/synonyms", "addSynonyms", 0);
+        d.addSetNext("fims/mapping/queryEntity/attribute", "addAttribute");
 
-        // Add attributes associated with this entity
+        // Add attributes associated with this queryEntity
         d.addObjectCreate("fims/mapping/childEntity/attribute", Attribute.class);
         d.addSetProperties("fims/mapping/childEntity/attribute");
         d.addCallMethod("fims/mapping/childEntity/attribute", "addDefinition", 0);

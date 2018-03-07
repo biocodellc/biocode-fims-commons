@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * User entity object
+ * User queryEntity object
  */
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "User.withProjectsMemberOf",

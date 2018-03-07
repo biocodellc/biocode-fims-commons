@@ -41,7 +41,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_single_entity_mappping() {
         File tsvFile = new File(classLoader.getResource("testDataset.txt").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new TabReader(tsvFile, getSingleEntityConfig(), rm);
 
@@ -52,7 +52,7 @@ public class TabReaderTest extends DelimitedTextReaderTest {
     public void should_return_all_records_for_multiple_entity_mappping() {
         File tsvFile = new File(classLoader.getResource("testDataset.txt").getFile());
 
-        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE);
+        RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add(TabReader.SHEET_NAME_KEY, "sheet1");
         DataReader reader = new TabReader(tsvFile, getMultipleEntityConfig(), rm);
 

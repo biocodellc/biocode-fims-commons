@@ -6,18 +6,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Visitor to collect all unique expeditionCodes from Expressions
+ * Visitor to collect all entities from SelectExpressions
  * @author rjewing
  */
-public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor {
-    private Set<String> expeditions;
+public class EntityCollectingExpressionVisitor implements ExpressionVisitor {
+    private Set<String> entities;
 
-    public ExpeditionCollectingExpressionVisitor() {
-        this.expeditions = new HashSet<>();
+    public EntityCollectingExpressionVisitor() {
+        this.entities= new HashSet<>();
     }
 
-    public Set<String> expeditions() {
-        return expeditions;
+    public Set<String> entities() {
+        return entities;
     }
 
     @Override
@@ -30,11 +30,11 @@ public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor 
 
     @Override
     public void visit(ExpeditionExpression expeditionExpression) {
-        expeditions.addAll(expeditionExpression.expeditions());
     }
 
     @Override
     public void visit(SelectExpression selectExpression) {
+        entities.addAll(selectExpression.entites());
     }
 
     @Override
@@ -47,8 +47,6 @@ public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor 
 
     @Override
     public void visit(LogicalExpression logicalExpression) {
-        logicalExpression.left().accept(this);
-        logicalExpression.right().accept(this);
     }
 
     @Override

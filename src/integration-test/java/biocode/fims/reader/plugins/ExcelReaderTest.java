@@ -59,7 +59,7 @@ public class ExcelReaderTest {
     public void should_throw_exception_if_no_data() {
         File csvFile = new File(classLoader.getResource("noDataDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         try {
             reader.getRecordSets();
@@ -73,7 +73,7 @@ public class ExcelReaderTest {
     public void should_throw_exception_if_only_headers() {
         File csvFile = new File(classLoader.getResource("onlyHeadersDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         try {
             reader.getRecordSets();
@@ -87,7 +87,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -100,7 +100,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_single_entity_single_sheet_mapping_xls_file() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xls").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -133,7 +133,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_single_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("singleSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 
@@ -168,7 +168,7 @@ public class ExcelReaderTest {
     public void should_return_all_records_for_multiple_entity_multi_sheet_mappping() {
         File excelFile = new File(classLoader.getResource("multiSheetDataset.xlsx").getFile());
 
-        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE));
+        DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         List<RecordSet> recordSets = reader.getRecordSets();
 

@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.Action;
 import org.parboiled.BaseParser;
@@ -16,9 +17,11 @@ import static biocode.fims.query.dsl.LogicalOperator.OR;
 @SuppressWarnings({"InfiniteRecursion", "WeakerAccess"})
 public class QueryParser extends BaseParser<Object> {
     private final QueryBuildingExpressionVisitor queryBuilder;
+    private final ProjectConfig projectConfig;
 
-    public QueryParser(QueryBuildingExpressionVisitor queryBuilder) {
+    public QueryParser(QueryBuildingExpressionVisitor queryBuilder, ProjectConfig config) {
         this.queryBuilder = queryBuilder;
+        this.projectConfig = config;
     }
 
     public Rule Parse() {
@@ -28,8 +31,9 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        if (context.getValueStack().isEmpty()) push(new Query(queryBuilder, new EmptyExpression()));
-                        else push(new Query(queryBuilder, popExp()));
+                        if (context.getValueStack().isEmpty())
+                            push(new Query(queryBuilder, projectConfig, new EmptyExpression()));
+                        else push(new Query(queryBuilder, projectConfig, popExp()));
                         return context.getValueStack().size() == 1;
                     }
                 }
@@ -76,6 +80,7 @@ public class QueryParser extends BaseParser<Object> {
                 FilterExpression(),
                 ExistsExpression(),
                 ExpeditionsExpression(),
+                SelectExpression(),
                 FTSExpression(),
                 ExpressionGroup()
         );
@@ -107,6 +112,14 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 SpecialPrefixExpression(ExpeditionsChars()),
                 push(new ExpeditionExpression(popStr())),
+                WhiteSpace()
+        );
+    }
+
+    Rule SelectExpression() {
+        return Sequence(
+                SpecialPrefixExpression(SelectChars()),
+                push(new SelectExpression(popStr())),
                 WhiteSpace()
         );
     }
@@ -330,6 +343,10 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule ExpeditionsChars() {
         return String("_expeditions_");
+    }
+
+    Rule SelectChars() {
+        return String("_select_");
     }
 
     Rule ExistsChars() {

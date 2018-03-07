@@ -153,7 +153,7 @@ public class ProjectConfigTest {
 
         assertFalse(config.isValid());
 
-        assertEquals(Collections.singletonList("Invalid Attribute uri \"null\" found in entity \"parent\". Uri must only contain alpha-numeric or _:/ characters."), config.errors());
+        assertEquals(Collections.singletonList("Invalid Attribute uri \"null\" found in queryEntity \"parent\". Uri must only contain alpha-numeric or _:/ characters."), config.errors());
     }
 
     private Entity parent() {

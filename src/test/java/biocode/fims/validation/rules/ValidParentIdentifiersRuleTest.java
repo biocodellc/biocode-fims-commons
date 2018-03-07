@@ -78,7 +78,7 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid parent identifier(s)",
-                new Message("The following identifiers do not exist in the parent entity \"event\": [\"event2\", \"\"]")
+                new Message("The following identifiers do not exist in the parent queryEntity \"event\": [\"event2\", \"\"]")
         );
 
         assertEquals(expectedMessages, messages);

@@ -1,7 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
-import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import org.springframework.data.domain.Page;
@@ -34,7 +34,7 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public QueryResult query(Query query) {
+    public QueryResults query(Query query) {
         throw new NotImplementedException();
     }
 

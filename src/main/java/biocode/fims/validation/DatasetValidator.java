@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Runs the appropriate {@link RecordValidator} on a group of {@link RecordSet}s.
  * <p>
- * Any parent {@link RecordSet} which are on a multi-entity worksheet, will be de-duplicated before the
+ * Any parent {@link RecordSet} which are on a multi-queryEntity worksheet, will be de-duplicated before the
  * {@link RecordValidator}s are run.
  *
  * @author rjewing
@@ -44,7 +44,7 @@ public class DatasetValidator {
 
         for (RecordSet r : dataset) {
 
-            processorStatus.appendStatus("\nValidating entity: " + r.conceptAlias());
+            processorStatus.appendStatus("\nValidating queryEntity: " + r.conceptAlias());
 
             RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);
 
