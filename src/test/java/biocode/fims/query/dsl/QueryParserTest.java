@@ -56,6 +56,18 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_simle_not_expression() {
+        String qs = "not value1 ";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new NotExpression(new FTSExpression(null, "value1")));
+
+        assertEquals(expected, result);
+
+    }
+
+    @Test
     public void should_parse_simple_fts_filter_expression() {
         String qs = "col1:value1 ";
 
@@ -264,6 +276,40 @@ public class QueryParserTest {
                 LogicalOperator.AND,
                 new FTSExpression(null, "val"),
                 g1
+        );
+        Expression root = new LogicalExpression(
+                LogicalOperator.OR,
+                l1,
+                r1
+        );
+
+        Query expected = new Query(queryBuilder, null, root);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_complex_not_expression() {
+        String qs = "col2 = someValue and not col1::\"%test\" or val and not (value2 or not val3)";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Expression l1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new ComparisonExpression("col2", "someValue", ComparisonOperator.EQUALS),
+                new NotExpression(new LikeExpression("col1", "%test"))
+        );
+        Expression g1 = new GroupExpression(
+                new LogicalExpression(
+                        LogicalOperator.OR,
+                        new FTSExpression(null, "value2"),
+                        new NotExpression(new FTSExpression(null, "val3"))
+                )
+        );
+        Expression r1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new FTSExpression(null, "val"),
+                new NotExpression(g1)
         );
         Expression root = new LogicalExpression(
                 LogicalOperator.OR,

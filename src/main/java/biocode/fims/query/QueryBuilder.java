@@ -168,6 +168,13 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public void visit(NotExpression notExpression) {
+        whereBuilder
+                .append("not ");
+        notExpression.expression().accept(this);
+    }
+
+    @Override
     public void visit(LikeExpression expression) {
         ColumnUri columnUri = lookupColumnUri(expression.column());
 

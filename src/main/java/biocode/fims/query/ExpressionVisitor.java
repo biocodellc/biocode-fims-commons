@@ -31,5 +31,7 @@ public interface ExpressionVisitor {
 
     void visit(GroupExpression groupExpression);
 
+    void visit(NotExpression notExpression);
+
     void visit(AllExpression allExpression);
 }

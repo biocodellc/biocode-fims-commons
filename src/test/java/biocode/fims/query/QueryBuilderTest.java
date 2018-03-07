@@ -501,6 +501,23 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void should_write_valid_sql_for_not_range_expression_mixed_inclusive_exclusive() {
+        QueryBuilder queryBuilder = queryBuilder("event");
+        queryBuilder.visit(new NotExpression(new RangeExpression("col2", "{1 TO 10]")));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        params.put("2", "10");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT event.data AS event_data, event_entity_identifiers.identifier AS event_root_identifier FROM project_1.event AS event " +
+                        "JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                        "WHERE not (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' <= :2)",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
     public void should_write_valid_sql_for_range_expression_one_sided_range() {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new RangeExpression("col2", "{* TO 10]"));

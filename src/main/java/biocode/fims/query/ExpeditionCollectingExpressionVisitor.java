@@ -64,6 +64,10 @@ public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor 
     }
 
     @Override
+    public void visit(NotExpression notExpression) {
+    }
+
+    @Override
     public void visit(AllExpression allExpression) {
     }
 }

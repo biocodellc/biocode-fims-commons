@@ -77,12 +77,22 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule Expression() {
         return FirstOf(
+                NotExpression(),
                 FilterExpression(),
                 ExistsExpression(),
                 ExpeditionsExpression(),
                 SelectExpression(),
                 FTSExpression(),
                 ExpressionGroup()
+        );
+    }
+
+    Rule NotExpression() {
+        return Sequence(
+                    NotChars(),
+                    WhiteSpace(),
+                    Expression(),
+                    push(new NotExpression(popExp()))
         );
     }
 
@@ -306,11 +316,13 @@ public class QueryParser extends BaseParser<Object> {
                 ComparisonOperatorChars(),
                 SemiColon(),
                 ExpeditionsChars(),
+                SelectChars(),
                 QuoteChar(),
                 OpenParen(),
                 CloseParen(),
                 AndChars(),
                 OrChars(),
+                NotChars(),
                 ExistsChars(),
                 OpenBracket(),
                 CloseBracket(),
@@ -395,6 +407,10 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule AndChars() {
         return IgnoreCase("AND");
+    }
+
+    Rule NotChars() {
+        return IgnoreCase("not");
     }
 
     Rule WhiteSpaceChars() {
