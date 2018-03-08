@@ -2,11 +2,15 @@ package biocode.fims.query.dsl;
 
 
 import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.query.EntityCollectingExpressionVisitor;
-import biocode.fims.query.ExpeditionCollectingExpressionVisitor;
-import biocode.fims.query.ParametrizedQuery;
-import biocode.fims.query.QueryBuildingExpressionVisitor;
+import biocode.fims.query.*;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ParserRuntimeException;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -68,6 +72,27 @@ public class Query {
 
     public String queryTable() {
         return queryBuilder.queryTable();
+    }
+
+
+    public static Query factory(Project project, String conceptAlias, String queryString) {
+        QueryBuilder queryBuilder = new QueryBuilder(project, conceptAlias);
+
+        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, project.getProjectConfig());
+        try {
+            ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(queryString);
+
+            if (result.hasErrors() || result.resultValue == null) {
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
+            }
+
+            Query query = result.resultValue;
+
+            return query;
+        } catch (ParserRuntimeException e) {
+            String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));
+        }
     }
 
     @Override
