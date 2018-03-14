@@ -34,7 +34,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
         }
 
         if (recordSet.parent() == null) {
-            throw new IllegalStateException("Entity \"" + recordSet.entity().getConceptAlias() + "\" is a child queryEntity, but the RecordSet.parent() was null");
+            throw new IllegalStateException("Entity \"" + recordSet.entity().getConceptAlias() + "\" is a child entity, but the RecordSet.parent() was null");
         }
 
         String parentIdentifierUri = recordSet.parent().entity().getUniqueKeyURI();
@@ -69,7 +69,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
         messages.addMessage(
                 GROUP_MESSAGE,
                 new Message(
-                        "The following identifiers do not exist in the parent queryEntity \"" + parentEntityAlias + "\": [\"" + String.join("\", \"", invalidValues) + "\"]"
+                        "The following identifiers do not exist in the parent entity \"" + parentEntityAlias + "\": [\"" + String.join("\", \"", invalidValues) + "\"]"
                 ),
                 level()
         );

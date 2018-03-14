@@ -26,15 +26,12 @@ public class RecordValidator {
     protected boolean isValid = true;
 
     public RecordValidator(ProjectConfig config) {
+        Assert.notNull(config);
         this.config = config;
     }
 
     public boolean validate(RecordSet recordSet) {
         Assert.notNull(recordSet);
-
-        if (config == null) {
-            throw new IllegalStateException("ProjectConfig must not be null. Call setProjectConfig first before validate");
-        }
 
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
 
@@ -42,6 +39,7 @@ public class RecordValidator {
         addDefaultRules(rules, recordSet);
 
         for (Rule r : rules) {
+            r.setProjectConfig(config);
 
             if (!r.run(recordSet, messages)) {
 

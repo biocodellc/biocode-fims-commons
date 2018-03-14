@@ -55,7 +55,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Duplicate queryEntity conceptAlias detected \"Resource1\". conceptAliases are not case sensitive."), validator.errors());
+        assertEquals(Arrays.asList("Duplicate entity conceptAlias detected \"Resource1\". conceptAliases are not case sensitive."), validator.errors());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"resource1\" specifies a parent queryEntity that does not exist"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"resource1\" specifies a parent entity that does not exist"), validator.errors());
     }
 
     @Test
@@ -124,7 +124,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent queryEntity that is missing a uniqueKey"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity that is missing a uniqueKey"), validator.errors());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent queryEntity but is missing an attribute for the parent queryEntity uniqueKey"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey"), validator.errors());
     }
 
     @Test
@@ -187,7 +187,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Duplicate Attribute uri \"urn:column1\" found in queryEntity \"resource1\""), validator.errors());
+        assertEquals(Arrays.asList("Duplicate Attribute uri \"urn:column1\" found in entity \"resource1\""), validator.errors());
     }
 
     @Test
@@ -201,7 +201,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Duplicate Attribute column \"column1\" found in queryEntity \"resource1\""), validator.errors());
+        assertEquals(Arrays.asList("Duplicate Attribute column \"column1\" found in entity \"resource1\""), validator.errors());
     }
 
     @Test
@@ -216,8 +216,8 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         List<String> expected = Arrays.asList(
-                "Invalid Attribute uri \"null\" found in queryEntity \"resource1\". Uri must only contain alpha-numeric or _:/ characters.",
-                "Invalid Attribute uri \"some uri\" found in queryEntity \"resource1\". Uri must only contain alpha-numeric or _:/ characters."
+                "Invalid Attribute uri \"null\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters.",
+                "Invalid Attribute uri \"some uri\" found in entity \"resource1\". Uri must only contain alpha-numeric or _:/ characters."
         );
 
         assertFalse(validator.isValid());
@@ -251,7 +251,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Test queryEntity validation message"), validator.errors());
+        assertEquals(Arrays.asList("Test entity validation message"), validator.errors());
     }
 
     private Entity entity1() {
@@ -289,7 +289,7 @@ public class ProjectConfigValidatorTest {
 
             @Override
             public List<String> validationErrorMessages() {
-                return Collections.singletonList("Test queryEntity validation message");
+                return Collections.singletonList("Test entity validation message");
             }
         };
 

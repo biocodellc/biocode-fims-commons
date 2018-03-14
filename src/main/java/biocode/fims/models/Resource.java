@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * TODO what is a Resource?
- * I think a Resource is an arbitrary queryEntity, with key:value pairs & a bcid
+ * I think a Resource is an arbitrary entity, with key:value pairs & a bcid
  * @author rjewing
  */
 public class Resource {

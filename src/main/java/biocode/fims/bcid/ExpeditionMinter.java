@@ -11,7 +11,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * Mint new expeditions.  Includes the automatic creation of a core set of queryEntity types
+ * Mint new expeditions.  Includes the automatic creation of a core set of entity types
  */
 public class ExpeditionMinter {
     private SettingsManager sm = SettingsManager.getInstance();

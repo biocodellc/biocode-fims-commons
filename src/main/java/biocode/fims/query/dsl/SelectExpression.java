@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Select Expression. used to select additional data related to the queryEntity
+ * Select Expression. used to select additional data related to the entity
  *
  * _select_:parentEntity ->  select parentEntity (conceptAlias) data as well
  * _select_:[parent, grandParent]    ->  select parent & grandParent data. All entities must be related

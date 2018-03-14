@@ -76,6 +76,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
     }
 
+    @Deprecated
     @GET
     @Path("/{projectId}/abstract")
     @Produces(MediaType.APPLICATION_JSON)

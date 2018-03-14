@@ -74,7 +74,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
 
                 if (StringUtils.isBlank(table)) {
-                    throw new IllegalStateException("queryEntity conceptAlias must not be null");
+                    throw new IllegalStateException("entity conceptAlias must not be null");
                 }
 
                 Map<String, Object> tableMap = getTableMap(projectId, table);

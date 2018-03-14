@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 /**
- * OAuthClient queryEntity object
+ * OAuthClient entity object
  */
 @Entity
 @Table(name = "oauth_clients")

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * oAutheNonce queryEntity object
+ * oAutheNonce entity object
  */
 @Entity
 @Table(name = "oauth_nonces")

@@ -6,7 +6,7 @@ import biocode.fims.digester.Entity;
  * @author rjewing
  */
 public class EntityInWrongPackage extends Entity {
-    public static final String UNIQUE_KEY = "invalid queryEntity";
+    public static final String UNIQUE_KEY = "invalid entity";
     public static final String TYPE = "INVALID_TEST";
 
     @Override

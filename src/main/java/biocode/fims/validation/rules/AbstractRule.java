@@ -7,6 +7,7 @@ import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +42,19 @@ public abstract class AbstractRule implements Rule {
         hasError = RuleLevel.ERROR == level;
     }
 
+    @Override
+    public void setProjectConfig(ProjectConfig config) {
+        Assert.notNull(config);
+        this.config = config;
+    }
+
     boolean entityHasAttribute(List<String> messages, Entity entity, String column) {
         try {
             entity.getAttribute(column);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == ConfigCode.MISSING_ATTRIBUTE) {
                 messages.add(
-                        "Invalid " + name() + " Rule configuration. Could not find Attribute for column: " + column + " in queryEntity: " + entity.getConceptAlias()
+                        "Invalid " + name() + " Rule configuration. Could not find Attribute for column: " + column + " in entity: " + entity.getConceptAlias()
                 );
 
                 return false;

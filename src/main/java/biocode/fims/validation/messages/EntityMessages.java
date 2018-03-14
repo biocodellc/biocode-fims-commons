@@ -57,7 +57,7 @@ public class EntityMessages {
         return sheetName;
     }
 
-    @JsonProperty("queryEntity")
+    @JsonProperty("entity")
     public String conceptAlias() {
         return conceptAlias;
     }

@@ -351,7 +351,7 @@ public class Validation {
     private void addDefaultRulesToWorksheets(Mapping mapping) {
         for (Worksheet ws : worksheets) {
 
-            // every queryEntity uniqueKey should have the validForURI Rule run
+            // every entity uniqueKey should have the validForURI Rule run
             for (Rule rule : createValidForURIRules(mapping, ws.getSheetname())) {
                 ws.addRule(rule);
             }
