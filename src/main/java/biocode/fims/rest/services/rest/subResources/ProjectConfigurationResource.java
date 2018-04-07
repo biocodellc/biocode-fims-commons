@@ -6,6 +6,7 @@ import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.Compress;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ProjectService;
@@ -35,6 +36,7 @@ public class ProjectConfigurationResource extends FimsService {
         this.projectService = projectService;
     }
 
+    @Compress
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public ProjectConfig getConfig(@PathParam("projectId") Integer projectId) {
