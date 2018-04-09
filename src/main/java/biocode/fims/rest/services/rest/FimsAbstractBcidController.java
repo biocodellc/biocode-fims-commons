@@ -31,25 +31,26 @@ public abstract class FimsAbstractBcidController extends FimsService {
         this.projectAuthorizer = projectAuthorizer;
     }
 
-    @Authenticated
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Bcid create(Bcid bcid) {
-
-        if (bcid == null) {
-            throw new javax.ws.rs.BadRequestException("bcid must not be null");
-        }
-
-        // we can override ezid requests
-        if (!props.ezidRequests()) {
-            bcid.setEzidRequest(false);
-        }
-
-        bcid.setCreator(userContext.getUser(), props.creator());
-
-        return bcidService.create(bcid, userContext.getUser());
-    }
+//    @Deprecated
+//    @Authenticated
+//    @POST
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Bcid create(Bcid bcid) {
+//
+//        if (bcid == null) {
+//            throw new javax.ws.rs.BadRequestException("bcid must not be null");
+//        }
+//
+//        // we can override ezid requests
+//        if (!props.ezidRequests()) {
+//            bcid.setEzidRequest(false);
+//        }
+//
+//        bcid.setCreator(userContext.getUser(), props.creator());
+//
+//        return bcidService.create(bcid, userContext.getUser());
+//    }
 
     //TODO figure out what to do here. If were not creating dataset BCIDS, this won't work
 //    /**

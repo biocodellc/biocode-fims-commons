@@ -4,10 +4,7 @@ import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.GenericRecordRowMapper;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.models.records.*;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
@@ -24,7 +21,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +36,9 @@ import java.util.*;
 public class PostgresRecordRepository implements RecordRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
-    private final Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers;
+    private final Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers;
 
-    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers) {
+    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers) {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
         this.rowMappers = rowMappers;
@@ -179,12 +175,17 @@ public class PostgresRecordRepository implements RecordRepository {
         RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList(query.entities()));
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
-        int total = handler.records.size();
+        QueryResults queryResults = handler.results();
+        QueryResult queryResult = queryResults.getResult(query.queryEntity().getConceptAlias());
+
+        int total = queryResult.records().size();
         int from = page * limit;
         int to = (from + limit < total) ? from + limit : total;
 
-        QueryResults queryResults = handler.results();
-        QueryResult queryResult = queryResults.getResult(query.queryEntity().getConceptAlias());
+        if (to > queryResult.records().size()) {
+            to = queryResult.records().size();
+        }
+
         QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity(), queryResult.rootIdentifier());
 
         Pageable pageable = new PageRequest(page, limit);
@@ -244,7 +245,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     String conceptAlias = label.split("_data")[0];
 
                     records.computeIfAbsent(conceptAlias, k -> new ArrayList<>())
-                            .add(getRowMapper(conceptAlias).mapRow(rs, records.get(conceptAlias).size() - 1));
+                            .add(getRowMapper(conceptAlias).mapRow(rs, records.get(conceptAlias).size() - 1, label));
                 }
             }
         }
@@ -259,8 +260,8 @@ public class PostgresRecordRepository implements RecordRepository {
             return new QueryResults(results);
         }
 
-        private RowMapper<? extends Record> getRowMapper(String conceptAlias) {
-            RowMapper<? extends Record> rowMapper = rowMappers.get(getEntity(conceptAlias).getRecordType());
+        private FimsRowMapper<? extends Record> getRowMapper(String conceptAlias) {
+            FimsRowMapper<? extends Record> rowMapper = rowMappers.get(getEntity(conceptAlias).getRecordType());
             if (rowMapper == null) {
                 rowMapper = rowMappers.get(GenericRecord.class);
             }
@@ -270,7 +271,8 @@ public class PostgresRecordRepository implements RecordRepository {
 
         private Entity getEntity(String conceptAlias) {
             for (Entity e : entities) {
-                if (e.getConceptAlias().equals(conceptAlias)) return e;
+                // conceptAlias's are not case-sensitive
+                if (e.getConceptAlias().equalsIgnoreCase(conceptAlias)) return e;
             }
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 500);
         }

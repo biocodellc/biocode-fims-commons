@@ -58,6 +58,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
      * @throws IOException
      */
 
+    @Deprecated
     @POST
     @Path("/login")
     @Produces(MediaType.APPLICATION_JSON)

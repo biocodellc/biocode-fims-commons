@@ -2,6 +2,7 @@ package biocode.fims.validation;
 
 import biocode.fims.digester.Entity;
 import biocode.fims.models.records.RecordSet;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
@@ -35,5 +36,9 @@ public class RuleInWrongPackage implements Rule {
     @Override
     public boolean hasError() {
         return false;
+    }
+
+    @Override
+    public void setProjectConfig(ProjectConfig config) {
     }
 }

@@ -52,50 +52,13 @@ public abstract class FimsAbstractProjectsController extends FimsService {
         return Resource.from(ProjectsResource.class);
     }
 
-    /**
-     * Given a project id, get the latest graphs by expedition
-     *
-     * This service is no longer supported and will be removed in the future. Use {@link FimsAbstractProjectsController#listExpeditions(Integer)}
-     *
-     * @param projectId
-     * @return
-     */
-    @Deprecated
-    @GET
-    @Path("/{projectId}/graphs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getLatestGraphsByExpedition(@PathParam("projectId") Integer projectId) {
-        ProjectMinter project = new ProjectMinter();
-        String username = null;
-        if (userContext.getUser() != null) {
-            username = userContext.getUser().getUsername();
-        }
-
-        JSONArray graphs = project.getLatestGraphs(projectId, username);
-
-        return Response.ok(graphs.toJSONString()).header("Access-Control-Allow-Origin", "*").build();
-    }
-
-    @Deprecated
-    @GET
-    @Path("/{projectId}/abstract")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAbstract(@PathParam("projectId") int projectId) {
-        JSONObject obj = new JSONObject();
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
-
-        // Write the all of the checkbox definitions to a String Variable
-        //obj.put("abstract", JSONValue.escape(t.printAbstract()));
-        obj.put("abstract", t.printAbstract());
-
-        return Response.ok(obj.toJSONString()).build();
-    }
 
     /**
      * Given an project Bcid, get the users latest datasets by expedition
      *
      * @return
      */
+    @Deprecated
     @GET
     @Authenticated
     @Path("/myGraphs/")
@@ -113,6 +76,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      *
      * @return
      */
+    @Deprecated
     @GET
     @Authenticated
     @Path("/myDatasets/")
@@ -159,6 +123,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      * @return
      */
     @UserEntityGraph("User.withProjects")
+    @Deprecated
     @POST
     @Authenticated
     @Admin
@@ -206,6 +171,7 @@ public abstract class FimsAbstractProjectsController extends FimsService {
      */
     @GET
     @Authenticated
+    @Deprecated
     @Path("/{projectId}/removeTemplateConfig/{configName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response removeConfig(@PathParam("configName") String configName,

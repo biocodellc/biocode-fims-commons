@@ -1,6 +1,7 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
+import biocode.fims.models.records.FimsRowMapper;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
@@ -12,7 +13,6 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
 import biocode.fims.repositories.BcidRepository;
-import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.validation.RecordValidator;
@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.*;
@@ -70,7 +69,7 @@ public class FimsAppConfig {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("record-repository-sql.yml"));
 
-        Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers = new HashMap<>();
+        Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers = new HashMap<>();
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
 
         return new PostgresRecordRepository(jdbcTemplate, yaml.getObject(), rowMappers);

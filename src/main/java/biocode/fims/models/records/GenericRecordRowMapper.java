@@ -3,7 +3,6 @@ package biocode.fims.models.records;
 import biocode.fims.models.dataTypes.JacksonUtil;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,7 +12,7 @@ import java.util.Map;
 /**
  * @author rjewing
  */
-public class GenericRecordRowMapper implements RowMapper<GenericRecord> {
+public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
     private final static JavaType TYPE;
 
     static {
@@ -22,8 +21,8 @@ public class GenericRecordRowMapper implements RowMapper<GenericRecord> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public GenericRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
-        String data = rs.getString("data");
+    public GenericRecord mapRow(ResultSet rs, int rowNum, String dataLabel) throws SQLException {
+        String data = rs.getString(dataLabel);
 
         try {
             Map<String, String> properties = (Map<String, String>) JacksonUtil.fromString(data, TYPE);
@@ -32,5 +31,10 @@ public class GenericRecordRowMapper implements RowMapper<GenericRecord> {
             throw new SQLException(e);
         }
 
+    }
+
+    @Override
+    public GenericRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return mapRow(rs, rowNum, "data");
     }
 }

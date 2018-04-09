@@ -46,8 +46,10 @@ public class QueryResult {
             Map<String, String> properties = new LinkedHashMap<>();
 
             for (Map.Entry<String, String> e : record.properties().entrySet()) {
+                String col = entity.getAttributeColumn(e.getKey());
+                if (col == null) col = e.getKey();
                 properties.put(
-                        entity.getAttributeColumn(e.getKey()),
+                        col,
                         e.getValue()
                 );
             }
