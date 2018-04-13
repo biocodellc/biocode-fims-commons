@@ -106,7 +106,8 @@ public class PostgresProjectConfigRepository implements ProjectConfigRepository 
         if (e.isChildEntity()) {
             paramMap.put("parentTable", PostgresUtils.entityTable(projectId, e.getParentEntity()));
             paramMap.put("parentColumn", e.getAttributeUri(config.entity(e.getParentEntity()).getUniqueKey()));
-            createSql = StrSubstitutor.replace(sql.getProperty("createChildEntityTable"), paramMap);
+            createSql = StrSubstitutor.replace(sql.getProperty("createEntityTable"), paramMap);
+            createSql += StrSubstitutor.replace(sql.getProperty("createChildEntityTable"), paramMap);
         } else {
             createSql = StrSubstitutor.replace(sql.getProperty("createEntityTable"), paramMap);
         }
