@@ -26,7 +26,7 @@ createEntityTable: >
   CREATE INDEX idx_project_${projectId}_${conceptAlias}_data ON ${table} USING GIN (data);
   CREATE INDEX idx_project_${projectId}_${conceptAlias}_tsv ON ${table} USING GIN (tsv);
   ALTER TABLE ${table}
-      ADD CONSTRAINT idx_project_${projectId}_local_identifier_expedition_id UNIQUE (local_identifier, expedition_id);
+      ADD CONSTRAINT idx_project_${projectId}_${conceptAlias}_local_identifier_expedition_id UNIQUE (local_identifier, expedition_id);
 
 createChildEntityTable: >
   ALTER TABLE ${table}
@@ -36,9 +36,9 @@ createChildEntityTable: >
       FOREIGN KEY (parent_identifier, expedition_id)
       REFERENCES ${parentTable} (local_identifier, expedition_id);
   ALTER TABLE ${table}
-      DROP CONSTRAINT idx_project_${projectId}_local_identifier_expedition_id;
+      DROP CONSTRAINT idx_project_${projectId}_${conceptAlias}_local_identifier_expedition_id;
   ALTER TABLE ${table}
-      ADD CONSTRAINT idx_project_${projectId}_parent_identifier_local_identifier_expedition_id UNIQUE (parent_identifier, local_identifier, expedition_id);
+      ADD CONSTRAINT idx_project_${projectId}_${conceptAlias}_parent_identifier_local_identifier_expedition_id UNIQUE (parent_identifier, local_identifier, expedition_id);
 
 createProjectSchema: >
   CREATE SCHEMA project_${projectId};
