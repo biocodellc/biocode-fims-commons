@@ -40,7 +40,19 @@ public class QueryResult {
      * @return
      */
     public List<Map<String, String>> get(boolean includeEmpty) {
+        return get(includeEmpty, Collections.emptyList());
+    }
+
+    /**
+     * Returns a list of {@link Record#properties()} as a {@link Map} of column->value pairs
+     *
+     * @param includeEmpty if true, the result will include entries for all {@link Attribute}s in the {@link Entity}
+     * @param source       specifies the record columns to return. If empty list, no filtering will occur
+     * @return
+     */
+    public List<Map<String, String>> get(boolean includeEmpty, List<String> source) {
         List<Map<String, String>> transformedRecords = new ArrayList<>();
+        boolean skipFilter = source.size() == 0;
 
         for (Record record : records) {
             Map<String, String> properties = new LinkedHashMap<>();
@@ -48,15 +60,18 @@ public class QueryResult {
             for (Map.Entry<String, String> e : record.properties().entrySet()) {
                 String col = entity.getAttributeColumn(e.getKey());
                 if (col == null) col = e.getKey();
-                properties.put(
-                        col,
-                        e.getValue()
-                );
+
+                if (skipFilter || source.contains(col)) {
+                    properties.put(
+                            col,
+                            e.getValue()
+                    );
+                }
             }
 
             if (includeEmpty) {
                 for (Attribute a : entity.getAttributes()) {
-                    if (!properties.containsKey(a.getColumn())) {
+                    if (!properties.containsKey(a.getColumn()) && (skipFilter || source.contains(a.getColumn()))) {
                         properties.put(
                                 a.getColumn(),
                                 record.get(a.getUri())

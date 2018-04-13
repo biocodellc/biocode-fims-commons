@@ -39,7 +39,7 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
+    public Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties) {
         throw new NotImplementedException();
     }
 

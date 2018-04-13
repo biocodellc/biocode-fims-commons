@@ -161,7 +161,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties) {
+    public Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties) {
         if (query.entities().size() > 1) {
             // TODO, remove this limitation. either implement pagination in psql query, or we need to
             // return a result which contains the current page for the queryEntity, and filter all
@@ -189,7 +189,7 @@ public class PostgresRecordRepository implements RecordRepository {
         QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity(), queryResult.rootIdentifier());
 
         Pageable pageable = new PageRequest(page, limit);
-        return new PageImpl<>(result.get(includeEmptyProperties), pageable, total);
+        return new PageImpl<>(result.get(includeEmptyProperties, source), pageable, total);
     }
 
 

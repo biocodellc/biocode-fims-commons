@@ -21,5 +21,5 @@ public interface RecordRepository {
 
     QueryResults query(Query query);
 
-    Page<Map<String, String>> query(Query query, int page, int limit, boolean includeEmptyProperties);
+    Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties);
 }
