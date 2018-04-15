@@ -5,6 +5,7 @@
 !src/main/resources/settings-manager.properties
 !gradle/wrapper/gradle-wrapper.properties
 build/*
+out
 classes/*
 .gradle
 jetty-env.xml
