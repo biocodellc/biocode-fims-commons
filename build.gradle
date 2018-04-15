@@ -10,12 +10,12 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.biocode:gradle-fims:1.1.6"
+        classpath "org.biocode:gradle-fims:1.2.0"
     }
 }
 
 plugins {
-    id 'org.ajoberstar.git-publish' version '0.2.0'
+//    id 'org.ajoberstar.git-publish' version '0.2.0'
 }
 
 apply plugin: "org.biocode.fims"
@@ -107,6 +107,6 @@ javadoc {
     failOnError = false
 }
 
-gitPublish {
-    repoUri = "git@github.com:biocodellc/biocode-fims-commons.git"
-}
+//gitPublish {
+//    repoUri = "git@github.com:biocodellc/biocode-fims-commons.git"
+//}
