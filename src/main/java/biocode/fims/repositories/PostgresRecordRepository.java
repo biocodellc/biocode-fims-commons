@@ -16,6 +16,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +36,7 @@ import java.util.*;
  */
 @Transactional
 public class PostgresRecordRepository implements RecordRepository {
+    private final static Logger logger = LoggerFactory.getLogger(PostgresRecordRepository.class);
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
     private final Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers;
@@ -153,6 +156,9 @@ public class PostgresRecordRepository implements RecordRepository {
     public QueryResults query(Query query) {
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
+
+        logger.info(q.toString());
+
         RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList<>(query.entities()));
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
@@ -171,6 +177,8 @@ public class PostgresRecordRepository implements RecordRepository {
         // naive implementation that will work for now. Probably better to use postgres to paginate
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
+
+        logger.info(q.toString());
 
         RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList(query.entities()));
         jdbcTemplate.query(q.sql(), q.params(), handler);
