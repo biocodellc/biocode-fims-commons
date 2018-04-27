@@ -26,6 +26,7 @@ import java.util.List;
  * We handle building working with the "process" class and the digester rules for mapping & fims,
  * in addition to providing methods for looking up definitions, and building form output
  */
+@Deprecated
 public class TemplateProcessor {
 
     private Mapping mapping;

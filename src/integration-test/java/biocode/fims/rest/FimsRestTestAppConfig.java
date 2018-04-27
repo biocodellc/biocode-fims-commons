@@ -1,7 +1,6 @@
 package biocode.fims.rest;
 
 import biocode.fims.application.config.SettingsManagerConfig;
-//import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.rest.subResources.*;
 import biocode.fims.rest.versioning.VersionTransformer;
@@ -16,7 +15,6 @@ import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,8 +88,7 @@ public class FimsRestTestAppConfig {
                 ProjectConfigurationResource.class,
                 ProjectConfigurationListResource.class,
                 ExpeditionsResource.class,
-                TemplatesResource.class,
-                UsersResource.class
+                TemplatesResource.class
         )));
 
         return b;

@@ -4,7 +4,7 @@ import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
@@ -28,7 +28,7 @@ import java.util.Set;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class TemplatesResource extends FimsService {
+public class TemplatesResource extends FimsController {
 
     private final ProjectService projectService;
     private final ProjectAuthorizer projectAuthorizer;
@@ -87,7 +87,7 @@ public class TemplatesResource extends FimsService {
         CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, file.getName());
         fileCache.addFile(cf);
 
-        URI fileURI = uriInfo.getBaseUriBuilder().path("utils/file").queryParam("id", fileId).build();
+        URI fileURI = uriInfo.getBaseUriBuilder().path("file/" + fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }

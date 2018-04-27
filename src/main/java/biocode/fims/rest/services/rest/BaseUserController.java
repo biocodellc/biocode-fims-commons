@@ -1,49 +1,41 @@
-package biocode.fims.rest.services.rest.subResources;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.AcknowledgedResponse;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.ConfirmationResponse;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.utils.EmailUtils;
 import com.fasterxml.jackson.annotation.JsonView;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
- * @author RJ Ewing
+ * User API endpoints.
+ *
+ * @exclude
  */
-@Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class UsersResource extends FimsService {
-    private final UserService userService;
-    private final MessageSource messageSource;
+public abstract class BaseUserController extends FimsController {
+
+    protected final UserService userService;
     private final ProjectService projectService;
 
-    @Autowired
-    public UsersResource(UserService userService, MessageSource messageSource, ProjectService projectService,
-                         FimsProperties props) {
+    BaseUserController(UserService userService, ProjectService projectService, FimsProperties props) {
         super(props);
         this.userService = userService;
-        this.messageSource = messageSource;
         this.projectService = projectService;
     }
 
@@ -140,8 +132,8 @@ public class UsersResource extends FimsService {
                                    @FormParam("currentPassword") String currentPassword,
                                    @FormParam("newPassword") String newPassword) {
         User user = userContext.getUser();
-        if (StringUtils.isBlank(currentPassword) ||
-                StringUtils.isBlank(newPassword)) {
+        if (org.apache.commons.lang.StringUtils.isBlank(currentPassword) ||
+                org.apache.commons.lang.StringUtils.isBlank(newPassword)) {
             throw new BadRequestException("currentPassword and newPassword must not be blank");
         }
         if (!user.getUsername().equals(username)) {
@@ -164,7 +156,7 @@ public class UsersResource extends FimsService {
     @POST
     @Path("/invite")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public AcknowledgedResponse inviteUser(@FormParam("projectId") int projectId,
+    public ConfirmationResponse inviteUser(@FormParam("projectId") int projectId,
                                            @FormParam("email") String email) {
         if (email == null) {
             throw new BadRequestException("Email must not be null");
@@ -187,6 +179,53 @@ public class UsersResource extends FimsService {
 
         userService.inviteUser(email, project, userContext.getUser());
 
+        return new ConfirmationResponse(true);
+    }
+
+    /**
+     * Request a password reset token. Will send an email to the user's registered email
+     * if the user is found
+     *
+     * @param username
+     */
+    @POST
+    @Path("{username}/sendResetToken")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AcknowledgedResponse sendResetToken(@PathParam("username") String username) {
+        if (username.isEmpty()) {
+            throw new BadRequestException("User not found.", "username is null");
+        }
+
+        userService.sendResetEmail(username);
         return new AcknowledgedResponse(true);
     }
+
+    /**
+     * Service for a user to exchange their reset resetToken in order to update their password
+     *
+     * @param password
+     * @param resetToken
+     */
+    @POST
+    @Path("/reset")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public ConfirmationResponse resetPassword(@FormParam("password") String password,
+                                              @FormParam("resetToken") String resetToken) {
+        if (password.isEmpty()) {
+            throw new BadRequestException("Password must not be empty");
+        }
+
+        User user = userService.getUserByResetToken(resetToken);
+
+        if (user == null)
+            throw new BadRequestException("Expired/Invalid Reset Token");
+
+        user.setPassword(PasswordHash.createHash(password));
+        user.setPasswordResetExpiration(null);
+        user.setPasswordResetToken(null);
+        userService.update(user);
+
+        return new ConfirmationResponse(true);
+    }
+
 }

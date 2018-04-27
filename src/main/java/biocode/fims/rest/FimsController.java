@@ -10,9 +10,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * An abstract class that sets the necessary information when communicating with Biocode-Fims services
+ * An abstract class that sets the necessary information when communicating with Biocode-Fims controllers
  */
-public abstract class FimsService {
+public abstract class FimsController {
     @Autowired
     protected UserContext userContext;
 
@@ -25,7 +25,7 @@ public abstract class FimsService {
 
     protected final FimsProperties props;
 
-    public FimsService(FimsProperties props) {
+    public FimsController(FimsProperties props) {
         this.props = props;
     }
 

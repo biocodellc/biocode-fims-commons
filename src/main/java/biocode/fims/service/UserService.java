@@ -158,20 +158,39 @@ public class UserService {
         return userRepository.findOneByResetToken(resetToken);
     }
 
-    public User generateResetToken(String username) {
+    public boolean sendResetEmail(String username) {
         User user = getUserWithMemberProjects(username);
 
         if (user != null) {
-            StringGenerator sg = new StringGenerator();
-            user.setPasswordResetToken(sg.generateString(20));
+            user.setPasswordResetToken(StringGenerator.generateString(20));
             // set for 24hrs in future
             user.setPasswordResetExpiration(new Timestamp(
                     Calendar.getInstance().getTime().getTime() + (1000 * 60 * 60 * 24))
             );
             update(user);
+
+
+            String resetTokenUrl = props.appRoot() + props.resetPasswordPath();
+
+            Map<String, String> paramMap = new HashMap<>();
+            paramMap.put("token", user.getPasswordResetToken());
+
+            EmailUtils.sendEmail(
+                    user.getEmail(),
+                    messageSource.getMessage(
+                            "UserResetPasswordEmail__SUBJECT",
+                            null,
+                            Locale.US),
+                    messageSource.getMessage(
+                            "UserResetPasswordEmail__BODY",
+                            new Object[]{StrSubstitutor.replace(resetTokenUrl, paramMap)},
+                            Locale.US)
+            );
+
+            return true;
         }
 
-        return user;
+        return false;
     }
 
     /**

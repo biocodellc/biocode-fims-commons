@@ -4,7 +4,7 @@ import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ProjectsResource extends FimsService {
+public class ProjectsResource extends FimsController {
     private final ProjectService projectService;
 
     @Autowired

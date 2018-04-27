@@ -3,7 +3,7 @@ package biocode.fims.rest.services.rest.subResources;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.digester.Field;
 import biocode.fims.models.Project;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ProjectConfigurationListResource extends FimsService {
+public class ProjectConfigurationListResource extends FimsController {
 
     private final ProjectService projectService;
 

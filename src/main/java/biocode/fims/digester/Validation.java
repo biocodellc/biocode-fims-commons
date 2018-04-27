@@ -1,13 +1,9 @@
 package biocode.fims.digester;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.reader.SqLiteJsonConverter;
-import biocode.fims.reader.plugins.TabularDataReader;
 import biocode.fims.validation.messages.RowMessage;
 import biocode.fims.settings.FimsPrinter;
-import biocode.fims.settings.PathManager;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.digester3.Digester;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -16,7 +12,6 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,9 +27,6 @@ public class Validation {
     private final LinkedList<Worksheet> worksheets = new LinkedList<Worksheet>();
     // Loop all the lists associated with the validation element
     private final LinkedList<List> lists = new LinkedList<List>();
-    // Create a tabularDataReader for reading the data source associated with the validation element
-    @JsonIgnore
-    private TabularDataReader tabularDataReader = null;
     // A SQL Lite connection is mainted by the validation class so we can run through the various rules
     @JsonIgnore
     private java.sql.Connection connection = null;
@@ -43,8 +35,6 @@ public class Validation {
     // File reference for a sqlite Database
     @JsonIgnore
     private File sqliteFile;
-    @JsonIgnore
-    private SqLiteJsonConverter sdc;
 
     /**
      * Construct using tabularDataReader object, defining how to read the incoming tabular data
@@ -62,9 +52,6 @@ public class Validation {
         return sqliteFile;
     }
 
-    public TabularDataReader getTabularDataReader() {
-        return tabularDataReader;
-    }
 
     /**
      * Add a worksheet to the validation component
@@ -144,39 +131,6 @@ public class Validation {
     }
 
     /**
-     * Create a SQLLite Database instance
-     *
-     * @return
-     */
-    public Connection createSqlLite(String filenamePrefix, String outputFolder, String sheetName, ArrayNode fimsMetadata) {
-        PathManager pm = new PathManager();
-        File processDirectory = pm.setDirectory(outputFolder);
-
-        // Load the SQLite JDBC driver.
-        try {
-            Class.forName("org.sqlite.JDBC");
-        } catch (ClassNotFoundException ex) {
-            throw new FimsRuntimeException("could not load the SQLite JDBC driver.", 500, ex);
-        }
-
-        // Create SQLite file
-        String pathPrefix = processDirectory + File.separator + filenamePrefix;
-        sqliteFile = PathManager.createUniqueFile(pathPrefix + ".sqlite", outputFolder);
-
-        sdc = new SqLiteJsonConverter(fimsMetadata, "jdbc:sqlite:" + sqliteFile.getAbsolutePath());
-        sdc.convert(sheetName);
-
-        // Create the SQLLite connection
-        try {
-            biocode.fims.settings.Connection localConnection = new biocode.fims.settings.Connection(sqliteFile);
-            return java.sql.DriverManager.getConnection(localConnection.getJdbcUrl());
-        } catch (SQLException e) {
-            throw new FimsRuntimeException("Trouble finding SQLLite Connection", 500, e);
-        }
-
-    }
-
-    /**
      * Loop through worksheets and print out object data
      */
     public void printObject() {
@@ -231,57 +185,6 @@ public class Validation {
         }
 
         return false;
-    }
-
-    /**
-     * Begin the validation run.process, looping through worksheets
-     *
-     * @return
-     */
-    public boolean run(
-            TabularDataReader tabularDataReader,
-            String filenamePrefix,
-            String outputFolder,
-            Mapping mapping,
-            ArrayNode fimsMetadata,
-            String sheetName) {
-        this.tabularDataReader = tabularDataReader;
-
-        Worksheet sheet = new Worksheet();
-
-        for (Worksheet s : worksheets) {
-            if (s.getSheetname().equals(sheetName)) {
-                sheet = s;
-            }
-        }
-
-        tabularDataReader.setTable(sheetName);
-
-        // Create the SQLLite Connection and catch any exceptions, and send to Error Message
-        // Exceptions generated here are most likely useful to the user and the result of SQL exceptions when
-        // processing data, such as worksheets containing duplicate column names, which will fail the data load.
-
-        connection = createSqlLite(filenamePrefix, outputFolder, sheetName, fimsMetadata);
-
-
-        // Run validation components
-        if (!sheet.run(this, mapping)) {
-            return false;
-        }
-
-        // Attempt to build hashes
-        try {
-            sdc.buildHashes(mapping, sheetName);
-        } catch (Exception e) {
-            logger.warn("", e);
-            sheet.getMessages().addLast(new RowMessage(
-                    "Error building hashes.  Likely a required column constraint failed.",
-                    "Initial Spreadsheet check",
-                    RowMessage.ERROR));
-            return false;
-        }
-
-        return true;
     }
 
     /**

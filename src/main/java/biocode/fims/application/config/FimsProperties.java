@@ -47,10 +47,6 @@ public class FimsProperties {
         return env.getRequiredProperty("ignoreUser", boolean.class);
     }
 
-    public String loginPageUrl() {
-        return env.getRequiredProperty("loginPageUrl");
-    }
-
     public int naan() {
         return env.getRequiredProperty("naan", int.class);
     }
@@ -71,20 +67,12 @@ public class FimsProperties {
         return env.getRequiredProperty("debug", boolean.class);
     }
 
-    public String mapboxAccessToken() {
-        return env.getRequiredProperty("mapboxAccessToken");
-    }
-
     public String accountCreatePath() {
         return env.getRequiredProperty("accountCreatePath");
     }
 
-    public String resolverTargetPrefix() {
-        return env.getRequiredProperty("resolverTargetPrefix");
-    }
-
-    public String rights() {
-        return env.getRequiredProperty("rights");
+    public String resetPasswordPath() {
+        return env.getRequiredProperty("resetPasswordPath");
     }
 
     public String bcidUrl() {

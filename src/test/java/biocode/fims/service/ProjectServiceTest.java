@@ -34,7 +34,7 @@ public class ProjectServiceTest {
         Mockito.when(expeditionService.getExpeditions(Mockito.anyInt(), Mockito.anyBoolean())).thenReturn(Collections.emptyList());
 
         configRepository = new TestProjectConfigRepository();
-        projectService = new ProjectService(null, expeditionService, null, configRepository, settingsManager);
+        projectService = new ProjectService(null, expeditionService, null, configRepository);
     }
 
     @Test

@@ -3,10 +3,10 @@ package biocode.fims.rest;
 /**
  * @author RJ Ewing
  */
-public class ConformationResponse {
+public class ConfirmationResponse {
     private final boolean success;
 
-    public ConformationResponse(boolean success) {
+    public ConfirmationResponse(boolean success) {
         this.success = success;
     }
 

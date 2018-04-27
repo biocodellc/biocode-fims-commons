@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  * as the rule "type" in the XML configuration file.  Examples of use, as
  * they appear in the XML configuration file are given below.
  */
+@Deprecated
 public class Rule {
 
     // General values
@@ -100,18 +101,6 @@ public class Rule {
 
     public void setConnection(java.sql.Connection connection) {
         this.connection = connection;
-    }
-
-    @JsonIgnore
-    public TabularDataReader getWorksheet() {
-        return worksheet;
-    }
-
-    public void setWorksheet(TabularDataReader worksheet) {
-        this.worksheet = worksheet;
-        // Synchronize the Excel Worksheet instance with the digester worksheet instance
-        //fimsPrinter.out.println("setting to "+ digesterWorksheet.getSheetname());
-        worksheet.setTable(digesterWorksheet.getSheetname());
     }
 
     @JsonIgnore
@@ -834,62 +823,62 @@ public class Rule {
     }
 
 
-    /**
-     * Smithsonian created rule to check Voucher heading
-     *
-     * @param worksheet
-     * @throws Exception
-     */
-    @Deprecated
-    public void checkVoucherSI(TabularDataReader worksheet) throws Exception {
-        String groupMessage = "Check voucher SI rule";
-        String[] headings = {"Voucher Specimen?", "Herbarium Accession No./Catalog No.", "Herbarium Acronym"};
-        int[] columnIndices = this.getColumnIndices(headings);
-        int vsIdx = columnIndices[0];
-        int hanIdx = columnIndices[1];
-        int haIdx = columnIndices[2];
-
-        if (vsIdx == -1) {
-            addMessage("Did not find Voucher Specimen heading in spreadsheet.", groupMessage, 0);
-        }
-
-        if (hanIdx == -1) {
-            addMessage("Did  not find Herbarium Accession No./Catalog No. column heading in spreadsheet.", groupMessage, 0);
-        }
-
-        if (haIdx == -1) {
-            addMessage("Did not find Herbarium Acronym heading in spreadsheet.", groupMessage, 0);
-        }
-
-        if (vsIdx == -1 || hanIdx == -1 || haIdx == -1) {
-            return;
-        }
-
-        for (int row = 1; row <= worksheet.getNumRows(); row++) {
-            String voucher = worksheet.getStringValue(vsIdx, row);
-            if (voucher == null) {
-                addMessage("Missing value for 'Voucher Specimen?'. Must be Y or N.", groupMessage, row);
-                continue;
-            }
-            voucher = voucher.trim();
-            if (voucher.equals("Y")) {
-                String han = worksheet.getStringValue(hanIdx, row);
-                if (han == null) {
-                    addMessage("Missing Herbarium Accession No./Catalog No. for voucher specimen.", groupMessage, row);
-                } else if (han.trim().length() <= 2) {
-                    addMessage("Herbarium Accession No./Catalog No. must be at least two characters long.", groupMessage, row);
-                }
-
-                String ha = worksheet.getStringValue(haIdx, row);
-                if (ha == null) {
-                    addMessage("Missing Herbarium Acronym for voucher specimen.", groupMessage, row);
-                } else if (ha.trim().length() == 0) {
-                    addMessage("Herbarium Acronym must be at least one character long.", groupMessage, row);
-                }
-
-            }
-        }
-    }
+//    /**
+//     * Smithsonian created rule to check Voucher heading
+//     *
+//     * @param worksheet
+//     * @throws Exception
+//     */
+//    @Deprecated
+//    public void checkVoucherSI(TabularDataReader worksheet) throws Exception {
+//        String groupMessage = "Check voucher SI rule";
+//        String[] headings = {"Voucher Specimen?", "Herbarium Accession No./Catalog No.", "Herbarium Acronym"};
+//        int[] columnIndices = this.getColumnIndices(headings);
+//        int vsIdx = columnIndices[0];
+//        int hanIdx = columnIndices[1];
+//        int haIdx = columnIndices[2];
+//
+//        if (vsIdx == -1) {
+//            addMessage("Did not find Voucher Specimen heading in spreadsheet.", groupMessage, 0);
+//        }
+//
+//        if (hanIdx == -1) {
+//            addMessage("Did  not find Herbarium Accession No./Catalog No. column heading in spreadsheet.", groupMessage, 0);
+//        }
+//
+//        if (haIdx == -1) {
+//            addMessage("Did not find Herbarium Acronym heading in spreadsheet.", groupMessage, 0);
+//        }
+//
+//        if (vsIdx == -1 || hanIdx == -1 || haIdx == -1) {
+//            return;
+//        }
+//
+//        for (int row = 1; row <= worksheet.getNumRows(); row++) {
+//            String voucher = worksheet.getStringValue(vsIdx, row);
+//            if (voucher == null) {
+//                addMessage("Missing value for 'Voucher Specimen?'. Must be Y or N.", groupMessage, row);
+//                continue;
+//            }
+//            voucher = voucher.trim();
+//            if (voucher.equals("Y")) {
+//                String han = worksheet.getStringValue(hanIdx, row);
+//                if (han == null) {
+//                    addMessage("Missing Herbarium Accession No./Catalog No. for voucher specimen.", groupMessage, row);
+//                } else if (han.trim().length() <= 2) {
+//                    addMessage("Herbarium Accession No./Catalog No. must be at least two characters long.", groupMessage, row);
+//                }
+//
+//                String ha = worksheet.getStringValue(haIdx, row);
+//                if (ha == null) {
+//                    addMessage("Missing Herbarium Acronym for voucher specimen.", groupMessage, row);
+//                } else if (ha.trim().length() == 0) {
+//                    addMessage("Herbarium Acronym must be at least one character long.", groupMessage, row);
+//                }
+//
+//            }
+//        }
+//    }
 
     /**
      * If a user enters data in a particular column, it is required to:

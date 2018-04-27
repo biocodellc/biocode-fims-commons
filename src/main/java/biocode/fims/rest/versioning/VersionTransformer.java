@@ -1,6 +1,6 @@
 package biocode.fims.rest.versioning;
 
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.utils.SpringApplicationContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -23,16 +23,16 @@ public class VersionTransformer {
 
     @Around("execution(* biocode.fims.rest.services..*.*(..))")
     public Object transformResource(ProceedingJoinPoint jp) throws Throwable {
-        FimsService fimsService = (FimsService) jp.getTarget();
+        FimsController fimsController = (FimsController) jp.getTarget();
 
-        if (fimsService.getHeaders() == null) {
+        if (fimsController.getHeaders() == null) {
             // the resource method was called outside of the Request Scope. This means that we can't do any transforming
             // as we do not know what version is requested
-            logger.debug("Skipping REST Version Transformation. FimsService.getHeaders() is null");
+            logger.debug("Skipping REST Version Transformation. FimsController.getHeaders() is null");
             return jp.proceed();
         }
 
-        String version = fimsService.getHeaders().getHeaderString("Api-Version");
+        String version = fimsController.getHeaders().getHeaderString("Api-Version");
         Object returnValue;
 
         Object[] args = jp.getArgs();
@@ -53,7 +53,7 @@ public class VersionTransformer {
                 Transformer transformer = getTransformer(apiVersion, jp.getTarget().getClass().getSimpleName());
 
                 if (transformer != null) {
-                    transformer.updateRequestData(methodParamMap, jp.getSignature().getName(), fimsService.uriInfo.getQueryParameters());
+                    transformer.updateRequestData(methodParamMap, jp.getSignature().getName(), fimsController.uriInfo.getQueryParameters());
                 }
             }
 

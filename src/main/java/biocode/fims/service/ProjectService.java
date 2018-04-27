@@ -10,7 +10,6 @@ import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.ProjectConfigUpdator;
 import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.ProjectRepository;
-import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,16 +35,14 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserService userService;
     private final ProjectConfigRepository projectConfigRepository;
-    private final SettingsManager settingsManager;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository, ExpeditionService expeditionService,
-                          UserService userService, ProjectConfigRepository projectConfigRepository, SettingsManager settingsManager) {
+                          UserService userService, ProjectConfigRepository projectConfigRepository) {
         this.expeditionService = expeditionService;
         this.projectRepository = projectRepository;
         this.userService = userService;
         this.projectConfigRepository = projectConfigRepository;
-        this.settingsManager = settingsManager;
     }
 
     public void create(Project project, int userId) {

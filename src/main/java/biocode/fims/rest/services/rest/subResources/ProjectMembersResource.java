@@ -5,7 +5,7 @@ import biocode.fims.models.User;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ProjectMembersResource extends FimsService {
+public class ProjectMembersResource extends FimsController {
     private final ProjectService projectService;
     private final UserService userService;
 

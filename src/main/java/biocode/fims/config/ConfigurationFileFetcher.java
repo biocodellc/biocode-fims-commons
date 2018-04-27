@@ -18,6 +18,7 @@ import java.util.Date;
  * Class that handles getting configuration files.  Configuration files are stored as BCID/ARKs and thus this class
  * needs to handle redirection when fetching appropriate configuration files.
  */
+@Deprecated
 public class ConfigurationFileFetcher {
     private File outputFile;
     private Integer projectId;

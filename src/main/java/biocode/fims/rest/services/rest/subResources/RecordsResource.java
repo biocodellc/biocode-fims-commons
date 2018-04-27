@@ -8,17 +8,12 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.models.Expedition;
-import biocode.fims.models.Project;
-import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordResult;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryResult;
 import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.RecordRepository;
-import biocode.fims.rest.FimsService;
-import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
+import biocode.fims.rest.FimsController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -32,7 +27,7 @@ import java.util.Map;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class RecordsResource extends FimsService {
+public class RecordsResource extends FimsController {
     private final RecordRepository recordRepository;
     private final ProjectConfigRepository projectConfigRepository;
     private final QueryAuthorizer queryAuthorizer;

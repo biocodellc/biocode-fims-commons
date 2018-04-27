@@ -5,7 +5,8 @@ import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.AcknowledgedResponse;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.ConfirmationResponse;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ExpeditionsResource extends FimsService {
+public class ExpeditionsResource extends FimsController {
     private final ExpeditionService expeditionService;
     private final ProjectService projectService;
 
@@ -234,7 +235,7 @@ public class ExpeditionsResource extends FimsService {
     @Path("/{expeditionCode}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public AcknowledgedResponse deleteExpedition(@PathParam("projectId") Integer projectId,
+    public ConfirmationResponse deleteExpedition(@PathParam("projectId") Integer projectId,
                                                  @PathParam("expeditionCode") String expeditionCode) {
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
@@ -248,7 +249,7 @@ public class ExpeditionsResource extends FimsService {
 
         expeditionService.delete(expeditionCode, projectId);
 
-        return new AcknowledgedResponse(true);
+        return new ConfirmationResponse(true);
     }
 
 }

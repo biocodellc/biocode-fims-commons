@@ -5,7 +5,7 @@ import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
-public class ProjectConfigurationResource extends FimsService {
+public class ProjectConfigurationResource extends FimsController {
 
     private final ProjectService projectService;
 

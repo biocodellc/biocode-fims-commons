@@ -113,4 +113,11 @@ public class OAuthProviderService {
         oAuthClientRepository.save(oAuthClient);
         return oAuthClient;
     }
+
+    /**
+     * @param token accessToken or refreshToken
+     */
+    public void invalidateToken(String token) {
+        oAuthTokenRepository.invalidate(token);
+    }
 }

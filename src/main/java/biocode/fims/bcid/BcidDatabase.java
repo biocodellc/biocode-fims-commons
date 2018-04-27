@@ -12,6 +12,7 @@ import java.sql.Connection;
  * Settings come from the biocode.fims.settings.SettingsManager/Property file defining the user/password/url/class
  * for the mysql Database where the data lives.
  */
+@Deprecated
 public final class BcidDatabase extends Database {
 
     private final static BasicDataSource bcidDataSource = new BasicDataSource();

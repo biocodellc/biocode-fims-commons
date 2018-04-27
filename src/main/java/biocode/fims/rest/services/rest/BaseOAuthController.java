@@ -8,110 +8,44 @@ import biocode.fims.models.OAuthToken;
 import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.AcknowledgedResponse;
+import biocode.fims.rest.FimsController;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
-import biocode.fims.utils.ErrorInfo;
-import biocode.fims.utils.QueryParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * REST interface for handling user authentication
+ * OAuth api endpoints
+ *
  * @exclude
- * @resourceTag Authentication
+ * @resourceTag OAuth
  */
-public abstract class FimsAbstractAuthenticationController extends FimsService {
+@Produces(MediaType.APPLICATION_JSON)
+public abstract class BaseOAuthController extends FimsController {
     @Context
     private HttpServletRequest request;
-    private static Logger logger = LoggerFactory.getLogger(FimsAbstractAuthenticationController.class);
+    private static Logger logger = LoggerFactory.getLogger(BaseOAuthController.class);
 
     protected final UserService userService;
     private final OAuthProviderService oAuthProviderService;
 
     @Autowired
-    public FimsAbstractAuthenticationController(OAuthProviderService oAuthProviderService,
-                                                UserService userService, FimsProperties props) {
+    public BaseOAuthController(OAuthProviderService oAuthProviderService,
+                               UserService userService, FimsProperties props) {
         super(props);
         this.oAuthProviderService = oAuthProviderService;
         this.userService = userService;
-    }
-
-    /**
-     * Service to log a user into the biocode-fims system
-     *
-     * @param usr
-     * @param pass
-     * @param return_to the url to return to after login
-     * @throws IOException
-     */
-
-    @Deprecated
-    @POST
-    @Path("/login")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response login(@FormParam("username") String usr,
-                          @FormParam("password") String pass,
-                          @QueryParam("return_to") String returnTo,
-                          @Context HttpServletResponse res) {
-
-        if (!usr.isEmpty() && !pass.isEmpty()) {
-            User user = userService.getUser(usr, pass);
-
-            if (user != null) {
-                // Place the user in the session
-                session.setAttribute("user", user);
-
-                // Check if the user is an admin for any projects
-                if (userService.isAProjectAdmin(user, props.appRoot())) {
-                    session.setAttribute("projectAdmin", true);
-                }
-
-                // Check if the user has created their own password, if they are just using the temporary password, inform the user to change their password
-                if (!user.getHasSetPassword()) {
-                    return Response.ok("{\"url\": \"" + props.appRoot() + "secure/profile?error=Update Your Password" +
-                            new QueryParams().getQueryParams(request.getParameterMap(), false) + "\"}")
-                            .build();
-                }
-
-                // Redirect to returnTo uri if provided
-                if (returnTo != null) {
-
-                    // check to see if oAuthLogin is in the session and set to true is so.
-                    Object oAuthLogin = session.getAttribute("oAuthLogin");
-                    if (oAuthLogin != null) {
-                        session.setAttribute("oAuthLogin", true);
-                    }
-
-                    return Response.ok("{\"url\": \"" + returnTo +
-                            new QueryParams().getQueryParams(request.getParameterMap(), true) + "\"}")
-                            .build();
-                } else {
-                    return Response.ok("{\"url\": \"" + props.appRoot() + "\"}").build();
-                }
-            }
-            // stored and entered passwords don't match, invalidate the session to be sure that a user is not in the session
-            else {
-                session.invalidate();
-            }
-        }
-
-        return Response.status(400)
-                .entity(new ErrorInfo("Bad Credentials", 400).toJSON())
-                .build();
     }
 
     /**
@@ -122,7 +56,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
      * @param state
      */
     @GET
-    @Path("/oauth/authorize")
+    @Path("/authorize")
     @Produces(MediaType.TEXT_HTML)
     public Response authorize(@QueryParam("client_id") String clientId,
                               @QueryParam("redirect_uri") String redirectURL,
@@ -161,7 +95,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
             // need the user to login
             try {
                 return Response.status(Response.Status.TEMPORARY_REDIRECT)
-                        .location(new URI(props.appRoot()+ "login?return_to=/id/authenticationService/oauth/authorize?"
+                        .location(new URI(props.appRoot()+ "login?return_to=/oauth/authorize?"
                                 + request.getQueryString()))
                         .build();
             } catch (URISyntaxException e) {
@@ -199,7 +133,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
      * @return
      */
     @POST
-    @Path("/oauth/accessToken")
+    @Path("/accessToken")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response access_token(@FormParam("code") String code,
@@ -267,8 +201,7 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
      * @return
      */
     @POST
-    @Path("/oauth/refresh")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/refresh")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response refresh(@FormParam("client_id") String clientId,
                             @FormParam("refresh_token") String refreshToken) {
@@ -293,19 +226,21 @@ public abstract class FimsAbstractAuthenticationController extends FimsService {
     }
 
     /**
-     * Rest service to log a user out of the fims system
+     * Invalidate access and refresh tokens
+     *
+     * @param token refresh or access token to invalidate
      */
     @GET
-    @Path("logout")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response logout() {
-        // Invalidate the session
-        session.invalidate();
-        userContext.setUser(null);
-        try {
-            return Response.seeOther(new URI(props.appRoot())).build();
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException(e);
+    @Path("invalidate")
+    public AcknowledgedResponse logout(@FormParam("client_id") String clientId,
+                                       @FormParam("token") String token) {
+        OAuthClient oAuthClient = oAuthProviderService.getOAuthClient(clientId, null);
+
+        if (oAuthClient == null) {
+            throw new BadRequestException("invalid_client");
         }
+
+        oAuthProviderService.invalidateToken(token);
+        return new AcknowledgedResponse(true);
     }
 }
