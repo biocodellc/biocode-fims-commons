@@ -1,6 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
@@ -16,6 +17,11 @@ import java.util.Map;
  */
 public class TestRecordRepository implements RecordRepository {
     private List<RecordStore> stores = new ArrayList<>();
+
+    @Override
+    public RecordResult get(String rootIdentifier, String localIdentifier) {
+        throw new NotImplementedException();
+    }
 
     @Override
     public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {

@@ -1,6 +1,7 @@
 package biocode.fims.repositories;
 
 import biocode.fims.models.records.Record;
+import biocode.fims.models.records.RecordResult;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
@@ -14,6 +15,8 @@ import java.util.Map;
  * @author rjewing
  */
 public interface RecordRepository {
+
+    RecordResult get(String rootIdentifier, String localIdentifier);
 
     List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
 

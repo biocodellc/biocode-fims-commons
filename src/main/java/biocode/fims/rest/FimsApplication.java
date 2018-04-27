@@ -45,11 +45,12 @@ public class FimsApplication extends ResourceConfig {
         register(ExpeditionsResource.class);
         register(UsersResource.class);
         register(TemplatesResource.class);
+        register(RecordsResource.class);
     }
 
     /**
      * Checks that all REST resources registered under the biocode.fims.rest.services package are Spring beans.
-     * If a REST resource is not managed by spring, the VersionTransformer will not reconize the REST resource method,
+     * If a REST resource is not managed by spring, the VersionTransformer will not recognize the REST resource method,
      * thus our requests/responses will not be transformed into/from the current REST version.
      */
     @PostConstruct

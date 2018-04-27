@@ -1,11 +1,13 @@
 package biocode.fims.authorizers;
 
+import biocode.fims.fimsExceptions.errorCodes.ExpeditionCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -16,6 +18,7 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,11 +28,38 @@ public class QueryAuthorizer {
     private final static Logger logger = LoggerFactory.getLogger(QueryAuthorizer.class);
 
     private final ProjectService projectService;
+    private final ExpeditionService expeditionService;
     private final FimsProperties props;
 
-    public QueryAuthorizer(ProjectService projectService, FimsProperties props) {
+    public QueryAuthorizer(ProjectService projectService, ExpeditionService expeditionService, FimsProperties props) {
         this.projectService = projectService;
+        this.expeditionService = expeditionService;
         this.props = props;
+    }
+
+    /**
+     * Checks that the {@param user} has access to the {@param expeditionId}
+     *
+     * @param expeditionId
+     * @param user
+     * @return
+     */
+    public boolean authorizedQuery(int expeditionId, User user) {
+        Expedition expedition = expeditionService.getExpedition(expeditionId);
+
+        if (expedition == null) {
+            throw new FimsRuntimeException(ExpeditionCode.INVALID_ID, 500);
+        }
+
+        // hack so expeditions list has expedition we're interested in
+        expedition.getProject().setExpeditions(Collections.singletonList(expedition));
+
+        return authorizedExpeditionAccess(
+                Collections.singletonList(expedition.getProject().getProjectId()),
+                Collections.singletonList(expedition.getExpeditionCode()),
+                Collections.singletonList(expedition.getProject()),
+                user
+        );
     }
 
     /**
@@ -145,6 +175,7 @@ public class QueryAuthorizer {
     /**
      * Checks that the {@param user} has access to the {@param projectIds} and expedition.expeditionCode within the
      * {@param esQueryNode}
+     *
      * @param projectIds
      * @param esQueryNode
      * @param user

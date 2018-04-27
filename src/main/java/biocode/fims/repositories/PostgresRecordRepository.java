@@ -18,11 +18,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +49,40 @@ public class PostgresRecordRepository implements RecordRepository {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
         this.rowMappers = rowMappers;
+    }
+
+    @Override
+    public RecordResult get(String rootIdentifier, String localIdentifier) {
+        EntityIdentifierResult result = jdbcTemplate.queryForObject(
+                sql.getProperty("selectEntityIdentifier"),
+                new MapSqlParameterSource().addValue("rootIdentifier", rootIdentifier),
+                (rs, rowNum) -> {
+                    EntityIdentifierResult r = new EntityIdentifierResult();
+                    r.conceptAlias = rs.getString("conceptAlias");
+                    r.expeditionId = rs.getInt("expeditionId");
+                    r.projectId = rs.getInt("projectId");
+                    return r;
+                }
+        );
+
+        if (result == null) return null;
+
+        Map<String, Object> tableMap = getTableMap(result.projectId, result.conceptAlias);
+
+        // TODO do we want to return the actual Record type here?
+        try {
+            Record record = jdbcTemplate.queryForObject(
+                    StrSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
+                    new MapSqlParameterSource()
+                            .addValue("localIdentifier", localIdentifier)
+                            .addValue("expeditionId", result.expeditionId),
+                    rowMappers.get(GenericRecord.class)
+            );
+
+            return new RecordResult(result.projectId, result.expeditionId, result.conceptAlias, record);
+        } catch (EmptyResultDataAccessException e) {
+            throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
+        }
     }
 
     @Override
@@ -284,5 +322,11 @@ public class PostgresRecordRepository implements RecordRepository {
             }
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 500);
         }
+    }
+
+    private class EntityIdentifierResult {
+        public int projectId;
+        public int expeditionId;
+        public String conceptAlias;
     }
 }

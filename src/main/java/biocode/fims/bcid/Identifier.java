@@ -1,10 +1,8 @@
 package biocode.fims.bcid;
 
-import biocode.fims.entities.BcidTmp;
 
 /**
- * Class for decoding an identifier. An identifier consists of the schema, naan, shoulder, and suffix.
- * This class decodes an identifier in order to get the {@link biocode.fims.models.Bcid} identifier value
+ * Class for decoding an ark identifier. An identifier consists of the schema, naan, shoulder, and suffix.
  */
 public class Identifier {
     private String identifier;
@@ -23,10 +21,11 @@ public class Identifier {
 
 
     /**
-     * get the {@link biocode.fims.models.Bcid} identifier
+     * get the ark root identifier. If not suffix, this is the same as the identifier
+     *
      * @return
      */
-    public String getBcidIdentifier() {
+    public String getRootIdentifier() {
         return scheme + "/" + naan + "/" + shoulder;
     }
 
@@ -57,7 +56,7 @@ public class Identifier {
      *
      * @param a
      */
-    private void setShoulderAndSuffix (String a) {
+    private void setShoulderAndSuffix(String a) {
         boolean reachedShoulder = false;
         StringBuilder sbShoulder = new StringBuilder();
         StringBuilder sbSuffix = new StringBuilder();
@@ -75,10 +74,8 @@ public class Identifier {
         suffix = sbSuffix.toString();
 
         // String the slash between the shoulder and the suffix
-        if (!divider.equals("")) {
-            if (suffix.startsWith(divider)) {
-                suffix = suffix.substring(1);
-            }
+        if (!divider.equals("") && suffix.startsWith(divider)) {
+            suffix = suffix.replaceFirst(divider, "");
         }
     }
 

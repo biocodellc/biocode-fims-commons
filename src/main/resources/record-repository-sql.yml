@@ -14,8 +14,20 @@ insertChildRecord: >
   ON CONFLICT (parent_identifier, local_identifier, expedition_id)
     DO UPDATE SET data = to_jsonb(:data::jsonb)
 
+selectEntityIdentifier: >
+  SELECT p.id AS projectId, i.expedition_id AS expeditionId, i.concept_alias AS conceptAlias
+  FROM entity_identifiers i
+    JOIN expeditions e on e.id = i.expedition_id
+    JOIN projects p on p.id = e.project_id
+  WHERE i.identifier = :rootIdentifier
+
+selectRecord: >
+  SELECT data AS data
+  FROM ${table}
+  WHERE local_identifier = :localIdentifier AND expedition_id = :expeditionId
+
 selectRecords: >
-  SELECT r.data as data
+  SELECT r.data AS data
   FROM ${table} AS r
     INNER JOIN expeditions e on r.expedition_id = e.id
   WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
