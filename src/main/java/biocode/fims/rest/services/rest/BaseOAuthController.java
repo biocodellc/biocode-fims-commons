@@ -230,7 +230,7 @@ public abstract class BaseOAuthController extends FimsController {
      *
      * @param token refresh or access token to invalidate
      */
-    @GET
+    @POST
     @Path("invalidate")
     public AcknowledgedResponse logout(@FormParam("client_id") String clientId,
                                        @FormParam("token") String token) {
