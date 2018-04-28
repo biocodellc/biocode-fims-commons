@@ -152,6 +152,13 @@ public abstract class BaseUserController extends FimsController {
         return userService.update(user);
     }
 
+    /**
+     * Send a user invite via email notification
+     *
+     * @param projectId
+     * @param email
+     * @return
+     */
     @Authenticated
     @POST
     @Path("/invite")

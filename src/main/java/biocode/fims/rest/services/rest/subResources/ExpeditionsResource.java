@@ -127,6 +127,13 @@ public class ExpeditionsResource extends FimsController {
         return expeditions;
     }
 
+    /**
+     * Get an expedition
+     *
+     * @param projectId
+     * @param expeditionCode
+     * @return
+     */
     @UserEntityGraph("User.withProjectsMemberOf")
     @JsonView(Views.Detailed.class)
     @GET

@@ -43,6 +43,12 @@ public class TemplatesResource extends FimsController {
         this.fileCache = fileCache;
     }
 
+    /**
+     * Get a template
+     *
+     * @param projectId
+     * @return
+     */
     @JsonView(Views.Detailed.class)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -57,8 +63,16 @@ public class TemplatesResource extends FimsController {
         return project.getTemplates();
     }
 
+    /**
+     * Create a template
+     *
+     * @param columns
+     * @param sheetName
+     * @param projectId
+     * @return
+     */
     @POST
-    @Path("/generate/")
+    @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response createExcel(

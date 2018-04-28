@@ -36,6 +36,12 @@ public class ProjectConfigurationResource extends FimsController {
         this.projectService = projectService;
     }
 
+    /**
+     * Get a project config
+     *
+     * @param projectId
+     * @return
+     */
     @Compress
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -51,7 +57,7 @@ public class ProjectConfigurationResource extends FimsController {
     }
 
     /**
-     * Update the {@link Project#projectConfig}
+     * Update the project config
      *
      * @param config    The updated projectConfig object
      * @param projectId The id of the project to update
@@ -79,15 +85,6 @@ public class ProjectConfigurationResource extends FimsController {
         }
 
         return Response.ok(config).build();
-    }
-
-    /**
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectConfigurationListResource
-     */
-    @Path("/lists")
-    public Resource getProjectConfigurationListResource() {
-        return Resource.from(ProjectConfigurationListResource.class);
-
     }
 
     private static class InvalidResponse {

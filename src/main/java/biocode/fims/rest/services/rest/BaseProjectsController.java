@@ -38,8 +38,8 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ExpeditionsResource
-     * @resourceTag Expeditions
+     * @responseType biocode.fims.rest.services.rest.subResources.TemplatesResource
+     * @resourceTag Templates
      */
     @Path("{projectId}/templates")
     public Resource getTemplatesResource() {
@@ -59,6 +59,7 @@ public abstract class BaseProjectsController extends FimsController {
     /**
      *
      * @responseType biocode.fims.rest.services.rest.subResources.ProjectMembersResource
+     * @resourceTag Members
      */
     @Path("{projectId}/members")
     public Resource getProjectMembersResource() {
@@ -68,6 +69,7 @@ public abstract class BaseProjectsController extends FimsController {
     /**
      *
      * @responseType biocode.fims.rest.services.rest.subResources.ProjectConfigurationResource
+     * @resourceTag Config
      */
     @Path("/{projectId}/config")
     public Resource getProjectConfigurationResource() {

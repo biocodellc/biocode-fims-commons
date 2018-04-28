@@ -15,7 +15,7 @@ import java.io.File;
  * File API endpoints
  *
  * @exclude
- * @resourceTag Misc
+ * @resourceTag Files
  */
 public abstract class BaseFileController extends FimsController {
 
@@ -27,6 +27,12 @@ public abstract class BaseFileController extends FimsController {
         this.fileCache = fileCache;
     }
 
+    /**
+     * Retrieve a file
+     *
+     * @param id
+     * @return
+     */
     @GET
     @Path("{id}")
     @Produces("application/file")
