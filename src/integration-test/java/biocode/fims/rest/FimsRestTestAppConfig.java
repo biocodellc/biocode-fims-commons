@@ -87,7 +87,7 @@ public class FimsRestTestAppConfig {
                 ProjectMembersResource.class,
                 ProjectConfigurationResource.class,
                 ExpeditionsResource.class,
-                TemplatesResource.class
+                ProjectTemplatesResource.class
         )));
 
         return b;

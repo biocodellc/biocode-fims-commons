@@ -1,9 +1,9 @@
-alter table project_templates alter column sheet_name DROP NOT NULL;
+alter table project_templates alter column worksheet DROP NOT NULL;
 ALTER TABLE expeditions ALTER COLUMN visibility DROP NOT NULL;
 ALTER TABLE expeditions ALTER COLUMN identifier DROP NOT NULL;
 ALTER TABLE projects ALTER COLUMN config DROP NOT NULL;
 ALTER TABLE projects ADD COLUMN validation_xml TEXT NOT NULL;
-alter table project_templates alter COLUMN attribute_uris TYPE text;
+alter table project_templates alter COLUMN columns TYPE text;
 
 DROP TABLE IF EXISTS bcids_tmp;
 

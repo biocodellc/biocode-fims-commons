@@ -72,6 +72,13 @@ public class ProjectConfig {
                 .collect(Collectors.toList());
     }
 
+    public List<Attribute> attributesForSheet(String sheetName) {
+        return entities.stream()
+                .filter(e -> sheetName.equals(e.getWorksheet()))
+                .flatMap(e -> e.getAttributes().stream())
+                .collect(Collectors.toList());
+    }
+
     public boolean areRelatedEntities(String conceptAlias1, String conceptAlias2) {
 
         Entity entity1 = entity(conceptAlias1);

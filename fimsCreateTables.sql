@@ -366,15 +366,15 @@ CREATE TABLE project_templates (
   user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  sheet_name TEXT NOT NULL,
-  attribute_uris jsonb NOT NULL,
+  worksheet TEXT NOT NULL,
+  columns jsonb NOT NULL,
   CONSTRAINT project_templates_name_project_id_uniq UNIQUE (name, project_id)
 );
 
 CREATE INDEX project_templates_project_id_idx ON project_templates (project_id);
 
 COMMENT ON COLUMN project_templates.name is 'The name of the template';
-COMMENT ON COLUMN project_templates.attribute_uris is 'The array of uris for this template';
+COMMENT ON COLUMN project_templates.columns is 'The array of column uris for this template';
 
 -- Function that is added to each entity table in a trigger when created
 CREATE OR REPLACE FUNCTION entity_tsv_trigger()

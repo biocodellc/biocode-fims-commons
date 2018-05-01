@@ -69,7 +69,7 @@ ALTER TABLE `templateConfigs` CHANGE `templateConfigId` `id` INT(11)  UNSIGNED  
 ALTER TABLE `templateConfigs` CHANGE `userId` `user_id` INT(11)  UNSIGNED  NOT NULL;
 ALTER TABLE `templateConfigs` CHANGE `projectId` `project_id` INT(11)  UNSIGNED  NOT NULL;
 ALTER TABLE `templateConfigs` CHANGE `configName` `name` VARCHAR(100)  CHARACTER SET utf8  COLLATE utf8_general_ci  NULL  DEFAULT NULL;
-ALTER TABLE `templateConfigs` CHANGE `config` `attribute_uris` MEDIUMTEXT  CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  COMMENT 'The array of uris to be checked when generating a template';
+ALTER TABLE `templateConfigs` CHANGE `config` `columns` MEDIUMTEXT  CHARACTER SET utf8  COLLATE utf8_general_ci  NOT NULL  COMMENT 'The array of uris to be checked when generating a template';
 RENAME TABLE `templateConfigs` TO `project_templates`;
 
 alter table oAuthClients drop oAuthClientId;

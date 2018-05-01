@@ -1,7 +1,7 @@
-update project_templates set attribute_uris = replace(attribute_uris, '\', '"');
-alter table project_templates alter COLUMN attribute_uris TYPE jsonb USING attribute_uris::jsonb;
-update project_templates set sheet_name = 'Samples';
-alter table project_templates alter column sheet_name set NOT NULL;
+update project_templates set columns = replace(columns, '\', '"');
+alter table project_templates alter COLUMN columns TYPE jsonb USING columns::jsonb;
+update project_templates set worksheet = 'Samples';
+alter table project_templates alter column worksheet set NOT NULL;
 update expeditions e set identifier = (select b.identifier from bcids_tmp b join expedition_bcids eb on b.id = eb.bcid_id join expeditions e2 on eb.expedition_id = e.id where b.resource_type = 'http://purl.org/dc/dcmitype/Collection' and e.id = e2.id);
 update expeditions set visibility = 'ANYONE' where public = 't';
 update expeditions set visibility = 'EXPEDITION' where public = 'f';

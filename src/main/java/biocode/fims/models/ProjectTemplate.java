@@ -18,18 +18,18 @@ public class ProjectTemplate {
 
     private Integer id;
     private String name;
-    private String sheetName;
-    private List<String> attributeUris;
+    private String worksheet;
+    private List<String> columns;
     private Project project;
     private User user;
 
     ProjectTemplate() {
     }
 
-    public ProjectTemplate(String name, List<String> attributeUris, String sheetName, Project project, User user) {
+    public ProjectTemplate(String name, List<String> columns, String worksheet, Project project, User user) {
         this.name = name;
-        this.attributeUris = attributeUris;
-        this.sheetName = sheetName;
+        this.columns = columns;
+        this.worksheet = worksheet;
         this.project = project;
         this.user = user;
     }
@@ -56,24 +56,24 @@ public class ProjectTemplate {
     }
 
     @JsonView(Views.Summary.class)
-    @Column(nullable = false, name = "sheet_name")
-    public String getSheetName() {
-        return sheetName;
+    @Column(nullable = false, name = "worksheet")
+    public String getWorksheet() {
+        return worksheet;
     }
 
-    public void setSheetName(String sheetName) {
-        this.sheetName = sheetName;
+    public void setWorksheet(String worksheet) {
+        this.worksheet = worksheet;
     }
 
     @JsonView(Views.Detailed.class)
     @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb", name = "attribute_uris")
-    public List<String> getAttributeUris() {
-        return attributeUris;
+    @Column(columnDefinition = "jsonb", name = "columns")
+    public List<String> getColumns() {
+        return columns;
     }
 
-    public void setAttributeUris(List<String> attributeUris) {
-        this.attributeUris = attributeUris;
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
     }
 
     @Override
@@ -99,13 +99,13 @@ public class ProjectTemplate {
     public String toString() {
         return "TemplateConfig{" +
                 "name='" + name + '\'' +
-                ", config='" + attributeUris + '\'' +
+                ", config='" + columns + '\'' +
                 ", project=" + project +
                 ", user=" + user +
                 '}';
     }
 
-    @MapsId("")
+//    @MapsId()
     @JsonView(Views.Detailed.class)
     @JsonViewOverride(Views.Summary.class)
     @ManyToOne

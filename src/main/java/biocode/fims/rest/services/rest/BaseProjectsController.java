@@ -43,7 +43,7 @@ public abstract class BaseProjectsController extends FimsController {
      */
     @Path("{projectId}/templates")
     public Resource getTemplatesResource() {
-        return Resource.from(TemplatesResource.class);
+        return Resource.from(ProjectTemplatesResource.class);
     }
 
     /**
