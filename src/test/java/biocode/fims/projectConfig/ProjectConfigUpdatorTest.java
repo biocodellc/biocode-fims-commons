@@ -52,6 +52,24 @@ public class ProjectConfigUpdatorTest {
         assertEquals(Collections.emptyList(), updator.removedEntities());
     }
 
+    @Test
+    public void should_ignore_updates_to_attribute_uri() {
+        ProjectConfig updatedConfig = new ProjectConfig();
+        Entity e = entity1();
+        e.getAttributes().get(0).setUri("new_uri");
+        updatedConfig.addEntity(e);
+
+        ProjectConfig origConfig = new ProjectConfig();
+        origConfig.addEntity(entity1());
+
+        ProjectConfigUpdator updator = new ProjectConfigUpdator(updatedConfig);
+        ProjectConfig result = updator.update(origConfig);
+
+        assertEquals(origConfig, result);
+        assertEquals(Collections.emptyList(), updator.newEntities());
+        assertEquals(Collections.emptyList(), updator.removedEntities());
+    }
+
     private Entity entity1() {
         Entity e = new Entity("resource1", "someURI");
 

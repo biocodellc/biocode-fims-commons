@@ -42,12 +42,22 @@ public class ProjectConfigUpdator {
     /**
      * parentEntity and uniqueKey can not be changed after entity creation
      *
+     * either can attribute uris
+     *
      * @param updatedEntity
      * @param origEntity
      */
     private void preserveImmutableData(Entity updatedEntity, Entity origEntity) {
         updatedEntity.setParentEntity(origEntity.getParentEntity());
         updatedEntity.setUniqueKey(origEntity.getUniqueKey());
+
+        updatedEntity
+                .getAttributes()
+                .parallelStream()
+                .forEach(attribute -> {
+                    String origURI = origEntity.getAttribute(attribute.getColumn()).getUri();
+                    attribute.setUri(origURI);
+                });
     }
 
     private void checkForRemovedEntities(ProjectConfig origConfig) {
