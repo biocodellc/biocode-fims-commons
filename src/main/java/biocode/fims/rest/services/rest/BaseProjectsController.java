@@ -38,7 +38,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.TemplatesResource
+     * @responseType biocode.fims.rest.services.rest.subResources.ProjectTemplatesResource
      * @resourceTag Templates
      */
     @Path("{projectId}/templates")
