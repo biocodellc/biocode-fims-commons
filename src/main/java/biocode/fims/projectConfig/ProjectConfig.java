@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class ProjectConfig {
 
     private final LinkedList<Entity> entities;
-    @JsonProperty
     private final LinkedList<biocode.fims.digester.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
@@ -121,6 +120,11 @@ public class ProjectConfig {
     public void addEntity(Entity entity) {
         entities.add(entity);
         validated = false;
+    }
+
+    @JsonProperty
+    public List<biocode.fims.digester.List> lists() {
+        return lists;
     }
 
     public void addList(biocode.fims.digester.List list) {

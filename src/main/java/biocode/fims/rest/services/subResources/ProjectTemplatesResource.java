@@ -8,15 +8,16 @@ import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
+import biocode.fims.query.writers.ExcelQueryWriter;
+import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.run.TemplateProcessor;
+import biocode.fims.rest.services.BaseFileController;
+import biocode.fims.run.ExcelWorkbookWriter;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.ProjectTemplateService;
-import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
-import biocode.fims.utils.StringGenerator;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,8 +28,11 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import static biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode.UNKNOWN_COLUMN;
 
 /**
  * @author RJ Ewing
@@ -214,28 +218,37 @@ public class ProjectTemplatesResource extends FimsController {
             @FormParam("sheetName") String sheetName,
             @PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProjectWithTemplates(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
-            throw new BadRequestException("you do not have the necessary permissions to access this project");
+            throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
         }
 
-        // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
+        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(sheetName);
+        for (String col: columns) {
+            for (Attribute a: attributes) {
+                if (a.getColumn().equals(col)) break;
+            }
 
-        File file = t.createExcelFile(sheetName, defaultOutputDirectory(), columns);
+            throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col);
+        }
+
+
+        // Create the template processor which handles all functions related to the template, reading, generation
+        ExcelWorkbookWriter workbookWriter = new ExcelWorkbookWriter(project, props.naan(), userContext.getUser());
+
+        File file = workbookWriter.write(
+                Collections.singletonList(
+                        new ExcelWorkbookWriter.WorkbookWriterSheet(sheetName, columns)
+                ));
 
         // Catch a null file and return 204
         if (file == null) {
             return Response.noContent().build();
         }
 
-        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
-        String fileId = StringGenerator.generateString(20);
-        CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, file.getName());
-        fileCache.addFile(cf);
-
-        URI fileURI = uriInfo.getBaseUriBuilder().path("file/" + fileId).build();
+        String fileId = fileCache.cacheFileForUser(file, userContext.getUser());
+        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }

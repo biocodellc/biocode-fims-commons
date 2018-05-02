@@ -6,8 +6,10 @@ import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.models.Project;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
+import biocode.fims.run.ExcelWorkbookWriter;
 import biocode.fims.settings.PathManager;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,54 +27,27 @@ import java.util.stream.Collectors;
 /**
  * @author RJ Ewing
  */
-public class ExcelQueryWriter implements QueryWriter {
+public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter {
     private final QueryResults queryResults;
 
-    private SXSSFWorkbook workbook = new SXSSFWorkbook();
-
-    public ExcelQueryWriter(QueryResults queryResults) {
+    public ExcelQueryWriter(Project project, QueryResults queryResults, int naan) {
+        super(project, naan);
         this.queryResults = queryResults;
     }
 
     @Override
     public File write() {
-        File file = PathManager.createUniqueFile("output.xlsx", System.getProperty("java.io.tmpdir"));
-
         if (queryResults.isEmpty()) {
             throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
         }
 
-        Map<String, List<Map<String, String>>> recordsBySheet = recordsBySheet();
+        List<ExcelWorkbookWriter.WorkbookWriterSheet> sheets = recordsToWriterSheets();
 
-        recordsBySheet.forEach((sheetName, records) -> {
-            List<String> columns = new ArrayList(records.get(0).keySet());
-            Sheet sheet = workbook.createSheet(sheetName);
-
-            int rowNum = 0;
-
-            Row row = sheet.createRow(rowNum);
-            writeHeaderRow(columns, row);
-            rowNum++;
-
-            for (Map<String, String> record : records) {
-                row = sheet.createRow(rowNum);
-
-                addResourceToRow(sheetName, columns, record, row);
-                rowNum++;
-            }
-        });
-
-        try (FileOutputStream fout = new FileOutputStream(file)) {
-            workbook.write(fout);
-        } catch (IOException e) {
-            throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
-        }
-
-        workbook.dispose();
-        return file;
+        return super.write(sheets);
     }
 
-    private Map<String, List<Map<String, String>>> recordsBySheet() {
+    private List<ExcelWorkbookWriter.WorkbookWriterSheet> recordsToWriterSheets() {
+
         Map<String, List<Map<String, String>>> recordsBySheet = new HashMap<>();
         Map<String, List<Entity>> entitiesBySheet = new HashMap<>();
 
@@ -93,7 +68,7 @@ public class ExcelQueryWriter implements QueryWriter {
                 // if we don't have any common columns, then there is no way to join the records
                 if (commonColumns.size() == 0) {
                     // we need to put all records on a new sheet
-                    recordsBySheet.put(sheet + "_" + queryResult.entity().getConceptAlias(), queryResult.get(true));
+                    recordsBySheet.put(sheet + "_" + queryResult.entity().getConceptAlias(), queryResult.get(false));
                     break;
                 }
 
@@ -101,7 +76,7 @@ public class ExcelQueryWriter implements QueryWriter {
                 // if there is only 1 existingRecord where all commonColumns match, then we can
                 // do the join
                 boolean newSheet = false;
-                for (Map<String, String> record : queryResult.get(true)) {
+                for (Map<String, String> record : queryResult.get(false)) {
 
                     boolean matches = true;
                     Map<String, String> match = null;
@@ -137,18 +112,40 @@ public class ExcelQueryWriter implements QueryWriter {
                 }
 
                 if (newSheet) {
-                    recordsBySheet.put(sheet + "_" + queryResult.entity().getConceptAlias(), queryResult.get(true));
+                    recordsBySheet.put(sheet + "_" + queryResult.entity().getConceptAlias(), queryResult.get(false));
                 } else {
                     recordsBySheet.put(sheet, mergedRecords);
                 }
 
             } else {
-                recordsBySheet.put(sheet, new ArrayList(queryResult.records()));
+                recordsBySheet.put(sheet, new ArrayList<>(queryResult.get(false)));
                 entitiesBySheet.computeIfAbsent(sheet, k -> new ArrayList<>()).add(queryResult.entity());
             }
 
         }
-        return recordsBySheet;
+
+        List<ExcelWorkbookWriter.WorkbookWriterSheet> sheets = new ArrayList<>();
+        for (String sheetName: recordsBySheet.keySet()) {
+            List<Map<String, String>> records = recordsBySheet.get(sheetName);
+
+            List<String> columns = project.getProjectConfig().attributesForSheet(sheetName)
+                    .stream()
+                    .map(Attribute::getColumn)
+                    .collect(Collectors.toList());
+
+            records.stream()
+                    .flatMap(r -> r.keySet().stream())
+                    .forEach(c -> {
+                        if (!columns.contains(c)) {
+                            columns.add(c);
+                        }
+                    });
+
+            sheets.add(
+                    new ExcelWorkbookWriter.WorkbookWriterSheet(sheetName, columns, records)
+            );
+        }
+        return sheets;
     }
 
     private List<String> getCommonColumns(List<Entity> existingEntities, Entity entity) {
@@ -158,50 +155,8 @@ public class ExcelQueryWriter implements QueryWriter {
                 .collect(Collectors.toList());
 
         return entity.getAttributes().stream()
-                .map(a -> a.getColumn())
-                .filter(c -> existingColumns.contains(c))
+                .map(Attribute::getColumn)
+                .filter(existingColumns::contains)
                 .collect(Collectors.toList());
-    }
-
-    private void writeHeaderRow(List<String> columns, Row row) {
-        int cellNum = 0;
-
-        for (String column : columns) {
-            Cell cell = row.createCell(cellNum);
-
-            cell.setCellValue(column);
-            cellNum++;
-        }
-    }
-
-    private void addResourceToRow(String sheetName, List<String> columns, Map<String, String> record, Row row) {
-        int cellNum = 0;
-
-        for (String column : columns) {
-            Cell cell = row.createCell(cellNum);
-
-            cell.setCellValue(record.getOrDefault(column, ""));
-
-            DataType dataType = findDataType(sheetName, column);
-            if (dataType.equals(DataType.FLOAT)) {
-                XSSFCellStyle style = (XSSFCellStyle) workbook.createCellStyle();
-                style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
-                cell.setCellStyle(style);
-            } else if (dataType.equals(DataType.INTEGER)) {
-                XSSFCellStyle style = (XSSFCellStyle) workbook.createCellStyle();
-                style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-                cell.setCellStyle(style);
-            }
-
-            cellNum++;
-        }
-    }
-
-    private DataType findDataType(String sheetName, String column) {
-        return queryResults.entities().stream()
-                .filter(e -> sheetName.equals(e.getWorksheet()) && e.getAttribute(column) != null)
-                .findFirst()
-                .map(e -> e.getAttribute(column).getDatatype())
-                .orElse(DataType.STRING);
     }
 }

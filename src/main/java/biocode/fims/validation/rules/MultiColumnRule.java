@@ -24,6 +24,10 @@ abstract class MultiColumnRule extends AbstractRule {
         this.columns = columns;
     }
 
+    public LinkedHashSet<String> columns() {
+        return columns;
+    }
+
     public void addColumn(String column) {
         columns.add(column);
     }

@@ -25,7 +25,7 @@ public class QueryResults implements Iterable<QueryResult> {
 
     public List<Entity> entities() {
         return results.stream()
-                .map(r -> r.entity())
+                .map(QueryResult::entity)
                 .collect(Collectors.toList());
     }
 
@@ -38,7 +38,7 @@ public class QueryResults implements Iterable<QueryResult> {
 
     public boolean isEmpty() {
         return results.stream()
-                .anyMatch(r -> r.get(false).size() > 0);
+                .noneMatch(r -> r.get(false).size() > 0);
     }
 
     @Override

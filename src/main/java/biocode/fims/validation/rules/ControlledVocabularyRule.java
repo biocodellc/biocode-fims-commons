@@ -156,6 +156,17 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         return NAME;
     }
 
+    public biocode.fims.digester.List list() {
+        if (list == null) {
+            list = config.findList(listName);
+        }
+        return list;
+    }
+
+    public String listName() {
+        return listName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
