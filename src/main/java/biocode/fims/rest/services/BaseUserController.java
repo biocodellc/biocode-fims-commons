@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.auth.PasswordHash;

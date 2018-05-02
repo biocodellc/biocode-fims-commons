@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest.subResources;
+package biocode.fims.rest.services.subResources;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
@@ -12,7 +12,6 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ProjectService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import biocode.fims.application.config.FimsProperties;
-import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 

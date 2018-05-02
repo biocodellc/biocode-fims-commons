@@ -2,7 +2,7 @@ package biocode.fims.rest;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.rest.filters.*;
-import biocode.fims.rest.services.rest.subResources.*;
+import biocode.fims.rest.services.subResources.*;
 import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.lang.ArrayUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;

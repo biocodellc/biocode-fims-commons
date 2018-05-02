@@ -1,10 +1,9 @@
-package biocode.fims.rest.services.rest.subResources;
+package biocode.fims.rest.services.subResources;
 
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.*;
-import biocode.fims.rest.AcknowledgedResponse;
 import biocode.fims.rest.ConfirmationResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;

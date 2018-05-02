@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest.subResources;
+package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;

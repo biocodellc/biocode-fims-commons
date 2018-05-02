@@ -2,7 +2,7 @@ package biocode.fims.rest;
 
 import biocode.fims.application.config.SettingsManagerConfig;
 import biocode.fims.rest.filters.*;
-import biocode.fims.rest.services.rest.subResources.*;
+import biocode.fims.rest.services.subResources.*;
 import biocode.fims.rest.versioning.VersionTransformer;
 import biocode.fims.rest.versioning.VersionUrlConfig;
 import biocode.fims.tools.FileCache;

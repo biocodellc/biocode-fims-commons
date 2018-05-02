@@ -1,8 +1,8 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.services.rest.subResources.*;
+import biocode.fims.rest.services.subResources.*;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import org.glassfish.jersey.server.model.Resource;
@@ -29,7 +29,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectsResource
+     * @responseType biocode.fims.rest.services.subResources.ProjectsResource
      */
     @Path("/")
     public Resource getProjectsResource() {
@@ -38,7 +38,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectTemplatesResource
+     * @responseType biocode.fims.rest.services.subResources.ProjectTemplatesResource
      * @resourceTag Templates
      */
     @Path("{projectId}/templates")
@@ -48,7 +48,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ExpeditionsResource
+     * @responseType biocode.fims.rest.services.subResources.ExpeditionsResource
      * @resourceTag Expeditions
      */
     @Path("{projectId}/expeditions")
@@ -58,7 +58,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectMembersResource
+     * @responseType biocode.fims.rest.services.subResources.ProjectMembersResource
      * @resourceTag Members
      */
     @Path("{projectId}/members")
@@ -68,7 +68,7 @@ public abstract class BaseProjectsController extends FimsController {
 
     /**
      *
-     * @responseType biocode.fims.rest.services.rest.subResources.ProjectConfigurationResource
+     * @responseType biocode.fims.rest.services.subResources.ProjectConfigurationResource
      * @resourceTag Config
      */
     @Path("/{projectId}/config")
