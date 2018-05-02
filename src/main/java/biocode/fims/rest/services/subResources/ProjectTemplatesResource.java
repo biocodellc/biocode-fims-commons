@@ -132,6 +132,13 @@ public class ProjectTemplatesResource extends FimsController {
         return projectTemplateService.save(projectTemplate);
     }
 
+    /**
+     * update a template configuration
+     * @param columns
+     * @param configName
+     * @param projectId
+     * @return
+     */
     @Path("{configName}")
     @PUT
     @Authenticated
@@ -169,6 +176,11 @@ public class ProjectTemplatesResource extends FimsController {
         return projectTemplateService.save(template);
     }
 
+    /**
+     * delete a template configuration
+     * @param configName
+     * @param projectId
+     */
     @Path("{configName}")
     @DELETE
     @Authenticated
