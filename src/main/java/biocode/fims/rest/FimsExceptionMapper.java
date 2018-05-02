@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -37,6 +38,8 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
 
     @Override
     public Response toResponse(Exception e) {
+        if (e instanceof NotFoundException) return ((NotFoundException) e).getResponse();
+
         logException(e);
         ErrorInfo errorInfo = getErrorInfo(e);
         String mediaType;
