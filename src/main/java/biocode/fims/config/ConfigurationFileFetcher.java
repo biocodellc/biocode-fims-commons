@@ -1,7 +1,7 @@
 package biocode.fims.config;
 
-import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.models.Project;
 import biocode.fims.settings.PathManager;
 import biocode.fims.utils.UrlFreshener;
 
@@ -62,8 +62,8 @@ public class ConfigurationFileFetcher {
      *
      * @param defaultOutputDirectory
      */
-    public ConfigurationFileFetcher(Integer projectId, String defaultOutputDirectory, Boolean useCache) {
-        this.projectId = projectId;
+    public ConfigurationFileFetcher(Project project, String defaultOutputDirectory, Boolean useCache) {
+        this.projectId = project.getProjectId();
         configFileName = "config." + projectId + ".xml";
 
         Boolean useCacheResults = false;
@@ -76,8 +76,7 @@ public class ConfigurationFileFetcher {
         // get a fresh copy if the useCacheResults is false
         if (!useCacheResults) {
             // Get the URL for this configuration File
-            ProjectMinter project = new ProjectMinter();
-            String url = project.getValidationXML(projectId);
+            String url = project.getValidationXml();
             try {
                 // Initialize the connection
                 init(new URL(url), defaultOutputDirectory);
@@ -170,15 +169,6 @@ public class ConfigurationFileFetcher {
             throw new FimsRuntimeException(500, e);
         }
     }
-
-    public static void main(String[] args) {
-        ConfigurationFileFetcher cFF = null;
-        String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
-
-        cFF = new ConfigurationFileFetcher(1, defaultOutputDirectory, false);
-        // System.out.println(readFile(cFF.getOutputFile()));
-    }
-
 }
 
 

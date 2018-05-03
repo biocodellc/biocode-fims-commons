@@ -40,7 +40,7 @@ public class ProjectConfigConverter {
 
             try {
                 logger.info("\nStoring project config: " + p.getProjectId());
-                File configFile = new ConfigurationFileFetcher(p.getProjectId(), System.getProperty("java.io.tmpdir"), false).getOutputFile();
+                File configFile = new ConfigurationFileFetcher(p, System.getProperty("java.io.tmpdir"), false).getOutputFile();
 
                 Mapping mapping = new Mapping();
                 mapping.addMappingRules(configFile);
