@@ -49,12 +49,13 @@ public class QueryParser extends BaseParser<Object> {
                         WhiteSpace(),
                         SubExpression(),
                         ZeroOrMore(
-                                WhiteSpace(),
+                                WhiteSpaceChars(),
                                 OrChars(),
-                                WhiteSpace(),
+                                WhiteSpaceChars(),
                                 SubExpression(),
                                 push(new LogicalExpression(OR, popExp(1), popExp()))
-                        )
+                        ),
+                        WhiteSpace()
                 )
         );
     }
@@ -63,9 +64,9 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 Expression(),
                 ZeroOrMore(
-                        WhiteSpace(),
+                        WhiteSpaceChars(),
                         AndChars(),
-                        WhiteSpace(),
+                        WhiteSpaceChars(),
                         Expression(),
                         push(new LogicalExpression(AND, popExp(1), popExp()))
                 )
@@ -86,10 +87,12 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule NotExpression() {
         return Sequence(
-                    NotChars(),
-                    WhiteSpace(),
-                    Expression(),
-                    push(new NotExpression(popExp()))
+                WhiteSpace(),
+                NotChars(),
+                WhiteSpaceChars(),
+                TestNot(NotExpression()),
+                Expression(),
+                push(new NotExpression(popExp()))
         );
     }
 
@@ -109,25 +112,25 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule ExistsExpression() {
         return Sequence(
+                WhiteSpace(),
                 SpecialPrefixExpression(ExistsChars()),
-                push(new ExistsExpression(popStr())),
-                WhiteSpace()
+                push(new ExistsExpression(popStr()))
         );
     }
 
     Rule ExpeditionsExpression() {
         return Sequence(
+                WhiteSpace(),
                 SpecialPrefixExpression(ExpeditionsChars()),
-                push(new ExpeditionExpression(popStr())),
-                WhiteSpace()
+                push(new ExpeditionExpression(popStr()))
         );
     }
 
     Rule SelectExpression() {
         return Sequence(
+                WhiteSpace(),
                 SpecialPrefixExpression(SelectChars()),
-                push(new SelectExpression(popStr())),
-                WhiteSpace()
+                push(new SelectExpression(popStr()))
         );
     }
 
@@ -153,6 +156,7 @@ public class QueryParser extends BaseParser<Object> {
     Rule FTSExpression() {
         StringVar column = new StringVar();
         return Sequence(
+                WhiteSpace(),
                 Optional(
                         Chars(),
                         WhiteSpace(),
@@ -162,25 +166,25 @@ public class QueryParser extends BaseParser<Object> {
                 ),
                 WhiteSpace(),
                 Chars(),
-                push(new FTSExpression(column.get(), popStr())),
-                WhiteSpace()
+                push(new FTSExpression(column.get(), popStr()))
         );
     }
 
     Rule ExpressionGroup() {
         return Sequence(
+                WhiteSpace(),
                 OpenParen(),
                 WhiteSpace(),
                 TopExpression(),
                 WhiteSpace(),
                 CloseParen(),
-                push(new GroupExpression(popExp())),
-                WhiteSpace()
+                push(new GroupExpression(popExp()))
         );
     }
 
     Rule PhraseComparisonExpression() {
         return Sequence(
+                WhiteSpace(),
                 ComparisonOperator(),
                 new Action() {
                     @Override
@@ -191,48 +195,47 @@ public class QueryParser extends BaseParser<Object> {
                 },
                 WhiteSpace(),
                 Phrase(),
-                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr()))),
-                WhiteSpace()
+                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr())))
         );
     }
 
     Rule ComparisonExpression() {
         return Sequence(
+                WhiteSpace(),
                 ComparisonOperator(),
                 WhiteSpace(),
                 Chars(),
-                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr()))),
-                WhiteSpace()
+                push(new ComparisonExpression(popStr(2), popStr(), ComparisonOperator.fromOp(popStr())))
         );
     }
 
     Rule LikeExpression() {
         return Sequence(
+                WhiteSpace(),
                 LikeChar(),
                 WhiteSpace(),
                 Phrase(),
-                push(new LikeExpression(popStr(1), popStr())),
-                WhiteSpace()
+                push(new LikeExpression(popStr(1), popStr()))
         );
     }
 
     Rule PhraseExpression() {
         return Sequence(
+                WhiteSpace(),
                 SemiColon(),
                 WhiteSpace(),
                 Phrase(),
-                push(new LikeExpression(popStr(1), "%" + popStr() + "%")),
-                WhiteSpace()
+                push(new LikeExpression(popStr(1), "%" + popStr() + "%"))
         );
     }
 
     Rule RangeExpression() {
         return Sequence(
+                WhiteSpace(),
                 SemiColon(),
                 WhiteSpace(),
                 Range(),
-                push(new RangeExpression(popStr(1), popStr())),
-                WhiteSpace()
+                push(new RangeExpression(popStr(1), popStr()))
         );
     }
 
@@ -317,9 +320,6 @@ public class QueryParser extends BaseParser<Object> {
                 QuoteChar(),
                 OpenParen(),
                 CloseParen(),
-                AndChars(),
-                OrChars(),
-                NotChars(),
                 ExistsChars(),
                 OpenBracket(),
                 CloseBracket(),

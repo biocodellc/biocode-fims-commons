@@ -56,7 +56,7 @@ public class QueryParserTest {
     }
 
     @Test
-    public void should_parse_simle_not_expression() {
+    public void should_parse_simple_not_expression() {
         String qs = "not value1 ";
 
         Query result = parseRunner.run(qs).resultValue;
@@ -64,7 +64,6 @@ public class QueryParserTest {
         Query expected = new Query(queryBuilder, null, new NotExpression(new FTSExpression(null, "value1")));
 
         assertEquals(expected, result);
-
     }
 
     @Test
@@ -255,6 +254,28 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_multiple_and_expression_failing_query() {
+        String qs = "_exists_:decimalLongitude and _exists_:decimalLatitude and _exists_:permitInformation";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Expression l1 = new LogicalExpression(
+                LogicalOperator.AND,
+                new ExistsExpression("decimalLongitude"),
+                new ExistsExpression("decimalLatitude")
+        );
+        Expression l2 = new LogicalExpression(
+                LogicalOperator.AND,
+                l1,
+                new ExistsExpression("permitInformation")
+        );
+
+        Query expected = new Query(queryBuilder, null, l2);
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void should_parse_and_or_expression() {
         String qs = "col2 = someValue and col1::\"%test\" or val and (value2 or val3)";
 
@@ -286,6 +307,15 @@ public class QueryParserTest {
         Query expected = new Query(queryBuilder, null, root);
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_not_parse_double_not_expression() {
+        String qs = "not not value1 ";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        assertEquals(null, result);
     }
 
     @Test

@@ -53,6 +53,8 @@ public class ComparisonExpression implements Expression {
 
     @Override
     public String toString() {
-        return column + operator + term;
+        return "ComparisonExpression{" +
+                column + operator + term +
+                '}';
     }
 }
