@@ -8,11 +8,9 @@ import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
-import biocode.fims.query.writers.ExcelQueryWriter;
-import biocode.fims.query.writers.QueryWriter;
+import biocode.fims.rest.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.services.BaseFileController;
 import biocode.fims.run.ExcelWorkbookWriter;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
@@ -24,9 +22,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -213,7 +209,7 @@ public class ProjectTemplatesResource extends FimsController {
     @Path("generate")
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response createExcel(
+    public FileResponse createExcel(
             @FormParam("columns") List<String> columns,
             @FormParam("sheetName") String sheetName,
             @PathParam("projectId") Integer projectId) {
@@ -244,12 +240,11 @@ public class ProjectTemplatesResource extends FimsController {
 
         // Catch a null file and return 204
         if (file == null) {
-            return Response.noContent().build();
+            return null;
         }
 
         String fileId = fileCache.cacheFileForUser(file, userContext.getUser());
-        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
 
-        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
+        return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
 }
