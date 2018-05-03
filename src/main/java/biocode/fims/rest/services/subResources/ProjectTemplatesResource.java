@@ -8,7 +8,7 @@ import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
-import biocode.fims.rest.FileResponse;
+import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.ExcelWorkbookWriter;

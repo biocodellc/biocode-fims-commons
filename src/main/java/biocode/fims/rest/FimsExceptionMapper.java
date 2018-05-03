@@ -1,17 +1,12 @@
 package biocode.fims.rest;
 
-import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsAbstractException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.fimsExceptions.UnauthorizedRequestException;
-import biocode.fims.run.ProcessorStatus;
 import biocode.fims.utils.ErrorInfo;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -20,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.util.List;
 
 /**
  * class to catch an exception thrown from a rest service and map the necessary information to a request
@@ -42,37 +36,12 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
 
         logException(e);
         ErrorInfo errorInfo = getErrorInfo(e);
-        String mediaType;
 
-        HttpSession session = request.getSession();
+        return Response.status(errorInfo.getHttpStatusCode())
+                .entity(errorInfo.toJSON())
+                .type(MediaType.APPLICATION_JSON)
+                .build();
 
-        // check if the called service is expected to return HTML of JSON
-        // try to get the mediaType of the matched method. If an exception was thrown before the resource was constructed
-        // then getMatchedMethod will return null. If that's the case then we should look to the accept header for the
-        // correct response type.
-        try {
-            mediaType = uriInfo.getMatchedResourceMethod().getProducedTypes().get(0).toString();
-        } catch(IndexOutOfBoundsException | NullPointerException ex) {
-            List<MediaType> accepts = httpHeaders.getAcceptableMediaTypes();
-            logger.debug("NullPointerException thrown while retrieving mediaType in FimsExceptionMapper.java");
-            // if request accepts JSON, return the error in JSON, otherwise use html
-            if (accepts.contains(MediaType.TEXT_HTML_TYPE)) {
-                mediaType = MediaType.TEXT_HTML;
-            } else {
-                mediaType = MediaType.APPLICATION_JSON;
-            }
-        }
-
-        if (mediaType.contains( MediaType.TEXT_HTML)) {
-            // add errorInfo to session to be used on custom error page
-            session.setAttribute("errorInfo", errorInfo);
-            return Response.status(errorInfo.getHttpStatusCode()).build();
-        } else {
-            return Response.status(errorInfo.getHttpStatusCode())
-                    .entity(errorInfo.toJSON())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
-        }
     }
 
     // method to set the relevant information in ErrorInfo
@@ -88,7 +57,7 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
             usrMessage = "Server Error";
         }
 
-        return new ErrorInfo(usrMessage, developerMessage, httpStatusCode, (Exception) e);
+        return new ErrorInfo(usrMessage, developerMessage, httpStatusCode, e);
 
     }
 
@@ -104,10 +73,11 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
     }
 
     protected void logException(Exception e) {
+        Integer status = e instanceof FimsAbstractException ? ((FimsAbstractException) e).getHttpStatusCode() : 0;
+
         // don't log BadRequestexceptions or UnauthorizedRequestExceptions or ForbiddenRequestExceptions
-        if (!(e instanceof BadRequestException || e instanceof UnauthorizedRequestException ||
-                e instanceof ForbiddenRequestException)) {
-            logger.error("{} thrown.", e.getClass().toString(), e);
-        }
+        if (status == 400 || status == 403 || status == 401) return;
+
+        logger.error("{} thrown.", e.getClass().toString(), e);
     }
 }

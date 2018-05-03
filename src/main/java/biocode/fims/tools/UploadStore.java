@@ -21,9 +21,7 @@ public class UploadStore {
         store = new ConcurrentHashMap<>();
     }
 
-    public UUID put(DatasetProcessor processor, int userId) {
-        UUID id = UUID.randomUUID();
-
+    public UUID put(UUID id, DatasetProcessor processor, int userId) {
         store.put(id, new UploadMetadata(processor, userId));
         removeExpired();
 

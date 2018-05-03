@@ -8,7 +8,7 @@ import biocode.fims.models.OAuthToken;
 import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.rest.AcknowledgedResponse;
+import biocode.fims.rest.responses.AcknowledgedResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;

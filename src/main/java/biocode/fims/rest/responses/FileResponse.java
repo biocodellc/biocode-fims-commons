@@ -1,4 +1,4 @@
-package biocode.fims.rest;
+package biocode.fims.rest.responses;
 
 import javax.ws.rs.core.UriBuilder;
 
