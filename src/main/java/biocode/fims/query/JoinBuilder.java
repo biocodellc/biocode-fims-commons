@@ -79,7 +79,7 @@ public class JoinBuilder {
 
     private void appendEntityIdentifiersJoin() {
         joinString
-                .append(" JOIN entity_identifiers AS ")
+                .append(" LEFT JOIN entity_identifiers AS ")
                 .append(queryEntity.getConceptAlias())
                 .append("_entity_identifiers ON ")
                 .append(queryEntity.getConceptAlias())
@@ -94,7 +94,7 @@ public class JoinBuilder {
         for (Entity e : selectEntities) {
             verifyRelated(e);
             joinString
-                    .append(" JOIN entity_identifiers AS ")
+                    .append(" LEFT JOIN entity_identifiers AS ")
                     .append(e.getConceptAlias())
                     .append("_entity_identifiers ON ")
                     .append(e.getConceptAlias())
