@@ -33,7 +33,7 @@ public class QueryResults implements Iterable<QueryResult> {
         return results.stream()
                 .filter(r -> r.entity().getConceptAlias().equals(conceptAlias))
                 .findFirst()
-                .orElseGet(null);
+                .orElse(null);
     }
 
     public boolean isEmpty() {

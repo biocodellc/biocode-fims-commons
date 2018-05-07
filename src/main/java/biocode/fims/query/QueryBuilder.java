@@ -134,6 +134,9 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     @Override
     public void visit(SelectExpression expression) {
         expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(this.project.getProjectConfig().entity(conceptAlias)));
+        if (expression.expression() != null) {
+            expression.expression().accept(this);
+        }
     }
 
     @Override

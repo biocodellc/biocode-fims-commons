@@ -1,5 +1,7 @@
 package biocode.fims.rest.responses;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @author RJ Ewing
  */
@@ -10,6 +12,7 @@ public class UrlResponse {
         this.url = url;
     }
 
+    @JsonProperty()
     public String url() {
         return url;
     }

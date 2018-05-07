@@ -3,10 +3,19 @@ package biocode.fims.query.dsl;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.*;
+import org.parboiled.matchers.AbstractMatcher;
+import org.parboiled.matchers.Matcher;
+import org.parboiled.matchervisitors.MatcherVisitor;
 import org.parboiled.support.StringVar;
+import org.parboiled.support.ValueStack;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static biocode.fims.query.dsl.LogicalOperator.AND;
 import static biocode.fims.query.dsl.LogicalOperator.OR;
+import static org.parboiled.common.Preconditions.checkArgNotNull;
 
 /**
  * @author rjewing
@@ -28,10 +37,53 @@ public class QueryParser extends BaseParser<Object> {
                 new Action() {
                     @Override
                     public boolean run(Context context) {
-                        if (context.getValueStack().isEmpty())
+                        // Generate a Query object from the parser results
+                        ValueStack stack = context.getValueStack();
+
+                        if (stack.isEmpty()) {
                             push(new Query(queryBuilder, projectConfig, new EmptyExpression()));
-                        else push(new Query(queryBuilder, projectConfig, popExp()));
-                        return context.getValueStack().size() == 1;
+                        } else if (stack.size() == 1) {
+                            Expression expression = popExp();
+
+                            if (expression instanceof SelectExpression) {
+                                ((SelectExpression) expression).setExpression(new AllExpression());
+                            }
+
+                            push(new Query(queryBuilder, projectConfig, expression));
+                        } else {
+                            List<String> selectEntities = new ArrayList<>();
+                            Expression expression = null;
+
+                            for (Object o : stack) {
+                                if (o instanceof SelectExpression) {
+                                    selectEntities.addAll(((SelectExpression) o).entites());
+                                } else {
+                                    // We should only have 0 or 1 objects other the SelectExpressions in the stack.
+                                    // If we have more, then there was an issue parsing
+                                    if (expression != null) {
+                                        return false;
+                                    }
+                                    expression = (Expression) o;
+                                }
+                            }
+
+                            // clear the stack so we can rebuild
+                            stack.clear();
+
+                            if (selectEntities.size() > 0) {
+                                Expression e;
+                                if (expression != null) {
+                                    // If we have 1 object other then SelectExpressions. This is the filter expression
+                                    e = new SelectExpression(String.join(",", selectEntities), expression);
+                                } else {
+                                    // If we have no other objects, then we have an AllExpression
+                                    e = new SelectExpression(String.join(",", selectEntities), new AllExpression());
+                                }
+                                push(new Query(queryBuilder, projectConfig, e));
+                            }
+                        }
+
+                        return stack.size() == 1;
                     }
                 }
         );
@@ -53,7 +105,7 @@ public class QueryParser extends BaseParser<Object> {
                                 OrChars(),
                                 WhiteSpaceChars(),
                                 SubExpression(),
-                                push(new LogicalExpression(OR, popExp(1), popExp()))
+                                logicalAction(OR)
                         ),
                         WhiteSpace()
                 )
@@ -68,20 +120,24 @@ public class QueryParser extends BaseParser<Object> {
                         AndChars(),
                         WhiteSpaceChars(),
                         Expression(),
-                        push(new LogicalExpression(AND, popExp(1), popExp()))
+                        logicalAction(AND)
                 )
         );
     }
 
     Rule Expression() {
-        return FirstOf(
-                NotExpression(),
-                FilterExpression(),
-                ExistsExpression(),
-                ExpeditionsExpression(),
-                SelectExpression(),
-                FTSExpression(),
-                ExpressionGroup()
+        return Sequence(
+                FirstOf(
+                        NotExpression(),
+                        FilterExpression(),
+                        ExistsExpression(),
+                        ExpeditionsExpression(),
+                        SelectExpression(),
+                        FTSExpression(),
+                        ExpressionGroup()
+                ),
+                // SelectExpression doesn't need to be preceded by "and" or "or"
+                Optional(SelectExpression())
         );
     }
 
@@ -130,7 +186,15 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 WhiteSpace(),
                 SpecialPrefixExpression(SelectChars()),
-                push(new SelectExpression(popStr()))
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        String val = popStr();
+                        // all SelectExpressions should be added to bottom of stack
+                        return push(context.getValueStack().size(), new SelectExpression(val, null));
+                    }
+                },
+                Optional(Expression())
         );
     }
 
@@ -431,5 +495,21 @@ public class QueryParser extends BaseParser<Object> {
 
     String popStr(int down) {
         return (String) pop(down);
+    }
+
+    Action logicalAction(LogicalOperator op) {
+        return new Action() {
+            @Override
+            public boolean run(Context context) {
+                Expression left = popExp(1);
+                Expression right = popExp();
+
+                if (left instanceof SelectExpression || right instanceof SelectExpression)
+                    return false;
+
+                push(new LogicalExpression(op, left, right));
+                return true;
+            }
+        };
     }
 }

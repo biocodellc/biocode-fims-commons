@@ -35,6 +35,7 @@ public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor 
 
     @Override
     public void visit(SelectExpression selectExpression) {
+        if (selectExpression.expression() != null) selectExpression.expression().accept(this);
     }
 
     @Override

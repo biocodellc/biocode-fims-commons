@@ -232,6 +232,91 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_select_with_filter_expression() {
+        String qs = "_select_:entity _exists_:col1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("entity", new ExistsExpression("col1")));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_not_parse_select_in_and_or_or_expression() {
+        String qs1 = "_exists_:col1 and _select_:entity";
+
+        Query result = parseRunner.run(qs1).resultValue;
+        assertEquals(null, result);
+
+        String qs2 = "_select_:entity and _exists_:col1";
+        result = parseRunner.run(qs1).resultValue;
+        assertEquals(null, result);
+
+        String qs3 = "_exists_:col1 or _select_:entity";
+
+        result = parseRunner.run(qs3).resultValue;
+        assertEquals(null, result);
+
+        String qs4 = "_select_:entity or _exists_:col1";
+        result = parseRunner.run(qs4).resultValue;
+        assertEquals(null, result);
+    }
+
+    // TODO this would be nice to solve, currently it returns a FTS for not & SelectExpression
+//    @Test
+//    public void should_not_parse_select_in_not_expression() {
+//        String qs = "not _select_:entity";
+//
+//        Query result = parseRunner.run(qs).resultValue;
+//        assertEquals(null, result);
+//    }
+//
+    @Test
+    public void should_parse_select_filter_expression() {
+        String qs = "_select_:entity";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("entity", new AllExpression()));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_select_filter_expression() {
+        String qs = "_select_:[e_1, e_2]";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("e_1, e_2", new AllExpression()));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_seperate_select_with_filter_expression() {
+        String qs = "_select_:entity _exists_:col1 _select_:e2";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("entity,e2", new ExistsExpression("col1")));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_seperate_select_without_filter_expression() {
+        String qs = "_select_:entity _select_:e2";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("entity,e2", new AllExpression()));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void should_parse_multiple_and_expression() {
         String qs = "col2 = someValue and col1::\"%test\" and value2";
 

@@ -140,8 +140,7 @@ public class QueryBuilderTest {
     public void should_throw_exception_for_multi_entity_select_with_no_relation_to_query_entity() {
         try {
             QueryBuilder queryBuilder = queryBuilder("non-linked");
-            queryBuilder.visit(new AllExpression());
-            queryBuilder.visit(new SelectExpression("sample"));
+            queryBuilder.visit(new SelectExpression("sample", new AllExpression()));
             queryBuilder.parameterizedQuery(false);
             fail();
         } catch (Exception e) {
@@ -321,6 +320,25 @@ public class QueryBuilderTest {
                 "SELECT event.data AS event_data, event_entity_identifiers.identifier AS event_root_identifier FROM project_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                        "WHERE expeditions.expedition_code = :1",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
+    public void should_write_valid_sql_for_multi_entity_expedition_expression_single_expedition() {
+        QueryBuilder queryBuilder = queryBuilder("event");
+        queryBuilder.visit(new SelectExpression("sample", new ExpeditionExpression("TEST")));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "TEST");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT event.data AS event_data, event_entity_identifiers.identifier AS event_root_identifier, sample.data AS sample_data, sample_entity_identifiers.identifier AS sample_root_identifier FROM project_1.event AS event " +
+                        "JOIN expeditions ON expeditions.id = event.expedition_id " +
+                        "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
+                        "JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                        "JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
                         "WHERE expeditions.expedition_code = :1",
                 params
         );
@@ -605,8 +623,7 @@ public class QueryBuilderTest {
     @Test
     public void should_add_joins_for_multi_entity_select_query_with_direct_relationship() {
         QueryBuilder queryBuilder = queryBuilder("event");
-        queryBuilder.visit(new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS));
-        queryBuilder.visit(new SelectExpression("sample"));
+        queryBuilder.visit(new SelectExpression("sample", new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS)));
 
         String expectedSql = "SELECT event.data AS event_data, event_entity_identifiers.identifier AS event_root_identifier, sample.data AS sample_data, sample_entity_identifiers.identifier AS sample_root_identifier FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.data->>'sample_eventId' = event.local_identifier and sample.expedition_id = event.expedition_id " +
