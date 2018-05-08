@@ -3,6 +3,7 @@ package biocode.fims.service;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
@@ -215,7 +216,9 @@ public class ProjectService {
 
     private void createEntityBcids(List<Entity> entities, int projectId, boolean checkForExistingBcids) {
         for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser(), checkForExistingBcids);
+            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser(), checkForExistingBcids);
+            e.setEntityIdentifiers(entityIdentifiers);
+            expeditionService.update(e);
         }
     }
 }
