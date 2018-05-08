@@ -22,6 +22,16 @@ public interface RecordRepository {
 
     void save(Dataset dataset, int projectId, int expeditionId);
 
+    /**
+     * execute the provided sql and return a list of responseTypes.
+     *
+     * @param <T>
+     * @param sql
+     * @param responseType
+     * @return
+     */
+    <T> List<T> query(String sql, Class<T> responseType);
+
     QueryResults query(Query query);
 
     Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties);

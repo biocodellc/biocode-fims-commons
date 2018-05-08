@@ -4,6 +4,7 @@ import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.dataTypes.JacksonUtil;
 import biocode.fims.models.records.*;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
@@ -23,9 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowCallbackHandler;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -190,6 +189,28 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    public <T> List<T> query(String sql, Class<T> responseType) {
+        logger.info(sql);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            ResultSetMetaData metadata = rs.getMetaData();
+            Map<String, String> result = new HashMap<>();
+
+            for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                // for some reason, the columnLabels are 1 indexed, not 0 indexed
+                String label = metadata.getColumnLabel(i);
+                result.put(label, rs.getString(label));
+
+            }
+
+            try {
+                return JacksonUtil.fromMap(result, responseType);
+            } catch (Exception e) {
+                throw new SQLException(e);
+            }
+        });
+    }
+
+    @Override
     @SuppressWarnings({"unchecked"})
     public QueryResults query(Query query) {
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
@@ -274,12 +295,6 @@ public class PostgresRecordRepository implements RecordRepository {
 
         @Override
         public void processRow(ResultSet rs) throws SQLException {
-            // TODO is it possible to get determine the column labels here?
-            // if so, we can build a query that will allow us to select ancestor data at the same time
-            // would need to update queryBuilder to generate the correct select statement
-            // and would need to pass in a list of entities to this class
-            // we can select data & root_identifier for each queryEntity
-            // labels can be something like alias.root_identifier and alias.data
             ResultSetMetaData metadata = rs.getMetaData();
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed

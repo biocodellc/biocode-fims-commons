@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * code from https://vladmihalcea.com/2016/06/20/how-to-map-json-objects-using-generic-hibernate-types/
@@ -37,6 +38,14 @@ public class JacksonUtil {
             return OBJECT_MAPPER.readValue(string, type);
         } catch (IOException e) {
             throw new IllegalArgumentException("The given string value: " + string + " cannot be transformed to Json object", e);
+        }
+    }
+
+    public static <T> T fromMap(Map<String, String> map, Class<T> clazz) {
+        try {
+            return OBJECT_MAPPER.convertValue(map, clazz);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("The given map: " + map.toString() + " cannot be transformed to Json object", e);
         }
     }
 

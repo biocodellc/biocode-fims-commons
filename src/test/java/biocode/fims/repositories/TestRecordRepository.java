@@ -40,6 +40,11 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
+    public <T> List<T> query(String sql, Class<T> responseType) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public QueryResults query(Query query) {
         throw new NotImplementedException();
     }
