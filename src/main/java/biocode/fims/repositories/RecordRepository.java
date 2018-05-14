@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.digester.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordResult;
 import biocode.fims.query.QueryResult;
@@ -7,6 +8,7 @@ import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import org.springframework.data.domain.Page;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,11 @@ public interface RecordRepository {
 
     List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
 
-    void save(Dataset dataset, int projectId, int expeditionId);
+    void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId);
+
+    void saveRecord(Record record, int projectId, Entity entity, int expeditionId);
+
+    void saveDataset(Dataset dataset, int projectId, int expeditionId);
 
     /**
      * execute the provided sql and return a list of responseTypes.
@@ -30,7 +36,9 @@ public interface RecordRepository {
      * @param responseType
      * @return
      */
-    <T> List<T> query(String sql, Class<T> responseType);
+    <T> List<T> query(String sql, Map<String, String> paramMap, Class<T> responseType);
+
+    <T> List<T> query(String sql, Map<String, String> paramMap, RowMapper<T> rowMapper);
 
     QueryResults query(Query query);
 

@@ -50,11 +50,11 @@ public class ProjectService {
         User user = entityManager.getReference(User.class, userId);
         project.setUser(user);
 
-        // save an empty config first as we can't validate the config until the projectId is generated
+        // saveDataset an empty config first as we can't validate the config until the projectId is generated
         ProjectConfig config = project.getProjectConfig();
         project.setProjectConfig(new ProjectConfig());
 
-        // we need to save here so we can get the projectId
+        // we need to saveDataset here so we can get the projectId
         projectRepository.save(project);
 
         project.setProjectConfig(config);

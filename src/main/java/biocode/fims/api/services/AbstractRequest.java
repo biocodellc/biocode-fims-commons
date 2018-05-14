@@ -24,7 +24,7 @@ public class AbstractRequest<T> implements Request<T> {
     private Client client;
     private String method;
     private Map<String, Object[]> queryParams;
-    private MediaType accepts;
+    private String accepts;
     private Entity httpEntity;
     private MultivaluedMap<String, Object> headers;
 
@@ -77,7 +77,7 @@ public class AbstractRequest<T> implements Request<T> {
         this.httpEntity = entity;
     }
 
-    protected void setAccepts(MediaType accepts) {
+    protected void setAccepts(String accepts) {
         this.accepts = accepts;
     }
 

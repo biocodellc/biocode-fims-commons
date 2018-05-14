@@ -93,7 +93,7 @@ public class DatasetBuilder {
         for (DataSource dataSource : dataSources) {
             DataReader reader = dataReaderFactory.getReader(dataSource.dataFile, config, dataSource.metadata);
 
-            recordSets.addAll(reader.getRecordSets());
+            recordSets.addAll(reader.getRecordSets(projectId, expeditionCode));
         }
     }
 
@@ -101,7 +101,7 @@ public class DatasetBuilder {
         for (String file : workbooks) {
             DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
 
-            recordSets.addAll(reader.getRecordSets());
+            recordSets.addAll(reader.getRecordSets(projectId, expeditionCode));
         }
     }
 

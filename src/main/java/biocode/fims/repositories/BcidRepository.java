@@ -82,7 +82,7 @@ public class BcidRepository {
         public FetchBcid(Client client, String baseUrl, String identifier) {
             super("GET", Bcid.class, client, path + identifier, baseUrl);
 
-            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+            setAccepts(MediaType.APPLICATION_JSON);
         }
     }
 
@@ -93,7 +93,7 @@ public class BcidRepository {
             super("POST", Bcid.class, client, path, baseUrl);
 
             this.setHttpEntity(Entity.entity(toMint, MediaType.APPLICATION_JSON));
-            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+            setAccepts(MediaType.APPLICATION_JSON);
         }
     }
 
@@ -110,7 +110,7 @@ public class BcidRepository {
                     .param("client_secret", secret);
 
             this.setHttpEntity(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
-            setAccepts(MediaType.APPLICATION_JSON_TYPE);
+            setAccepts(MediaType.APPLICATION_JSON);
         }
 
     }

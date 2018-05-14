@@ -1,6 +1,6 @@
 package biocode.fims.run;
 
-import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.application.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.digester.Rule;
 import biocode.fims.fimsExceptions.FimsAbstractException;

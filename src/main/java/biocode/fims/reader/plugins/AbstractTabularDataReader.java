@@ -42,7 +42,7 @@ abstract class AbstractTabularDataReader implements DataReader {
     }
 
     @Override
-    public List<RecordSet> getRecordSets() {
+    public List<RecordSet> getRecordSets(int projectId, String expeditionCode) {
 
         if (recordSets == null) {
             init();

@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowCallbackHandler;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,18 +103,61 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void save(Dataset dataset, int projectId, int expeditionId) {
+    public void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId) {
+        Map<String, String> extraValues = new HashMap<>();
+
+        String parentIdentifier = record.get(parentEntity.getUniqueKeyURI());
+        extraValues.put("parent_identifier", parentIdentifier);
+
+        String s = sql.getProperty("insertChildRecord");
+        save(record, projectId, entity, expeditionId, s, extraValues);
+    }
+
+    @Override
+    @SetFimsUser
+    @SuppressWarnings({"unchecked"})
+    public void saveRecord(Record record, int projectId, Entity entity, int expeditionId) {
+        String s = sql.getProperty("insertRecord");
+        save(record, projectId, entity, expeditionId, s, new HashMap<>());
+
+    }
+
+    private void save(Record record, int projectId, Entity entity, int expeditionId, String sql, Map<String, String> extraValues) {
+        String localIdentifierUri = entity.getUniqueKeyURI();
+        Map<String, Object> tableMap = getTableMap(projectId, entity.getConceptAlias());
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("expeditionId", expeditionId);
+        String localIdentifier = record.get(localIdentifierUri);
+        params.addValue("identifier", localIdentifier);
+
+        params.addValues(extraValues);
+
+        ObjectMapper mapper = new FimsObjectMapper();
+        Map<String, String> properties = record.properties();
+
+        try {
+            params.addValue("data", mapper.writeValueAsString(removeEmptyProperties(properties)));
+        } catch (JsonProcessingException e) {
+            throw new FimsRuntimeException(UploadCode.DATA_SERIALIZATION_ERROR, 500);
+        }
+
+        jdbcTemplate.update(
+                StrSubstitutor.replace(sql, tableMap),
+                params
+        );
+    }
+
+    @Override
+    @SetFimsUser
+    @SuppressWarnings({"unchecked"})
+    public void saveDataset(Dataset dataset, int projectId, int expeditionId) {
         try {
             for (RecordSet recordSet : dataset) {
 
-                String table = recordSet.conceptAlias();
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
 
-                if (StringUtils.isBlank(table)) {
-                    throw new IllegalStateException("entity conceptAlias must not be null");
-                }
-
-                Map<String, Object> tableMap = getTableMap(projectId, table);
+                Map<String, Object> tableMap = getTableMap(projectId, recordSet.conceptAlias());
 
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
                 ObjectMapper mapper = new FimsObjectMapper();
@@ -189,9 +233,8 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public <T> List<T> query(String sql, Class<T> responseType) {
-        logger.info(sql);
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+    public <T> List<T> query(String sql, Map<String, String> paramMap, Class<T> responseType) {
+        return query(sql, paramMap, (rs, rowNum) -> {
             ResultSetMetaData metadata = rs.getMetaData();
             Map<String, String> result = new HashMap<>();
 
@@ -199,7 +242,6 @@ public class PostgresRecordRepository implements RecordRepository {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed
                 String label = metadata.getColumnLabel(i);
                 result.put(label, rs.getString(label));
-
             }
 
             try {
@@ -208,6 +250,12 @@ public class PostgresRecordRepository implements RecordRepository {
                 throw new SQLException(e);
             }
         });
+    }
+
+    @Override
+    public <T> List<T> query(String sql, Map<String, String> paramMap, RowMapper<T> rowMapper) {
+        logger.info(sql);
+        return jdbcTemplate.query(sql, paramMap, rowMapper);
     }
 
     @Override
@@ -261,6 +309,10 @@ public class PostgresRecordRepository implements RecordRepository {
 
 
     private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
+        if (StringUtils.isBlank(conceptAlias)) {
+            throw new IllegalStateException("entity conceptAlias must not be null");
+        }
+
         Map<String, Object> tableMap = new HashMap<>();
         tableMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
         return tableMap;

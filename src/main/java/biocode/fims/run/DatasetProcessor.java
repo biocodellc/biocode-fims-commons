@@ -115,7 +115,7 @@ public class DatasetProcessor {
             }
         }
 
-        recordRepository.save(dataset, projectId, expedition.getExpeditionId());
+        recordRepository.saveDataset(dataset, projectId, expedition.getExpeditionId());
 
         writeDataSources();
         return true;

@@ -62,7 +62,7 @@ public class ExcelReaderTest {
         DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         try {
-            reader.getRecordSets();
+            reader.getRecordSets(0, null);
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
@@ -76,7 +76,7 @@ public class ExcelReaderTest {
         DataReader reader = new ExcelReader(csvFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
         try {
-            reader.getRecordSets();
+            reader.getRecordSets(0, null);
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
@@ -89,7 +89,7 @@ public class ExcelReaderTest {
 
         DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(1, recordSets.size());
 
@@ -102,7 +102,7 @@ public class ExcelReaderTest {
 
         DataReader reader = new ExcelReader(excelFile, getSingleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(1, recordSets.size());
 
@@ -135,7 +135,7 @@ public class ExcelReaderTest {
 
         DataReader reader = new ExcelReader(excelFile, getMultipleEntityConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(2, recordSets.size());
 
@@ -170,7 +170,7 @@ public class ExcelReaderTest {
 
         DataReader reader = new ExcelReader(excelFile, getMultipleEntityMultiSheetConfig(), new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
 
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(3, recordSets.size());
 

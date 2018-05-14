@@ -28,7 +28,7 @@ abstract class DelimitedTextReaderTest {
     }
 
     protected void verifySingleEntityMapping(DataReader reader) {
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(1, recordSets.size());
 
@@ -52,7 +52,7 @@ abstract class DelimitedTextReaderTest {
     }
 
     protected void verifyMultiEntityMapping(DataReader reader) {
-        List<RecordSet> recordSets = reader.getRecordSets();
+        List<RecordSet> recordSets = reader.getRecordSets(0, null);
 
         assertEquals(2, recordSets.size());
         for (RecordSet set: recordSets) {

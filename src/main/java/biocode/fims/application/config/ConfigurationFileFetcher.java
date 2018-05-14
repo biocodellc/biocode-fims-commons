@@ -1,4 +1,4 @@
-package biocode.fims.config;
+package biocode.fims.application.config;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.Project;
