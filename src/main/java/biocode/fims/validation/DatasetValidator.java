@@ -73,9 +73,7 @@ public class DatasetValidator {
             if (entity.isChildEntity() && config.isMultiSheetEntity(entity.getConceptAlias())) {
                 Entity parentEntity = r.parent().entity();
                 try {
-
                     r.parent().removeDuplicates();
-
                 } catch (FimsRuntimeException e) {
                     if (e.getErrorCode().equals(DataReaderCode.INVALID_RECORDS)) {
                         hasError = true;

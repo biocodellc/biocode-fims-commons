@@ -6,6 +6,7 @@ import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.reader.DataReader;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +24,9 @@ public class DataSourceMetadata {
     private Map<String, Object> metadata;
 
     // for jackson
-    private DataSourceMetadata() {}
+    private DataSourceMetadata() {
+        metadata = new HashMap<>();
+    }
 
     public DataSourceMetadata(String dataType, String filename, boolean reload, Map<String, Object> metadata) {
         this(dataType, filename, metadata);

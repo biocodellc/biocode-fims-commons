@@ -9,6 +9,7 @@ import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.List;
 import java.util.Map;
@@ -36,9 +37,9 @@ public interface RecordRepository {
      * @param responseType
      * @return
      */
-    <T> List<T> query(String sql, Map<String, String> paramMap, Class<T> responseType);
+    <T> List<T> query(String sql, SqlParameterSource params, Class<T> responseType);
 
-    <T> List<T> query(String sql, Map<String, String> paramMap, RowMapper<T> rowMapper);
+    <T> List<T> query(String sql, SqlParameterSource params, RowMapper<T> rowMapper);
 
     QueryResults query(Query query);
 

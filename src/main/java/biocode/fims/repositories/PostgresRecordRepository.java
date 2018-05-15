@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -233,8 +234,8 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public <T> List<T> query(String sql, Map<String, String> paramMap, Class<T> responseType) {
-        return query(sql, paramMap, (rs, rowNum) -> {
+    public <T> List<T> query(String sql, SqlParameterSource params, Class<T> responseType) {
+        return query(sql, params, (rs, rowNum) -> {
             ResultSetMetaData metadata = rs.getMetaData();
             Map<String, String> result = new HashMap<>();
 
@@ -253,9 +254,9 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public <T> List<T> query(String sql, Map<String, String> paramMap, RowMapper<T> rowMapper) {
+    public <T> List<T> query(String sql, SqlParameterSource params, RowMapper<T> rowMapper) {
         logger.info(sql);
-        return jdbcTemplate.query(sql, paramMap, rowMapper);
+        return jdbcTemplate.query(sql, params, rowMapper);
     }
 
     @Override
@@ -324,7 +325,7 @@ public class PostgresRecordRepository implements RecordRepository {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             String value = entry.getValue();
 
-            if (value.trim().equals("")) {
+            if (value == null || value.trim().equals("")) {
                 continue;
             }
 

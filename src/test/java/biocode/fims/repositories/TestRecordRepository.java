@@ -8,6 +8,7 @@ import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -52,12 +53,12 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public <T> List<T> query(String sql, Map<String, String> paramMap, Class<T> responseType) {
+    public <T> List<T> query(String sql, SqlParameterSource params, Class<T> responseType) {
         throw new NotImplementedException();
     }
 
     @Override
-    public <T> List<T> query(String sql, Map<String, String> paramMap, RowMapper<T> rowMapper) {
+    public <T> List<T> query(String sql, SqlParameterSource params, RowMapper<T> rowMapper) {
         throw new NotImplementedException();
     }
 
