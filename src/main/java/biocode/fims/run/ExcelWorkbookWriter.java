@@ -494,7 +494,11 @@ public class ExcelWorkbookWriter {
     private Set<String> getRequiredColumns(String sheetName, RuleLevel level) {
         return project.getProjectConfig().entitiesForSheet(sheetName)
                 .stream()
-                .flatMap(e -> e.getRule(RequiredValueRule.class, level).columns().stream())
+                .flatMap(e -> {
+                    RequiredValueRule rule = e.getRule(RequiredValueRule.class, level);
+                    if (rule == null) return new ArrayList<String>().stream();
+                    return rule.columns().stream();
+                })
                 .collect(Collectors.toSet());
     }
 

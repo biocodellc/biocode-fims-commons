@@ -222,11 +222,17 @@ public class ProjectTemplatesResource extends FimsController {
 
         List<Attribute> attributes = project.getProjectConfig().attributesForSheet(sheetName);
         for (String col: columns) {
+            boolean found = false;
             for (Attribute a: attributes) {
-                if (a.getColumn().equals(col)) break;
+                if (a.getColumn().equals(col)) {
+                    found = true;
+                    break;
+                }
             }
 
-            throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col);
+            if (!found) {
+                throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col);
+            }
         }
 
 
