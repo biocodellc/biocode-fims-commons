@@ -41,6 +41,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         add(TEXT_MEDIA_TYPE);
         add(MediaType.APPLICATION_ATOM_XML_TYPE);
         add(MediaType.APPLICATION_FORM_URLENCODED_TYPE);
+        add(MediaType.MULTIPART_FORM_DATA_TYPE);
         add(MediaType.APPLICATION_JSON_TYPE);
         add(MediaType.APPLICATION_SVG_XML_TYPE);
         add(MediaType.APPLICATION_XHTML_XML_TYPE);
