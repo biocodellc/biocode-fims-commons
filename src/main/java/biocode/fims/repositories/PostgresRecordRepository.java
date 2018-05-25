@@ -81,6 +81,7 @@ public class PostgresRecordRepository implements RecordRepository {
                             .addValue("expeditionId", result.expeditionId),
                     rowMappers.get(GenericRecord.class)
             );
+            record.set(ROOT_IDENTIFIER, rootIdentifier);
 
             return new RecordResult(result.projectId, result.expeditionId, result.conceptAlias, record);
         } catch (EmptyResultDataAccessException e) {
