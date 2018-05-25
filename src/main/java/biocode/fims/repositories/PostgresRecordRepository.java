@@ -367,8 +367,9 @@ public class PostgresRecordRepository implements RecordRepository {
         public QueryResults results() {
             List<QueryResult> results = new ArrayList<>();
 
-            for (String conceptAlias : records.keySet()) {
-                results.add(new QueryResult(records.get(conceptAlias), getEntity(conceptAlias), rootIdentifiers.get(conceptAlias)));
+            for (Entity e: this.entities) {
+                String conceptAlias = e.getConceptAlias();
+                results.add(new QueryResult(records.getOrDefault(conceptAlias, new ArrayList<>()), e, rootIdentifiers.get(conceptAlias)));
             }
 
             return new QueryResults(results);
