@@ -307,25 +307,25 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         s
                 .append("SELECT ")
                 .append(queryEntity.getConceptAlias())
-                .append(".data AS ")
+                .append(".data AS \"")
                 .append(queryEntity.getConceptAlias())
-                .append("_data, ")
+                .append("_data\", ")
                 .append(queryEntity.getConceptAlias())
-                .append("_entity_identifiers.identifier AS ")
+                .append("_entity_identifiers.identifier AS \"")
                 .append(queryEntity.getConceptAlias())
-                .append("_root_identifier");
+                .append("_root_identifier\"");
 
         for (Entity e : joinBuilder.selectEntities()) {
             s
                     .append(", ")
                     .append(e.getConceptAlias())
-                    .append(".data AS ")
+                    .append(".data AS \"")
                     .append(e.getConceptAlias())
-                    .append("_data, ")
+                    .append("_data\", ")
                     .append(e.getConceptAlias())
-                    .append("_entity_identifiers.identifier AS ")
+                    .append("_entity_identifiers.identifier AS \"")
                     .append(e.getConceptAlias())
-                    .append("_root_identifier");
+                    .append("_root_identifier\"");
         }
         s.append(" ");
 

@@ -354,9 +354,9 @@ public class PostgresRecordRepository implements RecordRepository {
                 String label = metadata.getColumnLabel(i);
 
                 if (label.endsWith("_root_identifier")) {
-                    rootIdentifiers.put(label.split("_root_identifier")[0], rs.getString(label));
+                    rootIdentifiers.put(label.split("_root_identifier")[0].toLowerCase(), rs.getString(label));
                 } else {
-                    String conceptAlias = label.split("_data")[0];
+                    String conceptAlias = label.split("_data")[0].toLowerCase();
 
                     records.computeIfAbsent(conceptAlias, k -> new ArrayList<>())
                             .add(getRowMapper(conceptAlias).mapRow(rs, records.get(conceptAlias).size() - 1, label));
@@ -368,7 +368,7 @@ public class PostgresRecordRepository implements RecordRepository {
             List<QueryResult> results = new ArrayList<>();
 
             for (Entity e: this.entities) {
-                String conceptAlias = e.getConceptAlias();
+                String conceptAlias = e.getConceptAlias().toLowerCase();
                 results.add(new QueryResult(records.getOrDefault(conceptAlias, new ArrayList<>()), e, rootIdentifiers.get(conceptAlias)));
             }
 
