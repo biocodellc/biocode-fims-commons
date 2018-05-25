@@ -442,3 +442,67 @@ Track changes to a table at the row level.
 This will create an entry in the SCHEMA.audit_table for each row that is updated, inserted, or deleted.
 This is useful for creating a history of all changes to entities.
 $body$;
+
+/**
+ * The following functions are used for casting to a specified dataType
+ * in order to allow correct comparison of values
+ */
+CREATE OR REPLACE FUNCTION convert_to_int(text)
+  RETURNS int AS
+$func$
+BEGIN
+  RETURN $1::int;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION convert_to_float(text)
+  RETURNS float AS
+$func$
+BEGIN
+  RETURN $1::float;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION convert_to_date(text)
+  RETURNS date AS
+$func$
+BEGIN
+  RETURN $1::date;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION convert_to_datetime(text)
+  RETURNS timestamp AS
+$func$
+BEGIN
+  RETURN $1::timestamp;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION convert_to_time(text)
+  RETURNS time AS
+$func$
+BEGIN
+  RETURN $1::time;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;

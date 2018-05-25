@@ -226,6 +226,16 @@ public class Entity {
         throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
     }
 
+    public Attribute getAttributeByUri(String uri) {
+        for (Attribute a : attributes) {
+            if (a.getUri().equals(uri)) {
+                return a;
+            }
+        }
+
+        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
+    }
+
     @JsonIgnore
     public <T extends Rule> T getRule(Class<T> type, RuleLevel level) {
         for (Rule rule : rules) {

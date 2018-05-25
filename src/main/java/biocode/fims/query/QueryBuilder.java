@@ -1,5 +1,6 @@
 package biocode.fims.query;
 
+import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -45,15 +46,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     @Override
     public void visit(ComparisonExpression expression) {
         ColumnUri columnUri = lookupColumnUri(expression.column());
-
-        whereBuilder
-                .append(columnUri.conceptAlias())
-                .append(".data->>'")
-                .append(columnUri.uri())
-                .append("' ")
-                .append(expression.operator())
-                .append(" ")
-                .append(putParam(expression.term()));
+        appendComparison(columnUri, expression.operator(), expression.term());
     }
 
     @Override
@@ -214,7 +207,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         boolean hasRight = range.rightValue() != null;
 
         if (hasLeft) {
-            appendRange(columnUri, range.leftOperator(), range.leftValue());
+            appendComparison(columnUri, range.leftOperator(), range.leftValue());
 
             if (hasRight) {
                 whereBuilder.append(" AND ");
@@ -222,22 +215,43 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         if (hasRight) {
-            appendRange(columnUri, range.rightOperator(), range.rightValue());
+            appendComparison(columnUri, range.rightOperator(), range.rightValue());
         }
 
         whereBuilder.append(")");
 
     }
 
-    private void appendRange(ColumnUri columnUri, ComparisonOperator operator, String value) {
+    private void appendComparison(ColumnUri columnUri, ComparisonOperator operator, String value) {
+        String valCast = null;
+        String castFunc = null;
+
+        if (operator != ComparisonOperator.EQUALS && operator != ComparisonOperator.NOT_EQUALS) {
+            castFunc = lookupCastFunction(columnUri.dataType());
+            valCast = lookupCast(columnUri.dataType());
+        }
+
+        if (castFunc != null) {
+            whereBuilder
+                    .append(castFunc)
+                    .append("(");
+        }
+
         whereBuilder
                 .append(columnUri.conceptAlias())
                 .append(".data->>'")
                 .append(columnUri.uri())
-                .append("' ")
+                .append("'")
+                .append(castFunc == null ? " " : ") ")
                 .append(operator)
                 .append(" ")
                 .append(putParam(value));
+
+        if (castFunc != null) {
+            whereBuilder
+                    .append("::")
+                    .append(valCast);
+        }
     }
 
     @Override
@@ -330,6 +344,40 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         s.append(" ");
 
         return s.toString();
+    }
+
+    private String lookupCastFunction(DataType dataType) {
+        switch (dataType) {
+            case INTEGER:
+                return "convert_to_int";
+            case FLOAT:
+                return "convert_to_float";
+            case DATE:
+                return "convert_to_date";
+            case DATETIME:
+                return "convert_to_datetime";
+            case TIME:
+                return "convert_to_time";
+            default:
+                return null;
+        }
+    }
+
+    private String lookupCast(DataType dataType) {
+        switch (dataType) {
+            case INTEGER:
+                return "int";
+            case FLOAT:
+                return "float";
+            case DATE:
+                return "date";
+            case DATETIME:
+                return "timestamp";
+            case TIME:
+                return "time";
+            default:
+                return null;
+        }
     }
 
     private ColumnUri lookupColumnUri(String column) {
@@ -449,6 +497,10 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         String uri() {
             return uri;
+        }
+
+        DataType dataType() {
+            return entity.getAttributeByUri(uri).getDatatype();
         }
 
         Entity entity() {
