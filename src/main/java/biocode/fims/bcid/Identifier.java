@@ -5,6 +5,9 @@ package biocode.fims.bcid;
  * Class for decoding an ark identifier. An identifier consists of the schema, naan, shoulder, and suffix.
  */
 public class Identifier {
+    // TODO maybe there is a better place for this
+    public static final String ROOT_IDENTIFIER = "rootIdentifier";
+
     private String identifier;
     private String scheme;
     private String naan;

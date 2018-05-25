@@ -77,7 +77,9 @@ public class RecordsResource extends FimsController {
             return new QueryResult(
                     Collections.singletonList(recordResult.record()),
                     entity,
-                    identifier.getRootIdentifier()
+                    entity.isChildEntity()
+                            ? config.entity(entity.getParentEntity())
+                            : null
             ).get(false).get(0);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {

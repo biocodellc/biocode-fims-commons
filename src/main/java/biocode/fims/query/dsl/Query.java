@@ -13,9 +13,9 @@ import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 import org.springframework.util.Assert;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author rjewing
@@ -62,8 +62,14 @@ public class Query {
             entities = visitor.entities()
                     .stream()
                     .map(config::entity)
+                    .flatMap(e -> e.isChildEntity()
+                            ? Stream.of(e, config.entity(e.getParentEntity()))
+                            : Stream.of(e))
                     .collect(Collectors.toSet());
             entities.add(queryEntity());
+            if (queryEntity().isChildEntity()) {
+                entities.add(config.entity(queryEntity().getParentEntity()));
+            }
 
         }
 

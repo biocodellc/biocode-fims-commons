@@ -36,6 +36,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
+import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
+
 /**
  * @author rjewing
  */
@@ -302,7 +304,7 @@ public class PostgresRecordRepository implements RecordRepository {
             to = queryResult.records().size();
         }
 
-        QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity(), queryResult.rootIdentifier());
+        QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity());
 
         Pageable pageable = new PageRequest(page, limit);
         return new PageImpl<>(result.get(includeEmptyProperties, source), pageable, total);
@@ -349,17 +351,32 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
+            String rootIdentifier = null;
+            String conceptAlias = null;
+            Record record = null;
+
+            int rowNum = 0;
+
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed
                 String label = metadata.getColumnLabel(i);
 
                 if (label.endsWith("_root_identifier")) {
+                    rootIdentifier = rs.getString(label);
                     rootIdentifiers.put(label.split("_root_identifier")[0].toLowerCase(), rs.getString(label));
                 } else {
-                    String conceptAlias = label.split("_data")[0].toLowerCase();
+                    conceptAlias = label.split("_data")[0].toLowerCase();
+                    record = getRowMapper(conceptAlias).mapRow(rs, rowNum, label);
+                }
 
+                if (rootIdentifier != null && record != null) {
+                    record.set(ROOT_IDENTIFIER, rootIdentifier);
                     records.computeIfAbsent(conceptAlias, k -> new ArrayList<>())
-                            .add(getRowMapper(conceptAlias).mapRow(rs, records.get(conceptAlias).size() - 1, label));
+                            .add(record);
+                    rootIdentifier = null;
+                    record = null;
+                    conceptAlias = null;
+                    rowNum++;
                 }
             }
         }
@@ -369,7 +386,10 @@ public class PostgresRecordRepository implements RecordRepository {
 
             for (Entity e: this.entities) {
                 String conceptAlias = e.getConceptAlias().toLowerCase();
-                results.add(new QueryResult(records.getOrDefault(conceptAlias, new ArrayList<>()), e, rootIdentifiers.get(conceptAlias)));
+                Entity parentEntity = e.isChildEntity()
+                        ? getEntity(e.getParentEntity())
+                        : null;
+                results.add(new QueryResult(records.getOrDefault(conceptAlias, new ArrayList<>()), e, parentEntity));
             }
 
             return new QueryResults(results);
