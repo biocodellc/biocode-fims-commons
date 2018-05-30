@@ -6,6 +6,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
+import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
 import biocode.fims.rest.responses.FileResponse;
@@ -119,21 +120,28 @@ public class ProjectTemplatesResource extends FimsController {
         List<String> uris = new ArrayList<>();
 
         for (String col : columns) {
+            boolean found = false;
             for (Attribute a : attributes) {
                 if (a.getColumn().equals(col)) {
                     uris.add(a.getUri());
+                    found = true;
                     break;
                 }
             }
+            if (!found) throw new FimsRuntimeException(ProjectTemplateCode.UNKNOWN_COLUMN, 400, col, worksheet);
         }
 
         ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, worksheet, project, userContext.getUser());
 
-        return projectTemplateService.save(projectTemplate);
+        projectTemplate = projectTemplateService.save(projectTemplate);
+
+        projectTemplate.setColumns(columns);
+        return projectTemplate;
     }
 
     /**
      * update a template configuration
+     *
      * @param columns
      * @param configName
      * @param projectId
@@ -178,6 +186,7 @@ public class ProjectTemplatesResource extends FimsController {
 
     /**
      * delete a template configuration
+     *
      * @param configName
      * @param projectId
      */
@@ -221,9 +230,9 @@ public class ProjectTemplatesResource extends FimsController {
         }
 
         List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
-        for (String col: columns) {
+        for (String col : columns) {
             boolean found = false;
-            for (Attribute a: attributes) {
+            for (Attribute a : attributes) {
                 if (a.getColumn().equals(col)) {
                     found = true;
                     break;
@@ -231,7 +240,7 @@ public class ProjectTemplatesResource extends FimsController {
             }
 
             if (!found) {
-                throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col);
+                throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col, worksheet);
             }
         }
 
