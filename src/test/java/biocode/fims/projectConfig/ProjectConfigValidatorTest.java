@@ -151,7 +151,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfig config = new ProjectConfig();
 
         Attribute a = new Attribute("column5", "urn:column5");
-        a.setDatatype(DataType.DATE);
+        a.setDataType(DataType.DATE);
         Entity e = entity1();
         e.addAttribute(a);
         config.addEntity(e);

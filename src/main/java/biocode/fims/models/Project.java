@@ -40,7 +40,6 @@ public class Project {
     private String projectTitle;
     private Date created;
     private Date modified;
-    private String validationXml;
     private String description;
     private ProjectConfig projectConfig;
     private boolean isPublic;
@@ -151,16 +150,6 @@ public class Project {
         this.modified = modified;
     }
 
-    @JsonView(Views.Detailed.class)
-    @Column(nullable = false, name = "validation_xml")
-    public String getValidationXml() {
-        return validationXml;
-    }
-
-    public void setValidationXml(String validationXml) {
-        this.validationXml = validationXml;
-    }
-
     @JsonIgnore
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", name = "config", updatable = false)
@@ -224,7 +213,6 @@ public class Project {
                 ", projectTitle='" + projectTitle + '\'' +
                 ", created=" + created +
                 ", modified=" + modified +
-                ", validationXml='" + validationXml + '\'' +
                 ", isPublic=" + isPublic +
                 ", projectUrl='" + projectUrl + '\'' +
                 ", user=" + user +

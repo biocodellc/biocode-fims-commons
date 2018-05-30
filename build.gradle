@@ -75,10 +75,7 @@ dependencies {
     server group: 'org.springframework', name: 'spring-aop', version: '4.3.14.RELEASE'
 
     server 'org.springframework:spring-jdbc:4.3.14.RELEASE'
-    // required for elasticsearch
-//    server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
 
-    server 'org.xerial:sqlite-jdbc:3.7.2'
     server 'org.slf4j:slf4j-log4j12:1.7.19'
 
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'

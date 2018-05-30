@@ -826,19 +826,19 @@ public class QueryBuilderTest {
         e.addAttribute(new Attribute("col2", "urn:col2"));
         e.addAttribute(new Attribute("col3", "urn:event_col3"));
         Attribute a1 = new Attribute("intCol", "urn:intCol");
-        a1.setDatatype(DataType.INTEGER);
+        a1.setDataType(DataType.INTEGER);
         e.addAttribute(a1);
         Attribute a2 = new Attribute("floatCol", "urn:floatCol");
-        a2.setDatatype(DataType.FLOAT);
+        a2.setDataType(DataType.FLOAT);
         e.addAttribute(a2);
         Attribute a3 = new Attribute("dateCol", "urn:dateCol");
-        a3.setDatatype(DataType.DATE);
+        a3.setDataType(DataType.DATE);
         e.addAttribute(a3);
         Attribute a4 = new Attribute("datetimeCol", "urn:datetimeCol");
-        a4.setDatatype(DataType.DATETIME);
+        a4.setDataType(DataType.DATETIME);
         e.addAttribute(a4);
         Attribute a5 = new Attribute("timeCol", "urn:timeCol");
-        a5.setDatatype(DataType.TIME);
+        a5.setDataType(DataType.TIME);
         e.addAttribute(a5);
         return e;
     }

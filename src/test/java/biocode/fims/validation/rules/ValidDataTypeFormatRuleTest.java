@@ -245,22 +245,22 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     protected Entity entity() {
         Entity e = super.entity();
 
-        e.getAttribute("col1").setDatatype(DataType.INTEGER);
-        e.getAttribute("col2").setDatatype(DataType.FLOAT);
+        e.getAttribute("col1").setDataType(DataType.INTEGER);
+        e.getAttribute("col2").setDataType(DataType.FLOAT);
 
         Attribute a1 = new Attribute("col3", "urn:col3");
-        a1.setDatatype(DataType.DATETIME);
-        a1.setDataformat("hh:mm MM-yyyy, MM-YYYY");
+        a1.setDataType(DataType.DATETIME);
+        a1.setDataFormat("hh:mm MM-yyyy, MM-YYYY");
         e.addAttribute(a1);
 
         Attribute a2 = new Attribute("col4", "urn:col4");
-        a2.setDatatype(DataType.DATE);
-        a2.setDataformat("MM-dd");
+        a2.setDataType(DataType.DATE);
+        a2.setDataFormat("MM-dd");
         e.addAttribute(a2);
 
         Attribute a3 = new Attribute("col5", "urn:col5");
-        a3.setDatatype(DataType.TIME);
-        a3.setDataformat("HH:mm");
+        a3.setDataType(DataType.TIME);
+        a3.setDataFormat("HH:mm");
         e.addAttribute(a3);
 
         return e;

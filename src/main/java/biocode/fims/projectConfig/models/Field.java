@@ -1,13 +1,15 @@
 package biocode.fims.projectConfig.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Hold contents of a Field that is part of a List
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Field {
-    // TODO make these camelCase
     private String uri;
     private String value;
-    private String defined_by;
+    private String definedBy;
     private String definition;
 
 
@@ -27,12 +29,12 @@ public class Field {
         this.value = value;
     }
 
-    public String getDefined_by() {
-        return defined_by;
+    public String getDefinedBy() {
+        return definedBy;
     }
 
-    public void setDefined_by(String defined_by) {
-        this.defined_by = defined_by;
+    public void setDefinedBy(String definedBy) {
+        this.definedBy = definedBy;
     }
 
     public String getDefinition() {
@@ -52,7 +54,7 @@ public class Field {
 
         if (getUri() != null ? !getUri().equals(field.getUri()) : field.getUri() != null) return false;
         if (getValue() != null ? !getValue().equals(field.getValue()) : field.getValue() != null) return false;
-        if (getDefined_by() != null ? !getDefined_by().equals(field.getDefined_by()) : field.getDefined_by() != null)
+        if (getDefinedBy() != null ? !getDefinedBy().equals(field.getDefinedBy()) : field.getDefinedBy() != null)
             return false;
         return getDefinition() != null ? getDefinition().equals(field.getDefinition()) : field.getDefinition() == null;
     }
@@ -61,7 +63,7 @@ public class Field {
     public int hashCode() {
         int result = getUri() != null ? getUri().hashCode() : 0;
         result = 31 * result + (getValue() != null ? getValue().hashCode() : 0);
-        result = 31 * result + (getDefined_by() != null ? getDefined_by().hashCode() : 0);
+        result = 31 * result + (getDefinedBy() != null ? getDefinedBy().hashCode() : 0);
         result = 31 * result + (getDefinition() != null ? getDefinition().hashCode() : 0);
         return result;
     }

@@ -9,7 +9,6 @@ import org.springframework.util.Assert;
 /**
  * Range Search Expression
  *
- * TODO only valid on integer, float, date, datetime, and time attributes
  * TODO need to validate range
  *
  * col1:[1 TO 10]       ->      >= 1 AND <= 10

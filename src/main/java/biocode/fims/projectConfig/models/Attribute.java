@@ -1,22 +1,25 @@
 package biocode.fims.projectConfig.models;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Attribute representation
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Attribute implements Comparable {
 
-    // TODO make fields camelCase
     private String group;
     private String column;
     private String uri;
-    private String defined_by;
-    private DataType datatype = DataType.STRING;  // string is default type
+    private String definedBy;
+    private DataType dataType = DataType.STRING;  // string is default type
     private String definition;
-    private String dataformat;
-    private String delimited_by;
+    private String dataFormat;
+    private String delimitedBy;
 
-    public Attribute() {}
+    public Attribute() {
+    }
 
     public Attribute(String column, String uri) {
         this.column = column;
@@ -29,6 +32,7 @@ public class Attribute implements Comparable {
 
     /**
      * set the Column name. Here we normalize column names to replace spaces with underscore and remove an forward /'s
+     *
      * @param column
      */
     public void setColumn(String column) {
@@ -36,12 +40,12 @@ public class Attribute implements Comparable {
 
     }
 
-    public String getDelimited_by() {
-        return delimited_by;
+    public String getDelimitedBy() {
+        return delimitedBy;
     }
 
-    public void setDelimited_by(String delimited_by) {
-        this.delimited_by = delimited_by;
+    public void setDelimitedBy(String delimitedBy) {
+        this.delimitedBy = delimitedBy;
     }
 
     public String getGroup() {
@@ -52,21 +56,21 @@ public class Attribute implements Comparable {
         this.group = group;
     }
 
-    public String getDefined_by() {
-        return defined_by;
+    public String getDefinedBy() {
+        return definedBy;
     }
 
-    public void setDefined_by(String defined_by) {
-        this.defined_by = defined_by;
+    public void setDefinedBy(String definedBy) {
+        this.definedBy = definedBy;
     }
 
     // TODO move to DataType Object
-    public DataType getDatatype() {
-        return datatype;
+    public DataType getDataType() {
+        return dataType;
     }
 
-    public void setDatatype(DataType datatype) {
-        this.datatype = datatype;
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
     }
 
     public String getUri() {
@@ -86,12 +90,12 @@ public class Attribute implements Comparable {
     }
 
     // TODO move to DataType Object
-    public String getDataformat() {
-        return dataformat;
+    public String getDataFormat() {
+        return dataFormat;
     }
 
-    public void setDataformat(String dataFormat) {
-        this.dataformat = dataFormat;
+    public void setDataFormat(String dataFormat) {
+        this.dataFormat = dataFormat;
     }
 
 

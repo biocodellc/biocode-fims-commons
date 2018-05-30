@@ -500,7 +500,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         DataType dataType() {
-            return entity.getAttributeByUri(uri).getDatatype();
+            return entity.getAttributeByUri(uri).getDataType();
         }
 
         Entity entity() {

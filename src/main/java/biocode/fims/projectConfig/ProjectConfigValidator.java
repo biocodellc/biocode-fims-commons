@@ -116,10 +116,10 @@ public class ProjectConfigValidator {
         List<DataType> dataTimeDataTypes = Arrays.asList(DataType.DATE, DataType.DATETIME, DataType.TIME);
 
         for (Attribute a : e.getAttributes()) {
-            if (dataTimeDataTypes.contains(a.getDatatype())
-                    && StringUtils.isEmpty(a.getDataformat())) {
+            if (dataTimeDataTypes.contains(a.getDataType())
+                    && StringUtils.isEmpty(a.getDataFormat())) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies an attribute \""
-                        + a.getUri() + "\" with dataType \"" + a.getDatatype() + "\" but is missing a dataFormat");
+                        + a.getUri() + "\" with dataType \"" + a.getDataType() + "\" but is missing a dataFormat");
             }
         }
     }

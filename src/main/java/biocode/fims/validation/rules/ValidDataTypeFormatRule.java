@@ -44,7 +44,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                     continue;
                 }
 
-                switch (a.getDatatype()) {
+                switch (a.getDataType()) {
                     case INTEGER:
                         if (!isIntegerDataFormat(value)) {
                             messages.addErrorMessage(
@@ -66,11 +66,11 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                     case DATE:
                     case TIME:
                     case DATETIME:
-                        if (!isDateDataFormat(value, a.getDatatype(), a.getDataformat())) {
+                        if (!isDateDataFormat(value, a.getDataType(), a.getDataFormat())) {
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
                                     new Message("\"" + a.getColumn() + "\" contains invalid date value \"" +
-                                            value + "\". " + "Format must be one of [" + a.getDataformat() + "]. If this " +
+                                            value + "\". " + "Format must be one of [" + a.getDataFormat() + "]. If this " +
                                             "is an Excel workbook, the value can also be an Excel DATE cell")
                             );
                             isValid = false;

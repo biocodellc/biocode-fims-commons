@@ -87,18 +87,18 @@
                 conceptURI="http://www.w3.org/2000/01/rdf-schema#Resource"
                 conceptForwardingAddress="http://example.com/bcids/metadata/{ark}{suffix}">
             <attribute column="materialSampleID" group="Group 1" uri="urn:materialSampleID"
-                       defined_by="http://rs.tdwg.org/dwc/terms/MaterialSampleID" dataType="string">
+                       definedBy="http://rs.tdwg.org/dwc/terms/MaterialSampleID" dataType="string">
                 <![CDATA[The "local" accession number that you use for your laboratory"s database. This number should link EXACTLY to the genetic data you are providing for this sample. It must be unique among the numbers that your lab is providing.]]></attribute>
             <attribute column="principalInvestigator" group="Group 1" uri="urn:principalInvestigator"
-                       column_internal="principal_investigator" defined_by="urn:PrincipalInvestigator">
+                       column_internal="principal_investigator" definedBy="urn:PrincipalInvestigator">
                 <![CDATA[Firstname Lastname (the PI on the grant that generated this data)]]></attribute>
             <attribute column="locality" group="Group 1" uri="urn:locality" synonyms="location"
-                       defined_by="http://rs.tdwg.org/dwc/terms/locality">
+                       definedBy="http://rs.tdwg.org/dwc/terms/locality">
                 <![CDATA[Local name of site. Something that could be found by Google, e.g. city, town, ocean, etc. You must enter a value for this to the best level of precision that you are confident about. A site name like "Sanur" is good. "Indonesia" is fine if that is all you know, or "The Pacific Ocean". If you have no idea where the sample came from, please enter "Earth". Required.]]></attribute>
             <attribute column="phylum" group="Group 2" uri="urn:phylum"
-                       defined_by="http://rs.tdwg.org/dwc/terms/phylum">
+                       definedBy="http://rs.tdwg.org/dwc/terms/phylum">
                 <![CDATA[The full scientific name of the phylum in which the taxon is classified. Required.]]></attribute>
-            <attribute column="Observation_Date" dataformat="YYYY-MM-DD" datatype="date"
+            <attribute column="Observation_Date" dataformat="YYYY-MM-DD" dataType="date"
                        displayAnnotationProperty="false" uri="http://rs.tdwg.org/dwc/terms/Event">
                 <![CDATA[The date the observation took place]]>
             </attribute>
@@ -111,11 +111,11 @@
 
         <entity conceptAlias="location" conceptURI="http://purl.org/dc/terms/Location"
                 uri="http://purl.org/dc/terms/Location" worksheet="Samples" worksheetUniqueKey="locationHASH">
-            <attribute column="Latitude" datatype="float" displayAnnotationProperty="true" group="location"
+            <attribute column="Latitude" dataType="float" displayAnnotationProperty="true" group="location"
                        uri="http://rs.tdwg.org/dwc/terms/decimalLatitude">
                 <![CDATA[Decimal Latitude]]>
             </attribute>
-            <attribute column="Longitude" datatype="float" displayAnnotationProperty="true" group="location"
+            <attribute column="Longitude" dataType="float" displayAnnotationProperty="true" group="location"
                        uri="http://rs.tdwg.org/dwc/terms/decimalLongitude">
                 <![CDATA[Decimal Longitude]]>
             </attribute>

@@ -290,7 +290,7 @@ public class ExcelWorkbookWriter {
     private DataType findDataType(String sheetName, String column) {
         return project.getProjectConfig().attributesForSheet(sheetName).stream()
                 .filter(a -> a.getColumn().equals(column))
-                .map(Attribute::getDatatype)
+                .map(Attribute::getDataType)
                 .findFirst()
                 .orElse(DataType.STRING);
     }
@@ -358,7 +358,7 @@ public class ExcelWorkbookWriter {
                 // Data Format
                 try {
                     Cell formatCell = row.createCell(DATA_FIELDS_COLUMNS.DATA_FORMAT);
-                    formatCell.setCellValue(a.getDataformat());
+                    formatCell.setCellValue(a.getDataFormat());
                     formatCell.setCellStyle(wrapStyle);
                 } catch (NullPointerException npe) {
                 }

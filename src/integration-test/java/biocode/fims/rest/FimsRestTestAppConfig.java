@@ -9,7 +9,6 @@ import biocode.fims.tools.FileCache;
 import biocode.fims.utils.SpringApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.elasticsearch.client.transport.TransportClient;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,11 +56,6 @@ public class FimsRestTestAppConfig {
     @Bean
     public FileCache fileCache() {
         return new FileCache();
-    }
-
-    @Bean
-    public TransportClient transportClient() {
-        return null;
     }
 
     @Bean

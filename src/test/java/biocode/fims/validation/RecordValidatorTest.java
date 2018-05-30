@@ -149,7 +149,7 @@ public class RecordValidatorTest {
         e.addAttribute(new Attribute("col1", "col1"));
         e.addAttribute(new Attribute("parentId", "parentId"));
         Attribute a1 = new Attribute("col2", "col2");
-        a1.setDatatype(DataType.INTEGER);
+        a1.setDataType(DataType.INTEGER);
         e.addAttribute(a1);
 
         Rule rule = new NumericRangeRule("col2", ">0|<=10");
