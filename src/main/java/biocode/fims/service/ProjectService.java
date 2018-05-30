@@ -1,6 +1,6 @@
 package biocode.fims.service;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.EntityIdentifier;
@@ -178,15 +178,6 @@ public class ProjectService {
     }
 
     public void saveConfig(ProjectConfig config, int projectId) {
-        saveConfig(config, projectId, false);
-    }
-
-    /**
-     * This is a temporary method to help with the migration to postgres. This will prevent creating bcids for entities
-     * that are already registered
-     */
-    @Deprecated
-    public void saveConfig(ProjectConfig config, int projectId, boolean checkForExistingBcids) {
         config.generateUris();
 
         if (!config.isValid()) {
@@ -204,7 +195,7 @@ public class ProjectService {
 
         if (updator.newEntities().size() > 0) {
             projectConfigRepository.createEntityTables(updator.newEntities(), projectId, config);
-            createEntityBcids(updator.newEntities(), projectId, checkForExistingBcids);
+            createEntityBcids(updator.newEntities(), projectId);
         }
 
         if (updator.removedEntities().size() > 0) {
@@ -214,9 +205,9 @@ public class ProjectService {
         projectConfigRepository.save(config, projectId);
     }
 
-    private void createEntityBcids(List<Entity> entities, int projectId, boolean checkForExistingBcids) {
+    private void createEntityBcids(List<Entity> entities, int projectId) {
         for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(entities, e.getExpeditionId(), e.getUser(), checkForExistingBcids);
+            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(entities,  e.getUser());
             e.setEntityIdentifiers(entityIdentifiers);
             expeditionService.update(e);
         }

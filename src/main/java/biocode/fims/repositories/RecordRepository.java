@@ -1,9 +1,8 @@
 package biocode.fims.repositories;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordResult;
-import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;

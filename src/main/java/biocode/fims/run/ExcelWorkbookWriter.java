@@ -1,11 +1,13 @@
 package biocode.fims.run;
 
-import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.settings.PathManager;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.projectConfig.models.Field;
+import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.RuleLevel;
@@ -74,7 +76,7 @@ public class ExcelWorkbookWriter {
 
         // Create the output Filename and Write Excel File
         String filename = project.getProjectTitle() + ".xlsx";
-        File file = PathManager.createUniqueFile(filename, System.getProperty("java.io.tmpdir"));
+        File file = FileUtils.createUniqueFile(filename, System.getProperty("java.io.tmpdir"));
         try {
             FileOutputStream out = new FileOutputStream(file);
             workbook.write(out);
@@ -385,7 +387,7 @@ public class ExcelWorkbookWriter {
         int listColumnNumber = 0;
 
 
-        for (biocode.fims.digester.List list : project.getProjectConfig().lists()) {
+        for (biocode.fims.projectConfig.models.List list : project.getProjectConfig().lists()) {
 
             // List of fields from this validation rule
             List<Field> fields = list.getFields();

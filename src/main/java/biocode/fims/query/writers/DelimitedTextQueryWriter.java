@@ -5,7 +5,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
-import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -35,7 +35,7 @@ public class DelimitedTextQueryWriter extends AbstractQueryWriter {
     @Override
     protected File writeResult(QueryResult queryResult) {
         String ext = (isCsv) ? "csv" : "txt";
-        File file = PathManager.createUniqueFile(queryResult.entity().getConceptAlias() + "_output." + ext, System.getProperty("java.io.tmpdir"));
+        File file = FileUtils.createUniqueFile(queryResult.entity().getConceptAlias() + "_output." + ext, System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {

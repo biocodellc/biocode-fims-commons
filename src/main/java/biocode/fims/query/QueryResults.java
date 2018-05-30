@@ -1,6 +1,6 @@
 package biocode.fims.query;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 
 import java.util.*;
 import java.util.function.Consumer;

@@ -3,8 +3,7 @@ package biocode.fims.service;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.Bcid;
-import biocode.fims.digester.Entity;
-import biocode.fims.entities.BcidTmp;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.errorCodes.ExpeditionCode;
 import biocode.fims.models.*;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -79,7 +78,7 @@ public class ExpeditionService {
         expedition.setIdentifier(bcid.identifier());
         expeditionRepository.save(expedition);
 
-        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getExpeditionId(), expedition.getUser(), false);
+        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getUser());
         expedition.setEntityIdentifiers(entityIdentifiers);
         return expeditionRepository.save(expedition);
     }
@@ -97,7 +96,7 @@ public class ExpeditionService {
     public Expedition getExpedition(String identifier) {
         try {
             return expeditionRepository.findByIdentifier(new URI(identifier));
-        } catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new BadRequestException("Malformed identifier");
         }
     }
@@ -149,36 +148,19 @@ public class ExpeditionService {
         return bcidService.create(bcid, user);
     }
 
-    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, int expeditionId, User user, boolean checkForExistingBcids) {
+    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, User user) {
         List<EntityIdentifier> identifiers = new ArrayList<>();
 
-        List<Entity> entitiesToSkip = new ArrayList<>();
-        // temporary check to ease postgres migration TODO remove this after running ProjectConfigConverter script
-        if (checkForExistingBcids) {
-            List<BcidTmp> entityBcids = bcidService.getEntityBcids(expeditionId);
-
-
-            for (Entity e: entities) {
-                if (entityBcids.stream()
-                        .filter(b -> b.getTitle().equals(e.getConceptAlias()))
-                        .count() > 0) {
-                    entitiesToSkip.add(e);
-                }
-            }
-        }
-
         for (Entity entity : entities) {
-            if (!entitiesToSkip.contains(entity)) {
-                Bcid bcid = new Bcid.BcidBuilder(entity.getConceptAlias(), props.publisher())
-                        .creator(user, props.creator())
-                        .title(entity.getConceptAlias())
-                        .webAddress(props.entityResolverTarget())
-                        .build();
+            Bcid bcid = new Bcid.BcidBuilder(entity.getConceptAlias(), props.publisher())
+                    .creator(user, props.creator())
+                    .title(entity.getConceptAlias())
+                    .webAddress(props.entityResolverTarget())
+                    .build();
 
-                bcid = bcidService.create(bcid, user);
+            bcid = bcidService.create(bcid, user);
 
-                identifiers.add(new EntityIdentifier(entity.getConceptAlias(), bcid.identifier()));
-            }
+            identifiers.add(new EntityIdentifier(entity.getConceptAlias(), bcid.identifier()));
         }
 
         return identifiers;
@@ -217,7 +199,7 @@ public class ExpeditionService {
         Map<String, Object> metadata = expedition.getMetadata();
 
         List<String> missingMetadata = new ArrayList<>();
-        for (ExpeditionMetadataProperty p: config.expeditionMetadataProperties()) {
+        for (ExpeditionMetadataProperty p : config.expeditionMetadataProperties()) {
             if (p.isRequired() && !metadata.containsKey(p.getName())) {
                 missingMetadata.add(p.getName());
             }

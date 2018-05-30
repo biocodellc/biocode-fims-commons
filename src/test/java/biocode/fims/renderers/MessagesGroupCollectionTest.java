@@ -3,7 +3,6 @@ package biocode.fims.renderers;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.validation.messages.MessagesGroup;
 import biocode.fims.validation.messages.MessagesGroupCollection;
-import biocode.fims.validation.messages.RowMessage;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,12 +26,8 @@ public class MessagesGroupCollectionTest {
         String group2 = "Group 2";
 
         Message simpleMessage = new Message("message");
-        Message rowMessage = new RowMessage("row message", 1);
-        Message rowMessage2 = new RowMessage("another row message", 1);
 
         messages.addMessage(group, simpleMessage);
-        messages.addMessage(group, rowMessage);
-        messages.addMessage(group2, rowMessage2);
 
         MessagesGroup messagesGroup = messages.groupMessages(group);
         MessagesGroup messagesGroup2 = messages.groupMessages(group2);
@@ -42,9 +37,6 @@ public class MessagesGroupCollectionTest {
 
 
         assertTrue("messagesGroup missing message", messagesGroup.messages().contains(simpleMessage));
-        assertTrue("messagesGroup missing message", messagesGroup.messages().contains(rowMessage));
-        assertFalse("messagesGroup missing message", messagesGroup.messages().contains(rowMessage2));
-        assertTrue("messagesGroup missing message", messagesGroup2.messages().contains(rowMessage2));
     }
 
     @Test

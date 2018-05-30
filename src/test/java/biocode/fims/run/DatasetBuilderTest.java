@@ -1,7 +1,7 @@
 package biocode.fims.run;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
@@ -15,7 +15,6 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
-import biocode.fims.run.DatasetBuilder;
 import org.junit.Test;
 
 import java.io.File;

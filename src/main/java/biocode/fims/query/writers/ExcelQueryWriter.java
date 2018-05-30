@@ -1,26 +1,15 @@
 package biocode.fims.query.writers;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.DataType;
-import biocode.fims.digester.Entity;
-import biocode.fims.fimsExceptions.errorCodes.FileCode;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.run.ExcelWorkbookWriter;
-import biocode.fims.settings.PathManager;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 

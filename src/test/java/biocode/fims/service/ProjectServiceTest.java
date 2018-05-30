@@ -1,7 +1,7 @@
 package biocode.fims.service;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.projectConfig.ProjectConfig;

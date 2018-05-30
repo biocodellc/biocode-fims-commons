@@ -4,7 +4,7 @@ import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.QueryResult;
-import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -34,7 +34,7 @@ public class KmlQueryWriter implements QueryWriter {
 
     @Override
     public File write() {
-        File file = PathManager.createUniqueFile("output.kml", System.getProperty("java.io.tmpdir"));
+        File file = FileUtils.createUniqueFile("output.kml", System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {

@@ -1,6 +1,6 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 
 import java.util.ArrayList;
 import java.util.List;

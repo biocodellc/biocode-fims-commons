@@ -1,4 +1,4 @@
-package biocode.fims.digester;
+package biocode.fims.projectConfig.models;
 
 /**
  * @author rjewing

@@ -12,7 +12,7 @@ import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.DatasetValidator;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -151,7 +151,7 @@ public class DatasetProcessor {
     private void writeFileToServer(String file) {
         String ext = FileUtils.getExtension(file, null);
         String filename = "project_" + projectId + "_expedition_" + expeditionCode + "_dataSource." + ext;
-        File outputFile = PathManager.createUniqueFile(filename, serverDataDir);
+        File outputFile = FileUtils.createUniqueFile(filename, serverDataDir);
 
         try {
             Files.copy(new File(file).toPath(), outputFile.toPath());

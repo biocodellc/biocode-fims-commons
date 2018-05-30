@@ -1,7 +1,7 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;

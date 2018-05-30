@@ -1,7 +1,7 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.Field;
+import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.projectConfig.models.Field;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
@@ -23,10 +23,11 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Checks for values not in the {@link biocode.fims.digester.List} specified by the listName
+ * Checks for values not in the {@link biocode.fims.projectConfig.models.List} specified by the listName
  *
  * @author rjewing
  */
@@ -38,7 +39,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
     @JsonIgnore
     private ProjectConfig config;
 
-    private biocode.fims.digester.List list;
+    private biocode.fims.projectConfig.models.List list;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
     private ControlledVocabularyRule() {
@@ -156,7 +157,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         return NAME;
     }
 
-    public biocode.fims.digester.List list() {
+    public biocode.fims.projectConfig.models.List list() {
         if (list == null) {
             list = config.findList(listName);
         }

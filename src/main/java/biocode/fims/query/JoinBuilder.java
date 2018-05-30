@@ -1,9 +1,9 @@
 package biocode.fims.query;
 
-import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.projectConfig.models.Entity;
 
 import java.util.*;
 import java.util.List;

@@ -1,7 +1,7 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.validation.messages.EntityMessages;
 import org.junit.Before;
 

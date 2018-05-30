@@ -2,7 +2,7 @@ package biocode.fims.utils;
 
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +16,47 @@ import java.util.zip.ZipOutputStream;
  */
 public class FileUtils {
     private final static Logger logger = LoggerFactory.getLogger(FileUtils.class);
+
+    /**
+     * Create new file in given folder, add incremental number to base if filename already exists.
+     *
+     * @param pFilename Name of the file.
+     * @return The new file.
+     */
+    public static File createUniqueFile(String pFilename, String pOutputFolder) {
+
+        // Get just the filename
+        File fileFilename = new File(pFilename);
+        String fileName = fileFilename.getName();
+
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex == -1)
+            dotIndex = fileName.length();
+        String base = fileName.substring(0, dotIndex);
+        String ext = fileName.substring(dotIndex);
+
+        File file = new File(pOutputFolder, fileName);
+        int i = 1;
+        while (file.exists())
+            file = new File(pOutputFolder, base + "." + i++ + ext);
+        return file;
+    }
+
+    /**
+     * Create a File in a given folder and overwrite any existing file.
+     *
+     * @param pFilename Name of the file.
+     * @return The new file.
+     */
+    public static File createFile(String pFilename, String pOutputFolder) {
+        File file = new File(pOutputFolder, pFilename);
+        if (file.exists()) {
+            file.delete();
+            return new File(pOutputFolder, pFilename);
+        } else {
+            return file;
+        }
+    }
 
     public static String getExtension(String filename, String defaultExt) {
         String splitArray[] = filename.split("\\.");
@@ -37,7 +78,7 @@ public class FileUtils {
      */
     public static String saveTempFile(InputStream is, String ext) {
         String tempDir = System.getProperty("java.io.tmpdir");
-        File f = PathManager.createUniqueFile( new StringGenerator().generateString(20) + '.' + ext, tempDir);
+        File f = createUniqueFile( new StringGenerator().generateString(20) + '.' + ext, tempDir);
 
         try {
             OutputStream os = new FileOutputStream(f);
@@ -62,7 +103,7 @@ public class FileUtils {
      * @return
      */
     public static File zip(Map<String, File> fileMap, String outputDir) {
-        File zipFile = PathManager.createUniqueFile("files.zip", outputDir);
+        File zipFile = createUniqueFile("files.zip", outputDir);
 
         try {
             ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(zipFile));

@@ -88,11 +88,6 @@ public class UserService {
         return user;
     }
 
-    @Deprecated
-    public User create(User user) {
-        return userRepository.save(user);
-    }
-
     public User update(User user) {
         return userRepository.save(user);
     }

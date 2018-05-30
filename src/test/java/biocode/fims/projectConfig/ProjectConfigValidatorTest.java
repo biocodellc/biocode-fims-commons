@@ -1,9 +1,9 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.*;
 import biocode.fims.models.ExpeditionMetadataProperty;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import org.junit.Test;
 import org.springframework.util.Assert;

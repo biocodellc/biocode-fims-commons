@@ -1,4 +1,4 @@
-package biocode.fims.digester;
+package biocode.fims.projectConfig.models;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
@@ -45,7 +45,6 @@ public class Entity {
     private String conceptURI;
     private String conceptForwardingAddress;
     private String parentEntity;
-    private boolean esNestedObject = false;
     protected Class<? extends Record> recordType = GenericRecord.class;
 
     // needed for jackson deserialization
@@ -188,27 +187,12 @@ public class Entity {
         this.parentEntity = parentEntity;
     }
 
-    @Deprecated
-    public boolean isEsNestedObject() {
-        return esNestedObject;
-    }
-
-    @Deprecated
-    public void setEsNestedObject(boolean esNestedObject) {
-        this.esNestedObject = esNestedObject;
-    }
-
     public Class<? extends Record> getRecordType() {
         return recordType;
     }
 
     public void setRecordType(Class<? extends Record> recordType) {
         this.recordType = recordType;
-    }
-
-    @JsonIgnore
-    public boolean isValueObject() {
-        return getUniqueKey() != null && getUniqueKey().contains("HASH");
     }
 
     @JsonIgnore
@@ -329,7 +313,6 @@ public class Entity {
 
         Entity entity = (Entity) o;
 
-        if (isEsNestedObject() != entity.isEsNestedObject()) return false;
         if (!getAttributes().equals(entity.getAttributes())) return false;
         if (!getRules().equals(entity.getRules())) return false;
         if (getWorksheet() != null ? !getWorksheet().equals(entity.getWorksheet()) : entity.getWorksheet() != null)
@@ -357,7 +340,6 @@ public class Entity {
         result = 31 * result + (getConceptURI() != null ? getConceptURI().hashCode() : 0);
         result = 31 * result + (getConceptForwardingAddress() != null ? getConceptForwardingAddress().hashCode() : 0);
         result = 31 * result + (getParentEntity() != null ? getParentEntity().hashCode() : 0);
-        result = 31 * result + (isEsNestedObject() ? 1 : 0);
         result = 31 * result + (getRecordType() != null ? getRecordType().hashCode() : 0);
         return result;
     }

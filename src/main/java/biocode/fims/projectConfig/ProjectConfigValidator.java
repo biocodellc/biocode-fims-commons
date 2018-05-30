@@ -1,8 +1,8 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.DataType;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.Rule;
 import org.apache.commons.lang.StringUtils;

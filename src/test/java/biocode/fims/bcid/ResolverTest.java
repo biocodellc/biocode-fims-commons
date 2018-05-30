@@ -1,6 +1,6 @@
 //package biocode.fims.bcid;
 //
-//import biocode.fims.digester.Entity;
+//import biocode.fims.projectConfig.models.Entity;
 //import biocode.fims.models.Bcid;
 //import biocode.fims.models.EntityIdentifier;
 //import biocode.fims.models.Expedition;
@@ -9,8 +9,8 @@
 //import biocode.fims.service.BcidService;
 //import biocode.fims.settings.SettingsManager;
 //import biocode.fims.application.config.FimsProperties;
-//import biocode.fims.digester.Mapping;
-//import biocode.fims.digester.Metadata;
+//import biocode.fims.projectConfig.models.Mapping;
+//import biocode.fims.projectConfig.models.Metadata;
 //import biocode.fims.entities.BcidTmp;
 //import biocode.fims.service.BcidService;
 //import biocode.fims.service.ExpeditionService;

@@ -1,7 +1,7 @@
 package biocode.fims.serializers;
 
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.TestEntity;
+import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.projectConfig.models.TestEntity;
 import biocode.fims.rest.FimsObjectMapper;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +45,7 @@ public class EntityTypeIdResolverTest {
             Entity entity = mapper.readValue(entityString, Entity.class);
             fail();
         } catch (IllegalStateException e) {
-            assertEquals("Could not find Entity subclass with type: \"non existent entity\" in package: biocode.fims.digester", e.getMessage());
+            assertEquals("Could not find Entity subclass with type: \"non existent entity\" in package: biocode.fims.projectConfig.models", e.getMessage());
         }
     }
 
@@ -62,7 +62,7 @@ public class EntityTypeIdResolverTest {
             mapper.writeValueAsString(entity);
             fail();
         } catch (JsonMappingException e) {
-            assertEquals("class biocode.fims.serializers.EntityInWrongPackage is not in the package biocode.fims.digester", e.getMessage());
+            assertEquals("class biocode.fims.serializers.EntityInWrongPackage is not in the package biocode.fims.projectConfig.models", e.getMessage());
         }
     }
 

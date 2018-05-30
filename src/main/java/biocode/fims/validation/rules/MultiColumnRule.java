@@ -1,12 +1,11 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author rjewing

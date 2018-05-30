@@ -1,6 +1,6 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.Project;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;

@@ -1,4 +1,4 @@
-package biocode.fims.settings;
+package biocode.fims.utils;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 
@@ -15,20 +15,11 @@ import java.security.NoSuchAlgorithmException;
 public class Hasher {
     private static String algorithm = "MD5";
 
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        Hasher h = new Hasher();
-
-        System.out.println(h.hasherDigester(""));
-        System.out.println(h.hasherDigester("dsasdkflaskdaskdljf23(E(D(#(@lfkasldfd"));
-        System.out.println(h.hasherDigester("dsasdkflaskdaskdljf23(E(D(#(@lfkasldfD"));
-
-    }
-
     /* MD5 creates a MD of 32 chars the following
      * string can be changed to SHA it will create
      * a MD of 40 chars
     */
-    public String hasherDigester(String password) {
+    public static String hash(String password) {
         // Don't create a hash for empty content!
         if (password.trim().equals("")) return "";
         byte[] plainText = password.getBytes();

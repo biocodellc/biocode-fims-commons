@@ -1,7 +1,7 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.digester.Field;
-import biocode.fims.digester.List;
+import biocode.fims.projectConfig.models.Field;
+import biocode.fims.projectConfig.models.List;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;

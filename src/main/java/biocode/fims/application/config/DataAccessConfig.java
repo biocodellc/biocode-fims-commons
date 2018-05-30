@@ -20,7 +20,6 @@ import java.util.Properties;
  */
 @Configuration
 @EnableJpaRepositories(basePackages = "biocode.fims.repositories")
-//@ComponentScan(basePackages = {"biocode.fims.models", "biocode.fims.entities"})
 @Import({SettingsManagerConfig.class, MessageSourceConfig.class})
 @PropertySource("classpath:biocode-fims-database.properties")
 @EnableTransactionManagement
@@ -56,7 +55,7 @@ public class DataAccessConfig {
 
         f.setDataSource(dataSource());
         f.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        f.setPackagesToScan("biocode.fims.models", "biocode.fims.entities");// TODO remove entities when removing BcidTmp
+        f.setPackagesToScan("biocode.fims.models");
         f.setMappingResources("sql-results-mappings.xml", "named-queries.xml");
         f.setJpaProperties(jpaProperties);
 

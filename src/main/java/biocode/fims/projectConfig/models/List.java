@@ -1,4 +1,4 @@
-package biocode.fims.digester;
+package biocode.fims.projectConfig.models;
 
 import java.util.LinkedList;
 
@@ -55,10 +55,6 @@ public class List {
      */
     public java.util.List<Field> getFields() {
         return fields;
-    }
-
-    public void print() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void run(Object o) {

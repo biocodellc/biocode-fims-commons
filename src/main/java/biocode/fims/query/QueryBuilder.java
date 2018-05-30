@@ -1,7 +1,7 @@
 package biocode.fims.query;
 
-import biocode.fims.digester.DataType;
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;

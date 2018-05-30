@@ -1,9 +1,10 @@
-package biocode.fims.digester;
+package biocode.fims.projectConfig.models;
 
 /**
  * Hold contents of a Field that is part of a List
  */
 public class Field {
+    // TODO make these camelCase
     private String uri;
     private String value;
     private String defined_by;

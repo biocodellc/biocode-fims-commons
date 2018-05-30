@@ -1,7 +1,7 @@
 package biocode.fims.models.records;
 
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import org.springframework.util.Assert;

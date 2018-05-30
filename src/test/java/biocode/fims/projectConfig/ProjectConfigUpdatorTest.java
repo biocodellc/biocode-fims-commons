@@ -1,9 +1,7 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
-import biocode.fims.models.Project;
-import biocode.fims.repositories.RecordRepository;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import org.junit.Test;
 
 import java.util.Collections;

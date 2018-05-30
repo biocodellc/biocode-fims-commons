@@ -1,8 +1,9 @@
 package biocode.fims.projectConfig;
 
-import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.ExpeditionMetadataProperty;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class ProjectConfig {
 
     private final LinkedList<Entity> entities;
-    private final LinkedList<biocode.fims.digester.List> lists;
+    private final LinkedList<biocode.fims.projectConfig.models.List> lists;
     private String expeditionForwardingAddress;
     private String datasetForwardingAddress;
     private List<ExpeditionMetadataProperty> expeditionMetadataProperties;
@@ -34,13 +35,13 @@ public class ProjectConfig {
     }
 
     /**
-     * Lookup a {@link biocode.fims.digester.List} by its alias
+     * Lookup a {@link biocode.fims.projectConfig.models.List} by its alias
      *
      * @param alias
      * @return
      */
-    public biocode.fims.digester.List findList(String alias) {
-        for (biocode.fims.digester.List list : lists) {
+    public biocode.fims.projectConfig.models.List findList(String alias) {
+        for (biocode.fims.projectConfig.models.List list : lists) {
             if (list.getAlias().equals(alias)) {
                 return list;
             }
@@ -123,11 +124,11 @@ public class ProjectConfig {
     }
 
     @JsonProperty
-    public List<biocode.fims.digester.List> lists() {
+    public List<biocode.fims.projectConfig.models.List> lists() {
         return lists;
     }
 
-    public void addList(biocode.fims.digester.List list) {
+    public void addList(biocode.fims.projectConfig.models.List list) {
         lists.add(list);
         validated = false;
     }

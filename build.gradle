@@ -50,9 +50,6 @@ dependencies {
     server 'javax.servlet:javax.servlet-api:3.1.0'
     server 'org.apache.poi:poi:3.16'
     server 'org.apache.poi:poi-ooxml:3.16'
-    server('org.apache.commons:commons-digester3:3.2') {
-        exclude module: 'asm'
-    }
     server 'commons-validator:commons-validator:1.5.0'
     server 'commons-cli:commons-cli:1.2'
     server 'org.apache.commons:commons-dbcp2:2.1.1'
@@ -71,16 +68,15 @@ dependencies {
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     server 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
     server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.8.4'
+    server group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.8.11'
 
     // aspectj
     serverRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
     server group: 'org.springframework', name: 'spring-aop', version: '4.3.14.RELEASE'
 
     server 'org.springframework:spring-jdbc:4.3.14.RELEASE'
-    // TODO migrate to rest client when it becomes more mature
-    server group: 'org.elasticsearch.client', name: 'transport', version: '5.0.1'
     // required for elasticsearch
-    server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
+//    server group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.7'
 
     server 'org.xerial:sqlite-jdbc:3.7.2'
     server 'org.slf4j:slf4j-log4j12:1.7.19'

@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.dataTypes.JacksonUtil;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.PostgresUtils;

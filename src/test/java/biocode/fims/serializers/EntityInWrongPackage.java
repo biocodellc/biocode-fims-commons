@@ -1,6 +1,6 @@
 package biocode.fims.serializers;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 
 /**
  * @author rjewing

@@ -1,4 +1,4 @@
-package biocode.fims.digester;
+package biocode.fims.projectConfig.models;
 
 /**
  * Specifies the valid dataformat values for an {@link Attribute}

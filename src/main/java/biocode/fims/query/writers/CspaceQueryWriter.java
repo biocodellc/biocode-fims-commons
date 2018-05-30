@@ -1,12 +1,12 @@
 package biocode.fims.query.writers;
 
-import biocode.fims.digester.Field;
+import biocode.fims.projectConfig.models.Field;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryResult;
-import biocode.fims.settings.PathManager;
+import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
@@ -33,7 +33,7 @@ public class CspaceQueryWriter implements QueryWriter {
 
     @Override
     public File write() {
-        File file = PathManager.createUniqueFile("output.cspace.xml", System.getProperty("java.io.tmpdir"));
+        File file = FileUtils.createUniqueFile("output.cspace.xml", System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
@@ -262,7 +262,7 @@ public class CspaceQueryWriter implements QueryWriter {
 
     private String fieldURILookup(String fieldName, String value) {
         // Loop XML attribute value of ScientificName to get the REFNAME
-        biocode.fims.digester.List l = projectConfig.findList(fieldName);
+        biocode.fims.projectConfig.models.List l = projectConfig.findList(fieldName);
 
         if (l == null) {
             return value;
