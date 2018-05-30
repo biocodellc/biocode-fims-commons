@@ -94,7 +94,7 @@ public class ProjectTemplatesResource extends FimsController {
      * create a fims template generator configuration
      *
      * @param columns
-     * @param worksheet
+     * @param sheetName
      * @param configName
      * @param projectId
      * @return
@@ -104,13 +104,13 @@ public class ProjectTemplatesResource extends FimsController {
     @Authenticated
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public ProjectTemplate create(@FormParam("columns") List<String> columns,
-                                  @FormParam("worksheet") String worksheet,
+                                  @FormParam("sheetName") String sheetName,
                                   @PathParam("configName") String configName,
                                   @PathParam("projectId") Integer projectId) {
 
 
         Project project = projectService.getProject(projectId, props.appRoot());
-        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
+        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(sheetName);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
             throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400, project.getProjectCode());
@@ -127,7 +127,7 @@ public class ProjectTemplatesResource extends FimsController {
             }
         }
 
-        ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, worksheet, project, userContext.getUser());
+        ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, sheetName, project, userContext.getUser());
 
         return projectTemplateService.save(projectTemplate);
     }
