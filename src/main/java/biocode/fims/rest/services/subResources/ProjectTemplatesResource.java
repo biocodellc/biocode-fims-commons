@@ -94,7 +94,7 @@ public class ProjectTemplatesResource extends FimsController {
      * create a fims template generator configuration
      *
      * @param columns
-     * @param sheetName
+     * @param worksheet
      * @param configName
      * @param projectId
      * @return
@@ -104,13 +104,13 @@ public class ProjectTemplatesResource extends FimsController {
     @Authenticated
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public ProjectTemplate create(@FormParam("columns") List<String> columns,
-                                  @FormParam("sheetName") String sheetName,
+                                  @FormParam("worksheet") String worksheet,
                                   @PathParam("configName") String configName,
                                   @PathParam("projectId") Integer projectId) {
 
 
         Project project = projectService.getProject(projectId, props.appRoot());
-        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(sheetName);
+        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
             throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400, project.getProjectCode());
@@ -127,7 +127,7 @@ public class ProjectTemplatesResource extends FimsController {
             }
         }
 
-        ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, sheetName, project, userContext.getUser());
+        ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, worksheet, project, userContext.getUser());
 
         return projectTemplateService.save(projectTemplate);
     }
@@ -202,7 +202,7 @@ public class ProjectTemplatesResource extends FimsController {
      * generate an excel template
      *
      * @param columns
-     * @param sheetName
+     * @param worksheet
      * @param projectId
      * @return
      */
@@ -211,7 +211,7 @@ public class ProjectTemplatesResource extends FimsController {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public FileResponse createExcel(
             @FormParam("columns") List<String> columns,
-            @FormParam("sheetName") String sheetName,
+            @FormParam("worksheet") String worksheet,
             @PathParam("projectId") Integer projectId) {
 
         Project project = projectService.getProject(projectId);
@@ -220,7 +220,7 @@ public class ProjectTemplatesResource extends FimsController {
             throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
         }
 
-        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(sheetName);
+        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
         for (String col: columns) {
             boolean found = false;
             for (Attribute a: attributes) {
@@ -241,7 +241,7 @@ public class ProjectTemplatesResource extends FimsController {
 
         File file = workbookWriter.write(
                 Collections.singletonList(
-                        new ExcelWorkbookWriter.WorkbookWriterSheet(sheetName, columns)
+                        new ExcelWorkbookWriter.WorkbookWriterSheet(worksheet, columns)
                 ));
 
         // Catch a null file and return 204
