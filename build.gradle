@@ -36,17 +36,11 @@ dependencies {
     server 'jstl:jstl:1.2'
 
     server group: 'org.springframework', name: 'spring-web', version: '4.3.14.RELEASE'
-    server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
-        exclude module: 'bean-validator'
-        exclude module: 'asm-all-repackaged'
-    }
+    server group: 'org.glassfish.jersey.ext', name: 'jersey-spring4', version: '2.27'
+    server group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.25.1'
 
-    // the next 2 are to fix the excluded modules above
-    server group: 'org.glassfish.hk2.external', name: 'asm-all-repackaged', version: '2.5.0-b04'
-    server 'org.glassfish.jersey.ext:jersey-bean-validation:2.25'
-
-    server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.25'
-    server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.25'
+    server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
+    server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'
     server 'javax.servlet:javax.servlet-api:3.1.0'
     server 'org.apache.poi:poi:3.16'
     server 'org.apache.poi:poi-ooxml:3.16'
@@ -86,7 +80,7 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4:1.5.6'
     testCompile 'org.powermock:powermock-api-mockito:1.5.6'
     integrationTestCompile group: 'org.springframework', name: 'spring-test', version: '4.3.14.RELEASE'
-    integrationTestCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: '2.26-b02'
+    integrationTestCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: '2.27'
     integrationTestCompile group: 'org.hsqldb', name: 'hsqldb', version: '2.4.0'
     integrationTestRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
 }
