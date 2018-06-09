@@ -29,7 +29,7 @@ public class TestDataReader implements DataReader {
     }
 
     @Override
-    public List<RecordSet> getRecordSets(int projectId, String expeditionCode) {
+    public List<RecordSet> getRecordSets() {
         return recordSets.computeIfAbsent(this.filename, k -> new ArrayList<>());
     }
 

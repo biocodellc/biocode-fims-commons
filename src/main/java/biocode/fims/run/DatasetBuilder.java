@@ -91,20 +91,22 @@ public class DatasetBuilder {
 
     private void instantiateDataSourceRecords() {
         for (DataSource dataSource : dataSources) {
-            DataReader reader = dataReaderFactory.getReader(dataSource.dataFile, config, dataSource.metadata);
-
-            recordSets.addAll(reader.getRecordSets(projectId, expeditionCode));
+            readData(dataSource.dataFile, dataSource.metadata);
         }
     }
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
+            readData(file, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
+        }
+    }
 
-            for (RecordSet set : reader.getRecordSets(projectId, expeditionCode)) {
-                DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
-                recordSets.add(converter.convertRecordSet(set, projectId, expeditionCode));
-            }
+    private void readData(String file, RecordMetadata metadata) {
+        DataReader reader = dataReaderFactory.getReader(file, config, metadata);
+
+        for (RecordSet set : reader.getRecordSets()) {
+            DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
+            recordSets.add(converter.convertRecordSet(set, projectId, expeditionCode));
         }
     }
 

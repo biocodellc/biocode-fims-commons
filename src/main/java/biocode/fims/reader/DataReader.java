@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface DataReader {
 
-    List<RecordSet> getRecordSets(int projectId, String expeditionCode);
+    List<RecordSet> getRecordSets();
 
     boolean handlesExtension(String ext);
 

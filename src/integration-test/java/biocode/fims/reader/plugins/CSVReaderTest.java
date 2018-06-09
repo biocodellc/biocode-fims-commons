@@ -71,7 +71,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
-            reader.getRecordSets(0, null);
+            reader.getRecordSets();
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.DUPLICATE_COLUMNS, e.getErrorCode());
@@ -87,7 +87,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
-            reader.getRecordSets(0, null);
+            reader.getRecordSets();
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
@@ -103,7 +103,7 @@ public class CSVReaderTest extends DelimitedTextReaderTest {
         DataReader reader = new CSVReader(csvFile, getSingleEntityConfig(), rm);
 
         try {
-            reader.getRecordSets(0, null);
+            reader.getRecordSets();
             fail();
         } catch (FimsRuntimeException e) {
             assertEquals(DataReaderCode.NO_DATA, e.getErrorCode());
