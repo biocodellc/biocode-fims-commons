@@ -8,10 +8,8 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.reader.DataReaderFactory;
-import biocode.fims.reader.DataReader;
+import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
-import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
 
@@ -28,6 +26,7 @@ import java.util.*;
 public class DatasetBuilder {
 
     private final DataReaderFactory dataReaderFactory;
+    private final DataConverterFactory dataConverterFactory;
     private final RecordRepository recordRepository;
     private ProjectConfig config;
     private final int projectId;
@@ -38,9 +37,10 @@ public class DatasetBuilder {
     private final ArrayList<DataSource> dataSources;
     private final ArrayList<RecordSet> recordSets;
 
-    public DatasetBuilder(DataReaderFactory dataReaderFactory, RecordRepository repository, ProjectConfig config,
+    public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository, ProjectConfig config,
                           int projectId, String expeditionCode) {
         this.dataReaderFactory = dataReaderFactory;
+        this.dataConverterFactory = dataConverterFactory;
         this.recordRepository = repository;
         this.config = config;
         this.projectId = projectId;
@@ -101,7 +101,10 @@ public class DatasetBuilder {
         for (String file : workbooks) {
             DataReader reader = dataReaderFactory.getReader(file, config, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
 
-            recordSets.addAll(reader.getRecordSets(projectId, expeditionCode));
+            for (RecordSet set : reader.getRecordSets(projectId, expeditionCode)) {
+                DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
+                recordSets.add(converter.convertRecordSet(set, projectId, expeditionCode));
+            }
         }
     }
 

@@ -5,6 +5,7 @@ import biocode.fims.models.records.FimsRowMapper;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
+import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.TabularDataReaderType;
@@ -53,6 +54,11 @@ public class FimsAppConfig {
                 Arrays.asList(new CSVReader(), new TabReader(), new ExcelReader())
         );
         return new DataReaderFactory(dataReaders);
+    }
+
+    @Bean
+    public DataConverterFactory dataConverterFactory() {
+        return new DataConverterFactory(new HashMap<>());
     }
 
     @Bean

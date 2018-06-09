@@ -8,6 +8,7 @@ import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.User;
 import biocode.fims.models.records.*;
 import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
@@ -28,6 +29,7 @@ import java.util.*;
  */
 public class DatasetProcessor {
     private final DataReaderFactory readerFactory;
+    private final DataConverterFactory dataConverterFactory;
     private final RecordValidatorFactory validatorFactory;
     private final RecordRepository recordRepository;
     private final ExpeditionService expeditionService;
@@ -51,6 +53,7 @@ public class DatasetProcessor {
         projectId = builder.projectId;
         user = builder.user;
         readerFactory = builder.readerFactory;
+        dataConverterFactory = builder.dataConverterFactory;
         validatorFactory = builder.validatorFactory;
         recordRepository = builder.recordRepository;
         expeditionService = builder.expeditionService;
@@ -67,8 +70,8 @@ public class DatasetProcessor {
     public boolean validate() {
         processorStatus.appendStatus("\nValidating...\n");
 
-        DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, recordRepository, projectConfig,
-                projectId, expeditionCode)
+        DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, dataConverterFactory,
+                recordRepository, projectConfig, projectId, expeditionCode)
                 .reloadWorkbooks(reloadWorkbooks)
                 .addWorkbook(workbookFile);
 
@@ -165,6 +168,7 @@ public class DatasetProcessor {
         private int projectId;
         private String expeditionCode;
         private DataReaderFactory readerFactory;
+        private DataConverterFactory dataConverterFactory;
         private RecordValidatorFactory validatorFactory;
         private RecordRepository recordRepository;
         private ProjectConfig projectConfig;
@@ -189,6 +193,11 @@ public class DatasetProcessor {
 
         public Builder readerFactory(DataReaderFactory readerFactory) {
             this.readerFactory = readerFactory;
+            return this;
+        }
+
+        public Builder dataConverterFactory(DataConverterFactory dataConverterFactory) {
+            this.dataConverterFactory = dataConverterFactory;
             return this;
         }
 

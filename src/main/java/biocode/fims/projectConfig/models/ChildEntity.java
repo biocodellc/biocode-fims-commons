@@ -33,7 +33,8 @@ public abstract class ChildEntity extends Entity {
                 if (e.getErrorCode() != ConfigCode.MISSING_ATTRIBUTE) {
                     throw e;
                 }
-                addAttribute(new Attribute(uniqueKey, parentEntity.getAttributeUri(uniqueKey)));
+                Attribute a = parentEntity.getAttribute(uniqueKey);
+                addAttribute(a);
             }
         }
     }

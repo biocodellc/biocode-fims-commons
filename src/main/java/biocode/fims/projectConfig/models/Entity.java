@@ -10,6 +10,7 @@ import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +30,7 @@ import java.util.List;
  * <p>
  * Subclasses should override the type() method, as this is used for polymorphic deserialization
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type", defaultImpl = Entity.class)
 @JsonTypeIdResolver(EntityTypeIdResolver.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

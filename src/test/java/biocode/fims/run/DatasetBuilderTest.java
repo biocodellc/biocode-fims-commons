@@ -10,6 +10,8 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.reader.DataConverter;
+import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
@@ -33,7 +35,7 @@ public class DatasetBuilderTest {
 
     @Test
     public void should_throw_exception_if_empty_dataset() {
-        DatasetBuilder builder = new DatasetBuilder(null, null, config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(null, null, null, config(), PROJECT_ID, EXPEDITION_CODE);
 
         try {
             builder.build();
@@ -45,7 +47,7 @@ public class DatasetBuilderTest {
 
     @Test
     public void should_throw_exception_non_excel_file_passed_to_workbook() {
-        DatasetBuilder builder = new DatasetBuilder(null, null, config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(null, null, null, config(), PROJECT_ID, EXPEDITION_CODE);
 
         try {
             builder.addWorkbook("dataSource.txt");
@@ -60,7 +62,7 @@ public class DatasetBuilderTest {
         TestDataReader reader = new TestDataReader();
         reader.addRecordSet("dataSource.xls", eventRecordSet(false));
 
-        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
         Dataset dataset = builder.build();
@@ -75,7 +77,7 @@ public class DatasetBuilderTest {
         reader.addRecordSet("dataSource.xls", eventRecordSet(false));
         reader.addRecordSet("samples.csv", sampleRecordSet());
 
-        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
         RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
@@ -111,6 +113,7 @@ public class DatasetBuilderTest {
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
+                dataConverterFactory(null),
                 repository,
                 config(),
                 PROJECT_ID,
@@ -144,6 +147,7 @@ public class DatasetBuilderTest {
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
+                dataConverterFactory(null),
                 repository,
                 config(),
                 PROJECT_ID,
@@ -181,6 +185,7 @@ public class DatasetBuilderTest {
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
+                dataConverterFactory(null),
                 repository,
                 config(),
                 PROJECT_ID,
@@ -214,6 +219,7 @@ public class DatasetBuilderTest {
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
+                dataConverterFactory(null),
                 repository,
                 config(),
                 PROJECT_ID,
@@ -353,6 +359,25 @@ public class DatasetBuilderTest {
             @Override
             public DataReader getReader(String filepath, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
                 return reader.newInstance(new File(filepath), projectConfig, recordMetadata);
+            }
+        };
+    }
+
+    private DataConverterFactory dataConverterFactory(DataConverter converter) {
+        return new DataConverterFactory(null) {
+            @Override
+            public DataConverter getConverter(String entityType, ProjectConfig projectConfig) {
+                return converter != null ? converter : new DataConverter() {
+                    @Override
+                    public RecordSet convertRecordSet(RecordSet recordSet, int projectId, String expeditionCode) {
+                        return recordSet;
+                    }
+
+                    @Override
+                    public DataConverter newInstance(ProjectConfig projectConfig) {
+                        return this;
+                    }
+                };
             }
         };
     }
