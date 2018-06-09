@@ -60,7 +60,7 @@ public class MinMaxNumberRule extends AbstractRule {
         String minUri = recordSet.entity().getAttributeUri(minimumColumn);
         String maxUri = recordSet.entity().getAttributeUri(maximumColumn);
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String minColVal = r.get(minUri);
             String maxColVal = r.get(maxUri);

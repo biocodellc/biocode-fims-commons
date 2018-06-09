@@ -68,7 +68,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
 
         Set<String> invalidValues = new LinkedHashSet<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

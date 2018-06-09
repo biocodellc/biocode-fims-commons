@@ -43,7 +43,7 @@ public class RequiredValueRule extends MultiColumnRule {
         List<String> columnsMissingValues = new ArrayList<>();
 
         List<String> urisToRemove = new ArrayList<>();
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             for (String uri : uris) {
 

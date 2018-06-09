@@ -50,7 +50,7 @@ public class ValidForURIRule extends SingleColumnRule {
         String uri = recordSet.entity().getAttributeUri(column);
         List<String> invalidValues = new ArrayList<>();
 
-        for (Record r: recordSet.records()) {
+        for (Record r: recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

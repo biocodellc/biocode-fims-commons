@@ -46,7 +46,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
         String uri = recordSet.entity().getAttributeUri(recordSet.parent().entity().getUniqueKey());
         List<String> invalidIdentifiers = new LinkedList<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

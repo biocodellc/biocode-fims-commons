@@ -47,7 +47,7 @@ public class RequireValueIfOtherColumnRule extends SingleColumnRule {
         String uri = recordSet.entity().getAttributeUri(column);
         String otherUri = recordSet.entity().getAttributeUri(otherColumn);
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
             String otherValue = r.get(otherUri);

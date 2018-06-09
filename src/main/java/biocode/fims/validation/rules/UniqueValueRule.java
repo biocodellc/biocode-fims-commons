@@ -49,7 +49,7 @@ public class UniqueValueRule extends SingleColumnRule {
         Set<String> set = new HashSet<>();
         List<String> duplicateValues = new ArrayList<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

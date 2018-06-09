@@ -53,7 +53,7 @@ public class NumericRangeRule extends SingleColumnRule {
 
         List<String> invalidValues = new ArrayList<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

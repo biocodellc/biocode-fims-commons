@@ -35,7 +35,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
         Assert.notNull(recordSet);
         boolean isValid = true;
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
             for (Attribute a : recordSet.entity().getAttributes()) {
 
                 String value = r.get(a.getUri());

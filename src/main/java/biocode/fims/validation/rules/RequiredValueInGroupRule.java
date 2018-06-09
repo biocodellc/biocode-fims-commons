@@ -49,7 +49,7 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
 
         List<String> columnsMissingValues = new ArrayList<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
 
             boolean valid = false;
             for (String uri : uris) {

@@ -44,7 +44,7 @@ public class ValidURLRule extends SingleColumnRule {
         UrlValidator urlValidator = new UrlValidator(schemes);
         List<String> invalidValues = new ArrayList<>();
 
-        for (Record r: recordSet.records()) {
+        for (Record r: recordSet.recordsToPersist()) {
 
             String value = r.get(uri);
 

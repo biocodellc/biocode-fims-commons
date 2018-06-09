@@ -42,7 +42,7 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         Set<LinkedList<String>> set = new HashSet<>();
         List<LinkedList<String>> duplicateValues = new ArrayList<>();
 
-        for (Record r : recordSet.records()) {
+        for (Record r : recordSet.recordsToPersist()) {
             LinkedList<String> composite = new LinkedList<>();
 
             for (String uri : uris) {
