@@ -152,7 +152,7 @@ public class ExpeditionService {
         List<EntityIdentifier> identifiers = new ArrayList<>();
 
         for (Entity entity : entities) {
-            Bcid bcid = new Bcid.BcidBuilder(entity.getConceptAlias(), props.publisher())
+            Bcid bcid = new Bcid.BcidBuilder(entity.getConceptURI(), props.publisher())
                     .creator(user, props.creator())
                     .title(entity.getConceptAlias())
                     .webAddress(props.entityResolverTarget())
