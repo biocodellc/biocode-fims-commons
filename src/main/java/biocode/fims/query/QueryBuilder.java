@@ -98,6 +98,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         for (String column : expression.columns()) {
             ColumnUri columnUri = lookupColumnUri(column);
+            // localIdentifier & parentIdentifier are never null, so exclude from query
+            if (columnUri.isLocalIdentifier() || columnUri.isParentIdentifier()) continue;
 
             entityColumns.computeIfAbsent(columnUri.conceptAlias(), k -> new ArrayList<>()).add(columnUri.uri());
         }
@@ -174,13 +176,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(LikeExpression expression) {
         ColumnUri columnUri = lookupColumnUri(expression.column());
 
+        whereBuilder.append(columnUri.conceptAlias());
+        addColumn(columnUri);
         whereBuilder
-                .append(columnUri.conceptAlias())
-                .append(".data->>'")
-                .append(columnUri.uri())
-                .append("' ILIKE ")
+                .append(" ILIKE ")
                 .append(putParam(expression.term()));
-
     }
 
     @Override
@@ -237,11 +237,9 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                     .append("(");
         }
 
+        whereBuilder.append(columnUri.conceptAlias());
+        addColumn(columnUri);
         whereBuilder
-                .append(columnUri.conceptAlias())
-                .append(".data->>'")
-                .append(columnUri.uri())
-                .append("'")
                 .append(castFunc == null ? " " : ") ")
                 .append(operator)
                 .append(" ")
@@ -269,6 +267,18 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     @Override
     public void visit(AllExpression allExpression) {
         this.allQuery = true;
+    }
+
+    private void addColumn(ColumnUri columnUri) {
+        if (columnUri.isLocalIdentifier()) {
+            whereBuilder.append(".local_identifier");
+        } else if (columnUri.isParentIdentifier()) {
+            whereBuilder.append(".parent_identifier");
+        } else {
+            whereBuilder.append(".data->>'")
+                    .append(columnUri.uri())
+                    .append("'");
+        }
     }
 
     @Override
@@ -400,9 +410,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 throw new FimsRuntimeException(QueryCode.UNKNOWN_COLUMN, 400, column);
             }
 
-            return new ColumnUri(entity, entity.getAttributeUri(columnPath[1]));
+            // single entity config can't have a childEntity
+            return new ColumnUri(entity, entity.getAttributeUri(columnPath[1]), false);
         } else {
-            return new ColumnUri(entity, entity.getAttributeUri(column));
+            // single entity config can't have a childEntity
+            return new ColumnUri(entity, entity.getAttributeUri(column), false);
         }
     }
 
@@ -435,14 +447,14 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         String entityAttributeUri = queryEntity.getAttributeUri(column);
         if (!StringUtils.isBlank(entityAttributeUri)) {
-            return new ColumnUri(queryEntity, entityAttributeUri);
+            return new ColumnUri(queryEntity, entityAttributeUri, isParentIdentifier(queryEntity, column));
         }
 
         for (Entity entity : project.getProjectConfig().entities()) {
             entityAttributeUri = entity.getAttributeUri(column);
 
             if (!StringUtils.isBlank(entityAttributeUri)) {
-                return new ColumnUri(entity, entityAttributeUri);
+                return new ColumnUri(entity, entityAttributeUri, isParentIdentifier(entity, column));
             }
         }
 
@@ -456,13 +468,16 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, String.join(".", conceptAlias, column));
         }
 
-        return new ColumnUri(entity, entity.getAttributeUri(column));
+        return new ColumnUri(entity, entity.getAttributeUri(column), isParentIdentifier(entity, column));
     }
 
     private boolean multiEntityConfig() {
         return project.getProjectConfig().entities().size() > 1;
     }
 
+    private boolean isParentIdentifier(Entity entity, String column) {
+        return !StringUtils.isBlank(column) && entity.isChildEntity() && column.equals(project.getProjectConfig().entity(entity.getParentEntity()).getUniqueKey());
+    }
 
     private String putParam(String val) {
         String key = String.valueOf(params.size() + 1);
@@ -483,12 +498,14 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private static class ColumnUri {
         private final Entity entity;
         private final String uri;
+        private boolean parentIdentifier;
 
-        private ColumnUri(Entity entity, String uri) {
+        private ColumnUri(Entity entity, String uri, boolean isParentIdentifier) {
             Assert.notNull(uri);
             Assert.notNull(entity);
             this.entity = entity;
             this.uri = uri;
+            this.parentIdentifier = isParentIdentifier;
         }
 
         String conceptAlias() {
@@ -505,6 +522,14 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         Entity entity() {
             return entity;
+        }
+
+        boolean isLocalIdentifier() {
+            return uri.equals(entity.getUniqueKeyURI());
+        }
+
+        boolean isParentIdentifier() {
+            return parentIdentifier;
         }
     }
 }

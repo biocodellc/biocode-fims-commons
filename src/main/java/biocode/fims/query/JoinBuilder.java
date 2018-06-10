@@ -168,7 +168,6 @@ public class JoinBuilder {
     }
 
     private void appendChildJoin(Entity parentEntity, Entity childEntity) {
-        String joinColumn = getJoinColumn(parentEntity, childEntity);
         String table = PostgresUtils.entityTableAs(projectId, childEntity.getConceptAlias());
 
         joinString
@@ -176,9 +175,7 @@ public class JoinBuilder {
                 .append(table)
                 .append(" ON ")
                 .append(childEntity.getConceptAlias())
-                .append(".data->>'")
-                .append(joinColumn)
-                .append("' = ")
+                .append(".parent_identifier = ")
                 .append(parentEntity.getConceptAlias())
                 .append(".local_identifier")
                 .append(" and ")
@@ -189,7 +186,6 @@ public class JoinBuilder {
     }
 
     private void appendParentJoin(Entity childEntity, Entity parentEntity) {
-        String joinColumn = getJoinColumn(parentEntity, childEntity);
         String table = PostgresUtils.entityTableAs(projectId, parentEntity.getConceptAlias());
 
         joinString
@@ -199,9 +195,7 @@ public class JoinBuilder {
                 .append(parentEntity.getConceptAlias())
                 .append(".local_identifier = ")
                 .append(childEntity.getConceptAlias())
-                .append(".data->>'")
-                .append(joinColumn)
-                .append("' and ")
+                .append(".parent_identifier and ")
                 .append(parentEntity.getConceptAlias())
                 .append(".expedition_id = ")
                 .append(childEntity.getConceptAlias())
@@ -210,9 +204,5 @@ public class JoinBuilder {
 
     private boolean alreadyJoined(Entity joinEntity) {
         return joinedEntities.contains(joinEntity);
-    }
-
-    private String getJoinColumn(Entity parentEntity, Entity childEntity) {
-        return childEntity.getAttributeUri(parentEntity.getUniqueKey());
     }
 }
