@@ -78,7 +78,7 @@ public class ExpeditionService {
         expedition.setIdentifier(bcid.identifier());
         expeditionRepository.save(expedition);
 
-        List<EntityIdentifier> entityIdentifiers = createEntityBcids(project.getProjectConfig().entities(), expedition.getUser());
+        List<EntityIdentifier> entityIdentifiers = createEntityBcids(expedition, project.getProjectConfig().entities(), expedition.getUser());
         expedition.setEntityIdentifiers(entityIdentifiers);
         return expeditionRepository.save(expedition);
     }
@@ -148,7 +148,7 @@ public class ExpeditionService {
         return bcidService.create(bcid, user);
     }
 
-    public List<EntityIdentifier> createEntityBcids(List<Entity> entities, User user) {
+    public List<EntityIdentifier> createEntityBcids(Expedition expedition, List<Entity> entities, User user) {
         List<EntityIdentifier> identifiers = new ArrayList<>();
 
         for (Entity entity : entities) {
@@ -160,7 +160,7 @@ public class ExpeditionService {
 
             bcid = bcidService.create(bcid, user);
 
-            identifiers.add(new EntityIdentifier(entity.getConceptAlias(), bcid.identifier()));
+            identifiers.add(new EntityIdentifier(expedition, entity.getConceptAlias(), bcid.identifier()));
         }
 
         return identifiers;

@@ -207,7 +207,7 @@ public class ProjectService {
 
     private void createEntityBcids(List<Entity> entities, int projectId) {
         for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(entities, e.getUser());
+            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(e, entities, e.getUser());
             e.getEntityIdentifiers().addAll(entityIdentifiers);
             expeditionService.update(e);
         }

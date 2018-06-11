@@ -365,6 +365,22 @@ public class QueryBuilderTest {
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
     }
 
+//    @Test
+//    public void should_exclude_exists_expression_if_local_identifier() {
+//        QueryBuilder queryBuilder = queryBuilder("event");
+//        queryBuilder.visit(new ExistsExpression("eventId"));
+//
+//        Map<String, String> params = new HashMap<>();
+//        params.put("1", "urn:col2");
+//        ParametrizedQuery expected = new ParametrizedQuery(
+//                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+//                        "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event'",// +
+//                        //"WHERE event.data ?? :1",
+//                params
+//        );
+//        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+//    }
+
     @Test
     public void should_write_valid_sql_for_exists_expression_multiple_columns_same_entity() {
         QueryBuilder queryBuilder = queryBuilder("event");
@@ -428,7 +444,7 @@ public class QueryBuilderTest {
         ParametrizedQuery expected = new ParametrizedQuery(
                 "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_root_identifier\" FROM project_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
-                        "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
+                        "LEFT JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
                         "WHERE expeditions.expedition_code = :1",
@@ -718,7 +734,7 @@ public class QueryBuilderTest {
         queryBuilder.visit(new SelectExpression("sample", new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS)));
 
         String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_root_identifier\" FROM project_1.event AS event " +
-                "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
+                "LEFT JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                 "LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
                 "WHERE event.local_identifier = :1";

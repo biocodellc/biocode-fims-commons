@@ -90,6 +90,8 @@ public class QueryResult {
                 String bcid = record.get(ROOT_IDENTIFIER);
                 if (entity.isChildEntity() && entity.getUniqueKey() != null) {
                     bcid += entity.buildChildIdentifier(record.get(parentEntity.getUniqueKeyURI()), record.get(entity.getUniqueKeyURI()));
+                } else if (entity.isChildEntity()) {
+                    bcid += record.get(parentEntity.getUniqueKeyURI());
                 } else {
                     bcid += record.get(entity.getUniqueKeyURI());
                 }
