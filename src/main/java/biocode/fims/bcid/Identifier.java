@@ -70,7 +70,9 @@ public class Identifier {
                 sbShoulder.append(c);
             else
                 sbSuffix.append(c);
-            if (Character.isDigit(c))
+            // typically the shoulder is defined by the first digit, however the special testing
+            // identifier ark:/99999/fk4, will define the should as the 2nd digit.
+            if (Character.isDigit(c) && !(naan.equals("99999") && sbShoulder.toString().equals("fk4")))
                 reachedShoulder = true;
         }
         shoulder = sbShoulder.toString();
