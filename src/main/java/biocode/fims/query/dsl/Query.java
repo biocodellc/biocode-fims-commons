@@ -55,6 +55,10 @@ public class Query {
         return queryBuilder.entity();
     }
 
+    public List<Entity> configEntities() {
+        return this.config.entities();
+    }
+
     public Set<Entity> entities() {
         if (entities == null) {
             EntityCollectingExpressionVisitor visitor = new EntityCollectingExpressionVisitor();
@@ -62,14 +66,8 @@ public class Query {
             entities = visitor.entities()
                     .stream()
                     .map(config::entity)
-                    .flatMap(e -> e.isChildEntity()
-                            ? Stream.of(e, config.entity(e.getParentEntity()))
-                            : Stream.of(e))
                     .collect(Collectors.toSet());
             entities.add(queryEntity());
-            if (queryEntity().isChildEntity()) {
-                entities.add(config.entity(queryEntity().getParentEntity()));
-            }
 
         }
 

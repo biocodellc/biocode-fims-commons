@@ -270,7 +270,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
         logger.info(q.toString());
 
-        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList<>(query.entities()));
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.configEntities());
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
         return handler.results();
@@ -291,7 +291,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
         logger.info(q.toString());
 
-        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(new ArrayList(query.entities()));
+        RecordRowCallbackHandler handler = new RecordRowCallbackHandler(query.configEntities());
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
         QueryResults queryResults = handler.results();
@@ -340,7 +340,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     private class RecordRowCallbackHandler implements RowCallbackHandler {
         private final List<Entity> entities;
-        final Map<String, List<Record>> records;
+        final Map<String, Set<Record>> records;
         final Map<String, String> rootIdentifiers;
 
         private RecordRowCallbackHandler(List<Entity> entities) {
@@ -372,7 +372,10 @@ public class PostgresRecordRepository implements RecordRepository {
 
                 if (rootIdentifier != null && record != null) {
                     record.set(ROOT_IDENTIFIER, rootIdentifier);
-                    records.computeIfAbsent(conceptAlias, k -> new ArrayList<>())
+                    // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
+                    // b/c we want to return results even if there are not children. This causes 1
+                    // parent (duplicate) for each child.
+                    records.computeIfAbsent(conceptAlias, k -> new HashSet<>())
                             .add(record);
                     rootIdentifier = null;
                     record = null;
@@ -385,12 +388,12 @@ public class PostgresRecordRepository implements RecordRepository {
         public QueryResults results() {
             List<QueryResult> results = new ArrayList<>();
 
-            for (Entity e: this.entities) {
-                String conceptAlias = e.getConceptAlias().toLowerCase();
+            for (String conceptAlias : records.keySet()) {
+                Entity e = getEntity(conceptAlias);
                 Entity parentEntity = e.isChildEntity()
                         ? getEntity(e.getParentEntity())
                         : null;
-                results.add(new QueryResult(records.getOrDefault(conceptAlias, new ArrayList<>()), e, parentEntity));
+                results.add(new QueryResult(new ArrayList<>(records.get(conceptAlias)), e, parentEntity));
             }
 
             return new QueryResults(results);
