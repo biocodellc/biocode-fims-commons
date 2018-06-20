@@ -23,6 +23,8 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
     @Override
     public GenericRecord mapRow(ResultSet rs, int rowNum, String dataLabel) throws SQLException {
         String data = rs.getString(dataLabel);
+        // data may be null when query includes child records
+        if (data == null) return null;
 
         try {
             Map<String, String> properties = (Map<String, String>) JacksonUtil.fromString(data, TYPE);

@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.subResources;
 
+import biocode.fims.authorizers.ExpeditionVisibility;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
@@ -224,7 +225,8 @@ public class ExpeditionsResource extends FimsController {
      */
     private void updateExistingExpedition(Expedition existingExpedition, Expedition updatedExpedition) {
         existingExpedition.setExpeditionTitle(updatedExpedition.getExpeditionTitle());
-        existingExpedition.setPublic(updatedExpedition.isPublic());
+        // TODO remove this when we remove Expedition.public
+        existingExpedition.setPublic(updatedExpedition.getVisibility() == ExpeditionVisibility.ANYONE);
         existingExpedition.setVisibility(updatedExpedition.getVisibility());
     }
 

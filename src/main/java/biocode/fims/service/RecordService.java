@@ -134,6 +134,6 @@ public class RecordService {
             }
         }
 
-        return new RecordResponse(parent, record, children.size() == 0 ? null : children);
+        return new RecordResponse(project.getProjectId(), parent, record, children.size() == 0 ? null : children);
     }
 }

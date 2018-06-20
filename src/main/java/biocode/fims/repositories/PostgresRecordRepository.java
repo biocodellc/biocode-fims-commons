@@ -352,35 +352,41 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
-            String rootIdentifier = null;
-            String conceptAlias = null;
-            Record record = null;
+            Map<String, RowRecordResult> rowRecords = new HashMap<>();
 
-            int rowNum = 0;
-
+            // process all columns in the row
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed
                 String label = metadata.getColumnLabel(i);
 
                 if (label.endsWith("_root_identifier")) {
-                    rootIdentifier = rs.getString(label);
-                    rootIdentifiers.put(label.split("_root_identifier")[0].toLowerCase(), rs.getString(label));
-                } else {
-                    conceptAlias = label.split("_data")[0].toLowerCase();
-                    record = getRowMapper(conceptAlias).mapRow(rs, rowNum, label);
-                }
+                    String[] split = label.split("_root_identifier");
+                    String conceptAlias = split[0].toLowerCase();
 
-                if (rootIdentifier != null && record != null) {
-                    record.set(ROOT_IDENTIFIER, rootIdentifier);
+                    rowRecords
+                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
+                            .rootIdentifier = rs.getString(label);
+                } else {
+                    String conceptAlias = label.split("_data")[0].toLowerCase();
+                    rowRecords
+                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
+                            .record = getRowMapper(conceptAlias).mapRow(rs, 0, label);
+                }
+            }
+
+            // add all records for the row to the records map
+            for (Map.Entry<String, RowRecordResult> entry : rowRecords.entrySet()) {
+                String conceptAlias = entry.getKey();
+                RowRecordResult result = entry.getValue();
+
+                if (result.rootIdentifier != null && result.record != null) {
+                    Record record = result.record;
+                    record.set(ROOT_IDENTIFIER, result.rootIdentifier);
                     // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
                     // b/c we want to return results even if there are not children. This causes 1
                     // parent (duplicate) for each child.
                     records.computeIfAbsent(conceptAlias, k -> new HashSet<>())
                             .add(record);
-                    rootIdentifier = null;
-                    record = null;
-                    conceptAlias = null;
-                    rowNum++;
                 }
             }
         }
@@ -421,5 +427,10 @@ public class PostgresRecordRepository implements RecordRepository {
         public int projectId;
         public int expeditionId;
         public String conceptAlias;
+    }
+
+    private static class RowRecordResult {
+        public String rootIdentifier;
+        public Record record;
     }
 }
