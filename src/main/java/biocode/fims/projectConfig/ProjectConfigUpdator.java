@@ -1,5 +1,7 @@
 package biocode.fims.projectConfig;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.projectConfig.models.Entity;
 
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class ProjectConfigUpdator {
 
     /**
      * parentEntity and uniqueKey can not be changed after entity creation
-     *
+     * <p>
      * either can attribute uris
      *
      * @param updatedEntity
@@ -55,8 +57,14 @@ public class ProjectConfigUpdator {
                 .getAttributes()
                 .parallelStream()
                 .forEach(attribute -> {
-                    String origURI = origEntity.getAttribute(attribute.getColumn()).getUri();
-                    attribute.setUri(origURI);
+                    try {
+                        String origURI = origEntity.getAttribute(attribute.getColumn()).getUri();
+                        attribute.setUri(origURI);
+                    } catch (FimsRuntimeException e) {
+                        if (e.getErrorCode() != ConfigCode.MISSING_ATTRIBUTE) {
+                            throw e;
+                        }
+                    }
                 });
     }
 
