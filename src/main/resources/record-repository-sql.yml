@@ -11,7 +11,7 @@ insertChildRecord: >
     (expedition_id, local_identifier, parent_identifier, data)
   VALUES
     (:expeditionId, :identifier, :parent_identifier, to_jsonb(:data::jsonb))
-  ON CONFLICT (parent_identifier, local_identifier, expedition_id)
+  ON CONFLICT (local_identifier, expedition_id)
     DO UPDATE SET data = to_jsonb(:data::jsonb)
 
 selectEntityIdentifier: >

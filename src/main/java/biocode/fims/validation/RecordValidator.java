@@ -71,16 +71,10 @@ public class RecordValidator {
 
         if (entity.isChildEntity()) {
             Entity parentEntity = config.entity(entity.getParentEntity());
-
             requiredValueRule.addColumn(parentEntity.getUniqueKey());
-
-            LinkedHashSet<String> compositeKey = new LinkedHashSet<>(Arrays.asList(parentEntity.getUniqueKey(), entity.getUniqueKey()));
-            rules.add(new CompositeUniqueValueRule(compositeKey, RuleLevel.ERROR));
-
             rules.add(new ValidParentIdentifiersRule());
-        } else {
-            rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
         }
+        rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
     }
 
     public boolean hasError() {

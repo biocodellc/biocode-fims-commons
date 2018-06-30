@@ -17,6 +17,7 @@ public class Attribute implements Comparable {
     private String definition;
     private String dataFormat;
     private String delimitedBy;
+    private boolean internal = false;
 
     public Attribute() {
     }
@@ -31,7 +32,7 @@ public class Attribute implements Comparable {
     }
 
     /**
-     * set the Column name. Here we normalize column names to replace spaces with underscore and remove an forward /'s
+     * set the Column name.
      *
      * @param column
      */
@@ -98,6 +99,13 @@ public class Attribute implements Comparable {
         this.dataFormat = dataFormat;
     }
 
+    public boolean isInternal() {
+        return internal;
+    }
+
+    public void setInternal(boolean internal) {
+        this.internal = internal;
+    }
 
     public int compareTo(Object o) {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
