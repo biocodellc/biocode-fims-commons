@@ -1,7 +1,8 @@
 package biocode.fims.application.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
@@ -12,10 +13,10 @@ import java.net.URI;
 //@Primary
 @Component
 public class FimsProperties {
-    protected final Environment env;
+    protected final ConfigurableEnvironment env;
 
     @Autowired
-    public FimsProperties(Environment env) {
+    public FimsProperties(ConfigurableEnvironment env) {
         this.env = env;
     }
 
@@ -68,11 +69,11 @@ public class FimsProperties {
     }
 
     public String accountCreatePath() {
-        return env.getRequiredProperty("accountCreatePath");
+        return getRequiredRawProperty("accountCreatePath");
     }
 
     public String resetPasswordPath() {
-        return env.getRequiredProperty("resetPasswordPath");
+        return getRequiredRawProperty("resetPasswordPath");
     }
 
     public String bcidUrl() {
@@ -93,5 +94,29 @@ public class FimsProperties {
 
     public URI expeditionResolverTarget() {
         return env.getRequiredProperty("bcid.resolverTargets.expedition", URI.class);
+    }
+
+    /**
+     * Return the raw string property value.
+     *
+     * By default Spring will attempt to resolve placeholders within a property value
+     *
+     * ex. prop1=some/${value}
+     *
+     * An attempt will be made to replace ${value} with a property "value". If the
+     * resolving fails, then an exception will throw.
+     *
+     * This function avoids that funny business
+     *
+     * @param key property name to resolve
+     * @return
+     */
+    private String getRequiredRawProperty(String key) {
+        for (PropertySource source: env.getPropertySources()) {
+            String val = (String) source.getProperty(key);
+            if (val != null) return val;
+        }
+
+        throw new IllegalStateException("Failed to resolve property: " + key);
     }
 }
