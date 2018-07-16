@@ -5,6 +5,8 @@ import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
+import com.opencsv.*;
+import com.opencsv.CSVReader;
 
 import java.io.*;
 import java.util.*;
@@ -25,18 +27,17 @@ import java.util.*;
  * Finally, note that this class expects text to consist of simple ASCII
  * (1 byte) characters, and that characters 0-8 and 10-31 are all treated as
  * empty whitespace and ignored (unless they occur within a quoted string).
- *
- *
+ * <p>
+ * <p>
  * This Reader expects the following RecordMetadata:
- *
- *     - sheetName
- *
+ * <p>
+ * - sheetName
  */
 abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
-    protected String sheetName;
-    protected StreamTokenizer st;
-    private boolean hasNext = false;
+    private String sheetName;
+    protected CSVReader reader;
+    private Iterator<String[]> it;
     private char delimiter;
 
     DelimitedTextReader(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata, char delimiter) {
@@ -57,29 +58,27 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
     @Override
     protected void init() {
         try {
-            st = new StreamTokenizer(new FileReader(file));
+            CSVParser parser = new CSVParserBuilder()
+                    .withSeparator(delimiter)
+//                    .withIgnoreQuotations(true)
+                    .build();
+            reader = new CSVReaderBuilder(new FileReader(file))
+//                    .withSkipLines(1)
+                    .withCSVParser(parser)
+                    .build();
         } catch (FileNotFoundException e) {
             throw new FimsRuntimeException(FileCode.READ_ERROR, 500);
         }
 
-        st.resetSyntax();
-        st.eolIsSignificant(true);
-        st.whitespaceChars(0, 31);
-        st.wordChars(' ', 255);
-        st.quoteChar('"');
-        st.ordinaryChar(delimiter);
-
-        setHasNext();
+        it = reader.iterator();
         setColumnNames();
 
-        if (!hasNext) {
+        if (!it.hasNext()) {
             throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
         }
 
         sheetEntities = config.entitiesForSheet(sheetName);
     }
-
-    abstract void configureTokenizer();
 
     private void setColumnNames() {
         // Get the first row to populate Column Names
@@ -101,71 +100,15 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
 
     @Override
     void instantiateRecords() {
-        while (hasNext) {
+        while (it.hasNext()) {
             instantiateRecordsFromRow(nextRow());
         }
     }
 
     private LinkedList<String> nextRow() {
-        if (!hasNext)
+        if (!it.hasNext())
             throw new NoSuchElementException();
 
-        int prevToken = delimiter;
-        LinkedList<String> row = new LinkedList<>();
-
-        try {
-            while (st.ttype != StreamTokenizer.TT_EOL &&
-                    st.ttype != StreamTokenizer.TT_EOF) {
-                if (st.ttype == delimiter) {
-                    // See if we just passed an empty field.
-                    if (prevToken == delimiter) {
-                        row.add("");
-                    }
-                } else {
-                    // See if we just passed an escaped double quote inside
-                    // of a quoted string.
-                    if (prevToken != delimiter)
-                        row.add(row.removeLast() + "\"" + st.sval);
-                    else {
-                        row.add(st.sval);
-                    }
-                }
-
-                prevToken = st.ttype;
-                st.nextToken();
-            }
-        } catch (IOException e) {
-        }
-
-        // Test for the special case of a blank last field.
-        if (prevToken == delimiter) {
-            row.add("");
-        }
-
-        setHasNext();
-
-        return row;
-    }
-
-    /**
-     * Internal method to see if there is another line with data remaining in
-     * the file.  Any completely blank lines will be skipped.  At exit, st.ttype
-     * will be the first token of the next record in the file.
-     */
-    private void setHasNext() {
-        int tokentype = StreamTokenizer.TT_EOF;
-
-        do {
-            try {
-                tokentype = st.nextToken();
-            } catch (IOException e) {
-            }
-        } while (tokentype == StreamTokenizer.TT_EOL);
-
-        if (tokentype != StreamTokenizer.TT_EOF) {
-            hasNext = true;
-        } else {
-            hasNext = false;
-        }
+        return new LinkedList<>(Arrays.asList(it.next()));
     }
 }

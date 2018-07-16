@@ -56,11 +56,6 @@ public class CSVReader extends DelimitedTextReader {
     }
 
     @Override
-    void configureTokenizer() {
-        st.wordChars('\t', '\t');
-    }
-
-    @Override
     public DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {
         return new CSVReader(file, projectConfig, recordMetadata);
     }

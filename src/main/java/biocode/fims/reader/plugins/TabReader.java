@@ -39,8 +39,6 @@ public class TabReader extends DelimitedTextReader {
         return EXTS.contains(ext.toLowerCase());
     }
 
-    @Override
-    void configureTokenizer() {}
 
     @Override
     public DataReader newInstance(File file, ProjectConfig projectConfig, RecordMetadata recordMetadata) {

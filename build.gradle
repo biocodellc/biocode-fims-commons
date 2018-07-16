@@ -54,6 +54,7 @@ dependencies {
     server 'org.apache.httpcomponents:httpclient:4.2.1'
     server 'com.ibm.icu:icu4j:3.4.4'
     server 'com.googlecode.json-simple:json-simple:1.1.1'
+    server group: 'com.opencsv', name: 'opencsv', version: '4.2'
     server group: 'org.postgresql', name: 'postgresql', version: '42.2.1'
 
 
