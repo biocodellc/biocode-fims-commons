@@ -295,6 +295,13 @@ public class PostgresRecordRepository implements RecordRepository {
         jdbcTemplate.query(q.sql(), q.params(), handler);
 
         QueryResults queryResults = handler.results();
+
+        Pageable pageable = new PageRequest(page, limit);
+
+        if (queryResults.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
         QueryResult queryResult = queryResults.getResult(query.queryEntity().getConceptAlias());
 
         int total = queryResult.records().size();
@@ -307,7 +314,6 @@ public class PostgresRecordRepository implements RecordRepository {
 
         QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity());
 
-        Pageable pageable = new PageRequest(page, limit);
         return new PageImpl<>(result.get(includeEmptyProperties, source), pageable, total);
     }
 
