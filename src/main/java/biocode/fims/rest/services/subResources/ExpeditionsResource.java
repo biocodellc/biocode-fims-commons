@@ -199,7 +199,7 @@ public class ExpeditionsResource extends FimsController {
                                         Expedition expedition) {
         Expedition existingExpedition = expeditionService.getExpedition(expeditionCode, projectId);
 
-        if (existingExpedition == null || !existingExpedition.getProject().getProjectUrl().equals(props.appRoot())) {
+        if (existingExpedition == null) {
             throw new FimsRuntimeException("project not found", 404);
         }
 
@@ -247,7 +247,7 @@ public class ExpeditionsResource extends FimsController {
                                                  @PathParam("expeditionCode") String expeditionCode) {
         Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
 
-        if (expedition == null || !expedition.getProject().getProjectUrl().equals(props.appRoot())) {
+        if (expedition == null) {
             throw new FimsRuntimeException("expedition not found", 404);
         }
 

@@ -163,7 +163,6 @@ CREATE TABLE projects (
   id SERIAL PRIMARY KEY NOT NULL,
   project_code project_code NOT NULL,
   project_title TEXT,
-  project_url TEXT NOT NULL,
   description TEXT,
   config JSONB NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -174,7 +173,6 @@ CREATE TABLE projects (
 
 CREATE INDEX projects_user_id_idx ON projects (user_id);
 CREATE INDEX projects_public_idx ON projects (public);
-CREATE INDEX projects_project_url_idx ON projects (project_url);
 CREATE UNIQUE INDEX projects_project_code_idx ON projects (project_code);
 ALTER TABLE projects ADD CONSTRAINT projects_project_code_uniq UNIQUE USING INDEX projects_project_code_idx;
 
@@ -182,7 +180,6 @@ CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR E
 -- CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN projects.project_code is 'The short name for this project';
-COMMENT ON COLUMN projects.project_url is 'Where this project is located on the web';
 COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
 
 DROP TABLE IF EXISTS project_config_history;

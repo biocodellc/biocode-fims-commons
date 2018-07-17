@@ -63,7 +63,7 @@ public class ProjectTemplatesResource extends FimsController {
     @GET
     public Set<ProjectTemplate> getTemplates(@PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProjectWithTemplates(projectId, props.appRoot());
+        Project project = projectService.getProjectWithTemplates(projectId);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
             throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400);
@@ -110,7 +110,7 @@ public class ProjectTemplatesResource extends FimsController {
                                   @PathParam("projectId") Integer projectId) {
 
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
         List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
@@ -164,7 +164,7 @@ public class ProjectTemplatesResource extends FimsController {
             throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
         }
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
         List<Attribute> attributes = project.getProjectConfig().attributesForSheet(template.getWorksheet());
 
 

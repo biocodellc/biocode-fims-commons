@@ -107,8 +107,7 @@ public class UserService {
         User user = getUserWithMemberProjects(username);
 
         if (user != null && !user.getPassword().isEmpty()) {
-            if (PasswordHash.validatePassword(password, user.getPassword())
-                    && userBelongsToInstanceProject(user)) {
+            if (PasswordHash.validatePassword(password, user.getPassword())) {
                 return user;
             }
         }
@@ -120,28 +119,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /**
-     * checks to see if the user is a member of a Project that exists for this biocode-fims instance
-     *
-     * @param user
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public boolean userBelongsToInstanceProject(User user) {
-
-        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
-        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
-            user = getUserWithMemberProjects(user.getUsername());
-        }
-
-        for (Project project : user.getProjectsMemberOf()) {
-            if (project.getProjectUrl().equals(props.appRoot()))
-                return true;
-        }
-
-        logger.warn("user exists, but is not a member of a project at this biocode-fims instance");
-        return false;
-    }
 
     /**
      * Find a user given a resetToken. A {@link User} will be returned if the resetToken exists and has not expired
@@ -194,18 +171,13 @@ public class UserService {
      * @param user
      * @return
      */
-    public boolean isAProjectAdmin(User user, String appRoot) {
+    public boolean isAProjectAdmin(User user) {
         PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         if (!unitUtil.isLoaded(user, "projects")) {
             user = getUserWithProjects(user.getUsername());
         }
 
-        for (Project project : user.getProjects()) {
-            if (project.getProjectUrl().equals(appRoot)) {
-                return true;
-            }
-        }
-        return false;
+        return user.getProjects().size() > 0;
     }
 
     public User getUserWithMemberProjects(String username) {

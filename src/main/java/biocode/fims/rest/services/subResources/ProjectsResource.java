@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,13 +49,10 @@ public class ProjectsResource extends FimsController {
     public List<Project> getProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
                                      @QueryParam("admin") @DefaultValue("false") Flag admin) {
         if (admin.isPresent()) {
-            return userContext.getUser().getProjects()
-                    .stream()
-                    .filter(p -> p.getProjectUrl().equals(props.appRoot()))
-                    .collect(Collectors.toList());
+            return new ArrayList<>(userContext.getUser().getProjects());
         }
 
-        return projectService.getProjects(props.appRoot(), userContext.getUser(), includePublic);
+        return projectService.getProjects(userContext.getUser(), includePublic);
     }
 
 
@@ -81,7 +79,7 @@ public class ProjectsResource extends FimsController {
 
         Project existingProject = projectService.getProject(projectId);
 
-        if (existingProject == null || !existingProject.getProjectUrl().equals(props.appRoot())) {
+        if (existingProject == null) {
             throw new FimsRuntimeException("project not found", 404);
         }
 
@@ -96,6 +94,7 @@ public class ProjectsResource extends FimsController {
      * method to transfer the updated {@link Project} object to an existing {@link Project}. This
      * allows us to control which properties can be updated.
      * Currently allows updating of the following properties : description, projectTitle, isPublic, and validationXml
+     *
      * @param existingProject
      * @param updatedProject
      */

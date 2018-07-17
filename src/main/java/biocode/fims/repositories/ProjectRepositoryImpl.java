@@ -23,9 +23,8 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     }
 
     @Override
-    public List<Project> getAllByProjectUrl(String projectUrl, String entityGraph) {
-        return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectUrl= :url", Project.class)
-                .setParameter("url", projectUrl)
+    public List<Project> getAll(String entityGraph) {
+        return em.createQuery("SELECT DISTINCT p FROM Project AS p", Project.class)
                 .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
                 .getResultList();
     }

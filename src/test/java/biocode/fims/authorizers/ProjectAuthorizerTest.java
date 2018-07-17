@@ -15,7 +15,6 @@ import org.mockito.MockitoAnnotations;
  * @author rjewing
  */
 public class ProjectAuthorizerTest {
-    private static String APP_ROOT = "http://example.com/";
 
     @Mock
     private ProjectRepository projectRepository;
@@ -27,37 +26,27 @@ public class ProjectAuthorizerTest {
 
     @Test
     public void userHasAccess_unAuthenticatedUserPublicProject_true() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null)
                 .isPublic(true)
                 .build();
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository);
         Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), true);
     }
 
     @Test
     public void userHasAccess_unAuthenticatedUserPrivateProject_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null)
                 .isPublic(false)
                 .build();
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
-        Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), false);
-    }
-
-    @Test
-    public void userHasAccess_unAuthenticatedUserPublicProjectDifferentProjectUrl_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, "http://example.com/test/")
-                .isPublic(true)
-                .build();
-
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository);
         Assert.assertEquals(projectAuthorizer.userHasAccess(null, project), false);
     }
 
     @Test
     public void userHasAccess_AuthenticatedMemberUserPrivateProject_true() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null)
                 .isPublic(false)
                 .build();
 
@@ -65,13 +54,13 @@ public class ProjectAuthorizerTest {
 
         Mockito.when(projectRepository.userIsMember(project.getProjectId(), user.getUserId())).thenReturn(true);
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), true);
     }
 
     @Test
     public void userHasAccess_AuthenticatedNonMemberUserPrivateProject_false() {
-        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null, APP_ROOT)
+        Project project = new Project.ProjectBuilder("TEST", "TEST Project", null)
                 .isPublic(false)
                 .build();
 
@@ -79,7 +68,7 @@ public class ProjectAuthorizerTest {
 
         Mockito.when(projectRepository.userIsMember(project.getProjectId(), user.getUserId())).thenReturn(false);
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository, APP_ROOT);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectRepository);
         Assert.assertEquals(projectAuthorizer.userHasAccess(user, project), false);
     }
 

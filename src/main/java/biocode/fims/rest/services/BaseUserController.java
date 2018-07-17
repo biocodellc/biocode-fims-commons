@@ -65,7 +65,7 @@ public abstract class BaseUserController extends FimsController {
     @Authenticated
     public User getUser(@PathParam("username") String username) {
         if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
+                !userService.isAProjectAdmin(userContext.getUser())) {
             throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
         }
 
@@ -169,7 +169,7 @@ public abstract class BaseUserController extends FimsController {
             throw new BadRequestException("Email must not be null");
         }
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
 
         if (project == null || !project.getUser().equals(userContext.getUser())) {
             throw new BadRequestException("Only admins can invite users to their project.");
@@ -231,6 +231,7 @@ public abstract class BaseUserController extends FimsController {
         user.setPasswordResetExpiration(null);
         user.setPasswordResetToken(null);
         userService.update(user);
+
 
         return new ConfirmationResponse(true);
     }

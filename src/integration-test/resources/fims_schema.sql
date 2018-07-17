@@ -59,11 +59,9 @@ create table projects (
   abstract varchar(255) null,
   projectCode varchar(255),
   projectTitle varchar(255),
-  projectUrl varchar(255) not null,
   description text,
   public boolean not null,
   ts timestamp,
-  validationXml varchar(255) not null,
   userId integer not null,
   primary key (projectId)
 );

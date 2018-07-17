@@ -827,7 +827,7 @@ public class QueryBuilderTest {
         config.addEntity(tissue());
         config.addEntity(non_linked_entity());
 
-        Project project = new Project.ProjectBuilder("TEST", null, config, null)
+        Project project = new Project.ProjectBuilder("TEST", null, config)
                 .build();
 
         project.setProjectId(1);

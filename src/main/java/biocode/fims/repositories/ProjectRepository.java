@@ -25,10 +25,6 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
 
     List<Project> findAll();
 
-    List<Project> findAllByProjectUrl(String projectUrl);
-
-    Project findByProjectIdAndProjectUrl(int projectId, String projectUrl);
-
     @Query("select case when (count(p) > 0) then true else false end from Project p join p.projectMembers pm where p.projectId=:projectId and pm.userId=:userId")
     boolean userIsMember(@Param("projectId") int projectId, @Param("userId") int userId);
 }

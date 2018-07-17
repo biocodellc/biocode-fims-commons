@@ -1,6 +1,5 @@
 package biocode.fims.rest.filters;
 
-import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.UserContext;
 import biocode.fims.service.UserService;
@@ -24,13 +23,11 @@ public class AdminFilter implements ContainerRequestFilter {
     private UserService userService;
     @Autowired
     private UserContext userContext;
-    @Autowired
-    private FimsProperties props;
 
     @Override
     public void filter(ContainerRequestContext requestContext)
             throws IOException {
-        if (userContext.getUser() == null || !userService.isAProjectAdmin(userContext.getUser(), props.appRoot())) {
+        if (userContext.getUser() == null || !userService.isAProjectAdmin(userContext.getUser())) {
             throw new ForbiddenRequestException("You must be an admin to access this service.");
         }
     }

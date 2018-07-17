@@ -15,11 +15,9 @@ import javax.persistence.PersistenceUnitUtil;
 public class ProjectAuthorizer {
 
     private final ProjectRepository projectRepository;
-    private final String appRoot;
 
-    public ProjectAuthorizer(ProjectRepository projectRepository, String appRoot) {
+    public ProjectAuthorizer(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
-        this.appRoot = appRoot;
     }
 
     /**
@@ -31,7 +29,7 @@ public class ProjectAuthorizer {
      * @return
      */
     public boolean userHasAccess(User user, Project project) {
-        if (project == null || !StringUtils.equals(project.getProjectUrl(), appRoot)) {
+        if (project == null) {
             return false;
         }
         if (user == null) {

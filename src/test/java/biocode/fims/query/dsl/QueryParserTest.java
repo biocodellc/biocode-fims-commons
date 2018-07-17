@@ -441,7 +441,7 @@ public class QueryParserTest {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(new Entity("event", "someURI"));
 
-        Project project = new Project.ProjectBuilder("TEST", null, config, null)
+        Project project = new Project.ProjectBuilder("TEST", null, config)
                 .build();
 
         project.setProjectId(1);

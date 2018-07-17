@@ -91,8 +91,7 @@ public class FimsAppConfig {
 
     @Bean
     public ProjectAuthorizer projectAuthorizer() {
-        String appRoot = settingsManager.retrieveValue("appRoot");
-        return new ProjectAuthorizer(projectRepository, appRoot);
+        return new ProjectAuthorizer(projectRepository);
     }
 
     @Bean

@@ -72,10 +72,6 @@ public class ProjectService {
         return projectRepository.findByProjectId(projectId);
     }
 
-    public Project getProject(int projectId, String projectUrl) {
-        return projectRepository.findByProjectIdAndProjectUrl(projectId, projectUrl);
-    }
-
 
     @Transactional(readOnly = true)
     public boolean isUserMemberOfProject(User user, int projectId) {
@@ -103,14 +99,8 @@ public class ProjectService {
         return projectRepository.getProjectByProjectId(projectId, "Project.withExpeditions");
     }
 
-    public Project getProjectWithTemplates(int projectId, String projectUrl) {
-        Project project = projectRepository.getProjectByProjectId(projectId, "Project.withTemplates");
-
-        if (project != null && project.getProjectUrl().equals(projectUrl)) {
-            return project;
-        }
-
-        return null;
+    public Project getProjectWithTemplates(int projectId) {
+        return projectRepository.getProjectByProjectId(projectId, "Project.withTemplates");
     }
 
     /**
@@ -143,24 +133,19 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public List<Project> getProjects(String projectUrl) {
-        return projectRepository.findAllByProjectUrl(projectUrl);
-    }
-
-    public List<Project> getProjectsWithExpeditions(String projectUrl) {
-        return projectRepository.getAllByProjectUrl(projectUrl, "Project.withExpeditions");
+    public List<Project> getProjectsWithExpeditions() {
+        return projectRepository.getAll("Project.withExpeditions");
     }
 
     /**
-     * get a list of projects for the current appRoot which are public, or the user is a member of
+     * get a list of projects which are public, or the user is a member of
      *
-     * @param appRoot
      * @param user
      * @param inludePublic
      * @return
      */
-    public List<Project> getProjects(String appRoot, User user, boolean inludePublic) {
-        List<Project> projects = projectRepository.findAllByProjectUrl(appRoot);
+    public List<Project> getProjects(User user, boolean inludePublic) {
+        List<Project> projects = projectRepository.findAll();
         List<Project> filteredProjects = new ArrayList<>();
 
         for (Project project : projects) {

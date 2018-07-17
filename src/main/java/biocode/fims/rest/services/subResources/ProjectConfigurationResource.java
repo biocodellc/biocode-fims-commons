@@ -46,7 +46,7 @@ public class ProjectConfigurationResource extends FimsController {
     @Produces(MediaType.APPLICATION_JSON)
     public ProjectConfig getConfig(@PathParam("projectId") Integer projectId) {
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Invalid projectId");

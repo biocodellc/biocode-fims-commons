@@ -43,7 +43,6 @@ public class Project {
     private String description;
     private ProjectConfig projectConfig;
     private boolean isPublic;
-    private String projectUrl;
     private List<Expedition> expeditions;
     private User user;
     private List<User> projectMembers;
@@ -55,17 +54,15 @@ public class Project {
         private String projectCode;
         private String projectTitle;
         private ProjectConfig projectConfig;
-        private String projectUrl;
 
         // Optional
         private boolean isPublic = true;
         private String description;
 
-        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig, String projectUrl) {
+        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
             this.projectConfig = projectConfig;
-            this.projectUrl = projectUrl;
         }
 
         public ProjectBuilder isPublic(boolean isPublic) {
@@ -88,7 +85,6 @@ public class Project {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
         projectConfig = builder.projectConfig;
-        projectUrl = builder.projectUrl;
         isPublic = builder.isPublic;
         description = builder.description;
     }
@@ -161,16 +157,6 @@ public class Project {
         this.projectConfig = projectConfig;
     }
 
-    @JsonIgnore
-    @Column(nullable = false, name = "project_url")
-    public String getProjectUrl() {
-        return projectUrl;
-    }
-
-    public void setProjectUrl(String projectUrl) {
-        this.projectUrl = projectUrl;
-    }
-
     @JsonView(Views.Detailed.class)
     @Column(name = "public", nullable = false)
     public boolean isPublic() {
@@ -214,7 +200,6 @@ public class Project {
                 ", created=" + created +
                 ", modified=" + modified +
                 ", isPublic=" + isPublic +
-                ", projectUrl='" + projectUrl + '\'' +
                 ", user=" + user +
                 ", public=" + isPublic() +
                 '}';

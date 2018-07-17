@@ -56,13 +56,7 @@ public class OAuthProviderService {
 
     @Transactional(readOnly = true)
     public OAuthToken getOAuthToken(String refreshToken) {
-        OAuthToken oAuthToken = oAuthTokenRepository.getOAuthToken(refreshToken, REFRESH_TOKEN_EXPIRATION_INTEVAL);
-
-        if (oAuthToken != null && userService.userBelongsToInstanceProject(oAuthToken.getUser())) {
-            return oAuthToken;
-        }
-
-        return null;
+        return oAuthTokenRepository.getOAuthToken(refreshToken, REFRESH_TOKEN_EXPIRATION_INTEVAL);
     }
 
     public OAuthToken generateToken(OAuthToken expiredOAuthToken) {
