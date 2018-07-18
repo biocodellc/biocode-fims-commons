@@ -105,7 +105,8 @@ public class ProjectConfigValidator {
             } else if (StringUtils.isBlank(parentEntity.getUniqueKey())) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is missing a uniqueKey");
             } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
-                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey");
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for " +
+                        "the parent entity uniqueKey: \"" + parentEntity.getUniqueKey() + "\"");
             } else if (parentEntity.equals(e)) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is itself");
             }
@@ -174,7 +175,7 @@ public class ProjectConfigValidator {
     }
 
     private void allExpeditionMetadataHaveName() {
-        for (ExpeditionMetadataProperty p: config.expeditionMetadataProperties()) {
+        for (ExpeditionMetadataProperty p : config.expeditionMetadataProperties()) {
             if (StringUtils.isBlank(p.getName())) {
                 errorMessages.add("ExpeditionMetadataProperty is missing a name.");
             }

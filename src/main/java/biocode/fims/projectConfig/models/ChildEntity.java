@@ -26,14 +26,14 @@ public abstract class ChildEntity extends Entity {
         Entity parentEntity = config.entity(getParentEntity());
 
         if (parentEntity != null) {
-            String uniqueKey = parentEntity.getUniqueKey();
+            String uniqueKeyURI = parentEntity.getUniqueKeyURI();
             try {
-                getAttribute(uniqueKey);
+                getAttributeByUri(uniqueKeyURI);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() != ConfigCode.MISSING_ATTRIBUTE) {
                     throw e;
                 }
-                Attribute a = parentEntity.getAttribute(uniqueKey);
+                Attribute a = parentEntity.getAttributeByUri(uniqueKeyURI);
                 addAttribute(a);
             }
         }
