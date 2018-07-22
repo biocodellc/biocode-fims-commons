@@ -272,27 +272,8 @@ public class ExcelWorkbookWriter {
 
             cell.setCellValue(record.getOrDefault(column, ""));
 
-            DataType dataType = findDataType(sheet.sheetName, column);
-            if (dataType.equals(DataType.FLOAT)) {
-                XSSFCellStyle style = workbook.createCellStyle();
-                style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
-                cell.setCellStyle(style);
-            } else if (dataType.equals(DataType.INTEGER)) {
-                XSSFCellStyle style = workbook.createCellStyle();
-                style.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-                cell.setCellStyle(style);
-            }
-
             cellNum++;
         }
-    }
-
-    private DataType findDataType(String sheetName, String column) {
-        return project.getProjectConfig().attributesForSheet(sheetName).stream()
-                .filter(a -> a.getColumn().equals(column))
-                .map(Attribute::getDataType)
-                .findFirst()
-                .orElse(DataType.STRING);
     }
 
     /**
