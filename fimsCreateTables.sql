@@ -177,7 +177,7 @@ CREATE UNIQUE INDEX projects_project_code_idx ON projects (project_code);
 ALTER TABLE projects ADD CONSTRAINT projects_project_code_uniq UNIQUE USING INDEX projects_project_code_idx;
 
 CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
--- CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN projects.project_code is 'The short name for this project';
 COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
@@ -193,7 +193,7 @@ CREATE TABLE project_config_history
     project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE
   );
 
--- CREATE TRIGGER config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
+CREATE TRIGGER config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE project_config_history();
 
 COMMENT ON COLUMN project_config_history.user_name is 'user who made the change';
 COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';
@@ -221,7 +221,7 @@ CREATE TABLE user_invite (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- CREATE TRIGGER set_user_invite_createdtime BEFORE INSERT ON user_invite FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_user_invite_createdtime BEFORE INSERT ON user_invite FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 CREATE OR REPLACE FUNCTION delete_expired_user_invites()
   RETURNS TRIGGER AS $$
@@ -253,7 +253,7 @@ CREATE TABLE expeditions (
 CREATE INDEX expeditions_project_id_idx ON expeditions (project_id);
 
 CREATE TRIGGER update_expeditions_modtime BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
--- CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN expeditions.expedition_code is 'The short name for this expedition';
 COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedition';
@@ -296,7 +296,7 @@ CREATE TABLE oauth_nonces (
 
 CREATE INDEX oauth_nonces_code_idx ON oauth_nonces (code);
 
--- CREATE TRIGGER set_oouth_nonces_createdtime BEFORE INSERT ON oauth_nonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_oouth_nonces_createdtime BEFORE INSERT ON oauth_nonces FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN oauth_nonces.code is 'The generated code the client app can exchange for an access token';
 COMMENT ON COLUMN oauth_nonces.redirect_uri is 'The redirectUri associated with this code';
@@ -315,7 +315,7 @@ CREATE TABLE oauth_tokens (
 CREATE INDEX oauth_tokens_token_idx on oauth_tokens (token);
 CREATE INDEX oauth_tokens_refresh_token_idx on oauth_tokens (refresh_token);
 
--- CREATE TRIGGER set_oauth_tokens_createdtime BEFORE INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_oauth_tokens_createdtime BEFORE INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 COMMENT ON COLUMN oauth_tokens.token is 'The generated token used by the client app';
 COMMENT ON COLUMN oauth_tokens.refresh_token is 'The generated token used to gain a new access_token';
