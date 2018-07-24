@@ -25,6 +25,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
     private static final String GROUP_MESSAGE = "Invalid DataFormat";
     private static final Pattern INT_PATTERN = Pattern.compile("[+-]?\\d*");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("[+-]?\\d*\\.\\d*");
+    private static final Pattern BOOL_PATTERN = Pattern.compile("true|false", Pattern.CASE_INSENSITIVE);
 
     public ValidDataTypeFormatRule() {
         super(RuleLevel.ERROR);
@@ -76,6 +77,15 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                             isValid = false;
                         }
                         break;
+                    case BOOLEAN:
+                        if (!isBooleanDataFormat(value)) {
+                            messages.addErrorMessage(
+                                    GROUP_MESSAGE,
+                                    new Message("\"" + a.getColumn() + "\" contains non-boolean value \"" + value + "\". Must be either true or false")
+                            );
+                            isValid = false;
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -92,6 +102,10 @@ public class ValidDataTypeFormatRule extends AbstractRule {
 
     private boolean isFloatDataFormat(String value) {
         return FLOAT_PATTERN.matcher(value).matches();
+    }
+
+    private boolean isBooleanDataFormat(String value) {
+        return BOOL_PATTERN.matcher(value).matches();
     }
 
     private boolean isDateDataFormat(String value, DataType dataType, String dataformat) {

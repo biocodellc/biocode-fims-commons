@@ -407,6 +407,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 return "convert_to_datetime";
             case TIME:
                 return "convert_to_time";
+            case BOOLEAN:
+                return "convert_to_bool";
             default:
                 return null;
         }

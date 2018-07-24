@@ -456,6 +456,18 @@ BEGIN
 END
 $func$  LANGUAGE plpgsql IMMUTABLE;
 
+CREATE OR REPLACE FUNCTION convert_to_bool(text)
+  RETURNS BOOLEAN AS
+$func$
+BEGIN
+  RETURN lower($1)::BOOLEAN;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN NULL;  -- NULL for invalid input
+
+END
+$func$  LANGUAGE plpgsql IMMUTABLE;
+
 CREATE OR REPLACE FUNCTION convert_to_float(text)
   RETURNS float AS
 $func$
