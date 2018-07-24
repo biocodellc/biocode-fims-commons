@@ -13,16 +13,16 @@ import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
  */
 public class QueryResult {
 
-    private final List<Record> records;
+    private final LinkedList<Record> records;
     private final Entity entity;
     private Entity parentEntity;
 
-    public QueryResult(List<Record> records, Entity entity) {
+    public QueryResult(LinkedList<Record> records, Entity entity) {
         this.records = records;
         this.entity = entity;
     }
 
-    public QueryResult(List<Record> records, Entity entity, Entity parentEntity) {
+    public QueryResult(LinkedList<Record> records, Entity entity, Entity parentEntity) {
         this(records, entity);
         this.parentEntity = parentEntity;
     }
@@ -41,7 +41,7 @@ public class QueryResult {
      * @param includeEmpty if true, the result will include entries for all {@link Attribute}s in the {@link Entity}
      * @return
      */
-    public List<Map<String, String>> get(boolean includeEmpty) {
+    public LinkedList<Map<String, String>> get(boolean includeEmpty) {
         return get(includeEmpty, Collections.emptyList());
     }
 
@@ -52,8 +52,8 @@ public class QueryResult {
      * @param source       specifies the record columns to return. If empty list, no filtering will occur
      * @return
      */
-    public List<Map<String, String>> get(boolean includeEmpty, List<String> source) {
-        List<Map<String, String>> transformedRecords = new ArrayList<>();
+    public LinkedList<Map<String, String>> get(boolean includeEmpty, List<String> source) {
+        LinkedList<Map<String, String>> transformedRecords = new LinkedList<>();
         boolean skipSourceFilter = source.size() == 0;
 
         for (Record record : records) {

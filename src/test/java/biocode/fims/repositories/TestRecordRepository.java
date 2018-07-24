@@ -1,12 +1,13 @@
 package biocode.fims.repositories;
 
+import biocode.fims.rest.responses.PaginatedResponse;
+import biocode.fims.models.records.RecordSources;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
-import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -68,7 +69,7 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties) {
+    public PaginatedResponse<Map<String, List<Map<String, String>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
         throw new NotImplementedException();
     }
 

@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -20,10 +21,6 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -278,14 +275,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public Page<Map<String, String>> query(Query query, int page, int limit, List<String> source, boolean includeEmptyProperties) {
-        if (query.entities().size() > 1) {
-            // TODO, remove this limitation. either implement pagination in psql query, or we need to
-            // return a result which contains the current page for the queryEntity, and filter all
-            // "related" entities from the current page
-            throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, 400);
-        }
-        // naive implementation that will work for now. Probably better to use postgres to paginate
+    public PaginatedResponse<Map<String, List<Map<String, String>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
         boolean onlyPublicExpeditions = query.expeditions().isEmpty();
         ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
 
@@ -296,25 +286,11 @@ public class PostgresRecordRepository implements RecordRepository {
 
         QueryResults queryResults = handler.results();
 
-        Pageable pageable = new PageRequest(page, limit);
-
         if (queryResults.isEmpty()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+            return new PaginatedResponse<>(Collections.emptyMap(), 0, 0);
         }
 
-        QueryResult queryResult = queryResults.getResult(query.queryEntity().getConceptAlias());
-
-        int total = queryResult.records().size();
-        int from = page * limit;
-        int to = (from + limit < total) ? from + limit : total;
-
-        if (to > queryResult.records().size()) {
-            to = queryResult.records().size();
-        }
-
-        QueryResult result = new QueryResult(queryResult.records().subList(from, to), queryResult.entity());
-
-        return new PageImpl<>(result.get(includeEmptyProperties, source), pageable, total);
+        return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources), query.page(), query.limit());
     }
 
 
@@ -346,7 +322,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     private class RecordRowCallbackHandler implements RowCallbackHandler {
         private final List<Entity> entities;
-        final Map<String, Set<Record>> records;
+        final Map<String, LinkedHashSet<Record>> records;
         final Map<String, String> rootIdentifiers;
 
         private RecordRowCallbackHandler(List<Entity> entities) {
@@ -358,7 +334,7 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
-            Map<String, RowRecordResult> rowRecords = new HashMap<>();
+            Map<String, RowRecordResult> rowRecords = new LinkedHashMap<>();
 
             // process all columns in the row
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
@@ -391,7 +367,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
                     // b/c we want to return results even if there are not children. This causes 1
                     // parent (duplicate) for each child.
-                    records.computeIfAbsent(conceptAlias, k -> new HashSet<>())
+                    records.computeIfAbsent(conceptAlias, k -> new LinkedHashSet<>())
                             .add(record);
                 }
             }
@@ -405,7 +381,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 Entity parentEntity = e.isChildEntity()
                         ? getEntity(e.getParentEntity())
                         : null;
-                results.add(new QueryResult(new ArrayList<>(records.get(conceptAlias)), e, parentEntity));
+                results.add(new QueryResult(new LinkedList<>(records.get(conceptAlias)), e, parentEntity));
             }
 
             return new QueryResults(results);

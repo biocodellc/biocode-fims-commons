@@ -9,6 +9,7 @@ import biocode.fims.query.dsl.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 
 /**
@@ -24,6 +25,8 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private final JoinBuilder joinBuilder;
     private boolean allQuery;
     private Map<String, String> params;
+    private Integer page;
+    private Integer limit;
 
     public QueryBuilder(Project project, String entityConceptAlias) {
         this.project = project;
@@ -36,6 +39,28 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         this.joinBuilder = new JoinBuilder(queryEntity, project.getProjectConfig(), project.getProjectId());
+    }
+
+    /**
+     * @param project
+     * @param entityConceptAlias
+     * @param page               0 based page to fetch
+     * @param limit              # of records to return
+     */
+    public QueryBuilder(Project project, String entityConceptAlias, int page, int limit) {
+        this(project, entityConceptAlias);
+        this.page = page;
+        this.limit = limit;
+    }
+
+    @Override
+    public Integer page() {
+        return page;
+    }
+
+    @Override
+    public Integer limit() {
+        return limit;
     }
 
     @Override
@@ -305,8 +330,22 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             addPublicExpeditions();
         }
 
+        StringBuilder orderBy = new StringBuilder()
+                .append(" ORDER BY ")
+                .append(queryEntity.getConceptAlias())
+                .append(".local_identifier, ")
+                .append(queryEntity.getConceptAlias())
+                .append(".expedition_id");
+
+        if (limit != null) {
+            if (page != null) {
+                orderBy.append(" OFFSET ").append(page * limit);
+            }
+            orderBy.append(" LIMIT ").append(limit);
+        }
+
         return new ParametrizedQuery(
-                sql + joinBuilder.build() + " WHERE " + whereBuilder.toString(),
+                sql + joinBuilder.build() + " WHERE " + whereBuilder.append(orderBy).toString(),
                 params
         );
     }

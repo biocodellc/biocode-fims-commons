@@ -68,7 +68,7 @@ public class QueryParserTest {
 
     @Test
     public void should_parse_simple_fts_filter_expression() {
-        String qs = "col1:value1 ";
+        String qs = "col1:event.value1 ";
 
         Query result = parseRunner.run(qs).resultValue;
 
@@ -194,6 +194,17 @@ public class QueryParserTest {
         Query result = parseRunner.run(qs).resultValue;
 
         Query expected = new Query(queryBuilder, null, new ExistsExpression("col1"));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_path_based_exists_filter_expression() {
+        String qs = "_exists_:event.col1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ExistsExpression("event.col1"));
 
         assertEquals(expected, result);
     }

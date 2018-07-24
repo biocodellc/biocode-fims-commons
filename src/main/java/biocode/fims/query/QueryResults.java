@@ -1,5 +1,6 @@
 package biocode.fims.query;
 
+import biocode.fims.models.records.RecordSources;
 import biocode.fims.projectConfig.models.Entity;
 
 import java.util.*;
@@ -39,6 +40,17 @@ public class QueryResults implements Iterable<QueryResult> {
     public boolean isEmpty() {
         return results.stream()
                 .noneMatch(r -> r.get(false).size() > 0);
+    }
+
+    public Map<String, List<Map<String, String>>> toMap(boolean includeEmpty, RecordSources sources) {
+        Map<String, List<Map<String, String>>> map = new HashMap<>();
+
+        for (QueryResult result: results) {
+            String conceptAlias = result.entity().getConceptAlias();
+            map.put(conceptAlias, result.get(includeEmpty, sources.get(conceptAlias)));
+        }
+
+        return map;
     }
 
     @Override

@@ -11,4 +11,8 @@ public interface QueryBuildingExpressionVisitor extends ExpressionVisitor {
     Entity entity();
 
     String queryTable();
+
+    Integer page();
+
+    Integer limit();
 }

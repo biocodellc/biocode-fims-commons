@@ -36,6 +36,14 @@ public class Query {
         this.expression = expression;
     }
 
+    public boolean isPaginated() {
+        return queryBuilder.page() != null && queryBuilder.limit() != null;
+    }
+
+    public Integer page() { return queryBuilder.page(); }
+
+    public Integer limit() { return queryBuilder.limit(); }
+
     public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         expression.accept(queryBuilder);
         return queryBuilder.parameterizedQuery(onlyPublicExpeditions);
@@ -80,7 +88,11 @@ public class Query {
 
 
     public static Query factory(Project project, String conceptAlias, String queryString) {
-        QueryBuilder queryBuilder = new QueryBuilder(project, conceptAlias);
+        return factory(project, conceptAlias, queryString, null, null);
+    }
+
+    public static Query factory(Project project, String conceptAlias, String queryString, Integer page, Integer limit) {
+        QueryBuilder queryBuilder = new QueryBuilder(project, conceptAlias, page, limit);
 
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, project.getProjectConfig());
         try {
