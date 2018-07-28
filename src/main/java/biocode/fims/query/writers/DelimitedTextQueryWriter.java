@@ -3,6 +3,8 @@ package biocode.fims.query.writers;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.projectConfig.ColumnComparator;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.utils.FileUtils;
@@ -22,14 +24,16 @@ import java.util.stream.Collectors;
  */
 public class DelimitedTextQueryWriter extends AbstractQueryWriter {
     private final String delimiter;
-    private boolean isCsv;
+    private final ProjectConfig config;
+    private final boolean isCsv;
 
     private Set<String> columns;
 
-    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter) {
+    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter, ProjectConfig config) {
         super(queryResults);
         this.delimiter = delimiter;
         isCsv = StringUtils.equals(delimiter.trim(), ",");
+        this.config = config;
     }
 
     @Override
@@ -47,6 +51,12 @@ public class DelimitedTextQueryWriter extends AbstractQueryWriter {
             }
 
             this.columns = records.get(0).keySet();
+
+            if (config != null) {
+                LinkedList<String> sortedColumns = new LinkedList<>(this.columns);
+                sortedColumns.sort(new ColumnComparator(config, queryResult.entity().getWorksheet()));
+                this.columns = new LinkedHashSet<>(sortedColumns);
+            }
 
             for (String column : columns) {
                 if (isCsv) {
