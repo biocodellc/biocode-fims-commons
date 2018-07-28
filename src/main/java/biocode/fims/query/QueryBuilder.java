@@ -47,7 +47,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
      * @param page               0 based page to fetch
      * @param limit              # of records to return
      */
-    public QueryBuilder(Project project, String entityConceptAlias, int page, int limit) {
+    public QueryBuilder(Project project, String entityConceptAlias, Integer page, Integer limit) {
         this(project, entityConceptAlias);
         this.page = page;
         this.limit = limit;

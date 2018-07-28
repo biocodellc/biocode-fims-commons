@@ -4,6 +4,8 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.validation.rules.RequiredValueRule;
+import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -174,7 +176,7 @@ public class ProjectConfig {
 
     /**
      * get of all entities that form the relation. Beginning with the elderEntity and ending with the childEntity
-     *
+     * <p>
      * If the entities are directly related the returned value would be [elderEntity, childEntity]
      * If the entities are not directly related the returned list would be [elderEntity, intermediaryEntity, ... ,childEntity]
      * If the entites are not related, an empty list will be returned
@@ -219,9 +221,27 @@ public class ProjectConfig {
     }
 
     public void generateUris() {
-        for (Entity e: entities) {
+        for (Entity e : entities) {
             e.generateUris();
         }
+    }
+
+    /**
+     * Find the required columns on this sheet
+     *
+     * @param sheetName
+     * @param level
+     * @return
+     */
+    public Set<String> getRequiredColumns(String sheetName, RuleLevel level) {
+        return this.entitiesForSheet(sheetName)
+                .stream()
+                .flatMap(e -> {
+                    RequiredValueRule rule = e.getRule(RequiredValueRule.class, level);
+                    if (rule == null) return new ArrayList<String>().stream();
+                    return rule.columns().stream();
+                })
+                .collect(Collectors.toSet());
     }
 
     @JsonIgnore

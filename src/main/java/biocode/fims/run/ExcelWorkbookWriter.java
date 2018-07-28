@@ -4,6 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
+import biocode.fims.projectConfig.ColumnComparator;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Field;
@@ -68,6 +69,7 @@ public class ExcelWorkbookWriter {
         );
 
         for (WorkbookWriterSheet sheet : sheets) {
+            sheet.columns.sort(new ColumnComparator(this.project.getProjectConfig(), sheet.sheetName));
             createSheet(sheet);
             createDataFields(sheet.sheetName, sheet.columns);
         }
@@ -248,7 +250,7 @@ public class ExcelWorkbookWriter {
 
     private void writeHeaderRow(WorkbookWriterSheet sheet, Row row) {
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
 
         int columnNum = 0;
         for (String col : sheet.columns) {
@@ -283,7 +285,7 @@ public class ExcelWorkbookWriter {
         XSSFSheet dataFieldsSheet = workbook.createSheet(sheetName + "_" + DATA_FIELDS_SHEET_NAME);
 
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = getRequiredColumns(sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheetName, RuleLevel.ERROR);
 
         int rowNum = 0;
         Row row = dataFieldsSheet.createRow(rowNum++);
@@ -465,24 +467,6 @@ public class ExcelWorkbookWriter {
                 listColumnNumber++;
             }
         }
-    }
-
-    /**
-     * Find the required columns on this sheet
-     *
-     * @param sheetName
-     * @param level
-     * @return
-     */
-    private Set<String> getRequiredColumns(String sheetName, RuleLevel level) {
-        return project.getProjectConfig().entitiesForSheet(sheetName)
-                .stream()
-                .flatMap(e -> {
-                    RequiredValueRule rule = e.getRule(RequiredValueRule.class, level);
-                    if (rule == null) return new ArrayList<String>().stream();
-                    return rule.columns().stream();
-                })
-                .collect(Collectors.toSet());
     }
 
 

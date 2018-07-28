@@ -6,6 +6,5 @@ package biocode.fims.fimsExceptions.errorCodes;
 public enum ValidationCode implements ErrorCode {
     EMPTY_DATASET,
     DUPLICATE_COLUMNS,
-    INVALID_DATASET,
-    NO_DATA
+    INVALID_DATASET
 }
