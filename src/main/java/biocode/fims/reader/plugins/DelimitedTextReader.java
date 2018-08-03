@@ -74,7 +74,7 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
         setColumnNames();
 
         if (!it.hasNext()) {
-            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400, sheetName);
         }
 
         sheetEntities = config.entitiesForSheet(sheetName);
@@ -85,14 +85,14 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
         try {
             colNames = nextRow();
         } catch (NoSuchElementException e) {
-            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400, sheetName);
         }
 
         Set<String> colSet = new HashSet<>();
 
         for (String col : colNames) {
             if (!colSet.add(col)) {
-                throw new FimsRuntimeException(DataReaderCode.DUPLICATE_COLUMNS, 400, "csv file", col);
+                throw new FimsRuntimeException(DataReaderCode.DUPLICATE_COLUMNS, 400, sheetName, col);
             }
         }
 

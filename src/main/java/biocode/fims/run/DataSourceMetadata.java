@@ -53,7 +53,7 @@ public class DataSourceMetadata {
         }
 
         if (readerType == null) {
-            throw new FimsRuntimeException(DataReaderCode.NOT_FOUND, 400);
+            throw new FimsRuntimeException(DataReaderCode.NOT_FOUND, 400, dataType);
         }
 
         return new RecordMetadata(readerType, reload, metadata);

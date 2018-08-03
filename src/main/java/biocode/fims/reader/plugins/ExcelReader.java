@@ -99,7 +99,7 @@ public class ExcelReader extends AbstractTabularDataReader {
         }
 
         if (!hasRecords) {
-            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400);
+            throw new FimsRuntimeException(DataReaderCode.NO_DATA, 400, currSheet.getSheetName());
         }
     }
 
