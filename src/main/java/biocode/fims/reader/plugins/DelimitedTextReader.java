@@ -60,7 +60,6 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
         try {
             CSVParser parser = new CSVParserBuilder()
                     .withSeparator(delimiter)
-//                    .withIgnoreQuotations(true) // I'm not sure if we want to set this, but it fixes https://github.com/biocodellc/geome-ui/issues/57
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
             reader = new CSVReaderBuilder(new FileReader(file))

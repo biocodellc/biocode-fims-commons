@@ -14,6 +14,7 @@ public class Attribute implements Comparable {
     private String uri;
     private String definedBy;
     private DataType dataType = DataType.STRING;  // string is default type
+    private boolean allowUnknown = false; // used for float & integer dataTypes
     private String definition;
     private String dataFormat;
     private String delimitedBy;
@@ -72,6 +73,19 @@ public class Attribute implements Comparable {
 
     public void setDataType(DataType dataType) {
         this.dataType = dataType;
+    }
+
+    /**
+     * Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes
+     * @return
+     */
+    // TODO move to DataType Object
+    public boolean getAllowUnknown() {
+        return allowUnknown;
+    }
+
+    public void setAllowUnknown(boolean allowUnknown) {
+        this.allowUnknown = allowUnknown;
     }
 
     public String getUri() {

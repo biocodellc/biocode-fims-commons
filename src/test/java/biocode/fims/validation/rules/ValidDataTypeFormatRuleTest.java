@@ -47,6 +47,23 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
     }
 
     @Test
+    public void should_allow_unknown_integer_value() {
+        Rule rule = new ValidDataTypeFormatRule();
+        RecordSet recordSet = getUnknownIntegerDataTypeRecordSet();
+
+        assertFalse(rule.run(recordSet, messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid DataFormat",
+                new Message("\"col1\" contains non-integer value \".1\". Value can also be \"Unknown\"")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
     public void should_not_be_valid_for_any_invalid_float_formats() {
         Rule rule = new ValidDataTypeFormatRule();
         RecordSet recordSet = getFloatDataTypeRecordSet();
@@ -58,6 +75,23 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
                 new Message("\"col2\" contains non-float value \"10\"")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
+    public void should_allow_unknown_float_value() {
+        Rule rule = new ValidDataTypeFormatRule();
+        RecordSet recordSet = getUnknownFloatDataTypeRecordSet();
+
+        assertFalse(rule.run(recordSet, messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid DataFormat",
+                new Message("\"col2\" contains non-float value \"10\". Value can also be \"Unknown\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -81,6 +115,25 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
                 "Invalid DataFormat",
                 new Message("\"col3\" contains invalid date value \"2001-12-30T15:05:12\". Format must be one of " +
                         "[hh:mm MM-yyyy, MM-YYYY]. If this is an Excel workbook, the value can also be an Excel DATE cell")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
+    public void should_allow_unknown_DATETIME_value() {
+        Rule rule = new ValidDataTypeFormatRule();
+        RecordSet recordSet = getUnknownDateTimeDataTypeRecordSet();
+
+        assertFalse(rule.run(recordSet, messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid DataFormat",
+                new Message("\"col3\" contains invalid date value \"May 1984\". Format must be one of " +
+                        "[hh:mm MM-yyyy, MM-YYYY]. If this is an Excel workbook, the value can also be an Excel DATE cell. " +
+                        "Value can also be \"Unknown\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -153,6 +206,25 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         return recordSet;
     }
 
+    private RecordSet getUnknownIntegerDataTypeRecordSet() {
+        RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.entity().getAttribute("col1").setAllowUnknown(true);
+
+        Record r = new GenericRecord();
+        r.set("urn:col1", "1");
+        recordSet.add(r);
+
+        Record r2 = new GenericRecord();
+        r2.set("urn:col1", ".1");
+        recordSet.add(r2);
+
+        Record r3 = new GenericRecord();
+        r3.set("urn:col1", "UNknoWn");
+        recordSet.add(r3);
+
+        return recordSet;
+    }
+
     private RecordSet getFloatDataTypeRecordSet() {
         RecordSet recordSet = new RecordSet(entity(), false);
 
@@ -175,6 +247,26 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         return recordSet;
     }
 
+
+    private RecordSet getUnknownFloatDataTypeRecordSet() {
+        RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.entity().getAttribute("col2").setAllowUnknown(true);
+
+        Record r = new GenericRecord();
+        r.set("urn:col2", "10");
+        recordSet.add(r);
+
+        Record r2 = new GenericRecord();
+        r2.set("urn:col2", "-11.0");
+        recordSet.add(r2);
+
+        Record r3 = new GenericRecord();
+        r3.set("urn:col2", "UNknoWn");
+        recordSet.add(r3);
+
+        return recordSet;
+    }
+
     private RecordSet getDateTimeDataTypeRecordSet() {
         RecordSet recordSet = new RecordSet(entity(), false);
 
@@ -193,6 +285,26 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         Record r4 = new GenericRecord();
         r4.set("urn:col3", "2001-12-30T15:05:12");
         recordSet.add(r4);
+
+        return recordSet;
+    }
+
+
+    private RecordSet getUnknownDateTimeDataTypeRecordSet() {
+        RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.entity().getAttribute("col3").setAllowUnknown(true);
+
+        Record r = new GenericRecord();
+        r.set("urn:col3", "02:12 12-1984");
+        recordSet.add(r);
+
+        Record r2 = new GenericRecord();
+        r2.set("urn:col3", "May 1984");
+        recordSet.add(r2);
+
+        Record r3 = new GenericRecord();
+        r3.set("urn:col3", "UNknoWn");
+        recordSet.add(r3);
 
         return recordSet;
     }
