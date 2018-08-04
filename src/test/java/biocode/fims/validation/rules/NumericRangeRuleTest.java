@@ -102,9 +102,10 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
     @Test
     public void should_be_valid_when_uknown_allowed() {
 
-        Rule rule = new NumericRangeRule("col1", "<10", true);
+        Rule rule = new NumericRangeRule("col1", "<10");
 
         RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.entity().getAttribute("col1").setAllowUnknown(true);
 
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "-11");

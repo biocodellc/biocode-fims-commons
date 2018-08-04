@@ -24,8 +24,6 @@ public class NumericRangeRule extends SingleColumnRule {
     private static final String GROUP_MESSAGE = "Invalid number format";
     @JsonProperty
     private String range;
-    @JsonProperty
-    private boolean allowUnknown = false;
 
     private boolean validRange = true;
     private List<Range> ranges;
@@ -43,11 +41,6 @@ public class NumericRangeRule extends SingleColumnRule {
         this(column, range, RuleLevel.WARNING);
     }
 
-    public NumericRangeRule(String column, String range, Boolean allowUnknown) {
-        this(column, range);
-        this.allowUnknown = allowUnknown;
-    }
-
     @Override
     public boolean run(RecordSet recordSet, EntityMessages messages) {
         Assert.notNull(recordSet);
@@ -57,6 +50,7 @@ public class NumericRangeRule extends SingleColumnRule {
         }
 
         String uri = recordSet.entity().getAttributeUri(column);
+        boolean allowUnknown = recordSet.entity().getAttribute(column).getAllowUnknown();
 
         List<String> invalidValues = new ArrayList<>();
 
