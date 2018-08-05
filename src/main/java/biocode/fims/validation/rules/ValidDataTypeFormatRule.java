@@ -77,8 +77,8 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                     case DATETIME:
                         if (!isDateDataFormat(value, a.getDataType(), a.getDataFormat(), a.getAllowUnknown())) {
                             String msg = "\"" + a.getColumn() + "\" contains invalid date value \"" +
-                                            value + "\". " + "Format must be one of [" + a.getDataFormat() + "]. If this " +
-                                            "is an Excel workbook, the value can also be an Excel DATE cell";
+                                    value + "\". " + "Format must be one of [" + a.getDataFormat() + "]. If this " +
+                                    "is an Excel workbook, the value can also be an Excel DATE cell";
                             if (a.getAllowUnknown()) {
                                 msg += ". Value can also be \"Unknown\"";
                             }
@@ -113,7 +113,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
     }
 
     private boolean isFloatDataFormat(String value, boolean allowUnknown) {
-        return FLOAT_PATTERN.matcher(value).matches() || (allowUnknown && value.toLowerCase().equals("unknown"));
+        return INT_PATTERN.matcher(value).matches() || FLOAT_PATTERN.matcher(value).matches() || (allowUnknown && value.toLowerCase().equals("unknown"));
     }
 
     private boolean isBooleanDataFormat(String value) {

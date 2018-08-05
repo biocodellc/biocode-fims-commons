@@ -74,7 +74,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new Message("\"col2\" contains non-float value \"10\"")
+                new Message("\"col2\" contains non-float value \"test\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -91,7 +91,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid DataFormat",
-                new Message("\"col2\" contains non-float value \"10\". Value can also be \"Unknown\"")
+                new Message("\"col2\" contains non-float value \"test\". Value can also be \"Unknown\"")
         );
 
         assertEquals(expectedMessages, messages);
@@ -229,7 +229,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         RecordSet recordSet = new RecordSet(entity(), false);
 
         Record r = new GenericRecord();
-        r.set("urn:col2", "10");
+        r.set("urn:col2", "test");
         recordSet.add(r);
 
         Record r2 = new GenericRecord();
@@ -244,6 +244,10 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         r4.set("urn:col2", "+10.0000");
         recordSet.add(r4);
 
+        Record r5 = new GenericRecord();
+        r5.set("urn:col2", "10");
+        recordSet.add(r5);
+
         return recordSet;
     }
 
@@ -253,7 +257,7 @@ public class ValidDataTypeFormatRuleTest extends AbstractRuleTest {
         recordSet.entity().getAttribute("col2").setAllowUnknown(true);
 
         Record r = new GenericRecord();
-        r.set("urn:col2", "10");
+        r.set("urn:col2", "test");
         recordSet.add(r);
 
         Record r2 = new GenericRecord();
