@@ -60,6 +60,7 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
         try {
             CSVParser parser = new CSVParserBuilder()
                     .withSeparator(delimiter)
+                    .withIgnoreQuotations(delimiter != ',')
                     .withIgnoreLeadingWhiteSpace(true)
                     .build();
             reader = new CSVReaderBuilder(new FileReader(file))
