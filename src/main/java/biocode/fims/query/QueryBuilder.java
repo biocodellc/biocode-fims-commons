@@ -322,14 +322,6 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         String sql = buildSelect() + "FROM " +
                 buildTable(queryEntity.getConceptAlias());
 
-        if (allQuery && !onlyPublicExpeditions) {
-            return new ParametrizedQuery(sql + joinBuilder.build(), params);
-        }
-
-        if (onlyPublicExpeditions) {
-            addPublicExpeditions();
-        }
-
         StringBuilder orderBy = new StringBuilder()
                 .append(" ORDER BY ")
                 .append(queryEntity.getConceptAlias())
@@ -342,6 +334,14 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 orderBy.append(" OFFSET ").append(page * limit);
             }
             orderBy.append(" LIMIT ").append(limit);
+        }
+
+        if (allQuery && !onlyPublicExpeditions) {
+            return new ParametrizedQuery(sql + joinBuilder.build() + orderBy.toString(), params);
+        }
+
+        if (onlyPublicExpeditions) {
+            addPublicExpeditions();
         }
 
         return new ParametrizedQuery(

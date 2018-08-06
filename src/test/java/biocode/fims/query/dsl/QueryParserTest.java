@@ -72,7 +72,7 @@ public class QueryParserTest {
 
         Query result = parseRunner.run(qs).resultValue;
 
-        Query expected = new Query(queryBuilder, null, new FTSExpression("col1", "value1"));
+        Query expected = new Query(queryBuilder, null, new FTSExpression("col1", "event.value1"));
 
         assertEquals(expected, result);
     }

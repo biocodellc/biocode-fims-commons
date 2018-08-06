@@ -48,6 +48,7 @@ public class QueryResultTest {
         r1.set("urn:eventId", "1");
         r1.set("urn:col3", "value");
         r1.set("urn:col4", "another");
+        r1.set("rootIdentifier", "root");
 
         records.add(r1);
 
@@ -59,7 +60,7 @@ public class QueryResultTest {
         expectedR1.put("eventId", "1");
         expectedR1.put("col3", "value");
         expectedR1.put("col4", "another");
-        expectedR1.put("bcid", "1_1");
+        expectedR1.put("bcid", "root1");
         expected.add(expectedR1);
 
         assertEquals(expected, result.get(true));
@@ -75,6 +76,7 @@ public class QueryResultTest {
         r1.set("urn:sampleId", "1");
         r1.set("urn:eventId", "1");
         r1.set("urn:col3", "value");
+        r1.set("rootIdentifier", "root");
 
         records.add(r1);
 
@@ -86,7 +88,7 @@ public class QueryResultTest {
         expectedR1.put("eventId", "1");
         expectedR1.put("col3", "value");
         expectedR1.put("col4", "");
-        expectedR1.put("bcid", "1_1");
+        expectedR1.put("bcid", "root1");
         expected.add(expectedR1);
 
         assertEquals(expected, result.get(true));

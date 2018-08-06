@@ -143,7 +143,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity but is missing an attribute for the parent entity uniqueKey: \"uniqueColumn\""), validator.errors());
     }
 
     @Test

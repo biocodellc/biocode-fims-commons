@@ -2,7 +2,7 @@ package biocode.fims.rest;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.filter.LoggingFilter;
+//import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.slf4j.Logger;
@@ -112,7 +112,7 @@ public class WebTargetFactoryBean implements FactoryBean<WebTarget>, Initializin
         //rc.register(LoggingFilter.class);// header,URL
 
         // log out header, URL, body
-        rc.register(new LoggingFilter(java.util.logging.Logger.getLogger(LoggingFilter.class.getName()), true));
+//        rc.register(new LoggingFilter(java.util.logging.Logger.getLogger(LoggingFilter.class.getName()), true));
 
         return rc;
     }

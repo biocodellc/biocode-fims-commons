@@ -33,7 +33,7 @@ public class DataReaderFactoryTest {
 
     @Test
     public void should_throw_exception_if_file_not_found() {
-        DataReaderFactory rf = new DataReaderFactory(new HashMap<>(), dataReadersForEntity);
+        DataReaderFactory rf = new DataReaderFactory(new HashMap<>());
 
         try {
             rf.getReader("fakeFile.txt", null, null);
@@ -45,7 +45,7 @@ public class DataReaderFactoryTest {
 
     @Test
     public void should_throw_exception_if_reader_not_found_for_file_extension() {
-        DataReaderFactory rf = new DataReaderFactory(new HashMap<>(), dataReadersForEntity);
+        DataReaderFactory rf = new DataReaderFactory(new HashMap<>());
 
         try {
             rf.getReader(classLoader.getResource("testDataset.csv").getFile(), null, new RecordMetadata(TabularDataReaderType.READER_TYPE, false));
@@ -60,7 +60,7 @@ public class DataReaderFactoryTest {
         Map<DataReader.DataReaderType, List<DataReader>> dataReaders = new HashMap<>();
         dataReaders.put(TabularDataReaderType.READER_TYPE, Collections.singletonList(new CSVReader()));
 
-        DataReaderFactory rf = new DataReaderFactory(dataReaders, dataReadersForEntity);
+        DataReaderFactory rf = new DataReaderFactory(dataReaders);
 
         RecordMetadata rm = new RecordMetadata(TabularDataReaderType.READER_TYPE, false);
         rm.add("sheetName", "test");
