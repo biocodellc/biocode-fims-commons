@@ -34,7 +34,7 @@ createChildEntityTable: >
   ALTER TABLE ${table}
       ADD CONSTRAINT project_${projectId}_${conceptAlias}_parent_fkey
       FOREIGN KEY (parent_identifier, expedition_id)
-      REFERENCES ${parentTable} (local_identifier, expedition_id);
+      REFERENCES ${parentTable} (local_identifier, expedition_id) ON DELETE CASCADE;
 
 createProjectSchema: >
   CREATE SCHEMA project_${projectId};

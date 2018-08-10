@@ -14,7 +14,6 @@ import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.utils.FileUtils;
-import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.DatasetValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 
@@ -22,6 +21,7 @@ import biocode.fims.validation.RecordValidatorFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -157,7 +157,7 @@ public class DatasetProcessor {
         File outputFile = FileUtils.createUniqueFile(filename, serverDataDir);
 
         try {
-            Files.copy(new File(file).toPath(), outputFile.toPath());
+            Files.copy(Paths.get(file), outputFile.toPath());
         } catch (IOException e) {
             throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500, e);
         }
