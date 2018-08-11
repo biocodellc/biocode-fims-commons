@@ -74,6 +74,11 @@ public class ExcelWorkbookWriter {
             createDataFields(sheet.sheetName, sheet.columns);
         }
 
+        for (int i = 0; i < sheets.size(); i++) {
+            // re-order worksheets towards the beginning
+            workbook.setSheetOrder(sheets.get(i).sheetName, i + 1); // +1 b/c instructions sheet is first
+        }
+
         createListsSheetAndValidations(sheets);
 
         // Create the output Filename and Write Excel File
