@@ -26,7 +26,17 @@ public class ColumnComparator implements Comparator<String> {
 
     @Override
     public int compare(String a, String b) {
-        return indexOf(sortedColumns, a).compareTo(indexOf(sortedColumns, b));
+        if (sortedColumns.contains(a)) {
+            if (sortedColumns.contains(b)) {
+                return indexOf(sortedColumns, a).compareTo(indexOf(sortedColumns, b));
+            }
+
+            return -1;
+        } else if (sortedColumns.contains(b)) {
+            return 1;
+        }
+
+        return a.compareTo(b);
     }
 
     private Integer indexOf(List<String> collection, String col) {
