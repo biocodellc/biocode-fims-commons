@@ -33,8 +33,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
-
 /**
  * @author rjewing
  */
@@ -68,6 +66,7 @@ public class PostgresRecordRepository implements RecordRepository {
         if (result == null) return null;
 
         Map<String, Object> tableMap = getTableMap(result.projectId, result.conceptAlias);
+        tableMap.put("rootIdentifier", rootIdentifier);
 
         // TODO do we want to return the actual Record type here?
         try {
@@ -75,12 +74,12 @@ public class PostgresRecordRepository implements RecordRepository {
                     StrSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
                     new MapSqlParameterSource()
                             .addValue("localIdentifier", localIdentifier)
-                            .addValue("expeditionId", result.expeditionId),
+                            .addValue("expeditionId", result.expeditionId)
+                            .addValue("conceptAlias", result.conceptAlias),
                     rowMappers.get(GenericRecord.class)
             );
-            record.set(ROOT_IDENTIFIER, rootIdentifier);
 
-            return new RecordResult(result.projectId, result.expeditionId, result.conceptAlias, record);
+            return new RecordResult(result.expeditionId, result.conceptAlias, record);
         } catch (EmptyResultDataAccessException e) {
             throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
         }
@@ -93,9 +92,10 @@ public class PostgresRecordRepository implements RecordRepository {
         Map<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("expeditionCode", expeditionCode);
         sqlParams.put("projectId", projectId);
+        sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
-                StrSubstitutor.replace(sql.getProperty("selectRecords"), tableMap),
+                StrSubstitutor.replace(sql.getProperty("selectExpeditionRecords"), tableMap),
                 sqlParams,
                 rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
         );
@@ -334,36 +334,28 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
-            Map<String, RowRecordResult> rowRecords = new LinkedHashMap<>();
+            Map<String, Record> rowRecords = new LinkedHashMap<>();
 
             // process all columns in the row
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed
                 String label = metadata.getColumnLabel(i);
 
-                if (label.endsWith("_root_identifier")) {
-                    String[] split = label.split("_root_identifier");
-                    String conceptAlias = split[0].toLowerCase();
-
-                    rowRecords
-                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
-                            .rootIdentifier = rs.getString(label);
-                } else {
+                if (label.endsWith("_data")) {
                     String conceptAlias = label.split("_data")[0].toLowerCase();
-                    rowRecords
-                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
-                            .record = getRowMapper(conceptAlias).mapRow(rs, 0, label);
+                    rowRecords.put(
+                            conceptAlias,
+                            getRowMapper(conceptAlias).mapRow(rs, 0, conceptAlias + "_")
+                    );
                 }
             }
 
             // add all records for the row to the records map
-            for (Map.Entry<String, RowRecordResult> entry : rowRecords.entrySet()) {
+            for (Map.Entry<String, Record> entry : rowRecords.entrySet()) {
                 String conceptAlias = entry.getKey();
-                RowRecordResult result = entry.getValue();
+                Record record = entry.getValue();
 
-                if (result.rootIdentifier != null && result.record != null) {
-                    Record record = result.record;
-                    record.set(ROOT_IDENTIFIER, result.rootIdentifier);
+                if (record != null) {
                     // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
                     // b/c we want to return results even if there are not children. This causes 1
                     // parent (duplicate) for each child.
@@ -409,10 +401,5 @@ public class PostgresRecordRepository implements RecordRepository {
         public int projectId;
         public int expeditionId;
         public String conceptAlias;
-    }
-
-    private static class RowRecordResult {
-        public String rootIdentifier;
-        public Record record;
     }
 }

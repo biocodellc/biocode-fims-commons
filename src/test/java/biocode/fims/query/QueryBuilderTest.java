@@ -162,7 +162,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "1");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_int(event.data->>'urn:intCol') <= :1::int ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_int(event.data->>'urn:intCol') <= :1::int ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -174,7 +174,7 @@ public class QueryBuilderTest {
         params.clear();
         params.put("1", "1");
         expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_float(event.data->>'urn:floatCol') < :1::float ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_float(event.data->>'urn:floatCol') < :1::float ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -186,7 +186,7 @@ public class QueryBuilderTest {
         params.clear();
         params.put("1", "2017-03-01");
         expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_date(event.data->>'urn:dateCol') >= :1::date ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_date(event.data->>'urn:dateCol') >= :1::date ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -198,7 +198,7 @@ public class QueryBuilderTest {
         params.clear();
         params.put("1", "2017-03-01T11:52:44.110");
         expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_datetime(event.data->>'urn:datetimeCol') > :1::timestamp ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_datetime(event.data->>'urn:datetimeCol') > :1::timestamp ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -210,7 +210,7 @@ public class QueryBuilderTest {
         params.clear();
         params.put("1", "11:52:44.110");
         expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_time(event.data->>'urn:timeCol') < :1::time ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE convert_to_time(event.data->>'urn:timeCol') < :1::time ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -224,7 +224,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "val");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -238,7 +238,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "1");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:intCol' = :1 ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:intCol' = :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -252,7 +252,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "value");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -266,7 +266,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "value");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE event.data->>'urn:col2' <= :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -280,7 +280,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "1");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_root_identifier\" FROM project_1.sample AS sample LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' WHERE sample.parent_identifier = :1 ORDER BY sample.local_identifier, sample.expedition_id",
+                "SELECT sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.sample AS sample LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' WHERE sample.parent_identifier = :1 ORDER BY sample.local_identifier, sample.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
@@ -294,7 +294,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "1");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event JOIN project_1.sample AS sample " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event JOIN project_1.sample AS sample " +
                         "ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE sample.parent_identifier = :1 ORDER BY event.local_identifier, event.expedition_id",
@@ -309,7 +309,7 @@ public class QueryBuilderTest {
         queryBuilder.visit(new AllExpression());
 
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event JOIN expeditions ON expeditions.id = event.expedition_id " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE expeditions.public = true ORDER BY event.local_identifier, event.expedition_id",
                 new HashMap<>()
@@ -325,7 +325,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "value");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event JOIN expeditions ON expeditions.id = event.expedition_id " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data->>'urn:col2' = :1) AND expeditions.public = true ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -341,7 +341,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "value");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.data->>'urn:col2' = :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -357,7 +357,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "urn:col2");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.data ?? :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -373,7 +373,7 @@ public class QueryBuilderTest {
 //        Map<String, String> params = new HashMap<>();
 //        params.put("1", "urn:col2");
 //        ParametrizedQuery expected = new ParametrizedQuery(
-//                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+//                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\" FROM project_1.event AS event " +
 //                        "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event'",// +
 //                        //"WHERE event.data ?? :1",
 //                params
@@ -390,7 +390,7 @@ public class QueryBuilderTest {
         params.put("1", "urn:col2");
         params.put("2", "urn:event_col3");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.data ??& array[:1, :2] ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -408,7 +408,7 @@ public class QueryBuilderTest {
         params.put("2", "urn:event_col3");
         params.put("3", "urn:col3");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data ??& array[:1, :2] AND sample.data ?? :3) ORDER BY event.local_identifier, event.expedition_id",
@@ -425,7 +425,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "TEST");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE expeditions.expedition_code = :1 ORDER BY event.local_identifier, event.expedition_id",
@@ -442,7 +442,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "TEST");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_rootIdentifier\" FROM project_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "LEFT JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
@@ -462,7 +462,7 @@ public class QueryBuilderTest {
         params.put("1", "TEST");
         params.put("2", "TEST2");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE expeditions.expedition_code IN (:1, :2) ORDER BY event.local_identifier, event.expedition_id",
@@ -479,7 +479,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "alligators");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.tsv @@ to_tsquery(:1) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -495,7 +495,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "alligators");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (to_tsvector(event.data->>'urn:col2') @@ to_tsquery(:1) AND event.tsv @@ to_tsquery(:1)) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -511,7 +511,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "%val%2");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.data->>'urn:col2' ILIKE :1 ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -535,7 +535,7 @@ public class QueryBuilderTest {
         params.put("1", "1");
         params.put("2", "test");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.data->>'urn:col2' <= :1 AND event.data->>'urn:event_col3' = :2 ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -561,7 +561,7 @@ public class QueryBuilderTest {
 
         queryBuilder.visit(root);
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                 "WHERE " +
                 "event.data->>'urn:col2' <= :1 AND event.data->>'urn:event_col3' = :2 " +
@@ -584,7 +584,7 @@ public class QueryBuilderTest {
         params.put("1", "1");
         params.put("2", "10");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data->>'urn:col2' >= :1 AND event.data->>'urn:col2' <= :2) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -601,7 +601,7 @@ public class QueryBuilderTest {
         params.put("1", "1");
         params.put("2", "10");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' < :2) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -618,7 +618,7 @@ public class QueryBuilderTest {
         params.put("1", "1");
         params.put("2", "10");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' <= :2) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -635,7 +635,7 @@ public class QueryBuilderTest {
         params.put("1", "1");
         params.put("2", "10");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE not (event.data->>'urn:col2' > :1 AND event.data->>'urn:col2' <= :2) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -651,7 +651,7 @@ public class QueryBuilderTest {
         Map<String, String> params = new HashMap<>();
         params.put("1", "10");
         ParametrizedQuery expected = new ParametrizedQuery(
-                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE (event.data->>'urn:col2' <= :1) ORDER BY event.local_identifier, event.expedition_id",
                 params
@@ -664,7 +664,7 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new AllExpression());
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' ORDER BY event.local_identifier, event.expedition_id";
 
         Map<String, String> params = new HashMap<>();
@@ -696,7 +696,7 @@ public class QueryBuilderTest {
 
         queryBuilder.visit(root);
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                 "WHERE " +
                 "event.local_identifier <= :1 AND " +
@@ -717,7 +717,7 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ComparisonExpression("sampleId", "value", ComparisonOperator.EQUALS));
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                 "WHERE sample.local_identifier = :1 ORDER BY event.local_identifier, event.expedition_id";
@@ -733,7 +733,7 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new SelectExpression("sample", new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS)));
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_rootIdentifier\" FROM project_1.event AS event " +
                 "LEFT JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                 "LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
@@ -750,7 +750,7 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("tissue");
         queryBuilder.visit(new ComparisonExpression("event.eventId", "1", ComparisonOperator.EQUALS));
 
-        String expectedSql = "SELECT tissue.data AS \"tissue_data\", tissue_entity_identifiers.identifier AS \"tissue_root_identifier\" FROM project_1.tissue AS tissue " +
+        String expectedSql = "SELECT tissue.data AS \"tissue_data\", tissue_entity_identifiers.identifier AS \"tissue_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.tissue AS tissue " +
                 "JOIN project_1.sample AS sample ON sample.local_identifier = tissue.parent_identifier and sample.expedition_id = tissue.expedition_id " +
                 "JOIN project_1.event AS event ON event.local_identifier = sample.parent_identifier and event.expedition_id = sample.expedition_id " +
                 "LEFT JOIN entity_identifiers AS tissue_entity_identifiers ON tissue_entity_identifiers.expedition_id = tissue.expedition_id and tissue_entity_identifiers.concept_alias = 'tissue' " +
@@ -767,7 +767,7 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ComparisonExpression("tissue.tissueId", "1", ComparisonOperator.EQUALS));
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "JOIN project_1.tissue AS tissue ON tissue.parent_identifier = sample.local_identifier and tissue.expedition_id = sample.expedition_id " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
@@ -791,7 +791,7 @@ public class QueryBuilderTest {
 
         queryBuilder.visit(andExp);
 
-        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_root_identifier\" FROM project_1.event AS event " +
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
                 "JOIN project_1.sample AS sample ON sample.parent_identifier = event.local_identifier and sample.expedition_id = event.expedition_id " +
                 "JOIN project_1.tissue AS tissue ON tissue.parent_identifier = sample.local_identifier and tissue.expedition_id = sample.expedition_id " +
                 "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +

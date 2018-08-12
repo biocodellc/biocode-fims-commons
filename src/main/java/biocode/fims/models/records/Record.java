@@ -10,6 +10,12 @@ import java.util.Map;
  * @author rjewing
  */
 public interface Record {
+    int projectId();
+
+    String expeditionCode();
+
+    String rootIdentifier();
+
     String get(String property);
 
     boolean has(String property);

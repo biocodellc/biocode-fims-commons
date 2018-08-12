@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static biocode.fims.query.QueryConstants.*;
+
 /**
  * @author rjewing
  */
@@ -21,14 +23,18 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public GenericRecord mapRow(ResultSet rs, int rowNum, String dataLabel) throws SQLException {
-        String data = rs.getString(dataLabel);
+    public GenericRecord mapRow(ResultSet rs, int rowNum, String labelPrefix) throws SQLException {
+        String data = rs.getString(labelPrefix + DATA);
         // data may be null when query includes child records
         if (data == null) return null;
 
+        String rootIdentifier = rs.getString(labelPrefix + ROOT_IDENTIFIER);
+        String expeditionCode = rs.getString(EXPEDITION_CODE.toString());
+        int projectId = rs.getInt(PROJECT_ID.toString());
+
         try {
             Map<String, String> properties = (Map<String, String>) JacksonUtil.fromString(data, TYPE);
-            return new GenericRecord(properties, false);
+            return new GenericRecord(properties, rootIdentifier, projectId, expeditionCode, false);
         } catch (Exception e) {
             throw new SQLException(e);
         }
@@ -37,6 +43,6 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
 
     @Override
     public GenericRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return mapRow(rs, rowNum, "data");
+        return mapRow(rs, rowNum, "");
     }
 }
