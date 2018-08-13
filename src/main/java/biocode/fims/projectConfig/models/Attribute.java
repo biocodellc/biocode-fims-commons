@@ -14,7 +14,7 @@ public class Attribute implements Comparable {
     private String uri;
     private String definedBy;
     private DataType dataType = DataType.STRING;  // string is default type
-    private boolean allowUnknown = false; // used for float & integer dataTypes
+    private boolean allowUnknown = false;
     private String definition;
     private String dataFormat;
     private String delimitedBy;

@@ -85,6 +85,23 @@ public class RecordSetTest {
     }
 
     @Test
+    public void should_add_duplicate_records_different_expedition_when_merge() {
+        Record r = record2();
+        r.setProjectId(2);
+        r.setExpeditionCode("test_exp");
+        List<Record> startingRecords = Collections.singletonList(r);
+
+        Record r2 = record2();
+        r2.setProjectId(2);
+        r2.setExpeditionCode("test_exp");
+        RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
+        recordSet.merge(Collections.singletonList(r2));
+
+        assertEquals(1, recordSet.records().size());
+        assertEquals(startingRecords, recordSet.records());
+    }
+
+    @Test
     public void should_throw_exception_when_removeDuplicates_and_records_with_same_identifier_but_different_properties() {
         List<Record> records = new ArrayList<>();
         records.add(record1());
@@ -126,6 +143,8 @@ public class RecordSetTest {
         GenericRecord r = new GenericRecord();
         r.set("urn:column1", "1");
         r.set("urn:column2", "value");
+        r.setProjectId(1);
+        r.setExpeditionCode("test");
         return r;
     }
 

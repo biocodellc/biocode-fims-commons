@@ -147,6 +147,24 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_entity_unique_across_project_but_not_parent_unique_across_project() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e1 = entity1();
+        config.addEntity(e1);
+
+        Entity e2 = entity2();
+        e2.setParentEntity(e1.getConceptAlias());
+        e2.setUniqueAcrossProject(true);
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource2\" requires the key to be unique across the entire project, but the parentEntity is not unique across the project."), validator.errors());
+    }
+
+    @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
         ProjectConfig config = new ProjectConfig();
 

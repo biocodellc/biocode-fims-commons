@@ -74,7 +74,7 @@ public class RecordValidator {
             requiredValueRule.addColumn(parentEntity.getUniqueKey());
             rules.add(new ValidParentIdentifiersRule());
         }
-        rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
+        rules.add(new UniqueValueRule(entity.getUniqueKey(), entity.getUniqueAcrossProject(), RuleLevel.ERROR));
     }
 
     public boolean hasError() {

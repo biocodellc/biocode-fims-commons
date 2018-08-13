@@ -109,6 +109,8 @@ public class ProjectConfigValidator {
                         "the parent entity uniqueKey: \"" + parentEntity.getUniqueKey() + "\"");
             } else if (parentEntity.equals(e)) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is itself");
+            } else if (e.getUniqueAcrossProject() && ! parentEntity.getUniqueAcrossProject()) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" requires the key to be unique across the entire project, but the parentEntity is not unique across the project.");
             }
         }
     }

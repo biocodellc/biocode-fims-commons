@@ -43,6 +43,7 @@ public class Entity {
     // note: if Entity.isChildEntity() == true, then this is
     // a composite unique key (parentEntityUniqueKey_EntityUniqueKey)
     private String uniqueKey;
+    private boolean uniqueAcrossProject = false;
     private String conceptAlias;
     private String conceptURI;
     private String conceptForwardingAddress;
@@ -117,6 +118,21 @@ public class Entity {
      */
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    /**
+     * If true, the uniqueKey for this entity must be unique across the entire project.
+     * <p>
+     * By default, the uniqueKey for this entity must be unique across the expedition
+     *
+     * @return
+     */
+    public boolean getUniqueAcrossProject() {
+        return uniqueAcrossProject;
+    }
+
+    public void setUniqueAcrossProject(boolean uniqueAcrossProject) {
+        this.uniqueAcrossProject = uniqueAcrossProject;
     }
 
     public String getConceptAlias() {

@@ -9,6 +9,7 @@ import org.springframework.util.Assert;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,9 @@ public class ValidParentIdentifiersRule extends AbstractRule {
 
         String parentIdentifierUri = recordSet.parent().entity().getUniqueKeyURI();
 
+        String expeditionCode = recordSet.expeditionCode();
         Set<String> parentIdentifiers = recordSet.parent().records().stream()
+                .filter(r -> Objects.equals(r.expeditionCode(), expeditionCode))
                 .map(r -> r.get(parentIdentifierUri))
                 .collect(Collectors.toSet());
 

@@ -35,21 +35,29 @@ public class DatasetValidatorTest {
 
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
+        e1.setExpeditionCode("exp");
+        e1.setProjectId(1);
         events.add(e1);
 
         Record e2 = new GenericRecord();
         e2.set("eventId", "event2");
         e2.set("col1", "someValue");
+        e2.setExpeditionCode("exp");
+        e2.setProjectId(1);
         events.add(e2);
 
         Record s1 = new GenericRecord();
         s1.set("sampleId", "1");
         s1.set("eventId", "event1");
+        s1.setExpeditionCode("exp");
+        s1.setProjectId(1);
         samples.add(s1);
 
         Record s2 = new GenericRecord();
         s2.set("sampleId", "2");
         s2.set("eventId", "event1");
+        s2.setExpeditionCode("exp");
+        s2.setProjectId(1);
         samples.add(s2);
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
@@ -83,16 +91,22 @@ public class DatasetValidatorTest {
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
         e1.set("col1", "someValue");
+        e1.setProjectId(1);
+        e1.setExpeditionCode("exp");
         events.add(e1);
 
         Record e2 = new GenericRecord();
         e2.set("eventId", "event1");
         e2.set("col1", "someValue");
+        e2.setProjectId(1);
+        e2.setExpeditionCode("exp");
         events.add(e2);
 
         Record s1 = new GenericRecord();
         s1.set("sampleId", "1");
         s1.set("eventId", "event1");
+        s1.setProjectId(1);
+        s1.setExpeditionCode("exp");
         samples.add(s1);
 
 
@@ -117,16 +131,22 @@ public class DatasetValidatorTest {
         Record e1 = new GenericRecord();
         e1.set("eventId", "event1");
         e1.set("col1", "differentValue");
+        e1.setProjectId(1);
+        e1.setExpeditionCode("exp");
         events.add(e1);
 
         Record e2 = new GenericRecord();
         e2.set("eventId", "event1");
         e2.set("col1", "someValue");
+        e2.setProjectId(1);
+        e2.setExpeditionCode("exp");
         events.add(e2);
 
         Record s1 = new GenericRecord();
         s1.set("sampleId", "1");
         s1.set("eventId", "event1");
+        s1.setProjectId(1);
+        s1.setExpeditionCode("exp");
         samples.add(s1);
 
 

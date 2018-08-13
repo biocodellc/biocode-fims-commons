@@ -84,6 +84,38 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
         assertEquals(expectedMessages, messages);
     }
 
+    @Test
+    public void should_not_validate_if_parent_identifiers_dont_exist_in_expedition() {
+        Rule rule = new ValidParentIdentifiersRule();
+
+        RecordSet parentSet = new RecordSet(parentEntity(), false);
+        RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.setParent(parentSet);
+
+        Record parent = new GenericRecord();
+        parent.set("eventId", "event1");
+        parent.setProjectId(1);
+        parent.setExpeditionCode("exp2");
+        parentSet.add(parent);
+
+        Record c1 = new GenericRecord();
+        c1.set("eventId", "event1");
+        c1.setProjectId(1);
+        c1.setExpeditionCode("exp1");
+        recordSet.add(c1);
+
+        assertFalse(rule.run(recordSet, messages));
+        assertTrue(rule.hasError());
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addErrorMessage(
+                "Invalid parent identifier(s)",
+                new Message("The following identifiers do not exist in the parent entity \"event\": [\"event1\"]")
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
     @Override
     protected Entity entity() {
         Entity e = super.entity();

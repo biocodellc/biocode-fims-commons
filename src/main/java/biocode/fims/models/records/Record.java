@@ -12,7 +12,11 @@ import java.util.Map;
 public interface Record {
     int projectId();
 
+    void setProjectId(int projectId);
+
     String expeditionCode();
+
+    void setExpeditionCode(String expeditionCode);
 
     String rootIdentifier();
 

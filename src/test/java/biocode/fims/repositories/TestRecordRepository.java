@@ -15,6 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -25,6 +26,15 @@ public class TestRecordRepository implements RecordRepository {
     @Override
     public RecordResult get(String rootIdentifier, String localIdentifier) {
         throw new NotImplementedException();
+    }
+
+
+    @Override
+    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+        return stores.stream()
+                .filter(s -> s.projectId == projectId && s.conceptAlias.equals(conceptAlias))
+                .flatMap(s -> s.records.stream())
+                .collect(Collectors.toList());
     }
 
     @Override

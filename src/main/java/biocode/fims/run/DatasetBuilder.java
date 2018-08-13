@@ -12,6 +12,7 @@ import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.validation.rules.UniqueValueRule;
 
 import java.util.*;
 
@@ -36,6 +37,7 @@ public class DatasetBuilder {
     private final ArrayList<String> workbooks;
     private final ArrayList<DataSource> dataSources;
     private final ArrayList<RecordSet> recordSets;
+    private final ArrayList<String> projectRecordEntities;
 
     public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository, ProjectConfig config,
                           int projectId, String expeditionCode) {
@@ -49,6 +51,7 @@ public class DatasetBuilder {
         this.workbooks = new ArrayList<>();
         this.dataSources = new ArrayList<>();
         this.recordSets = new ArrayList<>();
+        this.projectRecordEntities = new ArrayList<>();
     }
 
     public DatasetBuilder addWorkbook(String workbookFile) {
@@ -77,6 +80,7 @@ public class DatasetBuilder {
 
     public Dataset build() {
 
+        findEntitiesToFetchProjectRecords();
         instantiateWorkbookRecords();
         instantiateDataSourceRecords();
         addParentRecords();
@@ -87,6 +91,18 @@ public class DatasetBuilder {
         }
 
         return new Dataset(recordSets);
+    }
+
+    private void findEntitiesToFetchProjectRecords() {
+        for (Entity e : config.entities()) {
+            if (e.getUniqueAcrossProject() || e.getRules().stream()
+                    .filter(r -> r instanceof UniqueValueRule)
+                    .anyMatch(r -> ((UniqueValueRule) r).uniqueAcrossProject())
+                    ) {
+                projectRecordEntities.add(e.getConceptAlias());
+            }
+        }
+
     }
 
     private void instantiateDataSourceRecords() {
@@ -106,7 +122,19 @@ public class DatasetBuilder {
 
         for (RecordSet set : reader.getRecordSets()) {
             DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
-            recordSets.add(converter.convertRecordSet(set, projectId, expeditionCode));
+            RecordSet recordSet = converter.convertRecordSet(set, projectId, expeditionCode);
+            recordSets.add(recordSet);
+
+            for (Record record : recordSet.records()) {
+                record.setExpeditionCode(expeditionCode);
+                record.setProjectId(projectId);
+            }
+
+            Entity e = recordSet.entity();
+            if (recordSet.records().size() > 0 && projectRecordEntities.contains(e.getConceptAlias())) {
+                List<? extends Record> records = recordRepository.getRecords(projectId, e.getConceptAlias(), e.getRecordType());
+                mergeRecords(e, records);
+            }
         }
     }
 

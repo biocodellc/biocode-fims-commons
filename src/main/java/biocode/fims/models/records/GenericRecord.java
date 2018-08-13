@@ -36,8 +36,20 @@ public class GenericRecord implements Record {
     }
 
     @Override
+    public void setProjectId(int projectId) {
+        if (this.projectId == 0) this.projectId = projectId;
+        else throw new IllegalStateException("projectId has already been set");
+    }
+
+    @Override
     public String expeditionCode() {
         return expeditionCode;
+    }
+
+    @Override
+    public void setExpeditionCode(String expeditionCode) {
+        if (this.expeditionCode == null) this.expeditionCode = expeditionCode;
+        else throw new IllegalStateException("expeditionCode has already been set");
     }
 
     @Override

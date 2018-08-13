@@ -4,12 +4,14 @@ import biocode.fims.models.records.Record;
 import biocode.fims.models.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Check a particular column to see if all the values are unique.
@@ -23,17 +25,20 @@ import java.util.Set;
 public class UniqueValueRule extends SingleColumnRule {
     private static final String NAME = "UniqueValue";
     private static final String GROUP_MESSAGE = "Unique value constraint did not pass";
+    @JsonProperty
+    private boolean uniqueAcrossProject = false;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
     private UniqueValueRule() {
     }
 
-    public UniqueValueRule(String column, RuleLevel level) {
+    public UniqueValueRule(String column, boolean uniqueAcrossProject, RuleLevel level) {
         super(column, level);
+        this.uniqueAcrossProject = uniqueAcrossProject;
     }
 
-    public UniqueValueRule(String column) {
-        this(column, RuleLevel.WARNING);
+    public UniqueValueRule(String column, boolean uniqueAcrossProject) {
+        this(column, uniqueAcrossProject, RuleLevel.WARNING);
     }
 
     @Override
@@ -49,7 +54,23 @@ public class UniqueValueRule extends SingleColumnRule {
         Set<String> set = new HashSet<>();
         List<String> duplicateValues = new ArrayList<>();
 
-        for (Record r : recordSet.recordsToPersist()) {
+        List<Record> recordsToCheck;
+        List<Record> recordsToPersist = recordSet.recordsToPersist();
+
+        if (recordsToPersist.size() == 0) {
+            recordsToCheck = new ArrayList<>();
+        } else if (uniqueAcrossProject) {
+            recordsToCheck = recordSet.records();
+        } else {
+            // can only upload to a single expedition, so we can look at the first record to persist
+            String uploadingExpeditionCode = recordSet.expeditionCode();
+
+            recordsToCheck = recordSet.records().stream()
+                    .filter(r -> r.expeditionCode().equals(uploadingExpeditionCode))
+                    .collect(Collectors.toList());
+        }
+
+        for (Record r : recordsToCheck) {
 
             String value = r.get(uri);
 
@@ -68,12 +89,17 @@ public class UniqueValueRule extends SingleColumnRule {
         return false;
     }
 
+    public boolean uniqueAcrossProject() {
+        return uniqueAcrossProject;
+    }
+
     private void setMessages(List<String> invalidValues, EntityMessages messages) {
+        String msg = "\"" + column + "\" column is defined as unique ";
+        if (uniqueAcrossProject) msg += "across the entire project ";
+        msg += "but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\"";
         messages.addMessage(
                 GROUP_MESSAGE,
-                new Message(
-                        "\"" + column + "\" column is defined as unique but some values used more than once: \"" + String.join("\", \"", invalidValues) + "\""
-                ),
+                new Message(msg),
                 level()
         );
     }

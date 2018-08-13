@@ -26,6 +26,13 @@ selectRecord: >
     INNER JOIN expeditions e on r.expedition_id = e.id
   WHERE local_identifier = :localIdentifier AND expedition_id = :expeditionId
 
+selectProjectRecords: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+    INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
+  WHERE e.project_id = :projectId
+
 selectExpeditionRecords: >
   SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
   FROM ${table} AS r

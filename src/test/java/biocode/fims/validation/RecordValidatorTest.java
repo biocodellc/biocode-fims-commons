@@ -136,6 +136,8 @@ public class RecordValidatorTest {
         Record p1 = new GenericRecord();
         p1.set("parentId", "parent1");
         p1.set("col1", "YES");
+        p1.setExpeditionCode("exp");
+        p1.setProjectId(1);
         recordSet.add(p1);
 
         assertTrue(validator.validate(recordSet));

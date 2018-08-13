@@ -66,6 +66,14 @@ public class RecordSet {
         );
     }
 
+    public String expeditionCode() {
+        return records.stream()
+                .filter(Record::persist)
+                .findFirst()
+                .orElse(new GenericRecord())
+                .expeditionCode();
+    }
+
     public String conceptAlias() {
         return entity.getConceptAlias();
     }
@@ -128,7 +136,11 @@ public class RecordSet {
         String uniqueKey = entity.getUniqueKeyURI();
 
         return records.stream()
-                .noneMatch(r -> record.get(uniqueKey).equals(r.get(uniqueKey)));
+                .noneMatch(r ->
+                        record.get(uniqueKey).equals(r.get(uniqueKey))
+                                && record.projectId() == r.projectId()
+                                && record.expeditionCode().equals(r.expeditionCode())
+                );
     }
 
     public boolean hasParent() {

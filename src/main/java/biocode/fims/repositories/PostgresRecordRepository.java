@@ -86,6 +86,21 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
+
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("projectId", projectId);
+        sqlParams.put("conceptAlias", conceptAlias);
+
+        return jdbcTemplate.query(
+                StrSubstitutor.replace(sql.getProperty("selectProjectRecords"), tableMap),
+                sqlParams,
+                rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
+        );
+    }
+
+    @Override
     public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
         Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
 
