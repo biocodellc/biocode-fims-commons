@@ -96,8 +96,7 @@ abstract class AbstractTabularDataReader implements DataReader {
     private boolean addRow(List<String> row) {
         return row.size() > 0 &&
                 row.stream()
-                        .filter(s -> !StringUtils.isBlank(s))
-                        .count() > 0;
+                        .anyMatch(s -> !StringUtils.isBlank(s));
     }
 
     abstract void init();

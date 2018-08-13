@@ -124,20 +124,21 @@ public class RecordSet {
         deduplicated = true;
     }
 
-    public void merge(List<? extends Record> records) {
+    public void merge(List<? extends Record> records, String parentUniqueKey) {
         for (Record r : records) {
-            if (addRecord(r)) {
+            if (addRecord(r, parentUniqueKey)) {
                 this.records.add(r);
             }
         }
     }
 
-    private boolean addRecord(Record record) {
+    private boolean addRecord(Record record, String parentUniqueKey) {
         String uniqueKey = entity.getUniqueKeyURI();
 
         return records.stream()
                 .noneMatch(r ->
                         record.get(uniqueKey).equals(r.get(uniqueKey))
+                                && (parentUniqueKey == null || record.get(parentUniqueKey).equals(r.get(parentUniqueKey)))
                                 && record.projectId() == r.projectId()
                                 && record.expeditionCode().equals(r.expeditionCode())
                 );

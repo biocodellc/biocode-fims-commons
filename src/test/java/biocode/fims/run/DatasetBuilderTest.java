@@ -366,6 +366,44 @@ public class DatasetBuilderTest {
         assertEquals(1, eventsSet.get().recordsToPersist().size());
     }
 
+    // TODO need the same test, but for child entities if reloading the parent
+    @Test
+    public void should_not_fetch_stored_expedition_records_on_reload_if_entity_column_is_unique_across_project() {
+        TestDataReader reader = new TestDataReader();
+        reader.addRecordSet("events.csv", eventRecordSet(true));
+
+        TestRecordRepository repository = new TestRecordRepository();
+        Record record = eventRecord2(false);
+        record.setProjectId(PROJECT_ID);
+        record.setExpeditionCode(EXPEDITION_CODE);
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", record);
+
+        RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, true);
+        eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
+
+        ProjectConfig config = config();
+        config.entity("event").addRule(new UniqueValueRule("urn:latitude", true));
+
+        Dataset dataset = new DatasetBuilder(
+                dataReaderFactory(reader),
+                dataConverterFactory(null),
+                repository,
+                config,
+                PROJECT_ID,
+                EXPEDITION_CODE
+        )
+                .addDatasource("events.csv", eventsMetadata)
+                .build();
+
+        assertEquals(1, dataset.size());
+
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+
+        assertTrue(eventsSet.isPresent());
+        assertEquals(1, eventsSet.get().records().size());
+        assertEquals(1, eventsSet.get().recordsToPersist().size());
+        assertEquals("1", eventsSet.get().records().get(0).get("urn:eventID"));
+    }
 
     private RecordSet eventRecordSet(boolean reload) {
         return new RecordSet(eventsEntity(), Collections.singletonList(eventRecord1()), reload);

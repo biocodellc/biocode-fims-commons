@@ -109,4 +109,21 @@ public class UniqueValueRule extends SingleColumnRule {
         return NAME;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UniqueValueRule)) return false;
+        if (!super.equals(o)) return false;
+
+        UniqueValueRule that = (UniqueValueRule) o;
+
+        return uniqueAcrossProject == that.uniqueAcrossProject;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (uniqueAcrossProject ? 1 : 0);
+        return result;
+    }
 }
