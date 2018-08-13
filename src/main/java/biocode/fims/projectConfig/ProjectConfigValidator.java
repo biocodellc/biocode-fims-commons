@@ -5,6 +5,7 @@ import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.Rule;
+import biocode.fims.validation.rules.UniqueValueRule;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
@@ -109,7 +110,7 @@ public class ProjectConfigValidator {
                         "the parent entity uniqueKey: \"" + parentEntity.getUniqueKey() + "\"");
             } else if (parentEntity.equals(e)) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is itself");
-            } else if (e.getUniqueAcrossProject() && ! parentEntity.getUniqueAcrossProject()) {
+            } else if (e.getUniqueAcrossProject() && !parentEntity.getUniqueAcrossProject()) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" requires the key to be unique across the entire project, but the parentEntity is not unique across the project.");
             }
         }
@@ -132,6 +133,13 @@ public class ProjectConfigValidator {
 
         for (Rule rule : e.getRules()) {
             rule.validConfiguration(messages, e);
+
+            if (rule instanceof UniqueValueRule) {
+                UniqueValueRule r = (UniqueValueRule) rule;
+                if (r.uniqueAcrossProject() && Objects.equals(r.column(), e.getUniqueKey()) && !e.getUniqueAcrossProject()) {
+                    messages.add("UniqueValueRule for uniqueKey column: \"" + e.getUniqueKey() + "\" has uniqueAcrossProject = true, however entity: \"" + e.getConceptAlias() + "\" uniqueAcrossProject = false");
+                }
+            }
         }
 
         errorMessages.addAll(messages);

@@ -5,6 +5,8 @@ import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
+import biocode.fims.validation.rules.RuleLevel;
+import biocode.fims.validation.rules.UniqueValueRule;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
@@ -195,6 +197,20 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_unique_value_rule_uniqueAcrossProject_for_uniqueKey_but_not_entity_uniqueAcrossProject() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.addRule(new UniqueValueRule("column1", true, RuleLevel.ERROR));
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("UniqueValueRule for uniqueKey column: \"column1\" has uniqueAcrossProject = true, however entity: \"resource1\" uniqueAcrossProject = false"), validator.errors());
+    }
+
+    @Test
     public void invalid_if_entity_attributes_have_duplicate_uri() {
         ProjectConfig config = new ProjectConfig();
 
@@ -298,7 +314,7 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity customEntity() {
-        Entity e = new Entity("resource1", "someURI"){
+        Entity e = new Entity("resource1", "someURI") {
             @Override
             public boolean isValid(ProjectConfig config) {
                 Assert.notNull(config, "ProjectConfig is null");
