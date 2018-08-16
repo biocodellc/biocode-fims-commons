@@ -20,7 +20,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -28,6 +30,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -202,17 +205,39 @@ public class PostgresRecordRepository implements RecordRepository {
                     insertParams.add(recordParams);
                 }
 
+                boolean executeReturning = false;
                 String sqlString;
-                if (recordSet.hasParent()) {
+                if (recordSet.hasParent() && recordSet.parent().entity().isHashed()) {
+                    sqlString = sql.getProperty("insertChildRecordReturning");
+                    executeReturning = true;
+                } else if (recordSet.hasParent()) {
                     sqlString = sql.getProperty("insertChildRecord");
                 } else {
                     sqlString = sql.getProperty("insertRecord");
                 }
 
-                jdbcTemplate.batchUpdate(
-                        StrSubstitutor.replace(sqlString, tableMap),
-                        insertParams.toArray(new HashMap[insertParams.size()])
-                );
+                // used to remove hashed parents that have been updated and no longer have a child entity attached
+                List<String> updatedHashedParents = new ArrayList<>();
+                if (executeReturning) {
+                    for (HashMap p : insertParams) {
+                        // we use query here b/c our update statement may return a value
+                        List<String> old_parent = jdbcTemplate.query(
+                                StrSubstitutor.replace(sqlString, tableMap),
+                                p,
+                                (rs, rowNum) -> rs.getString("parent_identifier")
+                        );
+                        if (old_parent.size() == 1 && old_parent.get(0) != null) {
+                            updatedHashedParents.add(old_parent.get(0));
+                        } else if (old_parent.size() > 1) {
+                            throw new FimsRuntimeException(QueryCode.UNEXPECTED_RESULT, 500);
+                        }
+                    }
+                } else {
+                    jdbcTemplate.batchUpdate(
+                            StrSubstitutor.replace(sqlString, tableMap),
+                            insertParams.toArray(new HashMap[insertParams.size()])
+                    );
+                }
 
                 // Delete any records not in the current RecordSet
                 if (recordSet.reload()) {
@@ -235,6 +260,20 @@ public class PostgresRecordRepository implements RecordRepository {
                         deleteSql = sql.getProperty("deleteRecords");
                         deleteParams.put("identifiers", localIdentifiers);
                     }
+
+                    jdbcTemplate.update(
+                            StrSubstitutor.replace(deleteSql, tableMap),
+                            deleteParams
+                    );
+                } else if (updatedHashedParents.size() > 0) {
+                    String deleteSql = sql.getProperty("deleteOrphanedParentRecords");
+
+                    HashMap<String, Object> deleteParams = new HashMap<>();
+                    deleteParams.put("expeditionId", expeditionId);
+                    deleteParams.put("identifiers", updatedHashedParents);
+
+                    tableMap.put("childTable", tableMap.get("table"));
+                    tableMap.put("table", PostgresUtils.entityTable(projectId, recordSet.entity().getParentEntity()));
 
                     jdbcTemplate.update(
                             StrSubstitutor.replace(deleteSql, tableMap),

@@ -44,6 +44,7 @@ public class Entity {
     // a composite unique key (parentEntityUniqueKey_EntityUniqueKey)
     private String uniqueKey;
     private boolean uniqueAcrossProject = false;
+    private boolean hashed = false;
     private String conceptAlias;
     private String conceptURI;
     private String conceptForwardingAddress;
@@ -133,6 +134,19 @@ public class Entity {
 
     public void setUniqueAcrossProject(boolean uniqueAcrossProject) {
         this.uniqueAcrossProject = uniqueAcrossProject;
+    }
+
+    /**
+     * If true, the unique key is generated as a hash of all values in the record
+     *
+     * @return
+     */
+    public boolean isHashed() {
+        return hashed;
+    }
+
+    public void setHashed(boolean hashed) {
+        this.hashed = hashed;
     }
 
     public String getConceptAlias() {
@@ -238,6 +252,14 @@ public class Entity {
         throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
     }
 
+    /**
+     * Find the first rule matching type & level
+     *
+     * @param type
+     * @param level
+     * @param <T>
+     * @return
+     */
     @JsonIgnore
     public <T extends Rule> T getRule(Class<T> type, RuleLevel level) {
         for (Rule rule : rules) {

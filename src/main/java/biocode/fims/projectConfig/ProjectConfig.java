@@ -99,6 +99,13 @@ public class ProjectConfig {
         return false;
     }
 
+    /**
+     * check up the entity chain to determine if childEntity is a descendant of elderEntity
+     *
+     * @param childEntity
+     * @param elderEntity
+     * @return
+     */
     private boolean checkEntityRelation(Entity childEntity, Entity elderEntity) {
         Entity parentEntity;
         do {

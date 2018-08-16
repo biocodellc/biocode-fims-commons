@@ -5,6 +5,7 @@ import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
+import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.RuleLevel;
 import biocode.fims.validation.rules.UniqueValueRule;
 import org.junit.Test;
@@ -274,6 +275,55 @@ public class ProjectConfigValidatorTest {
         assertFalse(validator.isValid());
         assertEquals(expected, validator.errors());
 
+    }
+
+    @Test
+    public void invalid_if_most_atomic_entity_in_sheet_is_hashed() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.setHashed(true);
+        e.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column2")), RuleLevel.ERROR));
+        config.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        e2.setParentEntity(e.getConceptAlias());
+        e2.setHashed(true);
+        e2.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column1")), RuleLevel.ERROR));
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Entity \"resource2\" is the most atomic (child) entity in the worksheet: \"worksheet1\". This entity can not be a hashed entity."
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+    }
+
+    @Test
+    public void invalid_if_hashed_entity_doesnt_require_column() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.setHashed(true);
+        config.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        e2.setParentEntity(e.getConceptAlias());
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Entity \"resource1\" is a hashed entity, but is missing at least 1 RequiredValueRule with level = \"ERROR\" and a column that is not the uniqueKey \"column1\""
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
     }
 
     @Test

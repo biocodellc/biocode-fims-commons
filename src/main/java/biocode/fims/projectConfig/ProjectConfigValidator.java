@@ -4,8 +4,7 @@ import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.models.ExpeditionMetadataProperty;
-import biocode.fims.validation.rules.Rule;
-import biocode.fims.validation.rules.UniqueValueRule;
+import biocode.fims.validation.rules.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
@@ -41,12 +40,14 @@ public class ProjectConfigValidator {
         allAttributesHaveUniqueAndValidUri();
         allAttributesHaveUniqueColumn();
         allExpeditionMetadataHaveName();
+        mostAtomicWorksheetEntityHasUniqueKey();
 
         for (Entity e : config.entities()) {
             entityConceptAliasOnlyHasValidChars(e);
             entityHasConceptURI(e);
             entityWithWorksheetHasUniqueKey(e);
             entityUniqueKeysHaveMatchingAttribute(e);
+            hashedEntityHasRequiredValue(e);
             allChildEntitiesHaveValidParent(e);
             dateTimeAttributesHaveDataFormat(e);
             allRulesHaveValidConfiguration(e);
@@ -95,6 +96,27 @@ public class ProjectConfigValidator {
         }
 
     }
+
+    private void hashedEntityHasRequiredValue(Entity e) {
+        if (e.isHashed()) {
+            for (Rule rule : e.getRules()) {
+                if (rule.level() == RuleLevel.ERROR) {
+                    if (rule instanceof RequiredValueRule) {
+                        LinkedHashSet<String> columns = ((RequiredValueRule) rule).columns();
+                        if (columns.size() > 1 || !columns.contains(e.getUniqueKey())) {
+                            return;
+                        }
+                    } else if (rule instanceof RequiredValueInGroupRule &&
+                            !((RequiredValueInGroupRule) rule).columns().contains(e.getUniqueKey())) {
+                        return;
+                    }
+                }
+            }
+
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\" is a hashed entity, but is missing at least 1 RequiredValueRule with level = \"ERROR\" and a column that is not the uniqueKey \"" + e.getUniqueKey() + "\"");
+        }
+    }
+
 
     private void allChildEntitiesHaveValidParent(Entity e) {
         if (e.isChildEntity()) {
@@ -191,6 +213,40 @@ public class ProjectConfigValidator {
             }
         }
     }
+
+    private void mostAtomicWorksheetEntityHasUniqueKey() {
+        Map<String, List<Entity>> sheetEntities = new HashMap<>();
+
+        for (Entity e : config.entities()) {
+            if (e.hasWorksheet()) {
+                String worksheet = e.getWorksheet();
+                sheetEntities.computeIfAbsent(worksheet, k -> new ArrayList<>()).add(e);
+            }
+        }
+
+        for (Map.Entry<String, List<Entity>> entry : sheetEntities.entrySet()) {
+            Entity mostAtomicEntity = null;
+
+            for (Entity e : entry.getValue()) {
+                if (mostAtomicEntity == null) {
+                    mostAtomicEntity = e;
+                    continue;
+                }
+
+                if (config.isEntityChildDescendent(mostAtomicEntity, e)) {
+                    mostAtomicEntity = e;
+                }
+            }
+
+            if (mostAtomicEntity.isHashed()) {
+                errorMessages.add(
+                        "Entity \"" + mostAtomicEntity.getConceptAlias() + "\" is the most atomic (child) entity in the worksheet: \"" + entry.getKey() + "\". This entity can not be a hashed entity."
+                );
+            }
+        }
+
+    }
+
 
     public List<String> errors() {
         return errorMessages;
