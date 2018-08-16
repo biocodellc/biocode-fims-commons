@@ -98,4 +98,9 @@ public class FimsAppConfig {
     public BcidRepository bcidRepository(FimsProperties fimsProperties) {
         return new BcidRepository(ClientBuilder.newClient(), fimsProperties);
     }
+
+    @Bean
+    public PostgresRepositoryAuditAdvice postgresRepositoryAuditAdvice() {
+        return new PostgresRepositoryAuditAdvice();
+    }
 }
