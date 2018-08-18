@@ -53,6 +53,10 @@ public class QueryResults implements Iterable<QueryResult> {
         return map;
     }
 
+    public void sort(Comparator<? super QueryResult> comparator) {
+        results.sort(comparator);
+    }
+
     @Override
     public Iterator<QueryResult> iterator() {
         return results.iterator();

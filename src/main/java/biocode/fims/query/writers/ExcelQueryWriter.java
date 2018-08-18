@@ -40,6 +40,19 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
         Map<String, List<Map<String, String>>> recordsBySheet = new HashMap<>();
         Map<String, List<Entity>> entitiesBySheet = new HashMap<>();
 
+        // sort entities so children come first
+        queryResults.sort((a, b) -> {
+            if (!a.entity().getWorksheet().equals(b.entity().getWorksheet())) return 0;
+
+            Entity e1 = a.entity();
+            Entity e2 = b.entity();
+
+            if (e1.isChildEntity() && e2.getConceptAlias().equals(e1.getParentEntity())) return -1;
+            if (e2.isChildEntity() && e1.getConceptAlias().equals(e1.getParentEntity())) return 1;
+
+            return 0;
+        });
+
         for (QueryResult queryResult : queryResults) {
             String sheet = queryResult.entity().getWorksheet();
 
@@ -51,6 +64,7 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
                 // so we store our matches in mergedRecords and replace existingRecords w/ mergedRecords
                 // once we know that we find a match for everything
                 List<Map<String, String>> mergedRecords = new ArrayList<>();
+                List<Map<String, String>> matchedRecords = new ArrayList<>();
 
                 entitiesBySheet.get(sheet).add(queryResult.entity());
 
@@ -67,10 +81,11 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
                 boolean newSheet = false;
                 for (Map<String, String> record : queryResult.get(false)) {
 
-                    boolean matches = true;
-                    Map<String, String> match = null;
+                    // TODO what happens when event,sample,tissue are on same sheet, and only event & tissue are in queryResults?
+                    boolean foundMatch = false;
 
                     for (Map<String, String> existing : existingRecords) {
+                        boolean matches = true;
 
                         // check if we can join record and existing
                         for (String col : commonColumns) {
@@ -80,20 +95,18 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
                             }
                         }
 
-                        if (matches && match != null) {
-                            // this means that more then 1 existingRecord matches, so we can't do the join
-                            matches = false;
-                            break;
-                        } else if (matches) {
-                            match = existing;
+                        // b/c we sort queryResults by entity atomicity (children first)
+                        // we can append the record properties to all existing records that match
+                        if (matches) {
+                            matchedRecords.add(existing);
+                            HashMap<String, String> merged = new HashMap<>(existing);
+                            merged.putAll(record);
+                            mergedRecords.add(merged);
+                            foundMatch = true;
                         }
                     }
 
-                    if (matches) {
-                        // merge w/ existing record by adding all properties
-                        match.putAll(record);
-                        mergedRecords.add(match);
-                    } else {
+                    if (!foundMatch) {
                         // we are done here. all records need to be placed on a new sheet
                         newSheet = true;
                         break;
@@ -103,7 +116,9 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
                 if (newSheet) {
                     recordsBySheet.put(sheet + "_" + queryResult.entity().getConceptAlias(), queryResult.get(false));
                 } else {
-                    recordsBySheet.put(sheet, mergedRecords);
+                    List<Map<String, String>> records = recordsBySheet.get(sheet);
+                    records.removeAll(matchedRecords);
+                    records.addAll(mergedRecords);
                 }
 
             } else {
@@ -114,13 +129,13 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
         }
 
         List<ExcelWorkbookWriter.WorkbookWriterSheet> sheets = new ArrayList<>();
-        for (String sheetName: recordsBySheet.keySet()) {
+        for (String sheetName : recordsBySheet.keySet()) {
             List<Map<String, String>> records = recordsBySheet.get(sheetName);
 
-            List<String> columns = project.getProjectConfig().attributesForSheet(sheetName)
+            List<String> columns = new ArrayList<>(project.getProjectConfig().attributesForSheet(sheetName)
                     .stream()
                     .map(Attribute::getColumn)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet()));
 
             records.stream()
                     .flatMap(r -> r.keySet().stream())
