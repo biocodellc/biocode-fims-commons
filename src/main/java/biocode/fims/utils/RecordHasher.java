@@ -22,9 +22,7 @@ public class RecordHasher {
         StringBuilder sb = new StringBuilder();
 
         sortedMap.forEach((k, v) -> {
-            if (!StringUtils.isBlank(v)) {
-                sb.append(v.trim());
-            }
+            sb.append(k.trim()).append(v.trim());
         });
 
         return Hasher.hash(sb.toString());
