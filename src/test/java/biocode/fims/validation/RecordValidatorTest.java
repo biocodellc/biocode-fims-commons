@@ -1,8 +1,8 @@
 package biocode.fims.validation;
 
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.models.*;
 import biocode.fims.validation.messages.EntityMessages;

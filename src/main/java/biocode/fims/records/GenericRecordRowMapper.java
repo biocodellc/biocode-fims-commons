@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import biocode.fims.models.dataTypes.JacksonUtil;
 import com.fasterxml.jackson.databind.JavaType;

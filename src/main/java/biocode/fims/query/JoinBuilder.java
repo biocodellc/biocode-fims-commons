@@ -47,6 +47,7 @@ public class JoinBuilder {
     }
 
     public void addSelect(Entity entity) {
+        if (queryEntity.equals(entity)) return;
         add(entity);
         selectEntities.add(entity);
     }

@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import java.util.Collections;
 import java.util.HashMap;

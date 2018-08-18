@@ -3,7 +3,7 @@ package biocode.fims.reader;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
-import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.plugins.CSVReader;
 import org.junit.Before;

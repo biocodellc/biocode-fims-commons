@@ -1,10 +1,10 @@
 package biocode.fims.repositories;
 
 import biocode.fims.rest.responses.PaginatedResponse;
-import biocode.fims.models.records.RecordSources;
+import biocode.fims.records.RecordSources;
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordResult;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;

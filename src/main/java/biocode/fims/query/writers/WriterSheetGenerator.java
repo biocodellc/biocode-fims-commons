@@ -29,7 +29,7 @@ class WriterSheetGenerator {
     List<WriterWorksheet> recordsToWriterSheets() {
 
         // sort entities so children come first
-        queryResults.sort(queryResultComparator());
+        queryResults.sort(new QueryResults.ChildrenFirstComparator());
 
         for (QueryResult queryResult : queryResults) {
             currentSheet = queryResult.entity().getWorksheet();
@@ -180,24 +180,6 @@ class WriterSheetGenerator {
         return sheets;
     }
 
-    /**
-     * Comparator to sort child entities before parents
-     *
-     * @return
-     */
-    private Comparator<QueryResult> queryResultComparator() {
-        return (a, b) -> {
-            if (!a.entity().getWorksheet().equals(b.entity().getWorksheet())) return 0;
-
-            Entity e1 = a.entity();
-            Entity e2 = b.entity();
-
-            if (e1.isChildEntity() && e2.getConceptAlias().equals(e1.getParentEntity())) return -1;
-            if (e2.isChildEntity() && e1.getConceptAlias().equals(e1.getParentEntity())) return 1;
-
-            return 0;
-        };
-    }
 
     private List<String> getCommonColumns(Entity entity) {
         List<String> existingColumns = entitiesBySheet.get(currentSheet).stream()

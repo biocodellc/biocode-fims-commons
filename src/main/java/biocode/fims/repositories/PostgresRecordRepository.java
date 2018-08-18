@@ -1,12 +1,12 @@
 package biocode.fims.repositories;
 
+import biocode.fims.records.*;
 import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.dataTypes.JacksonUtil;
-import biocode.fims.models.records.*;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
@@ -20,9 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -30,7 +28,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

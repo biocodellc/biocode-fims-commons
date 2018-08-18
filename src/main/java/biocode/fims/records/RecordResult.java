@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 /**
  * Class to handle result from Record lookup by arkID

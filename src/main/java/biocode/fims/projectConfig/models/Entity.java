@@ -2,8 +2,8 @@ package biocode.fims.projectConfig.models;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;

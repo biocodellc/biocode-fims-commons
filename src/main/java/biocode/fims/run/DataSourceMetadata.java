@@ -2,7 +2,7 @@ package biocode.fims.run;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
-import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.records.RecordMetadata;
 import biocode.fims.reader.DataReader;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

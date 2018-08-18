@@ -729,6 +729,21 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void should_not_add_joins_for_query_entity_in_select() {
+        QueryBuilder queryBuilder = queryBuilder("event");
+        queryBuilder.visit(new SelectExpression("event", new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS)));
+
+        String expectedSql = "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
+                "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                "WHERE event.local_identifier = :1 ORDER BY event.local_identifier, event.expedition_id";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
     public void should_add_joins_for_multi_entity_select_query_with_direct_relationship() {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new SelectExpression("sample", new ComparisonExpression("eventId", "value", ComparisonOperator.EQUALS)));

@@ -1,10 +1,10 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
-import biocode.fims.models.records.FimsRowMapper;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.GenericRecordRowMapper;
-import biocode.fims.models.records.Record;
+import biocode.fims.records.FimsRowMapper;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.GenericRecordRowMapper;
+import biocode.fims.records.Record;
 import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.DataReaderFactory;

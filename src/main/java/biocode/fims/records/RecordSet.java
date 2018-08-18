@@ -1,5 +1,4 @@
-package biocode.fims.models.records;
-
+package biocode.fims.records;
 
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;

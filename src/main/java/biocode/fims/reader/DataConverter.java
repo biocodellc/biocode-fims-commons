@@ -1,6 +1,6 @@
 package biocode.fims.reader;
 
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 
 /**

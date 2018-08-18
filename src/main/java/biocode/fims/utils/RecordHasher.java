@@ -1,7 +1,6 @@
 package biocode.fims.utils;
 
-import biocode.fims.models.records.Record;
-import org.apache.commons.lang.StringUtils;
+import biocode.fims.records.Record;
 
 import java.util.TreeMap;
 

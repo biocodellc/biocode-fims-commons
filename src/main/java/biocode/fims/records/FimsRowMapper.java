@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import org.springframework.jdbc.core.RowMapper;
 
