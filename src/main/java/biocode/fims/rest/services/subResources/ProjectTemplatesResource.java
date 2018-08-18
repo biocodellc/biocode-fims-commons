@@ -10,6 +10,7 @@ import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
+import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
@@ -26,7 +27,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -250,9 +250,8 @@ public class ProjectTemplatesResource extends FimsController {
         ExcelWorkbookWriter workbookWriter = new ExcelWorkbookWriter(project, props.naan(), userContext.getUser());
 
         File file = workbookWriter.write(
-                worksheetTemplates.stream().map(t ->
-                        new ExcelWorkbookWriter.WorkbookWriterSheet(t.name, t.columns)
-                ).collect(Collectors.toList())
+                worksheetTemplates.stream().map(t -> new WriterWorksheet(t.name, t.columns))
+                        .collect(Collectors.toList())
         );
 
         // Catch a null file and return 204

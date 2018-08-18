@@ -2,6 +2,7 @@ package biocode.fims.projectConfig;
 
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.validation.rules.RuleLevel;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ public class ColumnComparator implements Comparator<String> {
     private final String worksheet;
 
     public ColumnComparator(ProjectConfig config, String worksheet) {
+        Assert.notNull(worksheet, "worksheet must not be null");
         this.config = config;
         this.worksheet = worksheet;
         this.sheetColumns = config.attributesForSheet(worksheet).stream()
