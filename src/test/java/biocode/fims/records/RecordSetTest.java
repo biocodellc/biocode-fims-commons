@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
@@ -51,7 +51,7 @@ public class RecordSetTest {
         List<Record> startingRecords = Collections.singletonList(record1());
 
         RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
-        recordSet.merge(Collections.singletonList(record2()));
+        recordSet.merge(Collections.singletonList(record2()), null);
 
         assertEquals(2, recordSet.records().size());
 
@@ -78,10 +78,51 @@ public class RecordSetTest {
         List<Record> startingRecords = Collections.singletonList(record1());
 
         RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
-        recordSet.merge(Collections.singletonList(record1()));
+        recordSet.merge(Collections.singletonList(record1()), null);
 
         assertEquals(1, recordSet.records().size());
         assertEquals(startingRecords, recordSet.records());
+    }
+
+    @Test
+    public void should_add_duplicate_records_different_expedition_when_merge() {
+        Record r = record2();
+        r.setProjectId(2);
+        r.setExpeditionCode("test_exp");
+        List<Record> startingRecords = Collections.singletonList(r);
+
+        Record r2 = record2();
+        r2.setProjectId(2);
+        r2.setExpeditionCode("test_exp2");
+
+        RecordSet recordSet = new RecordSet(entity(), startingRecords, false);
+        recordSet.merge(Collections.singletonList(r2), null);
+
+        assertEquals(2, recordSet.records().size());
+        assertEquals(Arrays.asList(r, r2), recordSet.records());
+    }
+
+    @Test
+    public void should_add_duplicate_records_different_parent_uniqueKey_when_merge() {
+        Record r = record2();
+        r.set("urn:column2", "value1");
+        r.setProjectId(2);
+        r.setExpeditionCode("test_exp");
+        List<Record> startingRecords = Collections.singletonList(r);
+
+        Record r2 = record2();
+        r.set("urn:column2", "value2");
+        r2.setProjectId(2);
+        r2.setExpeditionCode("test_exp");
+
+        Entity entity = entity();
+        entity.setParentEntity("parent");
+        RecordSet recordSet = new RecordSet(entity, startingRecords, false);
+
+        recordSet.merge(Collections.singletonList(r2), "urn:column2");
+
+        assertEquals(2, recordSet.records().size());
+        assertEquals(Arrays.asList(r, r2), recordSet.records());
     }
 
     @Test
@@ -126,6 +167,8 @@ public class RecordSetTest {
         GenericRecord r = new GenericRecord();
         r.set("urn:column1", "1");
         r.set("urn:column2", "value");
+        r.setProjectId(1);
+        r.setExpeditionCode("test");
         return r;
     }
 

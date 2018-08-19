@@ -2,8 +2,8 @@ package biocode.fims.projectConfig.models;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;
@@ -43,6 +43,8 @@ public class Entity {
     // note: if Entity.isChildEntity() == true, then this is
     // a composite unique key (parentEntityUniqueKey_EntityUniqueKey)
     private String uniqueKey;
+    private boolean uniqueAcrossProject = false;
+    private boolean hashed = false;
     private String conceptAlias;
     private String conceptURI;
     private String conceptForwardingAddress;
@@ -117,6 +119,34 @@ public class Entity {
      */
     public void setUniqueKey(String uniqueKey) {
         this.uniqueKey = uniqueKey;
+    }
+
+    /**
+     * If true, the uniqueKey for this entity must be unique across the entire project.
+     * <p>
+     * By default, the uniqueKey for this entity must be unique across the expedition
+     *
+     * @return
+     */
+    public boolean getUniqueAcrossProject() {
+        return uniqueAcrossProject;
+    }
+
+    public void setUniqueAcrossProject(boolean uniqueAcrossProject) {
+        this.uniqueAcrossProject = uniqueAcrossProject;
+    }
+
+    /**
+     * If true, the unique key is generated as a hash of all values in the record
+     *
+     * @return
+     */
+    public boolean isHashed() {
+        return hashed;
+    }
+
+    public void setHashed(boolean hashed) {
+        this.hashed = hashed;
     }
 
     public String getConceptAlias() {
@@ -222,6 +252,14 @@ public class Entity {
         throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
     }
 
+    /**
+     * Find the first rule matching type & level
+     *
+     * @param type
+     * @param level
+     * @param <T>
+     * @return
+     */
     @JsonIgnore
     public <T extends Rule> T getRule(Class<T> type, RuleLevel level) {
         for (Rule rule : rules) {

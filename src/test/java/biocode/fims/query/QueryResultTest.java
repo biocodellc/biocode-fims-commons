@@ -2,13 +2,12 @@ package biocode.fims.query;
 
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
 import org.junit.Test;
 
 import java.util.*;
 
-import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
 import static org.junit.Assert.*;
 
 /**
@@ -20,9 +19,8 @@ public class QueryResultTest {
     public void should_build_bcid_without_parent_entity() {
 
         LinkedList<Record> records = new LinkedList<>();
-        Record r1 = new GenericRecord();
+        Record r1 = new GenericRecord(new HashMap<>(), "ark:/99999/l2", 0, null, false);
         r1.set("urn:eventId", "1");
-        r1.set(ROOT_IDENTIFIER, "ark:/99999/l2");
 
         records.add(r1);
 
@@ -43,12 +41,11 @@ public class QueryResultTest {
 
         LinkedList<Record> records = new LinkedList<>();
 
-        Record r1 = new GenericRecord();
+        Record r1 = new GenericRecord(new HashMap<>(), "root", 0, null, false);
         r1.set("urn:sampleId", "1");
         r1.set("urn:eventId", "1");
         r1.set("urn:col3", "value");
         r1.set("urn:col4", "another");
-        r1.set("rootIdentifier", "root");
 
         records.add(r1);
 
@@ -72,11 +69,10 @@ public class QueryResultTest {
 
         LinkedList<Record> records = new LinkedList<>();
 
-        Record r1 = new GenericRecord();
+        Record r1 = new GenericRecord(new HashMap<>(), "root", 0, null, false);
         r1.set("urn:sampleId", "1");
         r1.set("urn:eventId", "1");
         r1.set("urn:col3", "value");
-        r1.set("rootIdentifier", "root");
 
         records.add(r1);
 

@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import org.springframework.jdbc.core.RowMapper;
 
@@ -9,6 +9,5 @@ import java.sql.SQLException;
  * @author rjewing
  */
 public interface FimsRowMapper<T> extends RowMapper<T> {
-
-    T mapRow(ResultSet rs, int rowNum, String dataLabel) throws SQLException;
+    T mapRow(ResultSet rs, int rowNum, String labelPrefix) throws SQLException;
 }

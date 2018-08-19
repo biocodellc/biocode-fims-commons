@@ -3,7 +3,7 @@ package biocode.fims.validation.rules;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;

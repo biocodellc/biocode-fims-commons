@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,10 +9,16 @@ import java.util.Map;
  */
 public class GenericRecord implements Record {
     protected Map<String, String> properties;
+    private String rootIdentifier;
+    private int projectId;
+    private String expeditionCode;
     protected boolean persist = true;
 
-    public GenericRecord(Map<String, String> properties, boolean shouldPersist) {
+    public GenericRecord(Map<String, String> properties, String rootIdentifier, int projectId, String expeditionCode, boolean shouldPersist) {
         this.properties = properties;
+        this.rootIdentifier = rootIdentifier;
+        this.projectId = projectId;
+        this.expeditionCode = expeditionCode;
         this.persist = shouldPersist;
     }
 
@@ -22,6 +28,33 @@ public class GenericRecord implements Record {
 
     public GenericRecord() {
         this.properties = new HashMap<>();
+    }
+
+    @Override
+    public int projectId() {
+        return projectId;
+    }
+
+    @Override
+    public void setProjectId(int projectId) {
+        if (this.projectId == 0) this.projectId = projectId;
+        else throw new IllegalStateException("projectId has already been set");
+    }
+
+    @Override
+    public String expeditionCode() {
+        return expeditionCode;
+    }
+
+    @Override
+    public void setExpeditionCode(String expeditionCode) {
+        if (this.expeditionCode == null) this.expeditionCode = expeditionCode;
+        else throw new IllegalStateException("expeditionCode has already been set");
+    }
+
+    @Override
+    public String rootIdentifier() {
+        return rootIdentifier;
     }
 
     @Override

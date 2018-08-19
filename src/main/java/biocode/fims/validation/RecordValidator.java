@@ -1,7 +1,7 @@
 package biocode.fims.validation;
 
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.*;
@@ -74,7 +74,7 @@ public class RecordValidator {
             requiredValueRule.addColumn(parentEntity.getUniqueKey());
             rules.add(new ValidParentIdentifiersRule());
         }
-        rules.add(new UniqueValueRule(entity.getUniqueKey(), RuleLevel.ERROR));
+        rules.add(new UniqueValueRule(entity.getUniqueKey(), entity.getUniqueAcrossProject(), RuleLevel.ERROR));
     }
 
     public boolean hasError() {

@@ -2,8 +2,8 @@ package biocode.fims.reader.plugins;
 
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import org.junit.Before;

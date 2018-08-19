@@ -1,8 +1,8 @@
 package biocode.fims.validation;
 
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.models.*;
 import biocode.fims.validation.messages.EntityMessages;
@@ -136,6 +136,8 @@ public class RecordValidatorTest {
         Record p1 = new GenericRecord();
         p1.set("parentId", "parent1");
         p1.set("col1", "YES");
+        p1.setExpeditionCode("exp");
+        p1.setProjectId(1);
         recordSet.add(p1);
 
         assertTrue(validator.validate(recordSet));

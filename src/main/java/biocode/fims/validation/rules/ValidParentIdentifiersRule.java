@@ -1,14 +1,15 @@
 package biocode.fims.validation.rules;
 
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,9 @@ public class ValidParentIdentifiersRule extends AbstractRule {
 
         String parentIdentifierUri = recordSet.parent().entity().getUniqueKeyURI();
 
+        String expeditionCode = recordSet.expeditionCode();
         Set<String> parentIdentifiers = recordSet.parent().records().stream()
+                .filter(r -> Objects.equals(r.expeditionCode(), expeditionCode))
                 .map(r -> r.get(parentIdentifierUri))
                 .collect(Collectors.toSet());
 

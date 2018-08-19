@@ -1,5 +1,4 @@
-package biocode.fims.models.records;
-
+package biocode.fims.records;
 
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -66,6 +65,14 @@ public class RecordSet {
         );
     }
 
+    public String expeditionCode() {
+        return records.stream()
+                .filter(Record::persist)
+                .findFirst()
+                .orElse(new GenericRecord())
+                .expeditionCode();
+    }
+
     public String conceptAlias() {
         return entity.getConceptAlias();
     }
@@ -116,19 +123,24 @@ public class RecordSet {
         deduplicated = true;
     }
 
-    public void merge(List<? extends Record> records) {
+    public void merge(List<? extends Record> records, String parentUniqueKey) {
         for (Record r : records) {
-            if (addRecord(r)) {
+            if (addRecord(r, parentUniqueKey)) {
                 this.records.add(r);
             }
         }
     }
 
-    private boolean addRecord(Record record) {
+    private boolean addRecord(Record record, String parentUniqueKey) {
         String uniqueKey = entity.getUniqueKeyURI();
 
         return records.stream()
-                .noneMatch(r -> record.get(uniqueKey).equals(r.get(uniqueKey)));
+                .noneMatch(r ->
+                        record.get(uniqueKey).equals(r.get(uniqueKey))
+                                && (parentUniqueKey == null || record.get(parentUniqueKey).equals(r.get(parentUniqueKey)))
+                                && record.projectId() == r.projectId()
+                                && record.expeditionCode().equals(r.expeditionCode())
+                );
     }
 
     public boolean hasParent() {

@@ -5,6 +5,9 @@ import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
+import biocode.fims.validation.rules.RequiredValueRule;
+import biocode.fims.validation.rules.RuleLevel;
+import biocode.fims.validation.rules.UniqueValueRule;
 import org.junit.Test;
 import org.springframework.util.Assert;
 
@@ -147,6 +150,24 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_entity_unique_across_project_but_not_parent_unique_across_project() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e1 = entity1();
+        config.addEntity(e1);
+
+        Entity e2 = entity2();
+        e2.setParentEntity(e1.getConceptAlias());
+        e2.setUniqueAcrossProject(true);
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource2\" requires the key to be unique across the entire project, but the parentEntity is not unique across the project."), validator.errors());
+    }
+
+    @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
         ProjectConfig config = new ProjectConfig();
 
@@ -174,6 +195,20 @@ public class ProjectConfigValidatorTest {
 
         assertFalse(validator.isValid());
         assertEquals(Arrays.asList("Invalid Project configuration. Could not find list with name \"noList\""), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_unique_value_rule_uniqueAcrossProject_for_uniqueKey_but_not_entity_uniqueAcrossProject() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.addRule(new UniqueValueRule("column1", true, RuleLevel.ERROR));
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("UniqueValueRule for uniqueKey column: \"column1\" has uniqueAcrossProject = true, however entity: \"resource1\" uniqueAcrossProject = false"), validator.errors());
     }
 
     @Test
@@ -243,6 +278,55 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_most_atomic_entity_in_sheet_is_hashed() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.setHashed(true);
+        e.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column2")), RuleLevel.ERROR));
+        config.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        e2.setParentEntity(e.getConceptAlias());
+        e2.setHashed(true);
+        e2.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column1")), RuleLevel.ERROR));
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Entity \"resource2\" is the most atomic (child) entity in the worksheet: \"worksheet1\". This entity can not be a hashed entity."
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+    }
+
+    @Test
+    public void invalid_if_hashed_entity_doesnt_require_column() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        e.setHashed(true);
+        config.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        e2.setParentEntity(e.getConceptAlias());
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Entity \"resource1\" is a hashed entity, but is missing at least 1 RequiredValueRule with level = \"ERROR\" and a column that is not the uniqueKey \"column1\""
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+    }
+
+    @Test
     public void invalid_if_entity_isValid_returns_false() {
         ProjectConfig config = new ProjectConfig();
         Entity e = customEntity();
@@ -280,7 +364,7 @@ public class ProjectConfigValidatorTest {
     }
 
     private Entity customEntity() {
-        Entity e = new Entity("resource1", "someURI"){
+        Entity e = new Entity("resource1", "someURI") {
             @Override
             public boolean isValid(ProjectConfig config) {
                 Assert.notNull(config, "ProjectConfig is null");

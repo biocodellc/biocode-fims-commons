@@ -6,13 +6,11 @@ import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.projectConfig.ColumnComparator;
 import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.DataType;
 import biocode.fims.projectConfig.models.Field;
+import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
-import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.RuleLevel;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -60,7 +58,7 @@ public class ExcelWorkbookWriter {
         initWorkbookStyles();
     }
 
-    public File write(List<WorkbookWriterSheet> sheets) {
+    public File write(List<WriterWorksheet> sheets) {
         // Create each of the sheets
         createInstructions(
                 sheets.stream()
@@ -68,10 +66,14 @@ public class ExcelWorkbookWriter {
                         .collect(Collectors.toList())
         );
 
-        for (WorkbookWriterSheet sheet : sheets) {
-            sheet.columns.sort(new ColumnComparator(this.project.getProjectConfig(), sheet.sheetName));
+        for (WriterWorksheet sheet : sheets) {
             createSheet(sheet);
             createDataFields(sheet.sheetName, sheet.columns);
+        }
+
+        for (int i = 0; i < sheets.size(); i++) {
+            // re-order worksheets towards the beginning
+            workbook.setSheetOrder(sheets.get(i).sheetName, i + 1); // +1 b/c instructions sheet is first
         }
 
         createListsSheetAndValidations(sheets);
@@ -224,7 +226,7 @@ public class ExcelWorkbookWriter {
     /**
      * Create a worksheet
      */
-    private void createSheet(WorkbookWriterSheet sheet) {
+    private void createSheet(WriterWorksheet sheet) {
         // Create the Default Sheet sheet
         XSSFSheet worksheet = workbook.createSheet(sheet.sheetName);
 
@@ -248,7 +250,7 @@ public class ExcelWorkbookWriter {
         }
     }
 
-    private void writeHeaderRow(WorkbookWriterSheet sheet, Row row) {
+    private void writeHeaderRow(WriterWorksheet sheet, Row row) {
         // First find all the required columns so we can look them up
         Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
 
@@ -266,7 +268,7 @@ public class ExcelWorkbookWriter {
     }
 
 
-    private void addDataToRow(WorkbookWriterSheet sheet, Map<String, String> record, Row row) {
+    private void addDataToRow(WriterWorksheet sheet, Map<String, String> record, Row row) {
         int cellNum = 0;
 
         for (String column : sheet.columns) {
@@ -360,7 +362,7 @@ public class ExcelWorkbookWriter {
      * This function creates a sheet called "Lists" and then creates the pertinent validations for each of the lists
      */
 
-    private void createListsSheetAndValidations(List<WorkbookWriterSheet> sheets) {
+    private void createListsSheetAndValidations(List<WriterWorksheet> sheets) {
         // Integer for holding column index value
         int column;
         // Create a sheet to hold the lists
@@ -419,7 +421,7 @@ public class ExcelWorkbookWriter {
                 int endRowNum = fields.size() + 1;
 
                 // DATA VALIDATION COMPONENT
-                for (WorkbookWriterSheet sheet : sheets) {
+                for (WriterWorksheet sheet : sheets) {
                     List<ControlledVocabularyRule> vocabularyRules = vocabRules(sheet.sheetName);
 
                     List<ControlledVocabularyRule> rules = vocabularyRules.stream()
@@ -509,22 +511,6 @@ public class ExcelWorkbookWriter {
         private static final int DEFINITION = 1;
         private static final int CONTROLLED_VOCABULARY = 2;
         private static final int DATA_FORMAT = 3;
-    }
-
-    public static class WorkbookWriterSheet {
-        public final String sheetName;
-        public final List<String> columns;
-        public final List<Map<String, String>> data;
-
-        public WorkbookWriterSheet(String sheetName, List<String> columns) {
-            this(sheetName, columns, Collections.emptyList());
-        }
-
-        public WorkbookWriterSheet(String sheetName, List<String> columns, List<Map<String, String>> data) {
-            this.sheetName = sheetName;
-            this.columns = columns;
-            this.data = data;
-        }
     }
 }
 

@@ -119,6 +119,7 @@ public class QueryAuthorizer {
     }
 
     private boolean authorizedUserForProject(Project project, User user) {
+        if (project.isPublic()) return true;
         if (user == null) {
             return project.isPublic();
         }

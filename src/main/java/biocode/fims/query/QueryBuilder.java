@@ -376,7 +376,10 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 .append(queryEntity.getConceptAlias())
                 .append("_entity_identifiers.identifier AS \"")
                 .append(queryEntity.getConceptAlias())
-                .append("_root_identifier\"");
+                .append("_rootIdentifier\", ")
+                .append("expeditions.expedition_code AS \"expeditionCode\", ")
+                .append("expeditions.project_id AS \"projectId\"")
+        ;
 
         for (Entity e : joinBuilder.selectEntities()) {
             s
@@ -388,7 +391,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                     .append(e.getConceptAlias())
                     .append("_entity_identifiers.identifier AS \"")
                     .append(e.getConceptAlias())
-                    .append("_root_identifier\"");
+                    .append("_rootIdentifier\"");
         }
         s.append(" ");
 

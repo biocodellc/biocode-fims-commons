@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 import java.util.Map;
 
@@ -10,6 +10,16 @@ import java.util.Map;
  * @author rjewing
  */
 public interface Record {
+    int projectId();
+
+    void setProjectId(int projectId);
+
+    String expeditionCode();
+
+    void setExpeditionCode(String expeditionCode);
+
+    String rootIdentifier();
+
     String get(String property);
 
     boolean has(String property);

@@ -5,7 +5,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Component;
 
 import java.sql.PreparedStatement;
 
@@ -13,7 +12,6 @@ import java.sql.PreparedStatement;
  * AOP Advice methods affecting postgres repositories
  * @author rjewing
  */
-@Component
 @Aspect
 public class PostgresRepositoryAuditAdvice {
     @Autowired(required = false)
@@ -23,7 +21,7 @@ public class PostgresRepositoryAuditAdvice {
 
     /**
      * when the @SetFimsUser annotation is present for a method,
-     * this method executes immediatly before the annotated method, setting the
+     * this method executes immediately before the annotated method, setting the
      * psql variable fims.username to the current user
      */
     @Before("@annotation(SetFimsUser)")

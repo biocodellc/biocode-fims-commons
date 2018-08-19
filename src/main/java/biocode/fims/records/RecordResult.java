@@ -1,4 +1,4 @@
-package biocode.fims.models.records;
+package biocode.fims.records;
 
 /**
  * Class to handle result from Record lookup by arkID
@@ -7,19 +7,17 @@ package biocode.fims.models.records;
  */
 public class RecordResult {
     private int expeditionId;
-    private int projectId;
     private Record record;
     private String conceptAlias;
 
-    public RecordResult(int projectId, int expeditionId, String conceptAlias, Record record) {
-        this.projectId = projectId;
+    public RecordResult(int expeditionId, String conceptAlias, Record record) {
         this.expeditionId = expeditionId;
         this.conceptAlias = conceptAlias;
         this.record = record;
     }
 
     public int projectId() {
-        return projectId;
+        return record.projectId();
     }
 
     public int expeditionId() {

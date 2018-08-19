@@ -5,10 +5,10 @@ import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
-import biocode.fims.models.records.GenericRecord;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordMetadata;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataConverter;
 import biocode.fims.reader.DataConverterFactory;
@@ -17,6 +17,7 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
+import biocode.fims.validation.rules.UniqueValueRule;
 import org.junit.Test;
 
 import java.io.File;
@@ -106,7 +107,7 @@ public class DatasetBuilderTest {
 
         TestRecordRepository repository = new TestRecordRepository();
         repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord1());
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
@@ -143,7 +144,7 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", eventRecordSet(false));
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
@@ -176,12 +177,12 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", sampleRecordSet());
 
         Record e1 = eventRecord1();
-        Record e2 = eventRecord2();
+        Record e2 = eventRecord2(true);
         RecordSet recordSet = new RecordSet(eventsEntity(), Arrays.asList(e1, e2), false);
         reader.addRecordSet("workbook.xlsx", recordSet);
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
@@ -215,7 +216,7 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", eventRecordSet(true));
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2());
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
@@ -244,6 +245,166 @@ public class DatasetBuilderTest {
     }
 
 
+    @Test
+    public void should_fetch_stored_records_entity_is_unique_across_project() {
+        TestDataReader reader = new TestDataReader();
+        RecordSet recordSet = eventRecordSet(false);
+        recordSet.entity().setUniqueAcrossProject(true);
+        reader.addRecordSet("events.csv", recordSet);
+
+        TestRecordRepository repository = new TestRecordRepository();
+        Record record = eventRecord2(false);
+        record.setProjectId(PROJECT_ID);
+        record.setExpeditionCode("different");
+        repository.addRecord(PROJECT_ID, "different", "event", record);
+
+        RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
+        eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
+
+        ProjectConfig config = config();
+        config.entity("event").setUniqueAcrossProject(true);
+
+        Dataset dataset = new DatasetBuilder(
+                dataReaderFactory(reader),
+                dataConverterFactory(null),
+                repository,
+                config,
+                PROJECT_ID,
+                EXPEDITION_CODE
+        )
+                .addDatasource("events.csv", eventsMetadata)
+                .build();
+
+        assertEquals(1, dataset.size());
+
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+
+        assertTrue(eventsSet.isPresent());
+        assertEquals(2, eventsSet.get().records().size());
+        assertEquals(1, eventsSet.get().recordsToPersist().size());
+    }
+
+    @Test
+    public void should_fetch_stored_parent_records_for_child_entities_when_reloading_dataset_and_parent_is_unique_across_project() {
+        TestDataReader reader = new TestDataReader();
+        reader.addRecordSet("workbook.xlsx", sampleRecordSet());
+        RecordSet recordSet = eventRecordSet(true);
+        recordSet.entity().setUniqueAcrossProject(true);
+        reader.addRecordSet("workbook.xlsx", recordSet);
+
+        TestRecordRepository repository = new TestRecordRepository();
+        Record record = eventRecord2(false);
+        record.setProjectId(PROJECT_ID);
+        record.setExpeditionCode("different");
+        repository.addRecord(PROJECT_ID, "different", "event", record);
+
+        ProjectConfig config = config();
+        config.entity("event").setUniqueAcrossProject(true);
+
+        Dataset dataset = new DatasetBuilder(
+                dataReaderFactory(reader),
+                dataConverterFactory(null),
+                repository,
+                config,
+                PROJECT_ID,
+                EXPEDITION_CODE
+        )
+                .addWorkbook("workbook.xlsx")
+                .reloadWorkbooks(true)
+                .build();
+
+        assertEquals(2, dataset.size());
+
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+
+        assertTrue(eventsSet.isPresent());
+        assertEquals(2, eventsSet.get().records().size());
+        assertEquals(1, eventsSet.get().recordsToPersist().size());
+        assertTrue(eventsSet.get().records().stream().anyMatch(r -> r.expeditionCode().equals("different")));
+
+        Optional<RecordSet> samplesSet = dataset.stream().filter(r -> r.conceptAlias().equals("sample")).findFirst();
+
+        assertTrue(samplesSet.isPresent());
+        assertEquals(4, samplesSet.get().records().size());
+        assertEquals(eventsSet.get(), samplesSet.get().parent());
+    }
+
+    @Test
+    public void should_fetch_stored_records_entity_column_is_unique_across_project() {
+        TestDataReader reader = new TestDataReader();
+        reader.addRecordSet("events.csv", eventRecordSet(false));
+
+        TestRecordRepository repository = new TestRecordRepository();
+        Record record = eventRecord2(false);
+        record.setProjectId(PROJECT_ID);
+        record.setExpeditionCode("different");
+        repository.addRecord(PROJECT_ID, "different", "event", record);
+
+        RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
+        eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
+
+        ProjectConfig config = config();
+        config.entity("event").addRule(new UniqueValueRule("urn:latitude", true));
+
+        Dataset dataset = new DatasetBuilder(
+                dataReaderFactory(reader),
+                dataConverterFactory(null),
+                repository,
+                config,
+                PROJECT_ID,
+                EXPEDITION_CODE
+        )
+                .addDatasource("events.csv", eventsMetadata)
+                .build();
+
+        assertEquals(1, dataset.size());
+
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+
+        assertTrue(eventsSet.isPresent());
+        assertEquals(2, eventsSet.get().records().size());
+        assertEquals(1, eventsSet.get().recordsToPersist().size());
+    }
+
+    // TODO need the same test, but for child entities if reloading the parent
+    @Test
+    public void should_not_fetch_stored_expedition_records_on_reload_if_entity_column_is_unique_across_project() {
+        TestDataReader reader = new TestDataReader();
+        reader.addRecordSet("events.csv", eventRecordSet(true));
+
+        TestRecordRepository repository = new TestRecordRepository();
+        Record record = eventRecord2(false);
+        record.setProjectId(PROJECT_ID);
+        record.setExpeditionCode(EXPEDITION_CODE);
+        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", record);
+
+        RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, true);
+        eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
+
+        ProjectConfig config = config();
+        config.entity("event").addRule(new UniqueValueRule("urn:latitude", true));
+
+        Dataset dataset = new DatasetBuilder(
+                dataReaderFactory(reader),
+                dataConverterFactory(null),
+                repository,
+                config,
+                PROJECT_ID,
+                EXPEDITION_CODE
+        )
+                .addDatasource("events.csv", eventsMetadata)
+                .build();
+
+        assertEquals(1, dataset.size());
+
+        Optional<RecordSet> eventsSet = dataset.stream().filter(r -> r.conceptAlias().equals("event")).findFirst();
+
+        assertTrue(eventsSet.isPresent());
+        assertEquals(1, eventsSet.get().records().size());
+        assertEquals(1, eventsSet.get().recordsToPersist().size());
+        assertEquals("1", eventsSet.get().records().get(0).get("urn:eventID"));
+    }
+
     private RecordSet eventRecordSet(boolean reload) {
         return new RecordSet(eventsEntity(), Collections.singletonList(eventRecord1()), reload);
     }
@@ -260,17 +421,17 @@ public class DatasetBuilderTest {
         return r;
     }
 
-    private Record eventRecord2() {
-        Record r = new GenericRecord();
+    private Record eventRecord2(boolean shouldPersist) {
+        HashMap<String, String> r = new HashMap<>();
 
-        r.set("urn:eventID", "2");
-        r.set("urn:location", "Channel");
-        r.set("urn:country", "Belize");
-        r.set("urn:island", "Twin Cays");
-        r.set("urn:latitude", "16.83046");
-        r.set("urn:longitude", "-88.10460");
+        r.put("urn:eventID", "2");
+        r.put("urn:location", "Channel");
+        r.put("urn:country", "Belize");
+        r.put("urn:island", "Twin Cays");
+        r.put("urn:latitude", "16.83046");
+        r.put("urn:longitude", "-88.10460");
 
-        return r;
+        return new GenericRecord(r, null, 0, null, shouldPersist);
     }
 
     private RecordSet sampleRecordSet() {

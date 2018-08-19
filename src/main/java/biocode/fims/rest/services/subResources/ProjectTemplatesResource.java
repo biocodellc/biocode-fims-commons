@@ -2,6 +2,7 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
+import biocode.fims.models.WorksheetTemplate;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
@@ -9,6 +10,7 @@ import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.ProjectTemplate;
+import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
@@ -25,9 +27,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode.UNKNOWN_COLUMN;
 
@@ -208,20 +210,17 @@ public class ProjectTemplatesResource extends FimsController {
 
 
     /**
-     * generate an excel template
+     * generate an excel template workbook
      *
-     * @param columns
-     * @param worksheet
+     * @param worksheetTemplates list of {@link WorksheetTemplate}s to include in the workbook
      * @param projectId
      * @return
      */
     @Path("generate")
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public FileResponse createExcel(
-            @FormParam("columns") List<String> columns,
-            @FormParam("worksheet") String worksheet,
-            @PathParam("projectId") Integer projectId) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public FileResponse createExcel(List<WorksheetTemplate> worksheetTemplates,
+                                    @PathParam("projectId") Integer projectId) {
 
         Project project = projectService.getProject(projectId);
 
@@ -229,18 +228,20 @@ public class ProjectTemplatesResource extends FimsController {
             throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
         }
 
-        List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
-        for (String col : columns) {
-            boolean found = false;
-            for (Attribute a : attributes) {
-                if (a.getColumn().equals(col)) {
-                    found = true;
-                    break;
+        for (WorksheetTemplate template : worksheetTemplates) {
+            List<Attribute> attributes = project.getProjectConfig().attributesForSheet(template.name);
+            for (String col : template.columns) {
+                boolean found = false;
+                for (Attribute a : attributes) {
+                    if (a.getColumn().equals(col)) {
+                        found = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!found) {
-                throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col, worksheet);
+                if (!found) {
+                    throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col, template.name);
+                }
             }
         }
 
@@ -249,9 +250,9 @@ public class ProjectTemplatesResource extends FimsController {
         ExcelWorkbookWriter workbookWriter = new ExcelWorkbookWriter(project, props.naan(), userContext.getUser());
 
         File file = workbookWriter.write(
-                Collections.singletonList(
-                        new ExcelWorkbookWriter.WorkbookWriterSheet(worksheet, columns)
-                ));
+                worksheetTemplates.stream().map(t -> new WriterWorksheet(t.name, t.columns))
+                        .collect(Collectors.toList())
+        );
 
         // Catch a null file and return 204
         if (file == null) {

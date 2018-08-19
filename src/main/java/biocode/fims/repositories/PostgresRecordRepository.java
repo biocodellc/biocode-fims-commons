@@ -1,12 +1,12 @@
 package biocode.fims.repositories;
 
+import biocode.fims.records.*;
 import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.dataTypes.JacksonUtil;
-import biocode.fims.models.records.*;
 import biocode.fims.query.ParametrizedQuery;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryResult;
@@ -32,8 +32,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
-
-import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
 
 /**
  * @author rjewing
@@ -68,6 +66,7 @@ public class PostgresRecordRepository implements RecordRepository {
         if (result == null) return null;
 
         Map<String, Object> tableMap = getTableMap(result.projectId, result.conceptAlias);
+        tableMap.put("rootIdentifier", rootIdentifier);
 
         // TODO do we want to return the actual Record type here?
         try {
@@ -75,15 +74,30 @@ public class PostgresRecordRepository implements RecordRepository {
                     StrSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
                     new MapSqlParameterSource()
                             .addValue("localIdentifier", localIdentifier)
-                            .addValue("expeditionId", result.expeditionId),
+                            .addValue("expeditionId", result.expeditionId)
+                            .addValue("conceptAlias", result.conceptAlias),
                     rowMappers.get(GenericRecord.class)
             );
-            record.set(ROOT_IDENTIFIER, rootIdentifier);
 
-            return new RecordResult(result.projectId, result.expeditionId, result.conceptAlias, record);
+            return new RecordResult(result.expeditionId, result.conceptAlias, record);
         } catch (EmptyResultDataAccessException e) {
             throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
         }
+    }
+
+    @Override
+    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
+
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("projectId", projectId);
+        sqlParams.put("conceptAlias", conceptAlias);
+
+        return jdbcTemplate.query(
+                StrSubstitutor.replace(sql.getProperty("selectProjectRecords"), tableMap),
+                sqlParams,
+                rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
+        );
     }
 
     @Override
@@ -93,9 +107,10 @@ public class PostgresRecordRepository implements RecordRepository {
         Map<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("expeditionCode", expeditionCode);
         sqlParams.put("projectId", projectId);
+        sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
-                StrSubstitutor.replace(sql.getProperty("selectRecords"), tableMap),
+                StrSubstitutor.replace(sql.getProperty("selectExpeditionRecords"), tableMap),
                 sqlParams,
                 rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
         );
@@ -187,17 +202,39 @@ public class PostgresRecordRepository implements RecordRepository {
                     insertParams.add(recordParams);
                 }
 
+                boolean executeReturning = false;
                 String sqlString;
-                if (recordSet.hasParent()) {
+                if (recordSet.hasParent() && recordSet.parent().entity().isHashed()) {
+                    sqlString = sql.getProperty("insertChildRecordReturning");
+                    executeReturning = true;
+                } else if (recordSet.hasParent()) {
                     sqlString = sql.getProperty("insertChildRecord");
                 } else {
                     sqlString = sql.getProperty("insertRecord");
                 }
 
-                jdbcTemplate.batchUpdate(
-                        StrSubstitutor.replace(sqlString, tableMap),
-                        insertParams.toArray(new HashMap[insertParams.size()])
-                );
+                // used to remove hashed parents that have been updated and no longer have a child entity attached
+                List<String> updatedHashedParents = new ArrayList<>();
+                if (executeReturning) {
+                    for (HashMap p : insertParams) {
+                        // we use query here b/c our update statement may return a value
+                        List<String> old_parent = jdbcTemplate.query(
+                                StrSubstitutor.replace(sqlString, tableMap),
+                                p,
+                                (rs, rowNum) -> rs.getString("parent_identifier")
+                        );
+                        if (old_parent.size() == 1 && old_parent.get(0) != null) {
+                            updatedHashedParents.add(old_parent.get(0));
+                        } else if (old_parent.size() > 1) {
+                            throw new FimsRuntimeException(QueryCode.UNEXPECTED_RESULT, 500);
+                        }
+                    }
+                } else {
+                    jdbcTemplate.batchUpdate(
+                            StrSubstitutor.replace(sqlString, tableMap),
+                            insertParams.toArray(new HashMap[insertParams.size()])
+                    );
+                }
 
                 // Delete any records not in the current RecordSet
                 if (recordSet.reload()) {
@@ -220,6 +257,20 @@ public class PostgresRecordRepository implements RecordRepository {
                         deleteSql = sql.getProperty("deleteRecords");
                         deleteParams.put("identifiers", localIdentifiers);
                     }
+
+                    jdbcTemplate.update(
+                            StrSubstitutor.replace(deleteSql, tableMap),
+                            deleteParams
+                    );
+                } else if (updatedHashedParents.size() > 0) {
+                    String deleteSql = sql.getProperty("deleteOrphanedParentRecords");
+
+                    HashMap<String, Object> deleteParams = new HashMap<>();
+                    deleteParams.put("expeditionId", expeditionId);
+                    deleteParams.put("identifiers", updatedHashedParents);
+
+                    tableMap.put("childTable", tableMap.get("table"));
+                    tableMap.put("table", PostgresUtils.entityTable(projectId, recordSet.entity().getParentEntity()));
 
                     jdbcTemplate.update(
                             StrSubstitutor.replace(deleteSql, tableMap),
@@ -334,36 +385,28 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
-            Map<String, RowRecordResult> rowRecords = new LinkedHashMap<>();
+            Map<String, Record> rowRecords = new LinkedHashMap<>();
 
             // process all columns in the row
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
                 // for some reason, the columnLabels are 1 indexed, not 0 indexed
                 String label = metadata.getColumnLabel(i);
 
-                if (label.endsWith("_root_identifier")) {
-                    String[] split = label.split("_root_identifier");
-                    String conceptAlias = split[0].toLowerCase();
-
-                    rowRecords
-                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
-                            .rootIdentifier = rs.getString(label);
-                } else {
+                if (label.endsWith("_data")) {
                     String conceptAlias = label.split("_data")[0].toLowerCase();
-                    rowRecords
-                            .computeIfAbsent(conceptAlias, k -> new RowRecordResult())
-                            .record = getRowMapper(conceptAlias).mapRow(rs, 0, label);
+                    rowRecords.put(
+                            conceptAlias,
+                            getRowMapper(conceptAlias).mapRow(rs, 0, conceptAlias + "_")
+                    );
                 }
             }
 
             // add all records for the row to the records map
-            for (Map.Entry<String, RowRecordResult> entry : rowRecords.entrySet()) {
+            for (Map.Entry<String, Record> entry : rowRecords.entrySet()) {
                 String conceptAlias = entry.getKey();
-                RowRecordResult result = entry.getValue();
+                Record record = entry.getValue();
 
-                if (result.rootIdentifier != null && result.record != null) {
-                    Record record = result.record;
-                    record.set(ROOT_IDENTIFIER, result.rootIdentifier);
+                if (record != null) {
                     // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
                     // b/c we want to return results even if there are not children. This causes 1
                     // parent (duplicate) for each child.
@@ -409,10 +452,5 @@ public class PostgresRecordRepository implements RecordRepository {
         public int projectId;
         public int expeditionId;
         public String conceptAlias;
-    }
-
-    private static class RowRecordResult {
-        public String rootIdentifier;
-        public Record record;
     }
 }

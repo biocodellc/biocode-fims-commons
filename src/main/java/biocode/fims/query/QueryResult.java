@@ -2,11 +2,9 @@ package biocode.fims.query;
 
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.Record;
+import biocode.fims.records.Record;
 
 import java.util.*;
-
-import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
 
 /**
  * @author rjewing
@@ -63,10 +61,6 @@ public class QueryResult {
                 String col = entity.getAttributeColumn(e.getKey());
                 if (col == null) col = e.getKey();
 
-                // don't add rootIdentifier to results. This is only for
-                // generating bcids later
-                if (Objects.equals(col, ROOT_IDENTIFIER)) continue;
-
                 if (skipSourceFilter || source.contains(col)) {
                     properties.put(
                             col,
@@ -86,8 +80,15 @@ public class QueryResult {
                 }
             }
 
+            if ((skipSourceFilter || source.contains("expeditionCode")) && record.expeditionCode() != null) {
+                properties.put("expeditionCode", record.expeditionCode());
+            }
+            if ((skipSourceFilter || source.contains("projectId")) && record.projectId() != 0 ) {
+                properties.put("projectId", record.projectId() == 0 ? null : String.valueOf(record.projectId()));
+            }
+
             if (skipSourceFilter || source.contains("bcid")) {
-                String bcid = record.get(ROOT_IDENTIFIER);
+                String bcid = record.rootIdentifier();
                 if (entity.isChildEntity() && entity.getUniqueKey() != null) {
                     bcid += record.get(entity.getUniqueKeyURI());
                 } else if (entity.isChildEntity()) {

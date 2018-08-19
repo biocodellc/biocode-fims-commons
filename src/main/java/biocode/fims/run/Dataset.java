@@ -1,6 +1,6 @@
 package biocode.fims.run;
 
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordSet;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * This is a sorted collection of {@link biocode.fims.models.records.RecordSet}s so that RecordSets w/o parent are
+ * This is a sorted collection of {@link RecordSet}s so that RecordSets w/o parent are
  * always before child RecordSets
  *
  * @author rjewing

@@ -1,10 +1,10 @@
 package biocode.fims.repositories;
 
 import biocode.fims.rest.responses.PaginatedResponse;
-import biocode.fims.models.records.RecordSources;
+import biocode.fims.records.RecordSources;
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordResult;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.run.Dataset;
@@ -15,6 +15,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -25,6 +26,15 @@ public class TestRecordRepository implements RecordRepository {
     @Override
     public RecordResult get(String rootIdentifier, String localIdentifier) {
         throw new NotImplementedException();
+    }
+
+
+    @Override
+    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+        return stores.stream()
+                .filter(s -> s.projectId == projectId && s.conceptAlias.equals(conceptAlias))
+                .flatMap(s -> s.records.stream())
+                .collect(Collectors.toList());
     }
 
     @Override

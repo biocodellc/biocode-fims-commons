@@ -41,7 +41,7 @@ $$ LANGUAGE sql;
 COMMENT ON FUNCTION get_fims_user() IS $body$
 Fetches the value of current_setting('fims.username', true).
 This value can be set by calling SET LOCAL "fims.username" = 'user';
-This is useful to retrieve the logged in user from the fims applicaton in a postgresql trigger.
+This is useful to retrieve the logged in user from the fims application in a postgresql trigger.
 $body$;
 
 CREATE OR REPLACE FUNCTION jsonb_diff_val(new JSONB, old JSONB)

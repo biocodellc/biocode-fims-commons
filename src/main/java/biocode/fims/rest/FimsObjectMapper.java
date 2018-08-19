@@ -4,6 +4,7 @@ import biocode.fims.serializers.FimsSerializerModifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
@@ -23,6 +24,7 @@ public class FimsObjectMapper extends ObjectMapper {
                 new SimpleModule()
                         .setSerializerModifier(new FimsSerializerModifier())
         );
+        this.registerModule(new ParameterNamesModule());
     }
 
 }

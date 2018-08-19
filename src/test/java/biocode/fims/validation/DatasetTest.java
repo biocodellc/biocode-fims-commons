@@ -1,7 +1,7 @@
 package biocode.fims.validation;
 
 import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordSet;
 import biocode.fims.run.Dataset;
 import org.junit.Test;
 

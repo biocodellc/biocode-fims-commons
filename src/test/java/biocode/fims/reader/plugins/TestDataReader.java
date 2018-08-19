@@ -1,7 +1,7 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.RecordMetadata;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 

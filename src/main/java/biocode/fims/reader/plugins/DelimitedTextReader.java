@@ -3,7 +3,7 @@ package biocode.fims.reader.plugins;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
-import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import com.opencsv.*;
 import com.opencsv.CSVReader;
@@ -35,6 +35,10 @@ import java.util.*;
  */
 abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
+
+    // FEFF because this is the Unicode char represented by the UTF-8 byte order mark (EF BB BF).
+    private static final String UTF8_BOM = "\uFEFF";
+
     private String sheetName;
     protected CSVReader reader;
     private Iterator<String[]> it;
@@ -90,12 +94,29 @@ abstract class DelimitedTextReader extends AbstractTabularDataReader {
 
         Set<String> colSet = new HashSet<>();
 
+        colNames.set(0, removeBOM(colNames.get(0)));
         for (String col : colNames) {
             if (!colSet.add(col)) {
                 throw new FimsRuntimeException(DataReaderCode.DUPLICATE_COLUMNS, 400, sheetName, col);
             }
         }
 
+    }
+
+    /**
+     * If you save a csv in excel as utf-8 csv, it will include a BOM as the first byte.
+     *
+     * Java doesn't detect this and will include it in the value, so we need to manually remove it.
+     *
+     * https://en.wikipedia.org/wiki/Byte_order_mark
+     * @param s
+     * @return
+     */
+    private String removeBOM(String s) {
+        if (s.startsWith(UTF8_BOM)) {
+            s = s.substring(1);
+        }
+        return s;
     }
 
     @Override

@@ -4,16 +4,18 @@ import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
-import biocode.fims.models.records.Record;
-import biocode.fims.models.records.RecordMetadata;
-import biocode.fims.models.records.RecordSet;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordMetadata;
+import biocode.fims.records.RecordSet;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.validation.rules.UniqueValueRule;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for taking the input data files and assembling datasets.
@@ -36,6 +38,8 @@ public class DatasetBuilder {
     private final ArrayList<String> workbooks;
     private final ArrayList<DataSource> dataSources;
     private final ArrayList<RecordSet> recordSets;
+    private final ArrayList<String> projectRecordEntities;
+    private final ArrayList<String> reloadedEntities;
 
     public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository, ProjectConfig config,
                           int projectId, String expeditionCode) {
@@ -49,6 +53,8 @@ public class DatasetBuilder {
         this.workbooks = new ArrayList<>();
         this.dataSources = new ArrayList<>();
         this.recordSets = new ArrayList<>();
+        this.projectRecordEntities = new ArrayList<>();
+        this.reloadedEntities = new ArrayList<>();
     }
 
     public DatasetBuilder addWorkbook(String workbookFile) {
@@ -77,6 +83,7 @@ public class DatasetBuilder {
 
     public Dataset build() {
 
+        findEntitiesToFetchProjectRecords();
         instantiateWorkbookRecords();
         instantiateDataSourceRecords();
         addParentRecords();
@@ -87,6 +94,18 @@ public class DatasetBuilder {
         }
 
         return new Dataset(recordSets);
+    }
+
+    private void findEntitiesToFetchProjectRecords() {
+        for (Entity e : config.entities()) {
+            if (e.getUniqueAcrossProject() || e.getRules().stream()
+                    .filter(r -> r instanceof UniqueValueRule)
+                    .anyMatch(r -> ((UniqueValueRule) r).uniqueAcrossProject())
+                    ) {
+                projectRecordEntities.add(e.getConceptAlias());
+            }
+        }
+
     }
 
     private void instantiateDataSourceRecords() {
@@ -106,7 +125,31 @@ public class DatasetBuilder {
 
         for (RecordSet set : reader.getRecordSets()) {
             DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
-            recordSets.add(converter.convertRecordSet(set, projectId, expeditionCode));
+            RecordSet recordSet = converter.convertRecordSet(set, projectId, expeditionCode);
+            recordSets.add(recordSet);
+
+            for (Record record : recordSet.records()) {
+                record.setExpeditionCode(expeditionCode);
+                record.setProjectId(projectId);
+            }
+
+            Entity e = recordSet.entity();
+            if (metadata.reload()) {
+                reloadedEntities.add(e.getConceptAlias());
+            }
+
+            if (recordSet.records().size() > 0 && projectRecordEntities.contains(e.getConceptAlias())) {
+                List<? extends Record> records = recordRepository.getRecords(projectId, e.getConceptAlias(), e.getRecordType());
+
+                // if we are reloading the dataset, we need to exclude any records for the expedition we're reloading
+                if (metadata.reload()) {
+                    records = records.stream()
+                            .filter(r -> !r.expeditionCode().equals(expeditionCode))
+                            .collect(Collectors.toList());
+                }
+
+                mergeRecords(e, records);
+            }
         }
     }
 
@@ -157,19 +200,48 @@ public class DatasetBuilder {
             recordSets.add(recordSet);
         }
 
-        recordSet.merge(records);
+        String parentUniqueKeyURI = entity.isChildEntity() ? config.entity(entity.getParentEntity()).getUniqueKeyURI() : null;
+        recordSet.merge(records, parentUniqueKeyURI);
 
     }
 
     private void setRecordSetParent() {
+        List<RecordSet> recordSetsToRemove = new ArrayList<>();
+        List<RecordSet> recordSetsToAdd = new ArrayList<>();
+
         for (RecordSet r : recordSets) {
 
             Entity e = r.entity();
 
             if (e.isChildEntity()) {
-                r.setParent(getRecordSet(e.getParentEntity()));
+                RecordSet parentRecordSet = getRecordSet(e.getParentEntity());
+                Entity parentEntity = parentRecordSet.entity();
+
+                // if we've fetched project records for the child and the parent is reloading
+                // we need to remove any fetched records that will be deleted b/c the parent is removed
+                if (projectRecordEntities.contains(e.getConceptAlias()) && reloadedEntities.contains(e.getParentEntity())) {
+                    List<String> parentIdentifiers = parentRecordSet.recordsToPersist().stream()
+                            .map(record -> record.get(parentEntity.getUniqueKeyURI()))
+                            .collect(Collectors.toList());
+
+                    List<Record> childrenToKeep = r.records().stream()
+                            .filter(record -> !record.expeditionCode().equals(expeditionCode)
+                                    || parentIdentifiers.contains(record.get(parentEntity.getUniqueKeyURI())))
+                            .collect(Collectors.toList());
+
+                    // we can't update a RecordSet records, so we create a new one
+                    RecordSet newRecordSet = new RecordSet(e, childrenToKeep, r.reload());
+                    newRecordSet.setParent(parentRecordSet);
+                    recordSetsToAdd.add(newRecordSet);
+                    recordSetsToRemove.add(r);
+                } else {
+                    r.setParent(parentRecordSet);
+                }
             }
         }
+
+        recordSets.removeAll(recordSetsToRemove);
+        recordSets.addAll(recordSetsToAdd);
     }
 
     private RecordSet getRecordSet(String conceptAlias) {
