@@ -32,6 +32,8 @@ class WriterSheetGenerator {
         queryResults.sort(new QueryResults.ChildrenFirstComparator());
 
         for (QueryResult queryResult : queryResults) {
+            if (!queryResult.entity().hasWorksheet()) continue;
+
             currentSheet = queryResult.entity().getWorksheet();
 
             // this can be the case when trying to output fasta data as a csv
