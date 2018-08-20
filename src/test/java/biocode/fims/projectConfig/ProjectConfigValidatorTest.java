@@ -168,6 +168,24 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
+    public void invalid_if_parent_unique_key_uri_not_in_child_attributes() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e1 = entity1();
+        config.addEntity(e1);
+
+        Entity e2 = entity2();
+        e2.getAttribute(e1.getUniqueKey()).setUri("something_different");
+        e2.setParentEntity(e1.getConceptAlias());
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Entity \"resource2\" specifies a parent entity but the attribute for the parent entity uniqueKey: \"column1\" has a different uri: \"something_different\" instead of \"urn:column1\""), validator.errors());
+    }
+
+    @Test
     public void invalid_if_attribute_with_DATETIME_dataType_missing_dataformat() {
         ProjectConfig config = new ProjectConfig();
 
@@ -257,7 +275,6 @@ public class ProjectConfigValidatorTest {
 
         assertFalse(validator.isValid());
         assertEquals(expected, validator.errors());
-
     }
 
     @Test

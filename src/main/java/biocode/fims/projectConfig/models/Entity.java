@@ -353,8 +353,11 @@ public class Entity {
 
         Entity entity = (Entity) o;
 
-        if (!getAttributes().equals(entity.getAttributes())) return false;
-        if (!getRules().equals(entity.getRules())) return false;
+        if (getUniqueAcrossProject() != entity.getUniqueAcrossProject()) return false;
+        if (isHashed() != entity.isHashed()) return false;
+        if (getAttributes() != null ? !getAttributes().equals(entity.getAttributes()) : entity.getAttributes() != null)
+            return false;
+        if (getRules() != null ? !getRules().equals(entity.getRules()) : entity.getRules() != null) return false;
         if (getWorksheet() != null ? !getWorksheet().equals(entity.getWorksheet()) : entity.getWorksheet() != null)
             return false;
         if (getUniqueKey() != null ? !getUniqueKey().equals(entity.getUniqueKey()) : entity.getUniqueKey() != null)
@@ -372,10 +375,12 @@ public class Entity {
 
     @Override
     public int hashCode() {
-        int result = getAttributes().hashCode();
-        result = 31 * result + getRules().hashCode();
+        int result = getAttributes() != null ? getAttributes().hashCode() : 0;
+        result = 31 * result + (getRules() != null ? getRules().hashCode() : 0);
         result = 31 * result + (getWorksheet() != null ? getWorksheet().hashCode() : 0);
         result = 31 * result + (getUniqueKey() != null ? getUniqueKey().hashCode() : 0);
+        result = 31 * result + (getUniqueAcrossProject() ? 1 : 0);
+        result = 31 * result + (isHashed() ? 1 : 0);
         result = 31 * result + (getConceptAlias() != null ? getConceptAlias().hashCode() : 0);
         result = 31 * result + (getConceptURI() != null ? getConceptURI().hashCode() : 0);
         result = 31 * result + (getConceptForwardingAddress() != null ? getConceptForwardingAddress().hashCode() : 0);

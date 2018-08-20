@@ -1,11 +1,13 @@
 package biocode.fims.projectConfig;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
 import org.junit.Test;
 
 import java.util.Collections;
 
+import static biocode.fims.fimsExceptions.errorCodes.ConfigCode.MISSING_ATTRIBUTE;
 import static org.junit.Assert.*;
 
 /**
@@ -64,6 +66,38 @@ public class ProjectConfigUpdatorTest {
         ProjectConfig result = updator.update(origConfig);
 
         assertEquals(origConfig, result);
+        assertEquals(Collections.emptyList(), updator.newEntities());
+        assertEquals(Collections.emptyList(), updator.removedEntities());
+    }
+
+    @Test
+    public void should_ignore_updates_to_unique_key_attribute_column() {
+        ProjectConfig updatedConfig = new ProjectConfig();
+        Entity e = entity1();
+        e.getAttributeByUri(e.getUniqueKeyURI()).setColumn("new_column_name");
+        updatedConfig.addEntity(e);
+
+        ProjectConfig origConfig = new ProjectConfig();
+        origConfig.addEntity(entity1());
+
+        ProjectConfigUpdator updator = new ProjectConfigUpdator(updatedConfig);
+        ProjectConfig result = updator.update(origConfig);
+
+        Entity updatedEntity = result.entities().get(0);
+
+        try {
+            updatedEntity.getAttribute(updatedEntity.getUniqueKey());
+        } catch (FimsRuntimeException err) {
+            if (err.getErrorCode().equals(MISSING_ATTRIBUTE)) {
+                // Can't find any attribute w/ column == updatedEntity.uniqueKey
+                assert false;
+            }
+            throw err;
+        }
+
+        String column = updatedEntity.getAttributeByUri(updatedEntity.getUniqueKeyURI()).getColumn();
+
+        assertEquals(origConfig.entities().get(0).getUniqueKey(), column);
         assertEquals(Collections.emptyList(), updator.newEntities());
         assertEquals(Collections.emptyList(), updator.removedEntities());
     }

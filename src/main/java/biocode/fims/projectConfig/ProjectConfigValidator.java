@@ -130,6 +130,10 @@ public class ProjectConfigValidator {
             } else if (e.getAttributeUri(parentEntity.getUniqueKey()) == null) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but is missing an attribute for " +
                         "the parent entity uniqueKey: \"" + parentEntity.getUniqueKey() + "\"");
+            } else if (!e.getAttributeUri(parentEntity.getUniqueKey()).equals(parentEntity.getUniqueKeyURI())) {
+                errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity but the attribute for " +
+                        "the parent entity uniqueKey: \"" + parentEntity.getUniqueKey() + "\" has a different uri: \"" +
+                        e.getAttributeUri(parentEntity.getUniqueKey()) + "\" instead of \"" + parentEntity.getUniqueKeyURI() + "\"");
             } else if (parentEntity.equals(e)) {
                 errorMessages.add("Entity \"" + e.getConceptAlias() + "\" specifies a parent entity that is itself");
             } else if (e.getUniqueAcrossProject() && !parentEntity.getUniqueAcrossProject()) {

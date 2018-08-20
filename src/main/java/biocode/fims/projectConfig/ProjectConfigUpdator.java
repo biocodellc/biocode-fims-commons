@@ -61,7 +61,13 @@ public class ProjectConfigUpdator {
                         String origURI = origEntity.getAttribute(attribute.getColumn()).getUri();
                         attribute.setUri(origURI);
                     } catch (FimsRuntimeException e) {
-                        if (e.getErrorCode() != ConfigCode.MISSING_ATTRIBUTE) {
+                        if (e.getErrorCode() == ConfigCode.MISSING_ATTRIBUTE) {
+                            if (origEntity.getUniqueKeyURI().equals(attribute.getUri())) {
+                                attribute.setColumn(origEntity.getUniqueKey());
+                                String origURI = origEntity.getAttribute(attribute.getColumn()).getUri();
+                                attribute.setUri(origURI);
+                            }
+                        } else {
                             throw e;
                         }
                     }
