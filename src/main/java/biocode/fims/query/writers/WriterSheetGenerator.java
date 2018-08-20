@@ -172,6 +172,22 @@ class WriterSheetGenerator {
                 columns.sort(new ColumnComparator(config, currentSheet));
             }
 
+            List<String> hashedEntitiesKeys = entitiesBySheet.get(currentSheet).stream()
+                    .filter(Entity::isHashed)
+                    .map(Entity::getUniqueKey)
+                    .collect(Collectors.toList());
+
+            // remove any auto-generated keys
+            if (hashedEntitiesKeys.size() > 0) {
+                columns.removeAll(hashedEntitiesKeys);
+                for (Map<String, String> r: records) {
+                    for (String k: hashedEntitiesKeys) {
+                        r.remove(k);
+                    }
+                }
+            }
+
+
             sheets.add(
                     new WriterWorksheet(sheetName, columns, records)
             );
