@@ -32,6 +32,8 @@ class WriterSheetGenerator {
         queryResults.sort(new QueryResults.ChildrenFirstComparator());
 
         for (QueryResult queryResult : queryResults) {
+            if (!queryResult.entity().hasWorksheet()) continue;
+
             currentSheet = queryResult.entity().getWorksheet();
 
             // this can be the case when trying to output fasta data as a csv
@@ -168,11 +170,11 @@ class WriterSheetGenerator {
                         }
                     });
 
-            if (config.entitiesForSheet(currentSheet).size() > 0) {
-                columns.sort(new ColumnComparator(config, currentSheet));
+            if (config.entitiesForSheet(sheetName).size() > 0) {
+                columns.sort(new ColumnComparator(config, sheetName));
             }
 
-            List<String> hashedEntitiesKeys = entitiesBySheet.get(currentSheet).stream()
+            List<String> hashedEntitiesKeys = entitiesBySheet.get(sheetName).stream()
                     .filter(Entity::isHashed)
                     .map(Entity::getUniqueKey)
                     .collect(Collectors.toList());
