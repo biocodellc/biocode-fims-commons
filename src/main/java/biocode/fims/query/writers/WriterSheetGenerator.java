@@ -1,11 +1,14 @@
 package biocode.fims.query.writers;
 
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.projectConfig.ColumnComparator;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
+import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +16,7 @@ import java.util.stream.Collectors;
 class WriterSheetGenerator {
     private final QueryResults queryResults;
     private final ProjectConfig config;
-    private final Map<String, List<Map<String, String>>> recordsBySheet;
+    private final Map<String, SheetRecords> recordsBySheet;
     private final Map<String, List<Entity>> entitiesBySheet;
 
     private String currentSheet;
@@ -28,134 +31,90 @@ class WriterSheetGenerator {
 
     List<WriterWorksheet> recordsToWriterSheets() {
 
-        // sort entities so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
+        for (Map.Entry<String, LinkedList<QueryResult>> entry : queryResultsBySheet().entrySet()) {
+            currentSheet = entry.getKey();
 
-        for (QueryResult queryResult : queryResults) {
-            if (!queryResult.entity().hasWorksheet()) continue;
-
-            currentSheet = queryResult.entity().getWorksheet();
-
-            // this can be the case when trying to output fasta data as a csv
-            if (currentSheet == null) {
-                currentSheet = queryResult.entity().getConceptAlias();
-            }
-
-            currentResult = queryResult;
-
-            if (recordsBySheet.containsKey(currentSheet)) {
-                addQueryResult();
-            } else {
-                recordsBySheet.put(currentSheet, new ArrayList<>(currentResult.get(false)));
+            for (QueryResult queryResult : entry.getValue()) {
+                currentResult = queryResult;
                 entitiesBySheet.computeIfAbsent(currentSheet, k -> new ArrayList<>()).add(currentResult.entity());
-            }
 
+                if (recordsBySheet.containsKey(currentSheet)) {
+                    mergeSheetRecords();
+                } else {
+                    recordsBySheet.put(currentSheet, new SheetRecords(config.entitiesForSheet(currentSheet), currentResult));
+                }
+            }
         }
 
         return generateWriterWorksheets();
     }
 
-    private void addQueryResult() {
-        List<String> commonColumns = getCommonColumns(currentResult.entity());
+    /**
+     * get queryResults sorted by the worksheet they belong on
+     * <p>
+     * This will include multiple queryResults on the same worksheet only if it is
+     * possible to join the results, otherwise they will be on separate worksheets
+     *
+     * @return
+     */
+    private Map<String, LinkedList<QueryResult>> queryResultsBySheet() {
+        Map<String, LinkedList<QueryResult>> sheetResults = new HashMap<>();
 
-        entitiesBySheet.get(currentSheet).add(currentResult.entity());
+        // sort queryResults so children come first
+        queryResults.sort(new QueryResults.ChildrenFirstComparator());
 
-        // if we don't have any common columns, then there is no way to join the records
-        if (commonColumns.size() == 0) {
-            // we need to put all records on a new currentSheet
-            recordsBySheet.put(currentSheet + "_" + currentResult.entity().getConceptAlias(), currentResult.get(false));
-            return;
+        // map queryResults by worksheet
+        for (QueryResult queryResult : queryResults) {
+            Entity e = queryResult.entity();
+
+            if (!e.hasWorksheet()) continue;
+
+            String worksheet = e.getWorksheet();
+
+            if (sheetResults.containsKey(worksheet)) {
+                Entity e2 = sheetResults.get(worksheet).getLast().entity();
+
+                if (e2.isChildEntity() && e2.getParentEntity().equals(e.getConceptAlias())) {
+                    // previous entity was a child of this entity
+                    sheetResults.get(worksheet).add(queryResult);
+                } else {
+                    // we can't join these entities, so we need a new sheet
+                    sheetResults.put(worksheet + "_" + e.getConceptAlias(), new LinkedList<>(Collections.singletonList(queryResult)));
+                }
+            } else {
+                sheetResults.put(worksheet, new LinkedList<>(Collections.singletonList(queryResult)));
+            }
         }
 
-        mergeQueryResult(commonColumns);
+        return sheetResults;
     }
 
     /**
-     * attempt to merge queryResults to an existing sheet. If we can't join the records, then we create a new sheet
-     *
-     * @param commonColumns
+     * merge queryResults with an existing sheet.
      */
-    private void mergeQueryResult(List<String> commonColumns) {
-        // tmp holding variable for merged records. This is needed b/c if we find
-        // just 1 non-match, we need to put everything on a new currentSheet
-        // so we store our matches in mergedRecords and replace existingRecords w/ mergedRecords
-        // once we know that we find a match for everything
-        List<Map<String, String>> mergedRecords = new ArrayList<>();
-        List<Map<String, String>> matchedRecords = new ArrayList<>();
-
-        // For each record, try and find an existingRecord where all commonColumns match
-        // if there is only 1 existingRecord where all commonColumns match, then we can
-        // do the join
-        boolean newSheet = false;
-        for (Map<String, String> record : currentResult.get(false)) {
-
-            // TODO what happens when event,sample,tissue are on same currentSheet, and only event & tissue are in queryResults?
-            boolean foundMatch = false;
-
-            for (Map<String, String> existing : recordsBySheet.get(currentSheet)) {
-                boolean matches = true;
-
-                // check if we can join record and existing
-                for (String col : commonColumns) {
-                    if (!Objects.equals(existing.get(col), record.get(col))) {
-                        matches = false;
-                        break;
-                    }
-                }
-
-                // b/c we sort queryResults by entity atomicity (children first)
-                // we can append the record properties to all existing records that match
-                if (matches) {
-                    Entity e = currentResult.entity();
-                    if (e.isHashed()) {
-                        record.remove("bcid");
-                    } else {
-                        record.put(e.getConceptAlias() + "_bcid", record.get("bcid"));
-                        record.remove("bcid");
-
-                        // rename an existing bcid if needed
-                        if (existing.get("bcid") != null) {
-                            List<Entity> sheetEntities = entitiesBySheet.get(currentSheet).stream()
-                                    .filter(en -> !en.getConceptAlias().equals(e.getConceptAlias()))
-                                    .collect(Collectors.toList());
-
-                            // update bcid key if we can determine what entity it is for
-                            if (sheetEntities.size() == 1) {
-                                existing.put(sheetEntities.get(0).getConceptAlias() + "_bcid", existing.get("bcid"));
-                                existing.remove("bcid");
-                            }
-                        }
-                    }
-
-
-                    matchedRecords.add(existing);
-                    HashMap<String, String> merged = new HashMap<>(existing);
-                    merged.putAll(record);
-                    mergedRecords.add(merged);
-                    foundMatch = true;
-                }
+    private void mergeSheetRecords() {
+        String conceptAlias = currentResult.entity().getConceptAlias();
+        LinkedList<Map<String, String>> records = currentResult.get(false);
+        try {
+            recordsBySheet.get(currentSheet).addRecords(conceptAlias, records);
+        } catch (FimsRuntimeException exp) {
+            if (exp.getErrorCode().equals(QueryCode.INVALID_JOIN)) {
+                // need to create a new sheet
+                recordsBySheet.put(
+                        currentSheet + "_" + conceptAlias,
+                        new SheetRecords(config.entitiesForSheet(currentSheet), conceptAlias, records));
+                return;
             }
 
-            if (!foundMatch) {
-                // we are done here. all records need to be placed on a new currentSheet
-                newSheet = true;
-                break;
-            }
-        }
-
-        if (newSheet) {
-            recordsBySheet.put(currentSheet + "_" + currentResult.entity().getConceptAlias(), currentResult.get(false));
-        } else {
-            List<Map<String, String>> records = recordsBySheet.get(currentSheet);
-            records.removeAll(matchedRecords);
-            records.addAll(mergedRecords);
+            throw exp;
         }
     }
 
     private List<WriterWorksheet> generateWriterWorksheets() {
         List<WriterWorksheet> sheets = new ArrayList<>();
         for (String sheetName : recordsBySheet.keySet()) {
-            List<Map<String, String>> records = recordsBySheet.get(sheetName);
+            List<Map<String, String>> records = recordsBySheet.get(sheetName).records();
+
 
             LinkedList<String> columns = new LinkedList<>(config.attributesForSheet(sheetName)
                     .stream()
@@ -174,7 +133,7 @@ class WriterSheetGenerator {
                 columns.sort(new ColumnComparator(config, sheetName));
             }
 
-            List<String> hashedEntitiesKeys = entitiesBySheet.get(sheetName).stream()
+            List<String> hashedEntitiesKeys = entitiesBySheet.getOrDefault(sheetName, Collections.emptyList()).stream()
                     .filter(Entity::isHashed)
                     .map(Entity::getUniqueKey)
                     .collect(Collectors.toList());
@@ -182,13 +141,12 @@ class WriterSheetGenerator {
             // remove any auto-generated keys
             if (hashedEntitiesKeys.size() > 0) {
                 columns.removeAll(hashedEntitiesKeys);
-                for (Map<String, String> r: records) {
-                    for (String k: hashedEntitiesKeys) {
+                for (Map<String, String> r : records) {
+                    for (String k : hashedEntitiesKeys) {
                         r.remove(k);
                     }
                 }
             }
-
 
             sheets.add(
                     new WriterWorksheet(sheetName, columns, records)
@@ -198,16 +156,102 @@ class WriterSheetGenerator {
         return sheets;
     }
 
+    private static class SheetRecords {
+        private final HashMap<String, Entity> sheetEntities;
 
-    private List<String> getCommonColumns(Entity entity) {
-        List<String> existingColumns = entitiesBySheet.get(currentSheet).stream()
-                .flatMap(e -> e.getAttributes().stream())
-                .map(Attribute::getColumn)
-                .collect(Collectors.toList());
+        private List<Map<String, String>> records;
+        private Map<MultiKey, List<Map<String, String>>> recordKeys;
+        private String firstEntity;
+        private boolean replacedBcid = false;
 
-        return entity.getAttributes().stream()
-                .map(Attribute::getColumn)
-                .filter(existingColumns::contains)
-                .collect(Collectors.toList());
+        SheetRecords(List<Entity> sheetEntities) {
+            this.sheetEntities = new HashMap<>();
+            sheetEntities.forEach(e -> this.sheetEntities.put(e.getConceptAlias(), e));
+            records = new ArrayList<>();
+            recordKeys = new HashMap<>();
+        }
+
+        SheetRecords(List<Entity> sheetEntities, QueryResult queryResult) {
+            this(sheetEntities);
+            addRecords(queryResult.entity().getConceptAlias(), queryResult.get(false));
+        }
+
+        SheetRecords(List<Entity> sheetEntities, String conceptAlias, List<Map<String, String>> records) {
+            this(sheetEntities);
+            addRecords(conceptAlias, records);
+        }
+
+        /**
+         * The following assumptions are made when adding records...
+         * <p>
+         * 1. called in order of entity relation, with most atomic entity coming first
+         * 2. records to add are a direct parent-child relation with previously added records.
+         * sibling relationships are not supported.
+         *
+         * @param conceptAlias
+         * @param records
+         */
+        void addRecords(String conceptAlias, List<Map<String, String>> records) {
+            Entity e = sheetEntities.get(conceptAlias);
+            String uniqueKey = e.getUniqueKey();
+            String parentUniqueKey = e.isChildEntity() ? sheetEntities.get(e.getParentEntity()).getUniqueKey() : null;
+
+            if (this.records.isEmpty()) {
+                records.forEach(r -> {
+                    // b/c first record should be most atomic entity, we don't need to add recordKey for this record
+                    this.records.add(r);
+
+                    if (e.isChildEntity()) {
+                        MultiKey pk = new MultiKey(e.getParentEntity(), r.get("projectId"), r.get("expeditionCode"), r.get(parentUniqueKey));
+                        this.recordKeys.computeIfAbsent(pk, x -> new ArrayList<>()).add(r);
+                    }
+                });
+                firstEntity = conceptAlias;
+                return;
+            }
+
+            // for each record, join to any existing records that match the key (conceptAlias, projectId, expeditionCode, uniqueKey)
+            // otherwise add to records list
+            for (Map<String, String> r : records) {
+                MultiKey k = new MultiKey(conceptAlias, r.get("projectId"), r.get("expeditionCode"), r.get(uniqueKey));
+
+                if (!e.isHashed()) {
+                    r.put(e.getConceptAlias() + "_bcid", r.get("bcid"));
+                }
+                r.remove("bcid");
+
+                List<Map<String, String>> keyedRecords = new ArrayList<>();
+
+                // not all parent records have a child record
+                if (!this.recordKeys.containsKey(k)) {
+                    this.records.add(r);
+                    keyedRecords.add(r);
+                } else {
+                    // append the record properties for any existing records that match the key
+                    for (Map<String, String> existingRecord : recordKeys.get(k)) {
+                        existingRecord.putAll(r);
+                        keyedRecords.add(existingRecord);
+                    }
+                }
+
+                if (e.isChildEntity()) {
+                    MultiKey pk = new MultiKey(e.getParentEntity(), r.get("projectId"), r.get("expeditionCode"), r.get(parentUniqueKey));
+                    recordKeys.computeIfAbsent(pk, x -> new ArrayList<>()).addAll(keyedRecords);
+                }
+            }
+
+            // rename and update the existing bcid if needed
+            if (!replacedBcid) {
+                this.records.forEach(r -> {
+                    r.put(firstEntity + "_bcid", r.get("bcid"));
+                    r.remove("bcid");
+                });
+                replacedBcid = true;
+            }
+        }
+
+        List<Map<String, String>> records() {
+            return records;
+        }
     }
 }
