@@ -94,6 +94,21 @@ dependencies {
 }
 
 //=============================
+//= application configuration
+//=============================
+
+// ./gradlew registerOAuthClient -PappArgs="['-c', 'https://localhost:8080/']"
+task registerOAuthClient(type: JavaExec) {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.auth.oauth2.OAuthClientRegisterer"
+}
+
+//=============================
 //= github pages javadoc configuration
 //=============================
 
