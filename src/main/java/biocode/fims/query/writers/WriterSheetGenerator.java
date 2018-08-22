@@ -194,14 +194,14 @@ class WriterSheetGenerator {
         void addRecords(String conceptAlias, List<Map<String, String>> records) {
             Entity e = sheetEntities.get(conceptAlias);
             String uniqueKey = e.getUniqueKey();
-            String parentUniqueKey = e.isChildEntity() ? sheetEntities.get(e.getParentEntity()).getUniqueKey() : null;
 
             if (this.records.isEmpty()) {
                 records.forEach(r -> {
                     // b/c first record should be most atomic entity, we don't need to add recordKey for this record
                     this.records.add(r);
 
-                    if (e.isChildEntity()) {
+                    if (e.isChildEntity() && sheetEntities.containsKey(e.getParentEntity())) {
+                        String parentUniqueKey = sheetEntities.get(e.getParentEntity()).getUniqueKey();
                         MultiKey pk = new MultiKey(e.getParentEntity(), r.get("projectId"), r.get("expeditionCode"), r.get(parentUniqueKey));
                         this.recordKeys.computeIfAbsent(pk, x -> new ArrayList<>()).add(r);
                     }
@@ -234,7 +234,8 @@ class WriterSheetGenerator {
                     }
                 }
 
-                if (e.isChildEntity()) {
+                if (e.isChildEntity() && sheetEntities.containsKey(e.getParentEntity())) {
+                    String parentUniqueKey = sheetEntities.get(e.getParentEntity()).getUniqueKey();
                     MultiKey pk = new MultiKey(e.getParentEntity(), r.get("projectId"), r.get("expeditionCode"), r.get(parentUniqueKey));
                     recordKeys.computeIfAbsent(pk, x -> new ArrayList<>()).addAll(keyedRecords);
                 }
