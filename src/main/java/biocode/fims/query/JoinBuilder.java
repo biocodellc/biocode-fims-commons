@@ -171,12 +171,8 @@ public class JoinBuilder {
     private void appendChildJoin(Entity parentEntity, Entity childEntity) {
         String table = PostgresUtils.entityTableAs(projectId, childEntity.getConceptAlias());
 
-        // we left join select entities because children may not exist
-        boolean isLeftJoin = selectEntities.contains(childEntity);
-
         joinString
-                .append(isLeftJoin ? " LEFT " : " ")
-                .append("JOIN ")
+                .append(" LEFT JOIN ")
                 .append(table)
                 .append(" ON ")
                 .append(childEntity.getConceptAlias())
