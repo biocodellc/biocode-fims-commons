@@ -28,9 +28,21 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
         // data may be null when query includes child records
         if (data == null) return null;
 
-        String rootIdentifier = rs.getString(labelPrefix + ROOT_IDENTIFIER);
-        String expeditionCode = rs.getString(EXPEDITION_CODE.toString());
-        int projectId = rs.getInt(PROJECT_ID.toString());
+        String rootIdentifier = null;
+        String expeditionCode = null;
+        int projectId = 0;
+        try {
+            rootIdentifier = rs.getString(labelPrefix + ROOT_IDENTIFIER);
+        } catch (SQLException e) {
+        }
+        try {
+            expeditionCode = rs.getString(EXPEDITION_CODE.toString());
+        } catch (SQLException e) {
+        }
+        try {
+            projectId = rs.getInt(PROJECT_ID.toString());
+        } catch (SQLException e) {
+        }
 
         try {
             Map<String, String> properties = (Map<String, String>) JacksonUtil.fromString(data, TYPE);
