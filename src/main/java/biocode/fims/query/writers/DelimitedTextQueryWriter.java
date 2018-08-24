@@ -30,7 +30,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
     }
 
     @Override
-    public File write() {
+    public List<File> write() {
         List<WriterWorksheet> sheets = writerSheetGenerator.recordsToWriterSheets();
 
         List<File> files = sheets.stream()
@@ -40,19 +40,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
 
         if (files.size() == 0) throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
 
-        if (files.size() == 1) {
-            return files.get(0);
-        } else {
-            Map<String, File> fileMap = new HashMap<>();
-
-            for (File f : files) {
-                // we create a uniqueFile which may end up like sample.2.csv. This will make it sample.csv
-                String name = f.getName().replaceFirst("\\.\\d+\\.", ".");
-                fileMap.put(name, f);
-            }
-
-            return FileUtils.zip(fileMap, System.getProperty("java.io.tmpdir"));
-        }
+        return files;
     }
 
     private File writeWorksheet(WriterWorksheet worksheet) {

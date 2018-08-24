@@ -23,13 +23,13 @@ public class ExcelQueryWriter extends ExcelWorkbookWriter implements QueryWriter
     }
 
     @Override
-    public File write() {
+    public List<File> write() {
         if (queryResults.isEmpty()) {
             throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
         }
 
         List<WriterWorksheet> sheets = writerSheetGenerator.recordsToWriterSheets();
 
-        return super.write(sheets);
+        return Collections.singletonList(super.write(sheets));
     }
 }

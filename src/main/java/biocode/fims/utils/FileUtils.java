@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -94,6 +96,18 @@ public class FileUtils {
             return null;
         }
         return f.getAbsolutePath();
+    }
+
+    public static File zip(List<File> files) {
+        Map<String, File> fileMap = new HashMap<>();
+
+        for (File f : files) {
+            // we create a uniqueFile which may end up like sample.2.csv. This will make it sample.csv
+            String name = f.getName().replaceFirst("\\.\\d+\\.", ".");
+            fileMap.put(name, f);
+        }
+
+        return FileUtils.zip(fileMap, System.getProperty("java.io.tmpdir"));
     }
 
     /**
