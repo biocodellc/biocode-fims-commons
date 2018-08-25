@@ -34,6 +34,7 @@ public abstract class PropEntity<E extends Enum<E> & EntityProps> extends ChildE
             try {
                 Attribute a = getAttribute(p.value());
                 a.setUri(p.value());
+                a.setDataType(DataType.STRING);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == MISSING_ATTRIBUTE) {
                     addAttribute(new Attribute(p.value(), p.value()));

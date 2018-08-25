@@ -56,6 +56,27 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_multiple_fts_expression() {
+        String qs = "new caledonia";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new FTSExpression(null, "new caledonia"));
+
+        assertEquals(expected, result);
+    }
+
+
+    @Test
+    public void should_not_parse_multiple_fts_with_column_expression() {
+        String qs = "col1:new caledonia";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        assertEquals(null, result);
+    }
+
+    @Test
     public void should_parse_simple_not_expression() {
         String qs = "not value1 ";
 
@@ -161,6 +182,19 @@ public class QueryParserTest {
         Query result = parseRunner.run(qs).resultValue;
 
         Query expected = new Query(queryBuilder, null, new LikeExpression("col1", "%some value and another%"));
+
+        assertEquals(expected, result);
+    }
+
+
+    @Test
+    public void should_parse_phrase_expression_preceded_by_select_expression() {
+        // this was a bug that wasn't parsed
+        String qs = "_select_:[Tissue,Sample,Event] Event.country:\"some value\"";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("Tissue,Sample,Event", new LikeExpression("Event.country", "%some value%")));
 
         assertEquals(expected, result);
     }
@@ -306,7 +340,7 @@ public class QueryParserTest {
     }
 
     @Test
-    public void should_parse_multiple_seperate_select_with_filter_expression() {
+    public void should_parse_multiple_separate_select_with_filter_expression() {
         String qs = "_select_:entity _exists_:col1 _select_:e2";
 
         Query result = parseRunner.run(qs).resultValue;

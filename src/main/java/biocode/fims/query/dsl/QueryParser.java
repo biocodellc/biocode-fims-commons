@@ -102,10 +102,23 @@ public class QueryParser extends BaseParser<Object> {
                         SubExpression(),
                         ZeroOrMore(
                                 WhiteSpaceChars(),
-                                OrChars(),
-                                WhiteSpaceChars(),
-                                SubExpression(),
-                                logicalAction(OR)
+                                FirstOf(
+                                        Sequence(
+                                                new Action() {
+                                                    @Override
+                                                    public boolean run(Context context) {
+                                                        return peek() instanceof SelectExpression;
+                                                    }
+                                                },
+                                                SubExpression()
+                                        ),
+                                        Sequence(
+                                                OrChars(),
+                                                WhiteSpaceChars(),
+                                                SubExpression(),
+                                                logicalAction(OR)
+                                        )
+                                )
                         ),
                         WhiteSpace()
                 )
@@ -127,6 +140,8 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule Expression() {
         return Sequence(
+                // SelectExpression doesn't need to be preceded by "and" or "or"
+//                Optional(SelectExpression()),
                 FirstOf(
                         NotExpression(),
                         FilterExpression(),
@@ -219,6 +234,7 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule FTSExpression() {
         StringVar column = new StringVar();
+        StringVar val = new StringVar();
         return Sequence(
                 WhiteSpace(),
                 Optional(
@@ -226,11 +242,21 @@ public class QueryParser extends BaseParser<Object> {
                         WhiteSpace(),
                         SemiColon(),
                         column.set(popStr())
-
                 ),
                 WhiteSpace(),
                 Chars(),
-                push(new FTSExpression(column.get(), popStr()))
+                val.set(popStr()),
+                ZeroOrMore(
+                        Test(column.isEmpty()), // don't parse multi-term fts if a column is specified
+                        WhiteSpace(),
+                        TestNot(AndChars()),
+                        TestNot(OrChars()),
+                        TestNot(NotChars()),
+                        Chars(),
+                        val.append(" "),
+                        val.append(popStr())
+                ),
+                push(new FTSExpression(column.get(), val.get()))
         );
     }
 

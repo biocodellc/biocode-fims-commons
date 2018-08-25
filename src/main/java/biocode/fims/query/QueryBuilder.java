@@ -161,7 +161,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public void visit(FTSExpression expression) {
-        String key = putParam(expression.term());
+        String key = putParam(expression.term().replaceAll("\\s+", " & "));
         if (StringUtils.isBlank(expression.column())) {
             appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
         } else {

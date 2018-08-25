@@ -487,6 +487,23 @@ public class QueryBuilderTest {
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
     }
 
+
+    @Test
+    public void should_write_valid_sql_for_fts_and_expression_no_column() {
+        QueryBuilder queryBuilder = queryBuilder("event");
+        queryBuilder.visit(new FTSExpression(null, "big alligators"));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "big & alligators");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM project_1.event AS event " +
+                        "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                        "WHERE event.tsv @@ to_tsquery(:1) ORDER BY event.local_identifier, event.expedition_id",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
     @Test
     public void should_write_valid_sql_for_fts_expression_with_column() {
         QueryBuilder queryBuilder = queryBuilder("event");

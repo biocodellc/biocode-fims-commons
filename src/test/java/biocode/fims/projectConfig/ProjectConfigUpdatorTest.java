@@ -3,6 +3,7 @@ package biocode.fims.projectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
+import com.sun.prism.impl.Disposer;
 import org.junit.Test;
 
 import java.util.Collections;
