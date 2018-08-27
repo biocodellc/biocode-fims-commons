@@ -59,7 +59,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
     }
 
     @Test
-    public void should_not_be_valid_for_missing_value_from_min_col() {
+    public void should_be_valid_for_missing_value_from_min_col() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity(), false);
@@ -68,19 +68,11 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         r.set("urn:col2", "14");
         recordSet.add(r);
 
-        assertFalse(rule.run(recordSet, messages));
-
-        EntityMessages expectedMessages = new EntityMessages("Samples");
-        expectedMessages.addWarningMessage(
-                "Spreadsheet check",
-                new Message("Column \"col2\" exists but must have corresponding column \"col1\"")
-        );
-
-        assertEquals(expectedMessages, messages);
+        assertTrue(rule.run(recordSet, messages));
     }
 
     @Test
-    public void should_not_be_valid_for_missing_value_from_max_col() {
+    public void should_be_valid_for_missing_value_from_max_col() {
         Rule rule = new MinMaxNumberRule("col1", "col2");
 
         RecordSet recordSet = new RecordSet(entity(), false);
@@ -89,15 +81,7 @@ public class MinMaxNumberRuleTest extends AbstractRuleTest {
         r.set("urn:col1", "14");
         recordSet.add(r);
 
-        assertFalse(rule.run(recordSet, messages));
-
-        EntityMessages expectedMessages = new EntityMessages("Samples");
-        expectedMessages.addWarningMessage(
-                "Spreadsheet check",
-                new Message("Column \"col1\" exists but must have corresponding column \"col2\"")
-        );
-
-        assertEquals(expectedMessages, messages);
+        assertTrue(rule.run(recordSet, messages));
     }
 
     @Test
