@@ -36,7 +36,6 @@ public class RecordValidator {
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
 
         Set<Rule> rules = recordSet.entity().getRules();
-        addDefaultRules(rules, recordSet);
 
         for (Rule r : rules) {
             r.setProjectConfig(config);
@@ -52,29 +51,6 @@ public class RecordValidator {
 
         }
         return isValid;
-    }
-
-    protected void addDefaultRules(Set<Rule> rules, RecordSet recordSet) {
-        Entity entity = recordSet.entity();
-
-        rules.add(new ValidDataTypeFormatRule());
-        rules.add(new ValidForURIRule(entity.getUniqueKey(), RuleLevel.ERROR));
-
-        RequiredValueRule requiredValueRule = entity.getRule(RequiredValueRule.class, RuleLevel.ERROR);
-
-        if (requiredValueRule == null) {
-            requiredValueRule = new RequiredValueRule(new LinkedHashSet<>(), RuleLevel.ERROR);
-            entity.addRule(requiredValueRule);
-        }
-
-        requiredValueRule.addColumn(entity.getUniqueKey());
-
-        if (entity.isChildEntity()) {
-            Entity parentEntity = config.entity(entity.getParentEntity());
-            requiredValueRule.addColumn(parentEntity.getUniqueKey());
-            rules.add(new ValidParentIdentifiersRule());
-        }
-        rules.add(new UniqueValueRule(entity.getUniqueKey(), entity.getUniqueAcrossProject(), RuleLevel.ERROR));
     }
 
     public boolean hasError() {

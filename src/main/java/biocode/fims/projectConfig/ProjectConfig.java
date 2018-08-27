@@ -233,6 +233,10 @@ public class ProjectConfig {
         }
     }
 
+    public void addDefaultRules() {
+        entities.forEach(e -> e.addDefaultRules(this));
+    }
+
     /**
      * Find the required columns on this sheet
      *

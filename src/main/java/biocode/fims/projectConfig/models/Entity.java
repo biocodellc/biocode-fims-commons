@@ -6,8 +6,7 @@ import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.EntityTypeIdResolver;
-import biocode.fims.validation.rules.Rule;
-import biocode.fims.validation.rules.RuleLevel;
+import biocode.fims.validation.rules.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -294,6 +293,32 @@ public class Entity {
                 a.setUri(uri);
             }
         }
+    }
+
+    /**
+     * Add default rules to this entity
+     *
+     * @param config
+     */
+    public void addDefaultRules(ProjectConfig config) {
+        addRule(new ValidDataTypeFormatRule());
+        addRule(new ValidForURIRule(getUniqueKey(), RuleLevel.ERROR));
+
+        RequiredValueRule requiredValueRule = getRule(RequiredValueRule.class, RuleLevel.ERROR);
+
+        if (requiredValueRule == null) {
+            requiredValueRule = new RequiredValueRule(new LinkedHashSet<>(), RuleLevel.ERROR);
+            addRule(requiredValueRule);
+        }
+
+        requiredValueRule.addColumn(getUniqueKey());
+
+        if (isChildEntity()) {
+            Entity parentEntity = config.entity(getParentEntity());
+            requiredValueRule.addColumn(parentEntity.getUniqueKey());
+            addRule(new ValidParentIdentifiersRule());
+        }
+        addRule(new UniqueValueRule(getUniqueKey(), getUniqueAcrossProject(), RuleLevel.ERROR));
     }
 
     /**

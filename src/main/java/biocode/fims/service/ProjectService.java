@@ -164,6 +164,7 @@ public class ProjectService {
 
     public void saveConfig(ProjectConfig config, int projectId) {
         config.generateUris();
+        config.addDefaultRules();
 
         if (!config.isValid()) {
             throw new FimsRuntimeException(ConfigCode.INVALID, 400);
