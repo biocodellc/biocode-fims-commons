@@ -41,6 +41,7 @@ public class ProjectConfigValidator {
         allAttributesHaveUniqueColumn();
         allExpeditionMetadataHaveName();
         mostAtomicWorksheetEntityHasUniqueKey();
+        worksheetAttributesAreUnique();
 
         for (Entity e : config.entities()) {
             entityConceptAliasOnlyHasValidChars(e);
@@ -251,6 +252,66 @@ public class ProjectConfigValidator {
 
     }
 
+    private void worksheetAttributesAreUnique() {
+        Map<String, List<Entity>> sheetEntities = new HashMap<>();
+
+        for (Entity e : config.entities()) {
+            if (e.hasWorksheet()) {
+                String worksheet = e.getWorksheet();
+                sheetEntities.computeIfAbsent(worksheet, k -> new ArrayList<>()).add(e);
+            }
+        }
+
+        for (Map.Entry<String, List<Entity>> entry : sheetEntities.entrySet()) {
+            List<Entity> entities = entry.getValue();
+
+            // short-circuit b/c duplicate attributes for a single entity are checked elsewhere. no need to check 2x
+            if (entities.size() == 1) continue;
+
+            String worksheet = entry.getKey();
+            Set<String> columns = new HashSet<>();
+            Set<String> uris = new HashSet<>();
+
+            // sort parent entities first
+            entities.sort((a, b) -> {
+                if (a.isChildEntity()) {
+                    if (!b.isChildEntity() || Objects.equals(a.getParentEntity(), b.getConceptAlias())) return 1;
+                } else if (b.isChildEntity()) {
+                    return -1;
+                }
+                return 0;
+            });
+
+            for (Entity e : entities) {
+                for (Attribute a : e.getAttributes()) {
+                    boolean dupColumn = !columns.add(a.getColumn());
+                    boolean dupUri = !uris.add(a.getUri());
+
+                    // only duplicate columns/uris are acceptable for parent uniqueKey
+                    if ((dupColumn || dupUri) && e.isChildEntity()) {
+                        Entity parent = entities.stream()
+                                .filter(entity -> Objects.equals(entity.getConceptAlias(), e.getParentEntity()))
+                                .findFirst()
+                                .orElse(null);
+
+                        if (parent != null) {
+                            dupColumn = dupColumn && !Objects.equals(parent.getUniqueKey(), a.getColumn());
+                            dupUri = dupUri && !Objects.equals(parent.getUniqueKeyURI(), a.getUri());
+                        }
+                    }
+
+                    if (dupColumn) {
+                        errorMessages.add("Worksheet \"" + worksheet + "\" contains a duplicate column \"" + a.getColumn() + "\"");
+                    }
+
+                    if (dupUri) {
+                        errorMessages.add("Worksheet \"" + worksheet + "\" contains a duplicate attribute uri \"" + a.getUri() + "\"");
+                    }
+                }
+            }
+        }
+
+    }
 
     public List<String> errors() {
         return errorMessages;

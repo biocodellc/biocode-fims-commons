@@ -303,9 +303,8 @@ public class ProjectConfigValidatorTest {
         e.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column2")), RuleLevel.ERROR));
         config.addEntity(e);
 
-        Entity e2 = entity2();
+        Entity e2 = entity3();
         e2.setWorksheet(e.getWorksheet());
-        e2.setParentEntity(e.getConceptAlias());
         e2.setHashed(true);
         e2.addRule(new RequiredValueRule(new LinkedHashSet<>(Collections.singletonList("column1")), RuleLevel.ERROR));
         config.addEntity(e2);
@@ -313,7 +312,62 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
 
         List<String> expected = Arrays.asList(
-                "Entity \"resource2\" is the most atomic (child) entity in the worksheet: \"worksheet1\". This entity can not be a hashed entity."
+                "Entity \"resource3\" is the most atomic (child) entity in the worksheet: \"worksheet1\". This entity can not be a hashed entity."
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+    }
+
+    @Test
+    public void invalid_if_duplicate_column_on_worksheet_for_unrelated_entites() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+        config.addEntity(e);
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        config.addEntity(e2);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Worksheet \"worksheet1\" contains a duplicate column \"column1\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column1\"",
+                "Worksheet \"worksheet1\" contains a duplicate column \"column2\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column2\"",
+                "Worksheet \"worksheet1\" contains a duplicate column \"column3\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column3\"",
+                "Worksheet \"worksheet1\" contains a duplicate column \"column4\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column4\""
+        );
+
+        assertFalse(validator.isValid());
+        assertEquals(expected, validator.errors());
+    }
+
+    @Test
+    public void invalid_if_duplicate_column_on_worksheet_for_related_entites() {
+        ProjectConfig config = new ProjectConfig();
+
+        Entity e = entity1();
+
+        Entity e2 = entity2();
+        e2.setWorksheet(e.getWorksheet());
+        e2.setParentEntity(e.getConceptAlias());
+        config.addEntity(e2);
+        config.addEntity(e);
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config);
+
+        List<String> expected = Arrays.asList(
+                "Worksheet \"worksheet1\" contains a duplicate column \"column2\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column2\"",
+                "Worksheet \"worksheet1\" contains a duplicate column \"column3\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column3\"",
+                "Worksheet \"worksheet1\" contains a duplicate column \"column4\"",
+                "Worksheet \"worksheet1\" contains a duplicate attribute uri \"urn:column4\""
         );
 
         assertFalse(validator.isValid());
@@ -328,9 +382,8 @@ public class ProjectConfigValidatorTest {
         e.setHashed(true);
         config.addEntity(e);
 
-        Entity e2 = entity2();
+        Entity e2 = entity3();
         e2.setWorksheet(e.getWorksheet());
-        e2.setParentEntity(e.getConceptAlias());
         config.addEntity(e2);
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config);
@@ -376,6 +429,18 @@ public class ProjectConfigValidatorTest {
         e.setWorksheet("worksheet2");
 
         attributesList1().forEach(e::addAttribute);
+
+        return e;
+    }
+
+    private Entity entity3() {
+        Entity e = new Entity("resource3", "someURI");
+
+        e.setConceptURI(RESOURCE_URI);
+        e.setUniqueKey("columnA");
+        e.addAttribute(new Attribute("columnA", "urn:columnA"));
+        e.addAttribute(new Attribute("column1", "urn:column1"));
+        e.setParentEntity(entity1().getConceptAlias());
 
         return e;
     }

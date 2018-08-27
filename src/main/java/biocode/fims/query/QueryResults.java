@@ -92,7 +92,7 @@ public class QueryResults implements Iterable<QueryResult> {
 
             if (!Objects.equals(e1.getWorksheet(), e2.getWorksheet())) return 0;
             if (e1.isChildEntity() && e2.getConceptAlias().equals(e1.getParentEntity())) return -1;
-            if (e2.isChildEntity() && e1.getConceptAlias().equals(e1.getParentEntity())) return 1;
+            if (e2.isChildEntity() && e1.getConceptAlias().equals(e2.getParentEntity())) return 1;
 
             return 0;
         }
