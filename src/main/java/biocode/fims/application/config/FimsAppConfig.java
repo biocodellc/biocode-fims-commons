@@ -79,11 +79,11 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public ProjectConfigRepository projectConfigRepository() {
+    public NetworkConfigRepository networkConfigRepository() {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-        yaml.setResources(new ClassPathResource("project-config-repository-sql.yml"));
+        yaml.setResources(new ClassPathResource("network-config-repository-sql.yml"));
 
-        return new PostgresProjectConfigRepository(jdbcTemplate, yaml.getObject());
+        return new PostgresNetworkConfigRepository(jdbcTemplate, yaml.getObject());
     }
 
     @Bean

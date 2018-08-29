@@ -1,7 +1,7 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 
 import java.util.*;

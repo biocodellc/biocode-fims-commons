@@ -1,6 +1,6 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
@@ -85,6 +85,19 @@ public class ValidParentIdentifiersRule extends AbstractRule {
 
     @Override
     public boolean validConfiguration(List<String> messages, Entity entity) {
+        return true;
+    }
+
+    @Override
+    public boolean mergeRule(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+        networkRule = networkRule || r.isNetworkRule();
+        return true;
+    }
+
+    @Override
+    public boolean contains(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
         return true;
     }
 }

@@ -1,11 +1,11 @@
 package biocode.fims.query.dsl;
 
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.Config;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.*;
 import org.parboiled.Parboiled;
 import org.parboiled.errors.ParserRuntimeException;
@@ -15,7 +15,6 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author rjewing
@@ -24,11 +23,11 @@ public class Query {
 
     private final QueryBuildingExpressionVisitor queryBuilder;
     private final Expression expression;
-    private final ProjectConfig config;
+    private final Config config;
     private Set<String> expeditions;
     private Set<Entity> entities;
 
-    public Query(QueryBuildingExpressionVisitor queryBuilder, ProjectConfig config, Expression expression) {
+    public Query(QueryBuildingExpressionVisitor queryBuilder, Config config, Expression expression) {
         this.config = config;
         Assert.notNull(queryBuilder);
         Assert.notNull(expression);
@@ -36,13 +35,13 @@ public class Query {
         this.expression = expression;
     }
 
-    public boolean isPaginated() {
-        return queryBuilder.page() != null && queryBuilder.limit() != null;
+    public Integer page() {
+        return queryBuilder.page();
     }
 
-    public Integer page() { return queryBuilder.page(); }
-
-    public Integer limit() { return queryBuilder.limit(); }
+    public Integer limit() {
+        return queryBuilder.limit();
+    }
 
     public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         expression.accept(queryBuilder);
@@ -82,17 +81,12 @@ public class Query {
         return entities;
     }
 
-    public String queryTable() {
-        return queryBuilder.queryTable();
-    }
-
-
     public static Query factory(Project project, String conceptAlias, String queryString) {
         return factory(project, conceptAlias, queryString, null, null);
     }
 
     public static Query factory(Project project, String conceptAlias, String queryString, Integer page, Integer limit) {
-        QueryBuilder queryBuilder = new QueryBuilder(project, conceptAlias, page, limit);
+        QueryBuilder queryBuilder = new QueryBuilder(project.getProjectConfig(), project.getNetwork().getId(), conceptAlias, page, limit);
 
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, project.getProjectConfig());
         try {
@@ -102,9 +96,7 @@ public class Query {
                 throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
             }
 
-            Query query = result.resultValue;
-
-            return query;
+            return result.resultValue;
         } catch (ParserRuntimeException e) {
             String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));

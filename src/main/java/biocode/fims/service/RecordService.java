@@ -3,6 +3,7 @@ package biocode.fims.service;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.bcid.Identifier;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
@@ -10,13 +11,11 @@ import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.*;
 import biocode.fims.repositories.EntityIdentifierRepository;
-import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.responses.RecordResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +36,14 @@ public class RecordService {
     private final EntityIdentifierRepository entityIdentifierRepository;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
-    private final ProjectConfigRepository projectConfigRepository;
     private final FimsProperties props;
 
     @Autowired
     public RecordService(EntityIdentifierRepository entityIdentifierRepository, RecordRepository recordRepository,
-                         QueryAuthorizer queryAuthorizer, ProjectConfigRepository projectConfigRepository,
-                         FimsProperties properties) {
+                         QueryAuthorizer queryAuthorizer, FimsProperties properties) {
         this.entityIdentifierRepository = entityIdentifierRepository;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
-        this.projectConfigRepository = projectConfigRepository;
         props = properties;
     }
 
@@ -112,7 +108,7 @@ public class RecordService {
             }
         }
 
-        Query query = new Query(new QueryBuilder(project, entityIdentifier.getConceptAlias()), config, expression);
+        Query query = new Query(new QueryBuilder(config, project.getNetwork().getId(), entityIdentifier.getConceptAlias()), config, expression);
 
         Map<String, String> parent = null;
         Map<String, String> record = null;

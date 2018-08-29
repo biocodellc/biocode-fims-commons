@@ -7,6 +7,7 @@ import java.util.Set;
 
 /**
  * Visitor to collect all unique expeditionCodes from Expressions
+ *
  * @author rjewing
  */
 public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor {
@@ -26,6 +27,10 @@ public class ExpeditionCollectingExpressionVisitor implements ExpressionVisitor 
 
     @Override
     public void visit(ExistsExpression existsExpression) {
+    }
+
+    @Override
+    public void visit(ProjectExpression projectExpression) {
     }
 
     @Override

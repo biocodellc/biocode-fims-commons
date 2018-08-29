@@ -1,11 +1,11 @@
 package biocode.fims.query.writers;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ColumnComparator;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.project.ColumnComparator;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import org.apache.commons.collections.keyvalue.MultiKey;

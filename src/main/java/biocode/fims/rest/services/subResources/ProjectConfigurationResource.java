@@ -1,10 +1,11 @@
 package biocode.fims.rest.services.subResources;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.Project;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.filters.Admin;
@@ -58,7 +59,7 @@ public class ProjectConfigurationResource extends FimsController {
     /**
      * Update the project config
      *
-     * @param config    The updated projectConfig object
+     * @param config    The updated project object
      * @param projectId The id of the project to update
      */
     @PUT
@@ -68,12 +69,18 @@ public class ProjectConfigurationResource extends FimsController {
     public Response update(@PathParam("projectId") Integer projectId,
                            ProjectConfig config) {
 
-        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
+        Project project = projectService.getProject(projectId);
+
+        if (project == null) throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
+
+        if (!projectService.isProjectAdmin(userContext.getUser(), project)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
 
+        project.setProjectConfig(config);
+
         try {
-            projectService.saveConfig(config, projectId);
+            projectService.update(project);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.errors())).build();

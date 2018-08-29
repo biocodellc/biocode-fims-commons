@@ -1,8 +1,9 @@
 package biocode.fims.repositories;
 
+import biocode.fims.models.Project;
 import biocode.fims.records.*;
 import biocode.fims.rest.responses.PaginatedResponse;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
@@ -58,14 +59,14 @@ public class PostgresRecordRepository implements RecordRepository {
                     EntityIdentifierResult r = new EntityIdentifierResult();
                     r.conceptAlias = rs.getString("conceptAlias");
                     r.expeditionId = rs.getInt("expeditionId");
-                    r.projectId = rs.getInt("projectId");
+                    r.networkId = rs.getInt("networkId");
                     return r;
                 }
         );
 
         if (result == null) return null;
 
-        Map<String, Object> tableMap = getTableMap(result.projectId, result.conceptAlias);
+        Map<String, Object> tableMap = getTableMap(result.networkId, result.conceptAlias);
         tableMap.put("rootIdentifier", rootIdentifier);
 
         // TODO do we want to return the actual Record type here?
@@ -86,11 +87,11 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
-        Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
+    public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
-        sqlParams.put("projectId", projectId);
+        sqlParams.put("projectId", project.getProjectId());
         sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
@@ -101,12 +102,12 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
-        Map<String, Object> tableMap = getTableMap(projectId, conceptAlias);
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("expeditionCode", expeditionCode);
-        sqlParams.put("projectId", projectId);
+        sqlParams.put("projectId", project.getProjectId());
         sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
@@ -119,28 +120,28 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId) {
+    public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity, int expeditionId) {
         Map<String, String> extraValues = new HashMap<>();
 
         String parentIdentifier = record.get(parentEntity.getUniqueKeyURI());
         extraValues.put("parent_identifier", parentIdentifier);
 
         String s = sql.getProperty("insertChildRecord");
-        save(record, projectId, entity, expeditionId, s, extraValues);
+        save(record, networkId, entity, expeditionId, s, extraValues);
     }
 
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveRecord(Record record, int projectId, Entity entity, int expeditionId) {
+    public void saveRecord(Record record, int networkId, Entity entity, int expeditionId) {
         String s = sql.getProperty("insertRecord");
-        save(record, projectId, entity, expeditionId, s, new HashMap<>());
+        save(record, networkId, entity, expeditionId, s, new HashMap<>());
 
     }
 
-    private void save(Record record, int projectId, Entity entity, int expeditionId, String sql, Map<String, String> extraValues) {
+    private void save(Record record, int networkId, Entity entity, int expeditionId, String sql, Map<String, String> extraValues) {
         String localIdentifierUri = entity.getUniqueKeyURI();
-        Map<String, Object> tableMap = getTableMap(projectId, entity.getConceptAlias());
+        Map<String, Object> tableMap = getTableMap(networkId, entity.getConceptAlias());
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("expeditionId", expeditionId);
@@ -167,13 +168,13 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveDataset(Dataset dataset, int projectId, int expeditionId) {
+    public void saveDataset(Dataset dataset, int networkId, int expeditionId) {
         try {
             for (RecordSet recordSet : dataset) {
 
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
 
-                Map<String, Object> tableMap = getTableMap(projectId, recordSet.conceptAlias());
+                Map<String, Object> tableMap = getTableMap(networkId, recordSet.conceptAlias());
 
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
                 ObjectMapper mapper = new FimsObjectMapper();
@@ -270,7 +271,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     deleteParams.put("identifiers", updatedHashedParents);
 
                     tableMap.put("childTable", tableMap.get("table"));
-                    tableMap.put("table", PostgresUtils.entityTable(projectId, recordSet.entity().getParentEntity()));
+                    tableMap.put("table", PostgresUtils.entityTable(networkId, recordSet.entity().getParentEntity()));
 
                     jdbcTemplate.update(
                             StrSubstitutor.replace(deleteSql, tableMap),
@@ -345,13 +346,13 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
 
-    private Map<String, Object> getTableMap(int projectId, String conceptAlias) {
+    private Map<String, Object> getTableMap(int networkId, String conceptAlias) {
         if (StringUtils.isBlank(conceptAlias)) {
             throw new IllegalStateException("entity conceptAlias must not be null");
         }
 
         Map<String, Object> tableMap = new HashMap<>();
-        tableMap.put("table", PostgresUtils.entityTable(projectId, conceptAlias));
+        tableMap.put("table", PostgresUtils.entityTable(networkId, conceptAlias));
         return tableMap;
     }
 
@@ -449,7 +450,7 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     private class EntityIdentifierResult {
-        public int projectId;
+        public int networkId;
         public int expeditionId;
         public String conceptAlias;
     }

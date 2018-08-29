@@ -1,16 +1,19 @@
 package biocode.fims.service;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.network.NetworkConfig;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.config.project.ProjectConfigUpdator;
+import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigUpdator;
-import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.ProjectRepository;
+import biocode.fims.repositories.SetFimsUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,36 +38,25 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
-    private final ProjectConfigRepository projectConfigRepository;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository, ExpeditionService expeditionService,
-                          UserService userService, ProjectConfigRepository projectConfigRepository) {
+                          UserService userService) {
         this.expeditionService = expeditionService;
         this.projectRepository = projectRepository;
         this.userService = userService;
-        this.projectConfigRepository = projectConfigRepository;
     }
 
     public void create(Project project, int userId) {
         User user = entityManager.getReference(User.class, userId);
         project.setUser(user);
 
-        // saveDataset an empty config first as we can't validate the config until the projectId is generated
-        ProjectConfig config = project.getProjectConfig();
-        project.setProjectConfig(new ProjectConfig());
-
-        // we need to saveDataset here so we can get the projectId
-        projectRepository.save(project);
-
-        project.setProjectConfig(config);
-
-        createProjectSchema(project.getProjectId());
-        saveConfig(config, project.getProjectId());
+        update(project);
     }
 
+    @SetFimsUser
     public void update(Project project) {
-        saveConfig(project.getProjectConfig(), project.getProjectId());
+        validateAndSetProjectConfig(project);
         projectRepository.save(project);
     }
 
@@ -101,6 +93,18 @@ public class ProjectService {
 
     public Project getProjectWithTemplates(int projectId) {
         return projectRepository.getProjectByProjectId(projectId, "Project.withTemplates");
+    }
+
+    /**
+     * checks if a user is the admin of a specific project
+     *
+     * @param user
+     * @param project
+     * @return
+     */
+    public boolean isProjectAdmin(User user, Project project) {
+        return project.getUser().equals(user);
+
     }
 
     /**
@@ -158,37 +162,34 @@ public class ProjectService {
         return filteredProjects;
     }
 
-    public void createProjectSchema(int projectId) {
-        projectConfigRepository.createProjectSchema(projectId);
-    }
+    private void validateAndSetProjectConfig(Project project) {
+        if (project == null) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
+        }
 
-    public void saveConfig(ProjectConfig config, int projectId) {
-        config.generateUris();
-        config.addDefaultRules();
+        ProjectConfig config = project.getProjectConfig();
 
-        if (!config.isValid()) {
+        NetworkConfig networkConfig = project.getNetwork().getNetworkConfig();
+
+        if (!config.isValid(networkConfig)) {
             throw new FimsRuntimeException(ConfigCode.INVALID, 400);
         }
 
-        ProjectConfig existingConfig = projectConfigRepository.getConfig(projectId);
+        PersistedProjectConfig persistedProjectConfig = projectRepository.getConfig(project.getProjectId());
+        ProjectConfig existingConfig = persistedProjectConfig.toProjectConfig(project.getNetwork().getNetworkConfig());
 
         if (existingConfig == null) {
             existingConfig = new ProjectConfig();
         }
 
         ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
-        config = updator.update(existingConfig);
+        project.setProjectConfig(updator.update(existingConfig));
 
         if (updator.newEntities().size() > 0) {
-            projectConfigRepository.createEntityTables(updator.newEntities(), projectId, config);
-            createEntityBcids(updator.newEntities(), projectId);
+            createEntityBcids(updator.newEntities(), project.getProjectId());
         }
 
-        if (updator.removedEntities().size() > 0) {
-            projectConfigRepository.removeEntityTables(updator.removedEntities(), projectId);
-        }
-
-        projectConfigRepository.save(config, projectId);
+        // we don't delete records here
     }
 
     private void createEntityBcids(List<Entity> entities, int projectId) {

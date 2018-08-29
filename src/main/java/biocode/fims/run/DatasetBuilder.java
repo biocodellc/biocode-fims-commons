@@ -1,13 +1,14 @@
 package biocode.fims.run;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.Project;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
@@ -31,7 +32,7 @@ public class DatasetBuilder {
     private final DataConverterFactory dataConverterFactory;
     private final RecordRepository recordRepository;
     private ProjectConfig config;
-    private final int projectId;
+    private final Project project;
     private final String expeditionCode;
 
     private boolean reloadWorkbooks = false;
@@ -41,13 +42,13 @@ public class DatasetBuilder {
     private final ArrayList<String> projectRecordEntities;
     private final ArrayList<String> reloadedEntities;
 
-    public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository, ProjectConfig config,
-                          int projectId, String expeditionCode) {
+    public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository,
+                          Project project, String expeditionCode) {
         this.dataReaderFactory = dataReaderFactory;
         this.dataConverterFactory = dataConverterFactory;
         this.recordRepository = repository;
-        this.config = config;
-        this.projectId = projectId;
+        this.project = project;
+        this.config = project.getProjectConfig();
         this.expeditionCode = expeditionCode;
 
         this.workbooks = new ArrayList<>();
@@ -125,12 +126,12 @@ public class DatasetBuilder {
 
         for (RecordSet set : reader.getRecordSets()) {
             DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
-            RecordSet recordSet = converter.convertRecordSet(set, projectId, expeditionCode);
+            RecordSet recordSet = converter.convertRecordSet(set, project.getNetwork().getId(), expeditionCode);
             recordSets.add(recordSet);
 
             for (Record record : recordSet.records()) {
                 record.setExpeditionCode(expeditionCode);
-                record.setProjectId(projectId);
+                record.setProjectId(project.getProjectId());
             }
 
             Entity e = recordSet.entity();
@@ -139,7 +140,7 @@ public class DatasetBuilder {
             }
 
             if (recordSet.records().size() > 0 && projectRecordEntities.contains(e.getConceptAlias())) {
-                List<? extends Record> records = recordRepository.getRecords(projectId, e.getConceptAlias(), e.getRecordType());
+                List<? extends Record> records = recordRepository.getRecords(project, e.getConceptAlias(), e.getRecordType());
 
                 // if we are reloading the dataset, we need to exclude any records for the expedition we're reloading
                 if (metadata.reload()) {
@@ -159,7 +160,7 @@ public class DatasetBuilder {
         for (Entity e : parentEntities) {
 
             if (fetchRecordSet(e)) {
-                List<? extends Record> records = recordRepository.getRecords(projectId, expeditionCode, e.getConceptAlias(), e.getRecordType());
+                List<? extends Record> records = recordRepository.getRecords(project, expeditionCode, e.getConceptAlias(), e.getRecordType());
 
                 mergeRecords(e, records);
             }

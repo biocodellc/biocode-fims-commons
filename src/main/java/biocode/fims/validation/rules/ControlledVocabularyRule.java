@@ -1,10 +1,10 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.projectConfig.models.Field;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.models.Field;
+import biocode.fims.config.Config;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.ListMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Checks for values not in the {@link biocode.fims.projectConfig.models.List} specified by the listName
+ * Checks for values not in the {@link biocode.fims.config.models.List} specified by the listName
  *
  * @author rjewing
  */
@@ -37,21 +37,21 @@ public class ControlledVocabularyRule extends SingleColumnRule {
     @JsonProperty
     private String listName;
     @JsonIgnore
-    private ProjectConfig config;
+    private Config config;
 
-    private biocode.fims.projectConfig.models.List list;
+    private biocode.fims.config.models.List list;
 
     // needed for RuleTypeIdResolver to dynamically instantiate Rule implementation
     private ControlledVocabularyRule() {
     }
 
-    public ControlledVocabularyRule(String column, String listName, ProjectConfig config, RuleLevel level) {
+    public ControlledVocabularyRule(String column, String listName, Config config, RuleLevel level) {
         super(column, level);
         this.listName = listName;
         this.config = config;
     }
 
-    public ControlledVocabularyRule(String column, String listName, ProjectConfig config) {
+    public ControlledVocabularyRule(String column, String listName, Config config) {
         this(column, listName, config, RuleLevel.WARNING);
     }
 
@@ -117,7 +117,8 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         List<String> fields = list.getFields()
                 .stream()
                 .map(Field::getValue)
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
+        ;
 
         for (String value : invalidValues) {
             messages.addMessage(
@@ -157,7 +158,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
         return NAME;
     }
 
-    public biocode.fims.projectConfig.models.List list() {
+    public biocode.fims.config.models.List list() {
         if (list == null) {
             list = config.findList(listName);
         }
@@ -188,7 +189,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
 
 
     /**
-     * class to inject ProjectConfig into ControlledVocabularyRule from parent context during deserialization
+     * class to inject Config into ControlledVocabularyRule from parent context during deserialization
      */
     public static class ValueInstantiator extends Base {
 
@@ -208,7 +209,7 @@ public class ControlledVocabularyRule extends SingleColumnRule {
                     null, null, null, null, 1, null, PropertyMetadata.STD_REQUIRED);
             CreatorProperty projectConfig = new CreatorProperty(
                     new PropertyName("config"),
-                    config.constructType(ProjectConfig.class),
+                    config.constructType(Config.class),
                     null, null, null, null, 2, null, PropertyMetadata.STD_REQUIRED_OR_OPTIONAL);
             CreatorProperty level = new CreatorProperty(
                     new PropertyName("level"),
@@ -226,24 +227,24 @@ public class ControlledVocabularyRule extends SingleColumnRule {
 
         @Override
         public Object createFromObjectWith(DeserializationContext ctxt, Object[] args) throws IOException {
-            ProjectConfig config = (ProjectConfig) args[2];
+            Config config = (Config) args[2];
             if (config == null) {
-                config = getParentProjectConfig(ctxt.getParser().getParsingContext());
+                config = getParentConfig(ctxt.getParser().getParsingContext());
             }
 
             return new ControlledVocabularyRule((String) args[0], (String) args[1], config, (RuleLevel) args[3]);
         }
 
-        private ProjectConfig getParentProjectConfig(JsonStreamContext ctxt) {
+        private Config getParentConfig(JsonStreamContext ctxt) {
             if (ctxt == null) {
                 return null;
             }
 
-            if (ctxt.getCurrentValue() instanceof ProjectConfig) {
-                return (ProjectConfig) ctxt.getCurrentValue();
+            if (ctxt.getCurrentValue() instanceof Config) {
+                return (Config) ctxt.getCurrentValue();
             }
 
-            return getParentProjectConfig(ctxt.getParent());
+            return getParentConfig(ctxt.getParent());
         }
     }
 }

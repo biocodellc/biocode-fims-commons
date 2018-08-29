@@ -1,12 +1,12 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.utils.RecordHasher;

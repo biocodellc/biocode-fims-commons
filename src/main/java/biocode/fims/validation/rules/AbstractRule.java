@@ -1,10 +1,10 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
@@ -18,6 +18,7 @@ import java.util.List;
 public abstract class AbstractRule implements Rule {
     private boolean hasError = false;
     private RuleLevel level;
+    protected boolean networkRule = false;
     protected ProjectConfig config;
 
     AbstractRule() {
@@ -83,6 +84,26 @@ public abstract class AbstractRule implements Rule {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean isNetworkRule() {
+        return networkRule;
+    }
+
+    @Override
+    public void setNetworkRule(boolean networkRule) {
+        this.networkRule = networkRule;
+    }
+
+    @Override
+    public boolean mergeRule(Rule r) {
+        return false;
+    }
+
+    @Override
+    public boolean contains(Rule r) {
+        return false;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.models.Project;
 import biocode.fims.repositories.customOperations.ProjectCustomOperations;
 
@@ -26,6 +27,15 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     public List<Project> getAll(String entityGraph) {
         return em.createQuery("SELECT DISTINCT p FROM Project AS p", Project.class)
                 .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
+                .getResultList();
+    }
+
+    @Override
+    public PersistedProjectConfig getConfig(int projectId) {
+        // this is here b/c returning a single column from spring data repository using @Query requires the returning
+        // type to be an interface
+        return (PersistedProjectConfig) em.createQuery("SELECT persistedProjectConfig FROM Project WHERE projectId = :id", Project.class)
+                .setParameter("id", projectId)
                 .getResultList();
     }
 

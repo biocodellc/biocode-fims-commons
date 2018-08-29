@@ -21,6 +21,8 @@ import java.util.Set;
                 attributeNodes = @NamedAttributeNode("projectsMemberOf")),
         @NamedEntityGraph(name = "User.withProjects",
                 attributeNodes = @NamedAttributeNode("projects")),
+        @NamedEntityGraph(name = "User.withNetworks",
+                attributeNodes = @NamedAttributeNode("networks")),
         @NamedEntityGraph(name = "User.withProjectsAndProjectsMemberOf",
                 attributeNodes = {@NamedAttributeNode("projects"), @NamedAttributeNode("projectsMemberOf")})
 })
@@ -41,6 +43,7 @@ public class User {
     private Date passwordResetExpiration;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
+    private Set<Network> networks;
     private List<Project> projectsMemberOf;
     private Set<ProjectTemplate> projectTemplates;
 
@@ -275,6 +278,15 @@ public class User {
         this.projects = projects;
     }
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    public Set<Network> getNetworks() {
+        return networks;
+    }
+
+    private void setNetworks(Set<Network> networks) {
+        this.networks = networks;
+    }
     @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "user_projects",

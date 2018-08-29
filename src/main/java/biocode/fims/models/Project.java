@@ -1,7 +1,8 @@
 package biocode.fims.models;
 
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.models.dataTypes.JsonBinaryType;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,9 +43,11 @@ public class Project {
     private Date modified;
     private String description;
     private ProjectConfig projectConfig;
+    private PersistedProjectConfig persistedProjectConfig;
     private boolean isPublic;
     private List<Expedition> expeditions;
     private User user;
+    private Network network;
     private List<User> projectMembers;
     private Set<ProjectTemplate> templates;
 
@@ -148,13 +151,26 @@ public class Project {
 
     @JsonIgnore
     @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb", name = "config", updatable = false)
+    @Column(columnDefinition = "jsonb", name = "config")
+    public PersistedProjectConfig getPersistedProjectConfig() {
+        return persistedProjectConfig;
+    }
+
+    private void setPersistedProjectConfig(PersistedProjectConfig persistedProjectConfig) {
+        this.persistedProjectConfig = persistedProjectConfig;
+    }
+
+    @Transient
     public ProjectConfig getProjectConfig() {
+        if (projectConfig == null) {
+            projectConfig = persistedProjectConfig.toProjectConfig(network.getNetworkConfig());
+        }
         return projectConfig;
     }
 
     public void setProjectConfig(ProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
+        this.persistedProjectConfig = PersistedProjectConfig.fromProjectConfig(projectConfig);
     }
 
     @JsonView(Views.Detailed.class)
@@ -188,7 +204,7 @@ public class Project {
 
     @Override
     public int hashCode() {
-        return 31;
+        return getProjectId();
     }
 
     @Override
@@ -232,6 +248,22 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
+    @ManyToOne
+    @JoinColumn(name = "network_id",
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_projects_network_id"),
+            nullable = false
+    )
+    public Network getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(Network network) {
+        this.network = network;
     }
 
     @JsonIgnore

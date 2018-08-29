@@ -1,13 +1,14 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Before;
@@ -214,7 +215,7 @@ public class ExcelReaderTest {
     private ProjectConfig getSingleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity = new Entity("samples", "someURI");
+        Entity entity = new DefaultEntity("samples", "someURI");
         entity.setWorksheet("samples");
         config.addEntity(entity);
 
@@ -245,11 +246,11 @@ public class ExcelReaderTest {
     private ProjectConfig getMultipleEntityConfig() {
         ProjectConfig config = new ProjectConfig();
 
-        Entity entity1 = new Entity("samples", "someURI");
+        Entity entity1 = new DefaultEntity("samples", "someURI");
         entity1.setWorksheet("samples");
         config.addEntity(entity1);
 
-        Entity entity2 = new Entity("tissues", "someURI");
+        Entity entity2 = new DefaultEntity("tissues", "someURI");
         entity2.setWorksheet("samples");
         config.addEntity(entity2);
 
@@ -281,7 +282,7 @@ public class ExcelReaderTest {
     private ProjectConfig getMultipleEntityMultiSheetConfig() {
         ProjectConfig config = getMultipleEntityConfig();
 
-        Entity entity = new Entity("events", "someURI");
+        Entity entity = new DefaultEntity("events", "someURI");
         entity.setWorksheet("events");
         config.addEntity(entity);
 

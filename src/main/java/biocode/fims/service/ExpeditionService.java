@@ -3,7 +3,8 @@ package biocode.fims.service;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.Bcid;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.errorCodes.ExpeditionCode;
 import biocode.fims.models.*;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -11,9 +12,7 @@ import biocode.fims.fimsExceptions.FimsException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.repositories.ExpeditionRepository;
-import biocode.fims.repositories.ProjectConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,17 +41,14 @@ public class ExpeditionService {
     private final ExpeditionRepository expeditionRepository;
     private final BcidService bcidService;
     private final ProjectAuthorizer projectAuthorizer;
-    private final ProjectConfigRepository projectConfigRepository;
     private final FimsProperties props;
 
     @Autowired
     public ExpeditionService(ExpeditionRepository expeditionRepository, BcidService bcidService,
-                             ProjectConfigRepository projectConfigRepository, ProjectAuthorizer projectAuthorizer,
-                             FimsProperties props) {
+                             ProjectAuthorizer projectAuthorizer, FimsProperties props) {
         this.expeditionRepository = expeditionRepository;
         this.bcidService = bcidService;
         this.projectAuthorizer = projectAuthorizer;
-        this.projectConfigRepository = projectConfigRepository;
         this.props = props;
     }
 
@@ -67,7 +63,7 @@ public class ExpeditionService {
             throw new ForbiddenRequestException("User ID " + userId + " is not authorized to create expeditions in this project");
         }
 
-        checkExpeditionMetadata(expedition, projectId);
+        checkExpeditionMetadata(expedition);
         try {
             checkExpeditionCodeValidAndAvailable(expedition.getExpeditionCode(), projectId);
         } catch (FimsException e) {
@@ -191,10 +187,9 @@ public class ExpeditionService {
      * Check that any required metadata properties are present
      *
      * @param expedition
-     * @param projectId
      */
-    private void checkExpeditionMetadata(Expedition expedition, int projectId) {
-        ProjectConfig config = projectConfigRepository.getConfig(projectId);
+    private void checkExpeditionMetadata(Expedition expedition) {
+        ProjectConfig config = expedition.getProject().getProjectConfig();
 
         Map<String, Object> metadata = expedition.getMetadata();
 

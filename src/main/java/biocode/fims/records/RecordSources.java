@@ -18,7 +18,7 @@ public class RecordSources {
 
     /**
      * @param rawSources array of source strings. ex. (Sample.materialSampleID, Event.eventID, etc) If there is no
-     *                   entity prefix, then the column is assumed to be an atribute of the defaultEntity
+     *                   entity prefix, then the column is assumed to be an attribute of the defaultEntity
      * @param defaultEntity conceptAlias of the entity to default to
      * @return
      */

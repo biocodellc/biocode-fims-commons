@@ -1,6 +1,6 @@
 package biocode.fims.query.writers;
 
-import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.config.models.DataType;
 import com.fasterxml.jackson.core.JsonPointer;
 
 /**

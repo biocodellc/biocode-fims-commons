@@ -1,15 +1,19 @@
 package biocode.fims.run;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.network.NetworkConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.Network;
+import biocode.fims.models.Project;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataConverter;
 import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
@@ -31,12 +35,12 @@ import static org.junit.Assert.assertTrue;
  * @author rjewing
  */
 public class DatasetBuilderTest {
-    private static final int PROJECT_ID = 1;
+    private static final int NETWORK_ID = 1;
     private static final String EXPEDITION_CODE = "demo";
 
     @Test
     public void should_throw_exception_if_empty_dataset() {
-        DatasetBuilder builder = new DatasetBuilder(null, null, null, config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(null, null, null, project(), EXPEDITION_CODE);
 
         try {
             builder.build();
@@ -48,7 +52,7 @@ public class DatasetBuilderTest {
 
     @Test
     public void should_throw_exception_non_excel_file_passed_to_workbook() {
-        DatasetBuilder builder = new DatasetBuilder(null, null, null, config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(null, null, null, project(), EXPEDITION_CODE);
 
         try {
             builder.addWorkbook("dataSource.txt");
@@ -63,7 +67,7 @@ public class DatasetBuilderTest {
         TestDataReader reader = new TestDataReader();
         reader.addRecordSet("dataSource.xls", eventRecordSet(false));
 
-        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), project(), EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
         Dataset dataset = builder.build();
@@ -78,7 +82,7 @@ public class DatasetBuilderTest {
         reader.addRecordSet("dataSource.xls", eventRecordSet(false));
         reader.addRecordSet("samples.csv", sampleRecordSet());
 
-        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), config(), PROJECT_ID, EXPEDITION_CODE);
+        DatasetBuilder builder = new DatasetBuilder(dataReaderFactory(reader), dataConverterFactory(null), new TestRecordRepository(), project(), EXPEDITION_CODE);
         builder.addWorkbook("dataSource.xls");
 
         RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
@@ -106,8 +110,8 @@ public class DatasetBuilderTest {
         reader.addRecordSet("samples.csv", sampleRecordSet());
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord1());
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", eventRecord1());
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         RecordMetadata samplesMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         samplesMetadata.add(CSVReader.SHEET_NAME_KEY, "samples");
@@ -116,8 +120,7 @@ public class DatasetBuilderTest {
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config(),
-                PROJECT_ID,
+                project(),
                 EXPEDITION_CODE
         )
                 .addDatasource("samples.csv", samplesMetadata)
@@ -144,14 +147,13 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", eventRecordSet(false));
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config(),
-                PROJECT_ID,
+                project(),
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
@@ -182,14 +184,15 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", recordSet);
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
+        Record record = eventRecord2(true);
+        record.setExpeditionCode(EXPEDITION_CODE);
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", record);
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config(),
-                PROJECT_ID,
+                project(),
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
@@ -216,14 +219,13 @@ public class DatasetBuilderTest {
         reader.addRecordSet("workbook.xlsx", eventRecordSet(true));
 
         TestRecordRepository repository = new TestRecordRepository();
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", eventRecord2(true));
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", eventRecord2(true));
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config(),
-                PROJECT_ID,
+                project(),
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
@@ -254,22 +256,21 @@ public class DatasetBuilderTest {
 
         TestRecordRepository repository = new TestRecordRepository();
         Record record = eventRecord2(false);
-        record.setProjectId(PROJECT_ID);
+        record.setProjectId(NETWORK_ID);
         record.setExpeditionCode("different");
-        repository.addRecord(PROJECT_ID, "different", "event", record);
+        repository.addRecord(NETWORK_ID, "different", "event", record);
 
         RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
 
-        ProjectConfig config = config();
-        config.entity("event").setUniqueAcrossProject(true);
+        Project project = project();
+        project.getProjectConfig().entity("event").setUniqueAcrossProject(true);
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config,
-                PROJECT_ID,
+                project,
                 EXPEDITION_CODE
         )
                 .addDatasource("events.csv", eventsMetadata)
@@ -294,19 +295,18 @@ public class DatasetBuilderTest {
 
         TestRecordRepository repository = new TestRecordRepository();
         Record record = eventRecord2(false);
-        record.setProjectId(PROJECT_ID);
+        record.setProjectId(NETWORK_ID);
         record.setExpeditionCode("different");
-        repository.addRecord(PROJECT_ID, "different", "event", record);
+        repository.addRecord(NETWORK_ID, "different", "event", record);
 
-        ProjectConfig config = config();
-        config.entity("event").setUniqueAcrossProject(true);
+        Project project = project();
+        project.getProjectConfig().entity("event").setUniqueAcrossProject(true);
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config,
-                PROJECT_ID,
+                project,
                 EXPEDITION_CODE
         )
                 .addWorkbook("workbook.xlsx")
@@ -336,22 +336,21 @@ public class DatasetBuilderTest {
 
         TestRecordRepository repository = new TestRecordRepository();
         Record record = eventRecord2(false);
-        record.setProjectId(PROJECT_ID);
+        record.setProjectId(NETWORK_ID);
         record.setExpeditionCode("different");
-        repository.addRecord(PROJECT_ID, "different", "event", record);
+        repository.addRecord(NETWORK_ID, "different", "event", record);
 
         RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, false);
         eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
 
-        ProjectConfig config = config();
-        config.entity("event").addRule(new UniqueValueRule("urn:latitude", true));
+        Project project = project();
+        project.getProjectConfig().entity("event").setUniqueAcrossProject(true);
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config,
-                PROJECT_ID,
+                project,
                 EXPEDITION_CODE
         )
                 .addDatasource("events.csv", eventsMetadata)
@@ -374,22 +373,21 @@ public class DatasetBuilderTest {
 
         TestRecordRepository repository = new TestRecordRepository();
         Record record = eventRecord2(false);
-        record.setProjectId(PROJECT_ID);
+        record.setProjectId(NETWORK_ID);
         record.setExpeditionCode(EXPEDITION_CODE);
-        repository.addRecord(PROJECT_ID, EXPEDITION_CODE, "event", record);
+        repository.addRecord(NETWORK_ID, EXPEDITION_CODE, "event", record);
 
         RecordMetadata eventsMetadata = new RecordMetadata(TestDataReader.READER_TYPE, true);
         eventsMetadata.add(CSVReader.SHEET_NAME_KEY, "events");
 
-        ProjectConfig config = config();
-        config.entity("event").addRule(new UniqueValueRule("urn:latitude", true));
+        Project project = project();
+        project.getProjectConfig().entity("event").setUniqueAcrossProject(true);
 
         Dataset dataset = new DatasetBuilder(
                 dataReaderFactory(reader),
                 dataConverterFactory(null),
                 repository,
-                config,
-                PROJECT_ID,
+                project,
                 EXPEDITION_CODE
         )
                 .addDatasource("events.csv", eventsMetadata)
@@ -468,6 +466,16 @@ public class DatasetBuilderTest {
         return new RecordSet(samplesEntity(), records, false);
     }
 
+    private Project project() {
+        Network network = new Network("", new NetworkConfig());
+        network.setId(NETWORK_ID);
+
+        Project project = new Project.ProjectBuilder("test", "", config()).build();
+        project.setNetwork(network);
+
+        return project;
+    }
+
     private ProjectConfig config() {
         ProjectConfig config = new ProjectConfig();
 
@@ -478,7 +486,7 @@ public class DatasetBuilderTest {
     }
 
     private Entity samplesEntity() {
-        Entity entity = new Entity("sample", "someURI");
+        Entity entity = new DefaultEntity("sample", "someURI");
         entity.setWorksheet("samples");
         entity.setParentEntity("event");
 
@@ -495,7 +503,7 @@ public class DatasetBuilderTest {
     }
 
     private Entity eventsEntity() {
-        Entity entity = new Entity("event", "someURI");
+        Entity entity = new DefaultEntity("event", "someURI");
         entity.setWorksheet("events");
         entity.setUniqueKey("eventID");
 

@@ -1,6 +1,6 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.config.models.Attribute;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
@@ -110,4 +110,34 @@ public class RequiredValueRule extends MultiColumnRule {
         return NAME;
     }
 
+
+    @Override
+    public boolean mergeRule(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+
+        MultiColumnRule rule = (MultiColumnRule) r;
+
+        if (rule.level().equals(level())) {
+            columns.addAll(rule.columns);
+            networkRule = networkRule && rule.networkRule;
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+
+        MultiColumnRule rule = (MultiColumnRule) r;
+
+        if (rule.level().equals(level())) {
+            for (String c: rule.columns) {
+                if (!columns.contains(c)) return false;
+            }
+
+            return true;
+        }
+        return false;
+    }
 }

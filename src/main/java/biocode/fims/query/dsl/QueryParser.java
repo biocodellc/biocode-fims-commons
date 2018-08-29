@@ -1,21 +1,19 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.*;
-import org.parboiled.matchers.AbstractMatcher;
-import org.parboiled.matchers.Matcher;
-import org.parboiled.matchervisitors.MatcherVisitor;
 import org.parboiled.support.StringVar;
 import org.parboiled.support.ValueStack;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static biocode.fims.query.dsl.LogicalOperator.AND;
 import static biocode.fims.query.dsl.LogicalOperator.OR;
-import static org.parboiled.common.Preconditions.checkArgNotNull;
 
 /**
  * @author rjewing
@@ -146,6 +144,7 @@ public class QueryParser extends BaseParser<Object> {
                         NotExpression(),
                         FilterExpression(),
                         ExistsExpression(),
+                        ProjectsExpression(),
                         ExpeditionsExpression(),
                         SelectExpression(),
                         FTSExpression(),
@@ -186,6 +185,29 @@ public class QueryParser extends BaseParser<Object> {
                 WhiteSpace(),
                 SpecialPrefixExpression(ExistsChars()),
                 push(new ExistsExpression(popStr()))
+        );
+    }
+
+    Rule ProjectsExpression() {
+        return Sequence(
+                WhiteSpace(),
+                SpecialPrefixExpression(ProjectChars()),
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        String val = popStr();
+
+                        List<Integer> projects;
+                        if (val.contains(",")) {
+                            projects = Arrays.stream(val.replaceAll(" ", "").split(","))
+                                    .map(Integer::parseInt)
+                                    .collect(Collectors.toList());
+                        } else {
+                            projects = Collections.singletonList(Integer.parseInt(val.trim()));
+                        }
+                        return push(new ProjectExpression(projects));
+                    }
+                }
         );
     }
 
@@ -406,6 +428,7 @@ public class QueryParser extends BaseParser<Object> {
                 ComparisonOperatorChars(),
                 SemiColon(),
                 ExpeditionsChars(),
+                ProjectChars(),
                 SelectChars(),
                 QuoteChar(),
                 OpenParen(),
@@ -438,6 +461,10 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule EscapeChar() {
         return Ch('\\');
+    }
+
+    Rule ProjectChars() {
+        return String("_projects_");
     }
 
     Rule ExpeditionsChars() {

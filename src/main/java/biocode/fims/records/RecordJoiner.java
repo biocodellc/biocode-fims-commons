@@ -2,8 +2,8 @@ package biocode.fims.records;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 

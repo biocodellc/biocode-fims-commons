@@ -33,9 +33,10 @@ insertChildRecordReturning: >
   WHERE o.expedition_id = :expeditionId
 
 selectEntityIdentifier: >
-  SELECT e.project_id AS "projectId", i.expedition_id AS "expeditionId", i.concept_alias AS "conceptAlias"
+  SELECT p.network_id AS "networkId", i.expedition_id AS "expeditionId", i.concept_alias AS "conceptAlias"
   FROM entity_identifiers i
     JOIN expeditions e on e.id = i.expedition_id
+    JOIN project p on e.project_id = p.id
   WHERE i.identifier = :rootIdentifier
 
 selectRecord: >

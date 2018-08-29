@@ -1,8 +1,8 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.Rule;
 import biocode.fims.validation.rules.RuleLevel;
@@ -35,6 +35,25 @@ public class RuleInWrongPackage implements Rule {
 
     @Override
     public boolean hasError() {
+        return false;
+    }
+
+    @Override
+    public boolean isNetworkRule() {
+        return false;
+    }
+
+    @Override
+    public void setNetworkRule(boolean isNetworkRule) {
+    }
+
+    @Override
+    public boolean mergeRule(Rule r) {
+        return false;
+    }
+
+    @Override
+    public boolean contains(Rule r) {
         return false;
     }
 

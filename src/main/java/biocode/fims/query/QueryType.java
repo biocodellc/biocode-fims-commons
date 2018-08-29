@@ -1,6 +1,6 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.config.models.DataType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

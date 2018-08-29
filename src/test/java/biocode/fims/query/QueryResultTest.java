@@ -1,7 +1,8 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import org.junit.Test;
@@ -92,14 +93,14 @@ public class QueryResultTest {
     }
 
     private Entity event() {
-        Entity e = new Entity("event", "uri:event");
+        Entity e = new DefaultEntity("event", "uri:event");
         e.setUniqueKey("eventId");
         e.addAttribute(new Attribute("eventId", "urn:eventId"));
         return e;
     }
 
     private Entity sample() {
-        Entity e = new Entity("sample", "someURI");
+        Entity e = new DefaultEntity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.addAttribute(new Attribute("sampleId", "urn:sampleId"));

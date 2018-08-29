@@ -3,7 +3,7 @@ package biocode.fims.query.writers;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryResults;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;

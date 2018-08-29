@@ -1,7 +1,8 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
@@ -126,7 +127,7 @@ public class ValidParentIdentifiersRuleTest extends AbstractRuleTest {
     }
 
     private Entity parentEntity() {
-        Entity e = new Entity("event", "someURI");
+        Entity e = new DefaultEntity("event", "someURI");
         e.setUniqueKey("eventId");
 
         e.addAttribute(new Attribute("eventId", "eventId"));

@@ -5,8 +5,8 @@ import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.records.RecordMetadata;
@@ -33,11 +33,10 @@ public class DatasetProcessor {
     private final RecordValidatorFactory validatorFactory;
     private final RecordRepository recordRepository;
     private final ExpeditionService expeditionService;
-    private final ProjectConfig projectConfig;
     private final ProcessorStatus processorStatus;
 
     private final String expeditionCode;
-    private final int projectId;
+    private final Project project;
     private final User user;
     private final String workbookFile;
     private final Map<String, RecordMetadata> datasetSources;
@@ -50,14 +49,13 @@ public class DatasetProcessor {
 
     private DatasetProcessor(Builder builder) {
         expeditionCode = builder.expeditionCode;
-        projectId = builder.projectId;
+        project = builder.project;
         user = builder.user;
         readerFactory = builder.readerFactory;
         dataConverterFactory = builder.dataConverterFactory;
         validatorFactory = builder.validatorFactory;
         recordRepository = builder.recordRepository;
         expeditionService = builder.expeditionService;
-        projectConfig = builder.projectConfig;
         processorStatus = builder.processorStatus;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
@@ -71,7 +69,7 @@ public class DatasetProcessor {
         processorStatus.appendStatus("\nValidating...\n");
 
         DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, dataConverterFactory,
-                recordRepository, projectConfig, projectId, expeditionCode)
+                recordRepository, project, expeditionCode)
                 .reloadWorkbooks(reloadWorkbooks)
                 .addWorkbook(workbookFile);
 
@@ -81,7 +79,7 @@ public class DatasetProcessor {
 
         dataset = datasetBuilder.build();
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, projectConfig);
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, project.getProjectConfig());
 
         boolean valid = validator.validate(processorStatus);
 
@@ -108,7 +106,7 @@ public class DatasetProcessor {
             throw new FimsRuntimeException("you must be logged in to upload", 400);
         }
 
-        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+        Expedition expedition = expeditionService.getExpedition(expeditionCode, project.getProjectId());
 
         if (expedition == null) {
             throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, expeditionCode);
@@ -118,7 +116,7 @@ public class DatasetProcessor {
             }
         }
 
-        recordRepository.saveDataset(dataset, projectId, expedition.getExpeditionId());
+        recordRepository.saveDataset(dataset, project.getNetwork().getId(), expedition.getExpeditionId());
 
         writeDataSources();
         return true;
@@ -153,7 +151,7 @@ public class DatasetProcessor {
 
     private void writeFileToServer(String file) {
         String ext = FileUtils.getExtension(file, null);
-        String filename = "project_" + projectId + "_expedition_" + expeditionCode + "_dataSource." + ext;
+        String filename = "project_" + project + "_expedition_" + expeditionCode + "_dataSource." + ext;
         File outputFile = FileUtils.createUniqueFile(filename, serverDataDir);
 
         try {
@@ -165,13 +163,12 @@ public class DatasetProcessor {
 
     public static class Builder {
         // Required
-        private int projectId;
+        private Project project;
         private String expeditionCode;
         private DataReaderFactory readerFactory;
         private DataConverterFactory dataConverterFactory;
         private RecordValidatorFactory validatorFactory;
         private RecordRepository recordRepository;
-        private ProjectConfig projectConfig;
         private ProcessorStatus processorStatus;
         private ExpeditionService expeditionService;
         private String serverDataDir;
@@ -184,8 +181,8 @@ public class DatasetProcessor {
         private boolean reloadWorkbooks = false;
         private boolean ignoreUser = false;
 
-        public Builder(int projectId, String expeditionCode, ProcessorStatus processorStatus) {
-            this.projectId = projectId;
+        public Builder(Project project, String expeditionCode, ProcessorStatus processorStatus) {
+            this.project = project;
             this.expeditionCode = expeditionCode;
             this.processorStatus = processorStatus;
             this.datasets = new HashMap<>();
@@ -213,11 +210,6 @@ public class DatasetProcessor {
 
         public Builder expeditionService(ExpeditionService expeditionService) {
             this.expeditionService = expeditionService;
-            return this;
-        }
-
-        public Builder projectConfig(ProjectConfig projectConfig) {
-            this.projectConfig = projectConfig;
             return this;
         }
 
@@ -266,7 +258,7 @@ public class DatasetProcessor {
                     readerFactory != null &&
                     expeditionService != null &&
                     serverDataDir != null &&
-                    projectConfig != null &&
+                    project != null &&
                     (workbookFile != null || datasets.size() > 0);
         }
 
@@ -275,7 +267,7 @@ public class DatasetProcessor {
                 return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
-                        "expeditionService, projectConfig must not be null and either a workbook or dataset are required.", 500);
+                        "expeditionService, project must not be null and either a workbook or dataset are required.", 500);
             }
         }
     }

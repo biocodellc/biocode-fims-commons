@@ -1,8 +1,9 @@
 package biocode.fims.repositories;
 
+import biocode.fims.models.Project;
 import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.records.RecordSources;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordResult;
 import biocode.fims.query.QueryResults;
@@ -30,16 +31,16 @@ public class TestRecordRepository implements RecordRepository {
 
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+    public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
         return stores.stream()
-                .filter(s -> s.projectId == projectId && s.conceptAlias.equals(conceptAlias))
+                .filter(s -> s.networkId == project.getNetwork().getId() && s.conceptAlias.equals(conceptAlias))
                 .flatMap(s -> s.records.stream())
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
-        RecordStore ex = new RecordStore(projectId, expeditionCode, conceptAlias);
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
+        RecordStore ex = new RecordStore(project.getNetwork().getId(), expeditionCode, conceptAlias);
 
         return stores.stream()
                 .filter(s -> s.equals(ex))
@@ -49,17 +50,17 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId) {
+    public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity, int expeditionId) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void saveRecord(Record record, int projectId, Entity entity, int expeditionId) {
+    public void saveRecord(Record record, int networkId, Entity entity, int expeditionId) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void saveDataset(Dataset dataset, int projectId, int expeditionId) {
+    public void saveDataset(Dataset dataset, int networkId, int expeditionId) {
         throw new NotImplementedException();
     }
 
@@ -83,30 +84,30 @@ public class TestRecordRepository implements RecordRepository {
         throw new NotImplementedException();
     }
 
-    public void addRecord(int projectId, String expeditionCode, String conceptAlias, Record record) {
+    public void addRecord(int networkId, String expeditionCode, String conceptAlias, Record record) {
         RecordStore store = stores.stream()
-                .filter(s -> s.projectId == projectId
+                .filter(s -> s.networkId == networkId
                         && s.expeditionCode.equals(expeditionCode)
                         && s.conceptAlias.equals(conceptAlias))
                 .findFirst().orElse(null);
 
         if (store == null) {
-            store = new RecordStore(projectId, expeditionCode, conceptAlias);
+            store = new RecordStore(networkId, expeditionCode, conceptAlias);
             stores.add(store);
         }
 
         store.records.add(record);
     }
 
-    public void addRecords(int projectId, String expeditionCode, String conceptAlias, List<Record> records) {
+    public void addRecords(int networkId, String expeditionCode, String conceptAlias, List<Record> records) {
         RecordStore store = stores.stream()
-                .filter(s -> s.projectId == projectId
+                .filter(s -> s.networkId == networkId
                         && s.expeditionCode.equals(expeditionCode)
                         && s.conceptAlias.equals(conceptAlias))
                 .findFirst().orElse(null);
 
         if (store == null) {
-            store = new RecordStore(projectId, expeditionCode, conceptAlias);
+            store = new RecordStore(networkId, expeditionCode, conceptAlias);
             stores.add(store);
         }
 
@@ -114,13 +115,13 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     private static class RecordStore {
-        private int projectId;
+        private int networkId;
         private String expeditionCode;
         private String conceptAlias;
         private List<Record> records;
 
-        private RecordStore(int projectId, String expeditionCode, String conceptAlias) {
-            this.projectId = projectId;
+        private RecordStore(int networkId, String expeditionCode, String conceptAlias) {
+            this.networkId = networkId;
             this.expeditionCode = expeditionCode;
             this.conceptAlias = conceptAlias;
             this.records = new ArrayList<>();
@@ -133,14 +134,14 @@ public class TestRecordRepository implements RecordRepository {
 
             RecordStore that = (RecordStore) o;
 
-            if (projectId != that.projectId) return false;
+            if (networkId != that.networkId) return false;
             if (!expeditionCode.equals(that.expeditionCode)) return false;
             return conceptAlias.equals(that.conceptAlias);
         }
 
         @Override
         public int hashCode() {
-            int result = projectId;
+            int result = networkId;
             result = 31 * result + expeditionCode.hashCode();
             result = 31 * result + conceptAlias.hashCode();
             return result;

@@ -4,9 +4,8 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ColumnComparator;
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Field;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Field;
 import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
@@ -372,7 +371,7 @@ public class ExcelWorkbookWriter {
         int listColumnNumber = 0;
 
 
-        for (biocode.fims.projectConfig.models.List list : project.getProjectConfig().lists()) {
+        for (biocode.fims.config.models.List list : project.getProjectConfig().lists()) {
 
             // List of fields from this validation rule
             List<Field> fields = list.getFields();

@@ -1,7 +1,7 @@
 package biocode.fims.query;
 
 import biocode.fims.records.RecordSources;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 
 import java.util.*;
 import java.util.function.Consumer;

@@ -110,20 +110,36 @@ public class UniqueValueRule extends SingleColumnRule {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UniqueValueRule)) return false;
-        if (!super.equals(o)) return false;
+    public boolean mergeRule(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
 
-        UniqueValueRule that = (UniqueValueRule) o;
+        UniqueValueRule rule = (UniqueValueRule) r;
 
-        return uniqueAcrossProject == that.uniqueAcrossProject;
+        if (rule.level().equals(level())
+                && rule.column().equals(column)) {
+            if (rule.uniqueAcrossProject && rule.networkRule
+                    || uniqueAcrossProject && networkRule
+                    || (!rule.uniqueAcrossProject && !uniqueAcrossProject) && (networkRule || rule.networkRule)) {
+                networkRule = true;
+            }
+            uniqueAcrossProject = uniqueAcrossProject || rule.uniqueAcrossProject;
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (uniqueAcrossProject ? 1 : 0);
-        return result;
+    public boolean contains(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+
+        UniqueValueRule rule = (UniqueValueRule) r;
+
+        if (rule.level().equals(level())
+                && rule.column().equals(column)) {
+
+            // rule needs tobe as strict or more strict to consider r contained within the rule
+            return !rule.uniqueAcrossProject || uniqueAcrossProject;
+        }
+        return false;
     }
 }

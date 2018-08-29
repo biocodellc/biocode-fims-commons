@@ -1,6 +1,6 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.DefaultEntity;
 import biocode.fims.records.RecordSet;
 import biocode.fims.run.Dataset;
 import org.junit.Test;
@@ -71,23 +71,23 @@ public class DatasetTest {
     }
 
     private RecordSet grandChildRecordSet() {
-        RecordSet grandChild = new RecordSet(new Entity("grandChild", "someURI"), false);
+        RecordSet grandChild = new RecordSet(new DefaultEntity("grandChild", "someURI"), false);
         grandChild.setParent(childRecordSet());
         return grandChild;
     }
 
     private RecordSet childRecordSet() {
-        RecordSet child = new RecordSet(new Entity("child", "someURI"), false);
+        RecordSet child = new RecordSet(new DefaultEntity("child", "someURI"), false);
         child.setParent(parentRecordSet());
         return child;
     }
 
     private RecordSet parentRecordSet() {
-        return new RecordSet(new Entity("parent", "someURI"), false);
+        return new RecordSet(new DefaultEntity("parent", "someURI"), false);
     }
 
     private RecordSet nonRelatedRecordSet() {
-        return new RecordSet(new Entity("nonRelated", "someURI"), false);
+        return new RecordSet(new DefaultEntity("nonRelated", "someURI"), false);
     }
 
 }

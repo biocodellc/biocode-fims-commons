@@ -1,11 +1,11 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;

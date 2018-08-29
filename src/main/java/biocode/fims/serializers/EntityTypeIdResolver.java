@@ -1,6 +1,6 @@
 package biocode.fims.serializers;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
@@ -21,14 +21,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Jackson TypIdResolver for polymorphic deserialization.
- *
- * This will dynamically register the Entity class and all the Entity subclasses that
- * exist in the same package as the {@link Entity} class. This allows for packages to provide
- * custom Entities (ex. biocode-fims-sequences FastaEntity) and for those entites to be
- * correctly serialized & deserialized.
+ * <p>
+ * This will dynamically register all Entity implementation classes that exists in the same
+ * package as the {@link Entity} class. This allows for packages to provide custom Entities
+ * (ex. biocode-fims-sequences FastaEntity) and for those entities to be correctly serialized
+ * & deserialized.
  *
  * @author rjewing
  */
@@ -64,19 +65,22 @@ public class EntityTypeIdResolver implements TypeIdResolver {
 
                 if (resourceClass != null
                         && Entity.class.isAssignableFrom(resourceClass)
+                        && !Modifier.isInterface(resourceClass.getModifiers())
                         && !Modifier.isAbstract(resourceClass.getModifiers())) {
 
-                    Constructor<Entity> constructor = resourceClass.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    entities.add(constructor.newInstance());
+                    try {
+                        Constructor<Entity> constructor = resourceClass.getDeclaredConstructor();
+                        constructor.setAccessible(true);
+                        entities.add(constructor.newInstance());
+                    } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+                        logger.error("Error Instantiating Entity implementation in package: " + ENTITY_PACKAGE, e);
+                    }
                 }
             }
 
         } catch (IOException e) {
             // cant find ENTITY_PACKAGE
             throw new FimsRuntimeException("Can't find package: " + ENTITY_PACKAGE, 500, e);
-        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-            logger.error("Error Instantiating Entity subclass in package: " + ENTITY_PACKAGE, e);
         }
 
         return entities;
@@ -92,31 +96,37 @@ public class EntityTypeIdResolver implements TypeIdResolver {
         if (Entity.class.isAssignableFrom(suggestedType)) {
             String name = suggestedType.getName();
 
+            String type = ((Entity) value).type();
+
             if (name.startsWith(ENTITY_PACKAGE)) {
-                return ((Entity) value).type();
+                return type;
+            }
+
+            for (Entity e : entities) {
+                if (Objects.equals(e.type(), type)) return type;
             }
 
             throw new IllegalStateException(suggestedType + " is not in the package " + ENTITY_PACKAGE);
         }
 
-        throw new IllegalStateException(suggestedType + " is not a subclass of the Entity class");
+        throw new IllegalStateException(suggestedType + " is not an Entity implementation");
     }
 
     @Override
     public String idFromBaseType() {
-        throw new UnsupportedOperationException("must be a valid Entity subclass");
+        throw new UnsupportedOperationException("must be a valid Entity implementation");
     }
 
     @Override
     public JavaType typeFromId(DatabindContext context, String id) throws IOException {
 
-        for (Entity e: entities) {
-            if (e.type().equals(id)) {
+        for (Entity e : entities) {
+            if (Objects.equals(e.type(), id)) {
                 return TypeFactory.defaultInstance().constructSpecializedType(mBaseType, e.getClass());
             }
         }
 
-        throw new IllegalStateException("Could not find Entity subclass with type: \"" + id + "\" in package: " + ENTITY_PACKAGE);
+        throw new IllegalStateException("Could not find Entity implementation with type: \"" + id + "\" in package: " + ENTITY_PACKAGE);
     }
 
     @Override

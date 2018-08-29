@@ -1,9 +1,9 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigValidator;
+import biocode.fims.config.ConfigValidator;
 import biocode.fims.validation.messages.EntityMessages;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ public interface Rule {
     RuleLevel level();
 
     /**
-     * Method to be called in {@link ProjectConfigValidator}. This allows Rule implementations to specify any
+     * Method to be called in {@link ConfigValidator}. This allows Rule implementations to specify any
      * additional validation.
      *
      * @param messages error messages to be presented to user
@@ -39,10 +39,35 @@ public interface Rule {
 
     /**
      * if {@link Rule#run(RecordSet, EntityMessages)} has failed, this tells us if it was an {@link RuleLevel#ERROR}.
+     *
      * @return
      */
     @JsonIgnore
     boolean hasError();
+
+    @JsonIgnore
+    boolean isNetworkRule();
+
+    @JsonIgnore
+    void setNetworkRule(boolean isNetworkRule);
+
+    /**
+     * Attempt to merge the Rule (r) into this Rule instance
+     *
+     * @param r Rule to attempt to merge
+     * @return whether or not the rule was successfully merged
+     */
+    @JsonIgnore
+    boolean mergeRule(Rule r);
+
+    /**
+     * Is the rule contained within this rule? Useful after mergingRules to check if a Rule is still exists
+     *
+     * @param r
+     * @return
+     */
+    @JsonIgnore
+    boolean contains(Rule r);
 
     @JsonIgnore
     void setProjectConfig(ProjectConfig config);

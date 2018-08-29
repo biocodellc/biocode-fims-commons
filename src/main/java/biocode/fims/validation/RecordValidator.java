@@ -1,8 +1,8 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.*;
 import org.springframework.util.Assert;

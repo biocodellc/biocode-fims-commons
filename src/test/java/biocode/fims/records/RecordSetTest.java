@@ -1,7 +1,8 @@
 package biocode.fims.records;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import org.junit.Test;
@@ -179,7 +180,7 @@ public class RecordSetTest {
     }
 
     private Entity entity() {
-        Entity entity = new Entity("resource", "someURI");
+        Entity entity = new DefaultEntity("resource", "someURI");
         entity.setUniqueKey("column1");
 
         entity.addAttribute(new Attribute("column1", "urn:column1"));

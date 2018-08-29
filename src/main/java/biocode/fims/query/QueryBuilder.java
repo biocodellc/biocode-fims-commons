@@ -1,7 +1,8 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.DataType;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.Config;
+import biocode.fims.config.models.DataType;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;
@@ -9,7 +10,6 @@ import biocode.fims.query.dsl.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 
 /**
@@ -19,18 +19,20 @@ import java.util.*;
  */
 public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
-    private final Project project;
     private final StringBuilder whereBuilder;
     private final Entity queryEntity;
     private final JoinBuilder joinBuilder;
+    private final Config config;
+    private final int networkId;
     private boolean allQuery;
     private Map<String, String> params;
     private Integer page;
     private Integer limit;
 
-    public QueryBuilder(Project project, String entityConceptAlias) {
-        this.project = project;
-        this.queryEntity = project.getProjectConfig().entity(entityConceptAlias);
+    public QueryBuilder(Config config, int networkId, String entityConceptAlias) {
+        this.config = config;
+        this.networkId = networkId;
+        this.queryEntity = config.entity(entityConceptAlias);
         this.whereBuilder = new StringBuilder();
         this.params = new HashMap<>();
 
@@ -38,17 +40,18 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, entityConceptAlias);
         }
 
-        this.joinBuilder = new JoinBuilder(queryEntity, project.getProjectConfig(), project.getProjectId());
+        this.joinBuilder = new JoinBuilder(queryEntity, config, networkId);
     }
 
     /**
-     * @param project
+     * @param config
+     * @param networkId
      * @param entityConceptAlias
      * @param page               0 based page to fetch
      * @param limit              # of records to return
      */
-    public QueryBuilder(Project project, String entityConceptAlias, Integer page, Integer limit) {
-        this(project, entityConceptAlias);
+    public QueryBuilder(Config config, int networkId, String entityConceptAlias, Integer page, Integer limit) {
+        this(config, networkId, entityConceptAlias);
         this.page = page;
         this.limit = limit;
     }
@@ -152,8 +155,28 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public void visit(ProjectExpression expression) {
+        joinBuilder.joinExpeditions(true);
+
+        List<String> projects = expression.projects();
+
+        whereBuilder.append("expeditions.project_id ");
+
+        if (projects.size() == 1) {
+            whereBuilder
+                    .append("= ")
+                    .append(putParam(projects.get(0)));
+        } else {
+            whereBuilder
+                    .append("IN (")
+                    .append(String.join(", ", putParams(projects)))
+                    .append(")");
+        }
+    }
+
+    @Override
     public void visit(SelectExpression expression) {
-        expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(this.project.getProjectConfig().entity(conceptAlias)));
+        expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(config.entity(conceptAlias)));
         if (expression.expression() != null) {
             expression.expression().accept(this);
         }
@@ -361,7 +384,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private String buildTable(String conceptAlias) {
-        return PostgresUtils.entityTableAs(project.getProjectId(), conceptAlias);
+        return PostgresUtils.entityTableAs(networkId, conceptAlias);
     }
 
     private String buildSelect() {
@@ -445,7 +468,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private ColumnUri lookupSingleEntityColumnUri(String column) {
-        Entity entity = project.getProjectConfig().entities().get(0);
+        Entity entity = config.entities().get(0);
 
         if (pathBasedColumn(column)) {
             String[] columnPath = splitColumnPath(column);
@@ -494,7 +517,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             return new ColumnUri(queryEntity, entityAttributeUri, isParentIdentifier(queryEntity, column));
         }
 
-        for (Entity entity : project.getProjectConfig().entities()) {
+        for (Entity entity : config.entities()) {
             entityAttributeUri = entity.getAttributeUri(column);
 
             if (!StringUtils.isBlank(entityAttributeUri)) {
@@ -506,7 +529,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private ColumnUri lookupColumnUriFromPath(String conceptAlias, String column) {
-        Entity entity = project.getProjectConfig().entity(conceptAlias);
+        Entity entity = config.entity(conceptAlias);
 
         if (entity == null) {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, String.join(".", conceptAlias, column));
@@ -516,11 +539,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     private boolean multiEntityConfig() {
-        return project.getProjectConfig().entities().size() > 1;
+        return config.entities().size() > 1;
     }
 
     private boolean isParentIdentifier(Entity entity, String column) {
-        return !StringUtils.isBlank(column) && entity.isChildEntity() && column.equals(project.getProjectConfig().entity(entity.getParentEntity()).getUniqueKey());
+        return !StringUtils.isBlank(column) && entity.isChildEntity() && column.equals(config.entity(entity.getParentEntity()).getUniqueKey());
     }
 
     private String putParam(String val) {
