@@ -17,7 +17,7 @@ public class Rules implements Iterable<Rule> {
     }
 
     public LinkedHashSet<Rule> get() {
-        return new LinkedHashSet<>(rules);
+        return rules;
     }
 
     public void add(Rule rule) {

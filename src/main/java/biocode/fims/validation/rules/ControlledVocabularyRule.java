@@ -36,8 +36,6 @@ public class ControlledVocabularyRule extends SingleColumnRule {
     private static final String NAME = "ControlledVocabulary";
     @JsonProperty
     private String listName;
-    @JsonIgnore
-    private Config config;
 
     private biocode.fims.config.models.List list;
 

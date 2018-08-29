@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.config.Config;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -19,7 +20,7 @@ public abstract class AbstractRule implements Rule {
     private boolean hasError = false;
     private RuleLevel level;
     protected boolean networkRule = false;
-    protected ProjectConfig config;
+    protected Config config;
 
     AbstractRule() {
         this.level = RuleLevel.WARNING;

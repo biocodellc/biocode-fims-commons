@@ -151,7 +151,7 @@ public class DatasetProcessor {
 
     private void writeFileToServer(String file) {
         String ext = FileUtils.getExtension(file, null);
-        String filename = "project_" + project + "_expedition_" + expeditionCode + "_dataSource." + ext;
+        String filename = "project_" + project.getProjectId() + "_expedition_" + expeditionCode + "_dataSource." + ext;
         File outputFile = FileUtils.createUniqueFile(filename, serverDataDir);
 
         try {
