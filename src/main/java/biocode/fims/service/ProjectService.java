@@ -137,8 +137,8 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public List<Project> getProjectsWithExpeditions() {
-        return projectRepository.getAll("Project.withExpeditions");
+    public List<Project> getProjectsWithExpeditions(List<Integer> projectIds) {
+        return projectRepository.getAll(projectIds, "Project.withExpeditions");
     }
 
     /**

@@ -23,8 +23,8 @@ public class ProjectExpression implements Expression {
         this.projects = projects;
     }
 
-    public List<String> projects() {
-        return projects.stream().map(String::valueOf).collect(Collectors.toList());
+    public List<Integer> projects() {
+        return projects;
     }
 
     @Override

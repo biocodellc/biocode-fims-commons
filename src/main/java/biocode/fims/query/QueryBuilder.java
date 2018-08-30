@@ -5,7 +5,6 @@ import biocode.fims.config.models.DataType;
 import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.models.Project;
 import biocode.fims.query.dsl.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
@@ -13,7 +12,7 @@ import org.springframework.util.Assert;
 import java.util.*;
 
 /**
- * {@link QueryBuildingExpressionVisitor} which builds valid PostgreSQL SELECT query.
+ * {@link QueryBuildingExpressionVisitor} to build PostgreSQL SELECT queries.
  *
  * @author rjewing
  */
@@ -25,7 +24,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private final Config config;
     private final int networkId;
     private boolean allQuery;
-    private Map<String, String> params;
+    private Map<String, Object> params;
     private Integer page;
     private Integer limit;
 
@@ -158,7 +157,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(ProjectExpression expression) {
         joinBuilder.joinExpeditions(true);
 
-        List<String> projects = expression.projects();
+        List<Integer> projects = expression.projects();
 
         whereBuilder.append("expeditions.project_id ");
 
@@ -546,16 +545,16 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         return !StringUtils.isBlank(column) && entity.isChildEntity() && column.equals(config.entity(entity.getParentEntity()).getUniqueKey());
     }
 
-    private String putParam(String val) {
+    private String putParam(Object val) {
         String key = String.valueOf(params.size() + 1);
         params.put(key, val);
         return ":" + key;
     }
 
-    private List<String> putParams(List<String> vals) {
+    private List<String> putParams(List<?> vals) {
         List<String> keys = new LinkedList<>();
 
-        for (String val : vals) {
+        for (Object val : vals) {
             keys.add(putParam(val));
         }
 

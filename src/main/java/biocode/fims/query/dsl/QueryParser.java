@@ -1,5 +1,6 @@
 package biocode.fims.query.dsl;
 
+import biocode.fims.config.Config;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.*;
@@ -21,11 +22,11 @@ import static biocode.fims.query.dsl.LogicalOperator.OR;
 @SuppressWarnings({"InfiniteRecursion", "WeakerAccess"})
 public class QueryParser extends BaseParser<Object> {
     private final QueryBuildingExpressionVisitor queryBuilder;
-    private final ProjectConfig projectConfig;
+    private final Config config;
 
-    public QueryParser(QueryBuildingExpressionVisitor queryBuilder, ProjectConfig config) {
+    public QueryParser(QueryBuildingExpressionVisitor queryBuilder, Config config) {
         this.queryBuilder = queryBuilder;
-        this.projectConfig = config;
+        this.config = config;
     }
 
     public Rule Parse() {
@@ -39,7 +40,7 @@ public class QueryParser extends BaseParser<Object> {
                         ValueStack stack = context.getValueStack();
 
                         if (stack.isEmpty()) {
-                            push(new Query(queryBuilder, projectConfig, new EmptyExpression()));
+                            push(new Query(queryBuilder, config, new EmptyExpression()));
                         } else if (stack.size() == 1) {
                             Expression expression = popExp();
 
@@ -47,7 +48,7 @@ public class QueryParser extends BaseParser<Object> {
                                 ((SelectExpression) expression).setExpression(new AllExpression());
                             }
 
-                            push(new Query(queryBuilder, projectConfig, expression));
+                            push(new Query(queryBuilder, config, expression));
                         } else {
                             List<String> selectEntities = new ArrayList<>();
                             Expression expression = null;
@@ -77,7 +78,7 @@ public class QueryParser extends BaseParser<Object> {
                                     // If we have no other objects, then we have an AllExpression
                                     e = new SelectExpression(String.join(",", selectEntities), new AllExpression());
                                 }
-                                push(new Query(queryBuilder, projectConfig, e));
+                                push(new Query(queryBuilder, config, e));
                             }
                         }
 

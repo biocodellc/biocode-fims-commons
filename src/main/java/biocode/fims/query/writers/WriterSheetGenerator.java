@@ -1,6 +1,6 @@
 package biocode.fims.query.writers;
 
-import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.config.Config;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.config.project.ColumnComparator;
@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 
 class WriterSheetGenerator {
     private final QueryResults queryResults;
-    private final ProjectConfig config;
+    private final Config config;
     private final Map<String, SheetRecords> recordsBySheet;
     private final Map<String, List<Entity>> entitiesBySheet;
 
     private String currentSheet;
     private QueryResult currentResult;
 
-    WriterSheetGenerator(QueryResults queryResults, ProjectConfig config) {
+    WriterSheetGenerator(QueryResults queryResults, Config config) {
         this.queryResults = queryResults;
         this.config = config;
         recordsBySheet = new HashMap<>();

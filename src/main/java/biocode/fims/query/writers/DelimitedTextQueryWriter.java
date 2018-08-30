@@ -1,5 +1,6 @@
 package biocode.fims.query.writers;
 
+import biocode.fims.config.Config;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -23,7 +24,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
 
     private WriterWorksheet worksheet;
 
-    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter, ProjectConfig config) {
+    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter, Config config) {
         this.delimiter = delimiter;
         isCsv = StringUtils.equals(delimiter.trim(), ",");
         this.writerSheetGenerator = new WriterSheetGenerator(queryResults, config);
