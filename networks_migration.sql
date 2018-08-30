@@ -152,7 +152,8 @@ select create_network(1, 'GeOMe Network', 1);
 alter TABLE projects add COLUMN network_id INTEGER NOT NULL REFERENCES networks (id) DEFAULT 1;
 alter table projects alter column network_id drop default;
 
+update projects set config = '{}';
 
 -- now you need to upload the network config. After successful upload, run the bash script networks_migrations_post_config.sh
--- curl -X PUT -H 'Content-Type: application/json' -d @biocode.json http://localhost:8080/networks/1/config?access_token=jCVcTBzTnyxpqEsmNs9r
+-- curl -X PUT -H 'Content-Type: application/json' -d @geome.json http://localhost:8080/networks/1/config?access_token=jCVcTBzTnyxpqEsmNs9r
 

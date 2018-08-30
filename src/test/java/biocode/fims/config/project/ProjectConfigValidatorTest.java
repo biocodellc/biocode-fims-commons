@@ -90,7 +90,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config, networkConfig);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"sample\".conceptUri does not match the registered entity's conceptUri"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"sample\".conceptUri does not match the network entity's conceptUri"), validator.errors());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config, networkConfig);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"sample\".parentEntity does not match the registered entity's parentEntity"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"sample\".parentEntity does not match the network entity's parentEntity"), validator.errors());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class ProjectConfigValidatorTest {
         ProjectConfigValidator validator = new ProjectConfigValidator(config, networkConfig);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Entity \"sample\".recordType does not match the registered entity's recordType"), validator.errors());
+        assertEquals(Arrays.asList("Entity \"sample\".recordType does not match the network entity's recordType"), validator.errors());
     }
 
     @Test

@@ -129,6 +129,22 @@ public class Attribute implements Comparable {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public Attribute clone() {
+        Attribute a = new Attribute(column, uri);
+
+        a.dataType = dataType;
+        a.dataFormat = dataFormat;
+        a.internal = internal;
+        a.definedBy = definedBy;
+        a.delimitedBy = delimitedBy;
+
+        a.group = group;
+        a.definition = definition;
+        a.allowUnknown = allowUnknown;
+
+        return a;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

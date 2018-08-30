@@ -4,9 +4,9 @@ import biocode.fims.config.Config;
 import biocode.fims.config.network.NetworkConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.dataTypes.JacksonUtil;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
-import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.*;
 import com.fasterxml.jackson.annotation.*;
 import org.apache.commons.lang.StringUtils;
@@ -25,6 +25,7 @@ import java.util.List;
  * overriding `Entity.configure` allows subclass to dynamically configure themselves
  * <p>
  * Subclasses should override the type() method, as this is used for polymorphic deserialization
+ * Subclasses should override the clone() method, as this is used create a copy
  */
 public class DefaultEntity implements Entity {
     private static final String TYPE = "DefaultEntity";
@@ -63,6 +64,11 @@ public class DefaultEntity implements Entity {
         this.conceptURI = conceptURI;
         rules = new Rules();
         attributes = new LinkedList<>();
+    }
+
+    @Override
+    public void addAttributes(Collection<Attribute> attributes) {
+        attributes.addAll(attributes);
     }
 
     @Override
@@ -378,6 +384,32 @@ public class DefaultEntity implements Entity {
     @Override
     public boolean canReload() {
         return true;
+    }
+
+    @Override
+    public Entity clone() {
+        DefaultEntity entity = new DefaultEntity(conceptAlias, conceptURI);
+
+        rules.forEach(r -> {
+            // TODO create a Rule method clone()
+            // hacky way to make a copy of the rule
+            Rule newR = JacksonUtil.fromString(
+                    JacksonUtil.toString(r),
+                    r.getClass()
+            );
+            entity.addRule(newR);
+        });
+        attributes.forEach(a -> entity.addAttribute(a.clone()));
+
+        entity.parentEntity = parentEntity;
+        entity.recordType = recordType;
+
+        entity.worksheet = worksheet;
+        entity.uniqueKey = uniqueKey;
+        entity.uniqueAcrossProject = uniqueAcrossProject;
+        entity.hashed = hashed;
+
+        return entity;
     }
 
     private java.util.List<String> getExistingUris() {

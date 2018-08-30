@@ -18,6 +18,8 @@ import java.util.*;
 @JsonTypeIdResolver(EntityTypeIdResolver.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public interface Entity {
+    void addAttributes(Collection<Attribute> attributes);
+
     void addAttribute(Attribute a);
 
     LinkedList<Attribute> getAttributes();
@@ -91,6 +93,9 @@ public interface Entity {
     java.util.List<String> validationErrorMessages();
 
     boolean canReload();
+
+    @JsonIgnore
+    Entity clone();
 
     String type();
 }

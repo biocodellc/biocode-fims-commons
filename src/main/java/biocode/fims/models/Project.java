@@ -14,12 +14,13 @@ import org.hibernate.annotations.TypeDef;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Project Entity object
  */
-@JsonIgnoreProperties({ "config" })
+@JsonIgnoreProperties({"config"})
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "projects")
@@ -44,6 +45,7 @@ public class Project {
     private String description;
     private ProjectConfig projectConfig;
     private PersistedProjectConfig persistedProjectConfig;
+    private boolean configChanged = false;
     private boolean isPublic;
     private List<Expedition> expeditions;
     private User user;
@@ -160,6 +162,7 @@ public class Project {
         this.persistedProjectConfig = persistedProjectConfig;
     }
 
+    @JsonIgnore
     @Transient
     public ProjectConfig getProjectConfig() {
         if (projectConfig == null) {
@@ -169,8 +172,16 @@ public class Project {
     }
 
     public void setProjectConfig(ProjectConfig projectConfig) {
-        this.projectConfig = projectConfig;
-        this.persistedProjectConfig = PersistedProjectConfig.fromProjectConfig(projectConfig);
+        if (!Objects.equals(projectConfig, this.projectConfig)) {
+            this.projectConfig = projectConfig;
+            this.persistedProjectConfig = PersistedProjectConfig.fromProjectConfig(projectConfig);
+            configChanged = true;
+        }
+    }
+
+    @JsonIgnore
+    public boolean hasConfigChanged() {
+        return configChanged;
     }
 
     @JsonView(Views.Detailed.class)

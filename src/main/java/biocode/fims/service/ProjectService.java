@@ -167,6 +167,10 @@ public class ProjectService {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
         }
 
+        if (!project.hasConfigChanged()) {
+            return;
+        }
+
         ProjectConfig config = project.getProjectConfig();
 
         NetworkConfig networkConfig = project.getNetwork().getNetworkConfig();

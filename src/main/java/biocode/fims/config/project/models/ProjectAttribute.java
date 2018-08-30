@@ -63,13 +63,7 @@ public class ProjectAttribute {
             throw new FimsRuntimeException(ConfigCode.INVALID, 500);
         }
 
-        Attribute a = new Attribute(base.getColumn(), base.getUri());
-
-        a.setDataType(base.getDataType());
-        a.setDataFormat(base.getDataFormat());
-        a.setDefinedBy(base.getDefinedBy());
-        a.setDelimitedBy(base.getDelimitedBy());
-        a.setInternal(base.isInternal());
+        Attribute a = base.clone();
 
         a.setGroup(group != null ? group : base.getGroup());
         a.setDefinition(definition != null ? definition : base.getDefinition());

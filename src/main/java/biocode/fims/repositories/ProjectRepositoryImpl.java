@@ -34,9 +34,9 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     public PersistedProjectConfig getConfig(int projectId) {
         // this is here b/c returning a single column from spring data repository using @Query requires the returning
         // type to be an interface
-        return (PersistedProjectConfig) em.createQuery("SELECT persistedProjectConfig FROM Project WHERE projectId = :id", Project.class)
+        return (PersistedProjectConfig) em.createQuery("SELECT persistedProjectConfig FROM Project WHERE projectId = :id", Object.class)
                 .setParameter("id", projectId)
-                .getResultList();
+                .getSingleResult();
     }
 
 }

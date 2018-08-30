@@ -134,16 +134,16 @@ public class ProjectConfigValidator extends ConfigValidator {
         }
 
         if (!networkEntity.getConceptURI().equals(e.getConceptURI())) {
-            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".conceptUri does not match the registered entity's conceptUri");
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".conceptUri does not match the network entity's conceptUri");
         }
         if (!Objects.equals(networkEntity.getParentEntity(), e.getParentEntity())) {
-            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".parentEntity does not match the registered entity's parentEntity");
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".parentEntity does not match the network entity's parentEntity");
         }
         if (!networkEntity.getRecordType().equals(e.getRecordType())) {
-            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".recordType does not match the registered entity's recordType");
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".recordType does not match the network entity's recordType");
         }
         if (!networkEntity.type().equals(e.type())) {
-            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".type does not match the registered entity's type");
+            errorMessages.add("Entity \"" + e.getConceptAlias() + "\".type does not match the network entity's type");
         }
 
     }

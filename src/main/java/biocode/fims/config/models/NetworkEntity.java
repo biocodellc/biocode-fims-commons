@@ -27,6 +27,11 @@ public class NetworkEntity implements Entity {
     }
 
     @Override
+    public void addAttributes(Collection<Attribute> attributes) {
+        entity.addAttributes(attributes);
+    }
+
+    @Override
     public void addAttribute(Attribute a) {
         entity.addAttribute(a);
     }
@@ -202,6 +207,11 @@ public class NetworkEntity implements Entity {
     @Override
     public boolean canReload() {
         return entity.canReload();
+    }
+
+    @Override
+    public Entity clone() {
+        return entity.clone();
     }
 
     @Override

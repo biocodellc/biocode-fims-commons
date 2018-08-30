@@ -6,7 +6,9 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.dataTypes.JacksonUtil;
+import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -112,27 +114,17 @@ public class ProjectEntity {
             throw new FimsRuntimeException(ConfigCode.INVALID, 500);
         }
 
-        // TODO should not always be DefaultEntity, need to resolve entity type
-        Entity e = new DefaultEntity(base.getConceptAlias(), base.getConceptURI());
+        // get a copy of the base so we don't modify the base entity
+        Entity e = base.clone();
 
         e.setHashed(hashed);
         e.setUniqueAcrossProject(uniqueAcrossProject);
         e.setUniqueKey(uniqueKey);
         e.setWorksheet(worksheet);
 
-        e.setParentEntity(base.getParentEntity());
-        e.setRecordType(base.getRecordType());
-
-        base.getRules().forEach(r -> {
-            // hacky way to make a copy of the rule so we don't modify the network rule
-            Rule newR = JacksonUtil.fromString(
-                    JacksonUtil.toString(r),
-                    r.getClass()
-            );
-            newR.setNetworkRule(true);
-            e.addRule(newR);
+        e.getRules().forEach(r -> {
+            r.setNetworkRule(true);
         });
-        e.addRules(rules);
 
         attributes.forEach(a -> {
             Attribute baseAttribute = base.getAttributeByUri(a.getUri());
