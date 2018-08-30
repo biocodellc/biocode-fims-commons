@@ -191,16 +191,6 @@ public class User {
         this.email = email;
     }
 
-    @Transient
-    @JsonProperty("projectAdmin")
-    public boolean isAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
-    }
-
     @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getInstitution() {

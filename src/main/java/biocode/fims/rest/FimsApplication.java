@@ -41,6 +41,8 @@ public class FimsApplication extends ResourceConfig {
         register(ProjectsResource.class);
         register(ProjectMembersResource.class);
         register(ProjectConfigurationResource.class);
+        register(NetworksResource.class);
+        register(NetworkConfigurationResource.class);
         register(ExpeditionsResource.class);
         register(ProjectTemplatesResource.class);
         register(RecordsResource.class);
@@ -58,7 +60,7 @@ public class FimsApplication extends ResourceConfig {
         for (Class resourceClass : getClasses()) {
             if (resourceClass.getPackage().getName().startsWith("biocode.fims.rest.services")) {
 
-                // check for @Component annotation or for the bean in the applicationContexgt
+                // check for @Component annotation or for the bean in the applicationContext
                 if (AnnotationUtils.findAnnotation(resourceClass, Component.class) == null
                         && SpringApplicationContext.getBean(resourceClass) == null) {
                     nonSpringBeans.add(resourceClass);

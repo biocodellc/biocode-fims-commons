@@ -65,6 +65,5 @@ public class NetworksResource extends FimsController {
         network.setId(networkId);
         network.setUser(userContext.getUser());
         return networkService.update(network);
-
     }
 }

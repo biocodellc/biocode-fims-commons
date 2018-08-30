@@ -61,6 +61,7 @@ public class NetworkConfigurationResource extends FimsController {
      * @param config    The updated network object
      * @param networkId The id of the network to update
      */
+    @Compress
     @PUT
     @Authenticated
     @Admin

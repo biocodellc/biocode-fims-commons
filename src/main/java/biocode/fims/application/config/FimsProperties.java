@@ -10,7 +10,6 @@ import java.net.URI;
 /**
  * @author rjewing
  */
-//@Primary
 @Component
 public class FimsProperties {
     protected final ConfigurableEnvironment env;
