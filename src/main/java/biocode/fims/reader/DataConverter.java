@@ -8,7 +8,7 @@ import biocode.fims.config.project.ProjectConfig;
  */
 public interface DataConverter {
 
-    RecordSet convertRecordSet(RecordSet recordSet, int networkId, String expeditionCode);
+    RecordSet convertRecordSet(RecordSet recordSet, int networkId);
 
     DataConverter newInstance(ProjectConfig projectConfig);
 }

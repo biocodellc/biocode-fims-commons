@@ -12,6 +12,10 @@ import java.util.List;
  */
 public interface DataReader {
 
+    /**
+     * Parse RecordSets from the datasource.
+     * @return
+     */
     List<RecordSet> getRecordSets();
 
     boolean handlesExtension(String ext);

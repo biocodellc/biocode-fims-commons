@@ -10,6 +10,8 @@ import java.util.Map;
  * @author rjewing
  */
 public interface Record {
+    String EXPEDITION_CODE = "expeditionCode";
+
     int projectId();
 
     void setProjectId(int projectId);

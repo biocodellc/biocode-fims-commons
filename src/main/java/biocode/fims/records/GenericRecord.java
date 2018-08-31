@@ -48,8 +48,7 @@ public class GenericRecord implements Record {
 
     @Override
     public void setExpeditionCode(String expeditionCode) {
-        if (this.expeditionCode == null) this.expeditionCode = expeditionCode;
-        else throw new IllegalStateException("expeditionCode has already been set");
+        this.expeditionCode = expeditionCode;
     }
 
     @Override

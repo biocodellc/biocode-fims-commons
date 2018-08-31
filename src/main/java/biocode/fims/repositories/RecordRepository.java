@@ -26,11 +26,11 @@ public interface RecordRepository {
 
     List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType);
 
-    void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity, int expeditionId);
+    void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity);
 
-    void saveRecord(Record record, int networkId, Entity entity, int expeditionId);
+    void saveRecord(Record record, int networkId, Entity entity);
 
-    void saveDataset(Dataset dataset, int networkId, int expeditionId);
+    void saveDataset(Dataset dataset, int networkId);
 
     /**
      * execute the provided sql and return a list of responseTypes.

@@ -120,31 +120,31 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity, int expeditionId) {
+    public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity) {
         Map<String, String> extraValues = new HashMap<>();
 
         String parentIdentifier = record.get(parentEntity.getUniqueKeyURI());
         extraValues.put("parent_identifier", parentIdentifier);
 
         String s = sql.getProperty("insertChildRecord");
-        save(record, networkId, entity, expeditionId, s, extraValues);
+        save(record, networkId, entity, s, extraValues);
     }
 
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveRecord(Record record, int networkId, Entity entity, int expeditionId) {
+    public void saveRecord(Record record, int networkId, Entity entity) {
         String s = sql.getProperty("insertRecord");
-        save(record, networkId, entity, expeditionId, s, new HashMap<>());
-
+        save(record, networkId, entity, s, new HashMap<>());
     }
 
-    private void save(Record record, int networkId, Entity entity, int expeditionId, String sql, Map<String, String> extraValues) {
+    private void save(Record record, int networkId, Entity entity, String sql, Map<String, String> extraValues) {
         String localIdentifierUri = entity.getUniqueKeyURI();
         Map<String, Object> tableMap = getTableMap(networkId, entity.getConceptAlias());
 
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("expeditionId", expeditionId);
+        params.addValue("expeditionCode", record.expeditionCode());
+        params.addValue("projectId", record.projectId());
         String localIdentifier = record.get(localIdentifierUri);
         params.addValue("identifier", localIdentifier);
 
@@ -168,7 +168,7 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveDataset(Dataset dataset, int networkId, int expeditionId) {
+    public void saveDataset(Dataset dataset, int networkId) {
         try {
             for (RecordSet recordSet : dataset) {
 
@@ -184,7 +184,8 @@ public class PostgresRecordRepository implements RecordRepository {
                 for (Record record : recordSet.recordsToPersist()) {
 
                     HashMap<String, Object> recordParams = new HashMap<>();
-                    recordParams.put("expeditionId", expeditionId);
+                    recordParams.put("expeditionCode", recordSet.expeditionCode());
+                    recordParams.put("projectId", recordSet.projectId());
                     String localIdentifier = record.get(localIdentifierUri);
                     recordParams.put("identifier", localIdentifier);
                     localIdentifiers.add(localIdentifier);
@@ -241,7 +242,8 @@ public class PostgresRecordRepository implements RecordRepository {
                 if (recordSet.reload()) {
                     String deleteSql;
                     HashMap<String, Object> deleteParams = new HashMap<>();
-                    deleteParams.put("expeditionId", expeditionId);
+                    deleteParams.put("expeditionCode", recordSet.expeditionCode());
+                    deleteParams.put("projectId", recordSet.projectId());
 
                     if (recordSet.hasParent()) {
                         deleteSql = sql.getProperty("deleteChildRecords");
@@ -267,7 +269,8 @@ public class PostgresRecordRepository implements RecordRepository {
                     String deleteSql = sql.getProperty("deleteOrphanedParentRecords");
 
                     HashMap<String, Object> deleteParams = new HashMap<>();
-                    deleteParams.put("expeditionId", expeditionId);
+                    deleteParams.put("expeditionCode", recordSet.expeditionCode());
+                    deleteParams.put("projectId", recordSet.projectId());
                     deleteParams.put("identifiers", updatedHashedParents);
 
                     tableMap.put("childTable", tableMap.get("table"));
