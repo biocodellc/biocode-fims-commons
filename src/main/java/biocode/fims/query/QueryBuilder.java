@@ -185,7 +185,26 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(FTSExpression expression) {
         String key = putParam(expression.term().replaceAll("\\s+", " & "));
         if (StringUtils.isBlank(expression.column())) {
-            appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
+            LinkedList<Entity> parentEntities = config.parentEntities(queryEntity.getConceptAlias());
+
+            if (parentEntities.isEmpty()) {
+                appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
+            } else {
+                whereBuilder.append("(");
+
+                appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
+                whereBuilder.append(" OR ");
+
+                for (Entity entity: parentEntities) {
+                    joinBuilder.add(entity);
+                    appendFTSTSVQuery(entity.getConceptAlias(), key);
+                    whereBuilder.append(" OR ");
+                }
+
+                // remove trailing OR
+                whereBuilder.delete(whereBuilder.length() - 4, whereBuilder.length());
+                whereBuilder.append(")");
+            }
         } else {
             ColumnUri columnUri = lookupColumnUri(expression.column());
 

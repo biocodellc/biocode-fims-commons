@@ -214,6 +214,24 @@ public abstract class Config {
         return relatedEntities;
     }
 
+    /**
+     * Get all parent entities for the given entity.
+     *
+     * @param conceptAlias
+     * @return Ordered List of entities from parent -> GrandParent -> GreatGrandParent -> ...
+     */
+    public LinkedList<Entity> parentEntities(String conceptAlias) {
+        LinkedList<Entity> parentEntities = new LinkedList<>();
+        Entity entity = entity(conceptAlias);
+
+        while (entity.isChildEntity()) {
+            entity = entity(entity.getParentEntity());
+            parentEntities.add(entity);
+        }
+
+        return parentEntities;
+    }
+
     public void generateUris() {
         for (Entity e : entities) {
             e.generateUris();

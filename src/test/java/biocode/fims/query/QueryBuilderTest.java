@@ -423,8 +423,8 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ProjectExpression(Arrays.asList(1)));
 
-        Map<String, String> params = new HashMap<>();
-        params.put("1", "1");
+        Map<String, Object> params = new HashMap<>();
+        params.put("1", new Integer("1"));
         ParametrizedQuery expected = new ParametrizedQuery(
                 "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
@@ -440,9 +440,9 @@ public class QueryBuilderTest {
         QueryBuilder queryBuilder = queryBuilder("event");
         queryBuilder.visit(new ProjectExpression(Arrays.asList(11,20)));
 
-        Map<String, String> params = new HashMap<>();
-        params.put("1", "11");
-        params.put("2", "20");
+        Map<String, Object> params = new HashMap<>();
+        params.put("1", new Integer("11"));
+        params.put("2", new Integer("20"));
         ParametrizedQuery expected = new ParametrizedQuery(
                 "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.event AS event " +
                         "JOIN expeditions ON expeditions.id = event.expedition_id " +
@@ -518,6 +518,24 @@ public class QueryBuilderTest {
                 "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.event AS event " +
                         "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
                         "WHERE event.tsv @@ to_tsquery(:1) ORDER BY event.local_identifier, event.expedition_id",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
+    public void should_query_parent_entities_for_fts_expression_no_column() {
+        QueryBuilder queryBuilder = queryBuilder("sample");
+        queryBuilder.visit(new FTSExpression(null, "alligators"));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "alligators");
+//        params.put("2", "alligators");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.sample AS sample " +
+                        "JOIN network_1.event AS event ON event.local_identifier = sample.parent_identifier and event.expedition_id = sample.expedition_id " +
+                        "LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
+                        "WHERE (sample.tsv @@ to_tsquery(:1) OR event.tsv @@ to_tsquery(:1)) ORDER BY sample.local_identifier, sample.expedition_id",
                 params
         );
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
