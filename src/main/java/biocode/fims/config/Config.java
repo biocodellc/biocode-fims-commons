@@ -100,6 +100,10 @@ public abstract class Config {
         return false;
     }
 
+    public boolean isParentEntity(Entity childEntity, Entity elderEntity) {
+        return checkEntityRelation(childEntity, elderEntity);
+    }
+
     /**
      * check up the entity chain to determine if childEntity is a descendant of elderEntity
      *

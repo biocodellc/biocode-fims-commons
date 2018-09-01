@@ -61,7 +61,7 @@ class WriterSheetGenerator {
         Map<String, LinkedList<QueryResult>> sheetResults = new HashMap<>();
 
         // sort queryResults so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
+        queryResults.sort(new QueryResults.ChildrenFirstComparator(config));
 
         // map queryResults by worksheet
         for (QueryResult queryResult : queryResults) {

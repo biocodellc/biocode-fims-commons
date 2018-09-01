@@ -57,7 +57,8 @@ public class RecordSet {
 
     public void add(Record record) {
         deduplicated = false;
-        this.records.add(record);
+        if (!cacheBuilt && records.isEmpty()) cacheBuilt = true;
+        records.add(record);
         addToCache(record);
     }
 

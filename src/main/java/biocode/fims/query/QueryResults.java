@@ -1,5 +1,6 @@
 package biocode.fims.query;
 
+import biocode.fims.config.Config;
 import biocode.fims.records.RecordSources;
 import biocode.fims.config.models.Entity;
 
@@ -82,18 +83,28 @@ public class QueryResults implements Iterable<QueryResult> {
 
 
     /**
-     * Comparator to sort child entities before parents by worksheet
+     * Comparator to sort child entities before parents
      */
     public static class ChildrenFirstComparator implements Comparator<QueryResult> {
+        private final Config config;
+
+        public ChildrenFirstComparator(Config config) {
+            this.config = config;
+        }
+
         @Override
         public int compare(QueryResult a, QueryResult b) {
             Entity e1 = a.entity();
             Entity e2 = b.entity();
 
-            if (!Objects.equals(e1.getWorksheet(), e2.getWorksheet())) return 0;
-            if (e1.isChildEntity() && e2.getConceptAlias().equals(e1.getParentEntity())) return -1;
-            if (e2.isChildEntity() && e1.getConceptAlias().equals(e2.getParentEntity())) return 1;
-
+            if (e1.isChildEntity()) {
+                if (e2.getConceptAlias().equals(e1.getParentEntity())) return -1;
+                if (config.isParentEntity(e1, e2)) return -1;
+            }
+            if (e2.isChildEntity()) {
+                if (e1.getConceptAlias().equals(e2.getParentEntity())) return 1;
+                if (config.isParentEntity(e2, e1)) return 1;
+            }
             return 0;
         }
     }
