@@ -122,10 +122,10 @@ public class ProjectEntity {
         e.setUniqueKey(uniqueKey);
         e.setWorksheet(worksheet);
 
-        e.getRules().forEach(r -> {
-            r.setNetworkRule(true);
-        });
+        e.getRules().forEach(r -> r.setNetworkRule(true));
+        e.addRules(rules);
 
+        e.getAttributes().clear();
         attributes.forEach(a -> {
             Attribute baseAttribute = base.getAttributeByUri(a.getUri());
             e.addAttribute(a.toAttribute(baseAttribute));
