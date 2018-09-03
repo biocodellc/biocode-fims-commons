@@ -216,6 +216,8 @@ public class UserService {
 
     public UserInvite inviteUser(String email, Project project, User inviter) {
         try {
+            // delete any existing invites
+            userInviteRepository.delete(email);
             UserInvite invite = userInviteRepository.save(new UserInvite(email, project, inviter));
 
             String accountCreateUrl = props.appRoot() + props.accountCreatePath();
