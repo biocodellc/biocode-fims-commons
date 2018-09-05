@@ -206,7 +206,7 @@ public class DatasetBuilder {
 
                 if (expeditionCode != null) {
                     List<Record> records = projectRecordEntities.contains(e.getConceptAlias())
-                            ? projectRecords.get(e.getConceptAlias()).stream()
+                            ? getProjectRecords(e).stream()
                             .filter(r -> Objects.equals(r.expeditionCode(), expeditionCode))
                             .collect(Collectors.toList())
                             : (List<Record>) recordRepository.getRecords(project, expeditionCode, e.getConceptAlias(), e.getRecordType());
