@@ -67,25 +67,30 @@ public class NumericRangeRule extends SingleColumnRule {
                         switch (range.operator) {
                             case GREATER_THEN_EQUALS:
                                 if (numericValue < range.value) {
+                                    if (level().equals(RuleLevel.ERROR)) r.setError();
                                     invalidValues.add(value);
                                 }
                                 break;
                             case GREATER_THEN:
                                 if (numericValue <= range.value) {
+                                    if (level().equals(RuleLevel.ERROR)) r.setError();
                                     invalidValues.add(value);
                                 }
                                 break;
                             case LESS_THEN_EQUALS:
                                 if (numericValue > range.value) {
+                                    if (level().equals(RuleLevel.ERROR)) r.setError();
                                     invalidValues.add(value);
                                 }
                                 break;
                             case LESS_THEN:
                                 if (numericValue >= range.value) {
+                                    if (level().equals(RuleLevel.ERROR)) r.setError();
                                     invalidValues.add(value);
                                 }
                                 break;
                             default:
+                                if (level().equals(RuleLevel.ERROR)) r.setError();
                                 invalidValues.add(value);
                         }
                     }
@@ -93,6 +98,7 @@ public class NumericRangeRule extends SingleColumnRule {
                     if (allowUnknown && value.toLowerCase().equals("unknown")) {
                         // unknown is a valid value
                     } else {
+                        if (level().equals(RuleLevel.ERROR)) r.setError();
                         invalidValues.add(value);
                     }
                 }

@@ -74,6 +74,11 @@ public class RecordSet {
         );
     }
 
+    public boolean hasRecordToPersist() {
+        return records.stream()
+                .anyMatch(Record::persist);
+    }
+
     public void setExpeditionCode(String expeditionCode) {
         if (!Objects.equals(expeditionCode, this.expeditionCode)) {
             cacheBuilt = false; // need to rebuild cache if expeditionCode has changed

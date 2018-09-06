@@ -76,6 +76,7 @@ public class UniqueValueRule extends SingleColumnRule {
 
             if (!value.equals("") && !set.add(value)) {
                 duplicateValues.add(value);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

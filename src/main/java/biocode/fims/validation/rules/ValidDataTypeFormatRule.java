@@ -57,6 +57,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case FLOAT:
@@ -70,6 +71,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case DATE:
@@ -87,6 +89,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case BOOLEAN:
@@ -96,6 +99,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message("\"" + a.getColumn() + "\" contains non-boolean value \"" + value + "\". Must be either true or false")
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     default:

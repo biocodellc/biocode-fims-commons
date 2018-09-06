@@ -78,6 +78,7 @@ public class MinMaxNumberRule extends AbstractRule {
                 );
                 validNumbers = false;
                 isValid = false;
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
             if (hasMaxColVal && !pattern.matcher(maxColVal).matches()) {
@@ -88,6 +89,7 @@ public class MinMaxNumberRule extends AbstractRule {
                 );
                 validNumbers = false;
                 isValid = false;
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
             if (validNumbers && hasMinColVal && hasMaxColVal) {
@@ -99,6 +101,7 @@ public class MinMaxNumberRule extends AbstractRule {
                                 level()
                         );
                         isValid = false;
+                        if (level().equals(RuleLevel.ERROR)) r.setError();
                     }
                 } catch (NumberFormatException e) {
                     messages.addMessage(
@@ -106,6 +109,7 @@ public class MinMaxNumberRule extends AbstractRule {
                             new Message("could not determine if \"" + minColVal + "\" is greater then \"" + maxColVal + "\". Are they both numbers?"),
                             level()
                     );
+                    if (level().equals(RuleLevel.ERROR)) r.setError();
                 }
             }
 

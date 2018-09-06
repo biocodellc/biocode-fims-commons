@@ -51,6 +51,7 @@ public class RequiredValueRule extends MultiColumnRule {
 
                 if (value.equals("")) {
 
+                    if (level().equals(RuleLevel.ERROR)) r.setError();
                     columnsMissingValues.add(
                             getColumnFromUri(uri, recordSet.entity().getAttributes())
                     );

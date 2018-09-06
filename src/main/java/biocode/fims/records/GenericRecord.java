@@ -13,6 +13,7 @@ public class GenericRecord implements Record {
     private int projectId;
     private String expeditionCode;
     protected boolean persist = true;
+    private boolean hasError = false;
 
     public GenericRecord(Map<String, String> properties, String rootIdentifier, int projectId, String expeditionCode, boolean shouldPersist) {
         this.properties = properties;
@@ -78,11 +79,16 @@ public class GenericRecord implements Record {
     }
 
     @Override
+    public void setError() {
+        hasError = true;
+    }
+
+    @Override
     public void setMetadata(RecordMetadata recordMetadata) {}
 
     @Override
     public boolean persist() {
-        return persist;
+        return !hasError && persist;
     }
 
     @Override

@@ -46,6 +46,8 @@ public class DatasetProcessor {
     private final boolean reloadWorkbooks;
     private final boolean ignoreUser;
     private final boolean isUpload;
+    private final boolean writeToServer;
+    private final boolean uploadValid;
     private final String serverDataDir;
     private Dataset dataset;
     private boolean hasError = false;
@@ -65,6 +67,8 @@ public class DatasetProcessor {
         reloadWorkbooks = builder.reloadWorkbooks;
         ignoreUser = builder.ignoreUser;
         isUpload = builder.isUpload;
+        writeToServer = builder.writeToServer;
+        uploadValid = builder.uploadValid;
         serverDataDir = builder.serverDataDir;
         messages = new ArrayList<>();
     }
@@ -128,12 +132,12 @@ public class DatasetProcessor {
 
     public boolean upload() {
         if (dataset == null) {
-            if (!validate() && hasError) {
+            if (!validate() && hasError && !uploadValid) {
                 return false;
             }
         }
 
-        if (hasError) {
+        if (hasError && !uploadValid) {
             throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500, "Server Error");
         }
 
@@ -142,6 +146,7 @@ public class DatasetProcessor {
         }
 
         List<String> expeditionCodes = dataset.stream()
+                .filter(RecordSet::hasRecordToPersist)
                 .map(RecordSet::expeditionCode)
                 .distinct()
                 .collect(Collectors.toList());
@@ -179,7 +184,12 @@ public class DatasetProcessor {
         return processorStatus;
     }
 
+    public Dataset dataset() {
+        return dataset;
+    }
+
     private void writeDataSources() {
+        if (!writeToServer) return;
 
         if (workbookFile != null) {
             writeFileToServer(workbookFile);
@@ -221,6 +231,8 @@ public class DatasetProcessor {
         private boolean reloadWorkbooks = false;
         private boolean ignoreUser = false;
         private boolean isUpload = false;
+        private boolean writeToServer = false;
+        private boolean uploadValid = false;
 
         public Builder(Project project, String expeditionCode, ProcessorStatus processorStatus) {
             this.project = project;
@@ -269,8 +281,29 @@ public class DatasetProcessor {
             return this;
         }
 
-        public Builder isUpload(boolean isUpload) {
-            this.isUpload = isUpload;
+        public Builder upload() {
+            this.isUpload = true;
+            return this;
+        }
+
+        /**
+         * Upload any records that don't have a validation error
+         *
+         * @return
+         */
+        public Builder uploadValid() {
+            upload();
+            this.uploadValid = true;
+            return this;
+        }
+
+        /**
+         * Save Dataset & Workbook files to the server
+         *
+         * @return
+         */
+        public Builder writeToServer() {
+            this.writeToServer = true;
             return this;
         }
 

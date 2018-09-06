@@ -54,6 +54,7 @@ public class RequireValueIfOtherColumnRule extends SingleColumnRule {
 
             if (!otherValue.equals("") && value.equals("")) {
                 valid = false;
+                if (level().equals(RuleLevel.ERROR)) r.setError();
                 messages.addMessage(
                         GROUP_MESSAGE,
                         new Message(

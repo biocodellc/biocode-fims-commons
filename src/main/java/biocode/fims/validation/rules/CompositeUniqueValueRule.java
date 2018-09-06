@@ -51,6 +51,7 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
 
             if (!set.add(composite)) {
                 duplicateValues.add(composite);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

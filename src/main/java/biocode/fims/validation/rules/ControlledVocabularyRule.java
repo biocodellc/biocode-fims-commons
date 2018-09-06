@@ -78,11 +78,13 @@ public class ControlledVocabularyRule extends SingleColumnRule {
 
                 if (!fields.contains(value.toLowerCase())) {
                     invalidValues.add(value);
+                    if (level().equals(RuleLevel.ERROR)) r.setError();
                 }
             } else {
 
                 if (!fields.contains(value)) {
                     invalidValues.add(value);
+                    if (level().equals(RuleLevel.ERROR)) r.setError();
                 }
             }
 

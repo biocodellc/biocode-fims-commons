@@ -10,7 +10,6 @@ import biocode.fims.records.RecordSet;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.utils.RecordHasher;
-import org.apache.commons.collections.keyvalue.MultiKey;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 

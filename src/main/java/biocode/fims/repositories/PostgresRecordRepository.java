@@ -204,6 +204,8 @@ public class PostgresRecordRepository implements RecordRepository {
                     insertParams.add(recordParams);
                 }
 
+                if (insertParams.isEmpty()) continue;
+
                 boolean executeReturning = false;
                 String sqlString;
                 if (recordSet.hasParent() && recordSet.parent().entity().isHashed()) {

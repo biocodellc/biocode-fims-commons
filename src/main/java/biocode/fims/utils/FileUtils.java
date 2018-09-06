@@ -80,7 +80,7 @@ public class FileUtils {
      */
     public static String saveTempFile(InputStream is, String ext) {
         String tempDir = System.getProperty("java.io.tmpdir");
-        File f = createUniqueFile( new StringGenerator().generateString(20) + '.' + ext, tempDir);
+        File f = createUniqueFile( StringGenerator.generateString(20) + '.' + ext, tempDir);
 
         try {
             OutputStream os = new FileOutputStream(f);

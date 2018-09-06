@@ -34,7 +34,17 @@ public interface Record {
 
     /**
      * this indicates that the Record needs to be persisted.
+     *
      * @return
      */
     boolean persist();
+
+    /**
+     * Should be called during validation to indicate that this record contains an Error
+     * <p>
+     * This will prevent this record from being persisted.
+     *
+     * @return
+     */
+    void setError();
 }

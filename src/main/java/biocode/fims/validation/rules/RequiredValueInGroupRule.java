@@ -65,6 +65,7 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
             if (!valid) {
                 String uniqueKey = r.get(uniqueKeyUri);
                 columnsMissingValues.add(uniqueKey);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

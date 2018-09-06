@@ -45,6 +45,9 @@ public class DatasetValidator {
 
         for (RecordSet r : dataset) {
 
+            // skip recordSet validation if there are not records to persist
+            if (!r.hasRecordToPersist()) continue;
+
             processorStatus.appendStatus("\nValidating entity: " + r.conceptAlias());
 
             RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);

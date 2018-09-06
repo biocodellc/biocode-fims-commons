@@ -33,7 +33,7 @@ import java.util.*;
  * <p>
  * - sheetName
  */
-abstract class DelimitedTextReader extends AbstractTabularDataReader {
+public abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
 
     // FEFF because this is the Unicode char represented by the UTF-8 byte order mark (EF BB BF).

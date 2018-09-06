@@ -55,6 +55,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
 
             if (value.equals("") || !parentIdentifiers.contains(value)) {
                 invalidIdentifiers.add(value);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

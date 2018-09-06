@@ -56,6 +56,7 @@ public class ValidForURIRule extends SingleColumnRule {
 
             if (!pattern.matcher(value).matches()) {
                 invalidValues.add(value);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
         }
 

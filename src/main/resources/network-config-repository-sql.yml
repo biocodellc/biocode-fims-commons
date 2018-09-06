@@ -35,6 +35,7 @@ createChildEntityTable: >
       ADD CONSTRAINT network_${networkId}_${conceptAlias}_parent_fkey
       FOREIGN KEY (parent_identifier, expedition_id)
       REFERENCES ${parentTable} (local_identifier, expedition_id) ON DELETE CASCADE;
+  CREATE INDEX idx_network_${networkId}_${conceptAlias}_parent_identifier_expedition_id ON ${table} (parent_identifier, expedition_id);
 
 createNetworkSchema: >
   CREATE SCHEMA network_${networkId};
