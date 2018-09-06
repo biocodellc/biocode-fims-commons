@@ -51,7 +51,7 @@ public class Project {
     private User user;
     private Network network;
     private List<User> projectMembers;
-    private Set<ProjectTemplate> templates;
+    private Set<WorksheetTemplate> templates;
 
     public static class ProjectBuilder {
 
@@ -293,11 +293,11 @@ public class Project {
     @OneToMany(mappedBy = "project",
             fetch = FetchType.LAZY
     )
-    public Set<ProjectTemplate> getTemplates() {
+    public Set<WorksheetTemplate> getTemplates() {
         return templates;
     }
 
-    public void setTemplates(Set<ProjectTemplate> templates) {
+    public void setTemplates(Set<WorksheetTemplate> templates) {
         this.templates = templates;
     }
 

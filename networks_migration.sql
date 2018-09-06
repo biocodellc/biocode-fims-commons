@@ -152,6 +152,9 @@ select create_network(1, 'GeOMe Network', 1);
 alter TABLE projects add COLUMN network_id INTEGER NOT NULL REFERENCES networks (id) DEFAULT 1;
 alter table projects alter column network_id drop default;
 
+-- rename project_templates to worksheet_templates
+alter table project_templates rename to worksheet_templates;
+
 update projects set config = '{}';
 
 -- now you need to upload the network config. After successful upload, run the bash script networks_migrations_post_config.sh

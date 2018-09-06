@@ -46,7 +46,7 @@ public class User {
     private Set<Project> projects;
     private Set<Network> networks;
     private List<Project> projectsMemberOf;
-    private Set<ProjectTemplate> projectTemplates;
+    private Set<WorksheetTemplate> worksheetTemplates;
 
     public static class UserBuilder {
         // Required
@@ -296,12 +296,12 @@ public class User {
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
-    public Set<ProjectTemplate> getProjectTemplates() {
-        return projectTemplates;
+    public Set<WorksheetTemplate> getWorksheetTemplates() {
+        return worksheetTemplates;
     }
 
-    private void setProjectTemplates(Set<ProjectTemplate> projectTemplates) {
-        this.projectTemplates = projectTemplates;
+    private void setWorksheetTemplates(Set<WorksheetTemplate> worksheetTemplates) {
+        this.worksheetTemplates = worksheetTemplates;
     }
 
     @Override

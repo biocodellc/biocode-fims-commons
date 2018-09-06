@@ -2,14 +2,13 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
-import biocode.fims.models.WorksheetTemplate;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
 import biocode.fims.models.Project;
-import biocode.fims.models.ProjectTemplate;
+import biocode.fims.models.WorksheetTemplate;
 import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
@@ -63,7 +62,7 @@ public class ProjectTemplatesResource extends FimsController {
      */
     @JsonView(Views.Detailed.class)
     @GET
-    public Set<ProjectTemplate> getTemplates(@PathParam("projectId") Integer projectId) {
+    public Set<WorksheetTemplate> getTemplates(@PathParam("projectId") Integer projectId) {
 
         Project project = projectService.getProjectWithTemplates(projectId);
 
@@ -71,9 +70,9 @@ public class ProjectTemplatesResource extends FimsController {
             throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400);
         }
 
-        Set<ProjectTemplate> templates = project.getTemplates();
+        Set<WorksheetTemplate> templates = project.getTemplates();
 
-        for (ProjectTemplate template : templates) {
+        for (WorksheetTemplate template : templates) {
             List<Attribute> attributes = project.getProjectConfig().attributesForSheet(template.getWorksheet());
 
             List<String> columns = new ArrayList<>();
@@ -106,10 +105,10 @@ public class ProjectTemplatesResource extends FimsController {
     @POST
     @Authenticated
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public ProjectTemplate create(@FormParam("columns") List<String> columns,
-                                  @FormParam("worksheet") String worksheet,
-                                  @PathParam("configName") String configName,
-                                  @PathParam("projectId") Integer projectId) {
+    public WorksheetTemplate create(@FormParam("columns") List<String> columns,
+                                    @FormParam("worksheet") String worksheet,
+                                    @PathParam("configName") String configName,
+                                    @PathParam("projectId") Integer projectId) {
 
 
         Project project = projectService.getProject(projectId);
@@ -133,12 +132,12 @@ public class ProjectTemplatesResource extends FimsController {
             if (!found) throw new FimsRuntimeException(ProjectTemplateCode.UNKNOWN_COLUMN, 400, col, worksheet);
         }
 
-        ProjectTemplate projectTemplate = new ProjectTemplate(configName, uris, worksheet, project, userContext.getUser());
+        WorksheetTemplate worksheetTemplate = new WorksheetTemplate(configName, uris, worksheet, project, userContext.getUser());
 
-        projectTemplate = projectTemplateService.save(projectTemplate);
+        worksheetTemplate = projectTemplateService.save(worksheetTemplate);
 
-        projectTemplate.setColumns(columns);
-        return projectTemplate;
+        worksheetTemplate.setColumns(columns);
+        return worksheetTemplate;
     }
 
     /**
@@ -153,12 +152,12 @@ public class ProjectTemplatesResource extends FimsController {
     @PUT
     @Authenticated
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public ProjectTemplate update(@FormParam("columns") List<String> columns,
-                                  @PathParam("configName") String configName,
-                                  @PathParam("projectId") Integer projectId) {
+    public WorksheetTemplate update(@FormParam("columns") List<String> columns,
+                                    @PathParam("configName") String configName,
+                                    @PathParam("projectId") Integer projectId) {
 
 
-        ProjectTemplate template = projectTemplateService.get(configName, projectId);
+        WorksheetTemplate template = projectTemplateService.get(configName, projectId);
 
         if (template == null) throw new NotFoundException();
 
@@ -197,7 +196,7 @@ public class ProjectTemplatesResource extends FimsController {
     @Authenticated
     public void delete(@PathParam("configName") String configName,
                        @PathParam("projectId") Integer projectId) {
-        ProjectTemplate template = projectTemplateService.get(configName, projectId);
+        WorksheetTemplate template = projectTemplateService.get(configName, projectId);
 
         if (template == null) throw new NotFoundException();
 
@@ -229,8 +228,8 @@ public class ProjectTemplatesResource extends FimsController {
         }
 
         for (WorksheetTemplate template : worksheetTemplates) {
-            List<Attribute> attributes = project.getProjectConfig().attributesForSheet(template.name);
-            for (String col : template.columns) {
+            List<Attribute> attributes = project.getProjectConfig().attributesForSheet(template.getWorksheet());
+            for (String col : template.getColumns()) {
                 boolean found = false;
                 for (Attribute a : attributes) {
                     if (a.getColumn().equals(col)) {
@@ -240,7 +239,7 @@ public class ProjectTemplatesResource extends FimsController {
                 }
 
                 if (!found) {
-                    throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col, template.name);
+                    throw new FimsRuntimeException(UNKNOWN_COLUMN, 400, col, template.getWorksheet());
                 }
             }
         }
@@ -250,7 +249,7 @@ public class ProjectTemplatesResource extends FimsController {
         ExcelWorkbookWriter workbookWriter = new ExcelWorkbookWriter(project, props.naan(), userContext.getUser());
 
         File file = workbookWriter.write(
-                worksheetTemplates.stream().map(t -> new WriterWorksheet(t.name, t.columns))
+                worksheetTemplates.stream().map(t -> new WriterWorksheet(t.getWorksheet(), t.getColumns()))
                         .collect(Collectors.toList())
         );
 

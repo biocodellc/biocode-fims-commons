@@ -1,6 +1,6 @@
 package biocode.fims.repositories;
 
-import biocode.fims.models.ProjectTemplate;
+import biocode.fims.models.WorksheetTemplate;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
  * @author rjewing
  */
 @Transactional
-public interface ProjectTemplateRepository extends Repository<ProjectTemplate, Integer> {
+public interface ProjectTemplateRepository extends Repository<WorksheetTemplate, Integer> {
 
     @Modifying
-    ProjectTemplate save(ProjectTemplate template);
+    WorksheetTemplate save(WorksheetTemplate template);
 
-    ProjectTemplate getByNameAndProjectProjectId(String configName, Integer projectId);
+    WorksheetTemplate getByNameAndProjectProjectId(String configName, Integer projectId);
 
     void deleteByNameAndProjectProjectId(String configName, Integer projectId);
 }

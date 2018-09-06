@@ -2,7 +2,7 @@ package biocode.fims.service;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
-import biocode.fims.models.ProjectTemplate;
+import biocode.fims.models.WorksheetTemplate;
 import biocode.fims.repositories.ProjectTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 /**
- * Service class for handling {@link biocode.fims.models.ProjectTemplate} persistence
+ * Service class for handling {@link WorksheetTemplate} persistence
  */
 @Transactional
 @Service
@@ -23,7 +23,7 @@ public class ProjectTemplateService {
     }
 
 
-    public ProjectTemplate save(ProjectTemplate template) {
+    public WorksheetTemplate save(WorksheetTemplate template) {
         if (template.getName().equalsIgnoreCase("default")) {
             throw new FimsRuntimeException(ProjectTemplateCode.INVALID_NAME, 400);
         }
@@ -31,7 +31,7 @@ public class ProjectTemplateService {
         return projectTemplateRepository.save(template);
     }
 
-    public ProjectTemplate get(String configName, Integer projectId) {
+    public WorksheetTemplate get(String configName, Integer projectId) {
         return projectTemplateRepository.getByNameAndProjectProjectId(configName, projectId);
     }
 
