@@ -42,12 +42,15 @@ dependencies {
     server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
     server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'
     server 'javax.servlet:javax.servlet-api:3.1.0'
-    server 'org.apache.poi:poi:3.16'
-    server 'org.apache.poi:poi-ooxml:3.16'
+    server 'org.apache.poi:poi:4.0.0'
+    server 'org.apache.poi:poi-ooxml:4.0.0'
     server 'commons-validator:commons-validator:1.5.0'
-    server 'commons-cli:commons-cli:1.2'
+    server 'commons-cli:commons-cli:1.4'
     server 'org.apache.commons:commons-dbcp2:2.1.1'
-    server 'commons-lang:commons-lang:2.6'
+    server 'org.apache.commons:commons-lang3:3.8'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-text
+    server group: 'org.apache.commons', name: 'commons-text', version: '1.4'
+
     server 'com.sun.mail:javax.mail:1.5.5'
     server 'joda-time:joda-time:2.1' // TODO replace with java 8 Date/Times
     server 'org.apache.httpcomponents:httpcore:4.2.1'

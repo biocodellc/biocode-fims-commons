@@ -12,7 +12,7 @@ import biocode.fims.repositories.UserInviteRepository;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.utils.EmailUtils;
 import biocode.fims.utils.StringGenerator;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -132,8 +132,8 @@ public abstract class BaseUserController extends FimsController {
                                    @FormParam("currentPassword") String currentPassword,
                                    @FormParam("newPassword") String newPassword) {
         User user = userContext.getUser();
-        if (org.apache.commons.lang.StringUtils.isBlank(currentPassword) ||
-                org.apache.commons.lang.StringUtils.isBlank(newPassword)) {
+        if (org.apache.commons.lang3.StringUtils.isBlank(currentPassword) ||
+                org.apache.commons.lang3.StringUtils.isBlank(newPassword)) {
             throw new BadRequestException("currentPassword and newPassword must not be blank");
         }
         if (!user.getUsername().equals(username)) {

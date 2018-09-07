@@ -4,7 +4,7 @@ import biocode.fims.config.ConfigValidator;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.DataType;
 import biocode.fims.config.models.Entity;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.regex.Pattern;

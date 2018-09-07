@@ -71,7 +71,7 @@ public class ExcelReader extends AbstractTabularDataReader {
         try {
             excelWb = WorkbookFactory.create(file);
             formulaEvaluator = excelWb.getCreationHelper().createFormulaEvaluator();
-        } catch (InvalidFormatException | IOException e) {
+        } catch (IOException e) {
             throw new FimsRuntimeException(DataReaderCode.READ_ERROR, 500);
         }
     }

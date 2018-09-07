@@ -3,11 +3,6 @@ package biocode.fims.authorizers;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.repositories.ProjectRepository;
-import biocode.fims.repositories.UserRepository;
-import biocode.fims.service.ProjectService;
-import org.apache.commons.lang.StringUtils;
-
-import javax.persistence.PersistenceUnitUtil;
 
 /**
  * @author rjewing

@@ -4,8 +4,8 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.config.network.NetworkConfig;
 import biocode.fims.models.dataTypes.JacksonUtil;
 import biocode.fims.query.PostgresUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 

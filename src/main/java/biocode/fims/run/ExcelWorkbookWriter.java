@@ -271,9 +271,12 @@ public class ExcelWorkbookWriter {
         int cellNum = 0;
 
         for (String column : sheet.columns) {
-            Cell cell = row.createCell(cellNum);
+            String val = record.get(column);
 
-            cell.setCellValue(record.getOrDefault(column, ""));
+            if (val != null && !val.equals("")) {
+                Cell cell = row.createCell(cellNum);
+                cell.setCellValue(val);
+            }
 
             cellNum++;
         }
@@ -325,9 +328,11 @@ public class ExcelWorkbookWriter {
                 nameCell.setCellStyle(nameStyle);
 
                 // Definition
-                Cell defCell = row.createCell(DATA_FIELDS_COLUMNS.DEFINITION);
-                defCell.setCellValue(a.getDefinition());
-                defCell.setCellStyle(wrapStyle);
+                if (a.getDefinition() != null) {
+                    Cell defCell = row.createCell(DATA_FIELDS_COLUMNS.DEFINITION);
+                    defCell.setCellValue(a.getDefinition());
+                    defCell.setCellStyle(wrapStyle);
+                }
 
                 // Controlled Vocabulary
                 for (ControlledVocabularyRule r : vocabularyRules) {
@@ -340,11 +345,10 @@ public class ExcelWorkbookWriter {
                 }
 
                 // Data Format
-                try {
+                if (a.getDataFormat() != null) {
                     Cell formatCell = row.createCell(DATA_FIELDS_COLUMNS.DATA_FORMAT);
                     formatCell.setCellValue(a.getDataFormat());
                     formatCell.setCellStyle(wrapStyle);
-                } catch (NullPointerException npe) {
                 }
             }
         }

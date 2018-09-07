@@ -4,7 +4,7 @@ import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;

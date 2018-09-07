@@ -4,7 +4,7 @@ import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
 import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;

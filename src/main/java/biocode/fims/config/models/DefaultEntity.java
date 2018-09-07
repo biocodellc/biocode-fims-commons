@@ -9,7 +9,7 @@ import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.validation.rules.*;
 import com.fasterxml.jackson.annotation.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
