@@ -2,9 +2,11 @@ package biocode.fims.query;
 
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
+import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -103,5 +105,15 @@ public class QueryResult {
         }
 
         return transformedRecords;
+    }
+
+    public LinkedList<Record> getAsRecord(boolean includeEmpty) {
+        return getAsRecord(includeEmpty, Collections.emptyList());
+    }
+
+    public LinkedList<Record> getAsRecord(boolean includeEmpty, List<String> source) {
+        return get(includeEmpty,source).stream()
+                .map(GenericRecord::new)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 }

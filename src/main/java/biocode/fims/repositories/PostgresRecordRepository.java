@@ -17,7 +17,6 @@ import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.run.Dataset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
         if (result == null) return null;
 
-        Map<String, Object> tableMap = getTableMap(result.networkId, result.conceptAlias);
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(result.networkId, result.conceptAlias);
         tableMap.put("rootIdentifier", rootIdentifier);
 
         // TODO do we want to return the actual Record type here?
@@ -88,7 +87,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
-        Map<String, Object> tableMap = getTableMap(project.getNetwork().getId(), conceptAlias);
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("projectId", project.getProjectId());
@@ -103,7 +102,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
-        Map<String, Object> tableMap = getTableMap(project.getNetwork().getId(), conceptAlias);
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
         sqlParams.put("expeditionCode", expeditionCode);
@@ -140,7 +139,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     private void save(Record record, int networkId, Entity entity, String sql, Map<String, String> extraValues) {
         String localIdentifierUri = entity.getUniqueKeyURI();
-        Map<String, Object> tableMap = getTableMap(networkId, entity.getConceptAlias());
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(networkId, entity.getConceptAlias());
 
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("expeditionCode", record.expeditionCode());
@@ -174,7 +173,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
                 String localIdentifierUri = recordSet.entity().getUniqueKeyURI();
 
-                Map<String, Object> tableMap = getTableMap(networkId, recordSet.conceptAlias());
+                Map<String, Object> tableMap = PostgresUtils.getTableMap(networkId, recordSet.conceptAlias());
 
                 List<HashMap<String, ?>> insertParams = new ArrayList<>();
                 ObjectMapper mapper = new FimsObjectMapper();
@@ -350,16 +349,6 @@ public class PostgresRecordRepository implements RecordRepository {
         return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources), query.page(), query.limit());
     }
 
-
-    private Map<String, Object> getTableMap(int networkId, String conceptAlias) {
-        if (StringUtils.isBlank(conceptAlias)) {
-            throw new IllegalStateException("entity conceptAlias must not be null");
-        }
-
-        Map<String, Object> tableMap = new HashMap<>();
-        tableMap.put("table", PostgresUtils.entityTable(networkId, conceptAlias));
-        return tableMap;
-    }
 
     private Map<String, String> removeEmptyProperties(Map<String, String> properties) {
         Map<String, String> nonEmptyProps = new HashMap<>();

@@ -1,5 +1,9 @@
 package biocode.fims.records;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.util.Map;
 
 /**
@@ -28,6 +32,9 @@ public interface Record {
 
     void set(String property, String value);
 
+    // AnyGetter is useful for /tissues/plates/{projectId}/{plateName} endpoint,
+    // but may cause issues if we want to return any other fields
+    @JsonAnyGetter
     Map<String, String> properties();
 
     void setMetadata(RecordMetadata recordMetadata);

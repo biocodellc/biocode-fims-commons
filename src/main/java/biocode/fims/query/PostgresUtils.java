@@ -1,5 +1,10 @@
 package biocode.fims.query;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author rjewing
  */
@@ -24,4 +29,13 @@ public class PostgresUtils {
         return entityTable(networkId, conceptAlias) + " AS " + conceptAlias;
     }
 
+    public static Map<String, Object> getTableMap(int networkId, String conceptAlias) {
+        if (StringUtils.isBlank(conceptAlias)) {
+            throw new IllegalStateException("entity conceptAlias must not be null");
+        }
+
+        Map<String, Object> tableMap = new HashMap<>();
+        tableMap.put("table", entityTable(networkId, conceptAlias));
+        return tableMap;
+    }
 }
