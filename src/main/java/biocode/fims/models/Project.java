@@ -245,7 +245,6 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
-    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "user_id",
             referencedColumnName = "id",
