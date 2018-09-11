@@ -91,6 +91,19 @@ public class DatasetBuilder {
         return this;
     }
 
+    public void addRecordSet(RecordSet recordSet) {
+        String expeditionCode = (this.expeditionCode == null)
+                ? recordSet.expeditionCode()
+                : verifyExpeditionCode(recordSet);
+
+        if (expeditionCode == null) {
+            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, "data is missing an expeditionCode");
+        }
+
+        add(recordSet);
+    }
+
+
     public DatasetBuilder reloadWorkbooks(boolean reload) {
         this.reloadWorkbooks = reload;
         return this;
@@ -134,17 +147,9 @@ public class DatasetBuilder {
 
         // getRecordSets may return RecordSets with different expeditions but same entity
         for (RecordSet r : reader.getRecordSets()) {
-            String expeditionCode = r.expeditionCode();
-            if (this.expeditionCode != null) {
-                if (expeditionCode != null && !this.expeditionCode.equals(expeditionCode)) {
-                    this.mismatchedExpeditions.computeIfAbsent(
-                            new MultiKey(r.conceptAlias(), r.entity().getWorksheet()),
-                            k -> new HashSet<>()
-                    ).add(expeditionCode);
-                }
-                expeditionCode = this.expeditionCode;
-                r.setExpeditionCode(expeditionCode);
-            }
+            String expeditionCode = (this.expeditionCode == null)
+                    ? r.expeditionCode()
+                    : verifyExpeditionCode(r);
 
             if (expeditionCode == null) {
                 String msg;
@@ -158,20 +163,37 @@ public class DatasetBuilder {
 
             DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
             RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
-            recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
-
-            for (Record record : recordSet.records()) {
-                record.setProjectId(project.getProjectId());
-            }
-
-            Entity e = recordSet.entity();
-
-            if (recordSet.reload()) {
-                reloadedEntities.add(e.getConceptAlias());
-            }
-            if (e.isChildEntity()) childEntities.add(e);
+            add(recordSet);
         }
 
+    }
+
+    private void add(RecordSet recordSet) {
+        recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
+
+        for (Record record : recordSet.records()) {
+            record.setProjectId(project.getProjectId());
+        }
+
+        Entity e = recordSet.entity();
+
+        if (recordSet.reload()) {
+            reloadedEntities.add(e.getConceptAlias());
+        }
+        if (e.isChildEntity()) childEntities.add(e);
+    }
+
+    private String verifyExpeditionCode(RecordSet recordSet) {
+        String expeditionCode = recordSet.expeditionCode();
+        if (expeditionCode != null && !this.expeditionCode.equals(expeditionCode)) {
+            this.mismatchedExpeditions.computeIfAbsent(
+                    new MultiKey(recordSet.conceptAlias(), recordSet.entity().getWorksheet()),
+                    k -> new HashSet<>()
+            ).add(expeditionCode);
+        }
+        expeditionCode = this.expeditionCode;
+        recordSet.setExpeditionCode(expeditionCode);
+        return expeditionCode;
     }
 
     private void mergeProjectRecords() {

@@ -43,6 +43,7 @@ public class DatasetProcessor {
     private final User user;
     private final String workbookFile;
     private final Map<String, RecordMetadata> datasetSources;
+    private final List<RecordSet> recordSets;
     private final boolean reloadWorkbooks;
     private final boolean ignoreUser;
     private final boolean isUpload;
@@ -64,6 +65,7 @@ public class DatasetProcessor {
         processorStatus = builder.processorStatus;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
+        recordSets = builder.recordSets;
         reloadWorkbooks = builder.reloadWorkbooks;
         ignoreUser = builder.ignoreUser;
         isUpload = builder.isUpload;
@@ -86,6 +88,10 @@ public class DatasetProcessor {
                 throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, "expeditionCode is required if you are uploading a non-tabular Dataset");
             }
             datasetBuilder.addDatasource(dataset.getKey(), dataset.getValue());
+        }
+
+        for (RecordSet recordSet : recordSets) {
+            datasetBuilder.addRecordSet(recordSet);
         }
 
         dataset = datasetBuilder.build();
@@ -225,6 +231,7 @@ public class DatasetProcessor {
 
         private String workbookFile;
         private Map<String, RecordMetadata> datasets;
+        private List<RecordSet> recordSets;
 
         // Optional
         private User user;
@@ -239,6 +246,7 @@ public class DatasetProcessor {
             this.expeditionCode = expeditionCode;
             this.processorStatus = processorStatus;
             this.datasets = new HashMap<>();
+            this.recordSets = new ArrayList<>();
         }
 
         public Builder readerFactory(DataReaderFactory readerFactory) {
@@ -268,6 +276,11 @@ public class DatasetProcessor {
 
         public Builder addDataset(String datasetFile, RecordMetadata metadata) {
             datasets.put(datasetFile, metadata);
+            return this;
+        }
+
+        public Builder addRecordSet(RecordSet r) {
+            recordSets.add(r);
             return this;
         }
 
@@ -329,10 +342,10 @@ public class DatasetProcessor {
             return processorStatus != null &&
                     validatorFactory != null &&
                     recordRepository != null &&
-                    readerFactory != null &&
+                    (recordSets.size() > 0 || readerFactory != null) &&
                     serverDataDir != null &&
                     project != null &&
-                    (workbookFile != null || datasets.size() > 0);
+                    (workbookFile != null || datasets.size() > 0 || recordSets.size() > 0);
         }
 
         public DatasetProcessor build() {
@@ -340,7 +353,7 @@ public class DatasetProcessor {
                 return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
-                        "project must not be null and either a workbook or dataset are required.", 500);
+                        "project must not be null and either a workbook, dataset, or recordSet are required.", 500);
             }
         }
     }

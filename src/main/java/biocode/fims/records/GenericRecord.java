@@ -21,10 +21,12 @@ public class GenericRecord implements Record {
         this.projectId = projectId;
         this.expeditionCode = expeditionCode;
         this.persist = shouldPersist;
+        removeFieldProperties();
     }
 
     public GenericRecord(Map<String, String> properties) {
         this.properties = properties;
+        removeFieldProperties();
     }
 
     public GenericRecord() {
@@ -84,11 +86,24 @@ public class GenericRecord implements Record {
     }
 
     @Override
-    public void setMetadata(RecordMetadata recordMetadata) {}
+    public void setMetadata(RecordMetadata recordMetadata) {
+    }
 
     @Override
     public boolean persist() {
         return !hasError && persist;
+    }
+
+    private void removeFieldProperties() {
+        if (properties.containsKey(Record.EXPEDITION_CODE)) {
+            setExpeditionCode(properties.remove(Record.EXPEDITION_CODE));
+        }
+        if (properties.containsKey(Record.PROJECT_ID)) {
+            setProjectId(Integer.parseInt(properties.remove(Record.PROJECT_ID)));
+        }
+        if (properties.containsKey(Record.ROOT_IDENTIFIER)) {
+            properties.remove(Record.ROOT_IDENTIFIER);
+        }
     }
 
     @Override

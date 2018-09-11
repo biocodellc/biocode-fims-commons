@@ -15,6 +15,8 @@ import java.util.Map;
  */
 public interface Record {
     String EXPEDITION_CODE = "expeditionCode";
+    String PROJECT_ID = "projectId";
+    String ROOT_IDENTIFIER = "rootIdentifier";
 
     int projectId();
 

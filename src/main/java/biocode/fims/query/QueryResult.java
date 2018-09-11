@@ -85,7 +85,7 @@ public class QueryResult {
             if ((skipSourceFilter || source.contains(Record.EXPEDITION_CODE)) && record.expeditionCode() != null) {
                 properties.put(Record.EXPEDITION_CODE, record.expeditionCode());
             }
-            if ((skipSourceFilter || source.contains("projectId")) && record.projectId() != 0 ) {
+            if ((skipSourceFilter || source.contains(Record.PROJECT_ID)) && record.projectId() != 0 ) {
                 properties.put("projectId", record.projectId() == 0 ? null : String.valueOf(record.projectId()));
             }
 
