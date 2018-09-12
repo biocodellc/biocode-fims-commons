@@ -48,7 +48,7 @@ dependencies {
 
     // this version is temporary until https://github.com/dhatim/fastexcel/pull/34 is merged & released
     // we can remove the above maven-dev-releases as well
-    server group: 'org.dhatim', name: 'fastexcel', version: '11c43c5-SNAPSHOT'
+    server group: 'org.dhatim', name: 'fastexcel', version: '9eab1ee-SNAPSHOT'
 
     server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
     server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'

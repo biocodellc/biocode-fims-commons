@@ -10,9 +10,7 @@ import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import biocode.fims.validation.rules.RuleLevel;
-import org.dhatim.fastexcel.StyleSetter;
-import org.dhatim.fastexcel.Workbook;
-import org.dhatim.fastexcel.Worksheet;
+import org.dhatim.fastexcel.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -77,8 +75,10 @@ public class ExcelWorkbookWriter {
             cfs.add(cf);
 
 
+            List<Worksheet> dataSheets = new ArrayList<>();
             for (WriterWorksheet sheet : sheets) {
                 Worksheet dataWs = workbook.newWorksheet(sheet.sheetName);
+                dataSheets.add(dataWs);
                 cf = CompletableFuture.runAsync(() -> writeDataSheet(sheet, dataWs));
                 cfs.add(cf);
             }
@@ -90,7 +90,7 @@ public class ExcelWorkbookWriter {
             }
 
             Worksheet listsSheet = workbook.newWorksheet(LISTS_SHEET_NAME);
-            cf = CompletableFuture.runAsync(() -> createListsSheetAndValidations(sheets, listsSheet));
+            cf = CompletableFuture.runAsync(() -> createListsSheetAndValidations(sheets, listsSheet, dataSheets));
             cfs.add(cf);
 
             @SuppressWarnings("unchecked")
@@ -322,7 +322,7 @@ public class ExcelWorkbookWriter {
      * This function creates a sheet called "Lists" and then creates the pertinent validations for each of the lists
      */
 
-    private void createListsSheetAndValidations(List<WriterWorksheet> sheets, Worksheet listsSheet) {
+    private void createListsSheetAndValidations(List<WriterWorksheet> sheets, Worksheet listsSheet, List<Worksheet> dataSheets) {
         // Track which column number we're looking at
         int col = 0;
 
@@ -349,59 +349,49 @@ public class ExcelWorkbookWriter {
 
                 }
 
-                // TODO re-enable this when fastexcel support DataValidation
-                // Get the letter of this column
-//                String listColumnLetter = CellReference.convertNumToColString(col);
-
-                // Figure out the last row number
-//                int endRowNum = fields.size() + 1;
+                Range listRange = listsSheet.range(0, col, fields.size() + 1, col);
 
                 // DATA VALIDATION COMPONENT
-//                for (WriterWorksheet sheet : sheets) {
-//                    List<ControlledVocabularyRule> vocabularyRules = vocabRules(sheet.sheetName);
-//
-//                    List<ControlledVocabularyRule> rules = vocabularyRules.stream()
-//                            .filter(r -> r.listName().equals(list.getAlias()))
-//                            .collect(Collectors.toList());
-//
-//                    for (ControlledVocabularyRule r : rules) {
-//                        column = sheet.columns.indexOf(r.column());
-//                        if (column > -1) {
-//
-//                            // Set the Constraint to a particular column on the lists sheet
-//                            // The following syntax works well and shows popup boxes: Lists!S:S
-//                            // replacing the previous syntax which does not show popup boxes ListsS
-//                            // Assumes that header is in column #1
-//                            String constraintSyntax = LISTS_SHEET_NAME + "!$" + listColumnLetter + "$2:$" + listColumnLetter + "$" + endRowNum;
-//
-//                            DataValidationHelper dvHelper = listsSheet.getDataValidationHelper();
-//
-//                            XSSFDataValidationConstraint dvConstraint =
-//                                    (XSSFDataValidationConstraint) dvHelper.createFormulaListConstraint(constraintSyntax);
-//
-//                            // This defines an address range for this particular list
-//                            CellRangeAddressList addressList = new CellRangeAddressList();
-//                            addressList.addCellRangeAddress(1, column, 50000, column);
-//
-//                            XSSFDataValidation dataValidation =
-//                                    (XSSFDataValidation) dvHelper.createValidation(dvConstraint, addressList);
-//
-//                            // Data validation styling
-//                            dataValidation.setSuppressDropDownArrow(true);
-//                            dataValidation.setShowErrorBox(true);
-//                            // Give the user the appropriate data validation error msg, depending upon the rules error level
-//                            if (r.level().equals(RuleLevel.ERROR)) {
-//                                dataValidation.createErrorBox("Data Validation Error", ERROR_MSG);
-//                                dataValidation.setErrorStyle(DataValidation.ErrorStyle.WARNING);
-//                            } else {
-//                                dataValidation.createErrorBox("Data Validation Warning", WARNING_MSG);
-//                                dataValidation.setErrorStyle(DataValidation.ErrorStyle.INFO);
-//                            }
-//                            // Add the validation to the worksheet
-//                            workbook.getSheet(sheet.sheetName).addValidationData(dataValidation);
-//                        }
-//                    }
-//                }
+                for (WriterWorksheet sheet : sheets) {
+                    List<ControlledVocabularyRule> vocabularyRules = vocabRules(sheet.sheetName);
+
+                    List<ControlledVocabularyRule> rules = vocabularyRules.stream()
+                            .filter(r -> r.listName().equals(list.getAlias()))
+                            .collect(Collectors.toList());
+
+                    Worksheet ws = dataSheets.stream().filter(s -> s.getName().equals(sheet.sheetName)).findFirst().get();
+
+                    for (ControlledVocabularyRule r : rules) {
+                        int column = sheet.columns.indexOf(r.column());
+                        if (column > -1) {
+
+                            // This defines an address range we want to place the DataValidation on
+                            Range dataRange = ws.range(1, column, 100000, column);
+
+                            ListDataValidation dataValidation = DataValidation.list(dataRange, listRange);
+
+
+                            // Data validation styling
+                            dataValidation
+                                    .showDropdown(false)
+                                    .showErrorMessage(true);
+                            // Give the user the appropriate data validation error msg, depending upon the rules error level
+                            if (r.level().equals(RuleLevel.ERROR)) {
+                                dataValidation
+                                        .errorTitle("Data Validation Error")
+                                        .error(ERROR_MSG)
+                                        .errorStyle(DataValidationErrorStyle.STOP);
+                            } else {
+                                dataValidation
+                                        .errorTitle("Data Validation Warning")
+                                        .error(WARNING_MSG)
+                                        .errorStyle(DataValidationErrorStyle.INFORMATION);
+                            }
+                            // Add the validation to the worksheet
+                            ws.addValidation(dataValidation);
+                        }
+                    }
+                }
                 col++;
             }
         }
