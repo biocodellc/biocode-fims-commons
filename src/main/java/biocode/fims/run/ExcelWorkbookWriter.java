@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.config.Config;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Field;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -37,24 +38,43 @@ public class ExcelWorkbookWriter {
 
     private final static String RED_FONT = "FF2600";
 
-    protected final Project project;
+    private final Project project;
     private final int naan;
     private final User user;
-    private Workbook workbook;
+    private final Config config;
 
-    public ExcelWorkbookWriter(Project project, int naan) {
-        this(project, naan, null);
+    /**
+     * Constructor for writing a network based workbook. If there is
+     * only a single project, use the ExcelWorkbookWriter(Project, int, User)
+     * constructor
+     *
+     * @param config
+     * @param naan
+     */
+    public ExcelWorkbookWriter(Config config, int naan) {
+        this.config = config;
+        this.naan = naan;
+        this.project = null;
+        this.user = null;
     }
 
+    /**
+     * Constructor for writing a project specific workbook
+     *
+     * @param project
+     * @param naan
+     * @param user
+     */
     public ExcelWorkbookWriter(Project project, int naan, User user) {
         this.project = project;
+        this.config = project.getProjectConfig();
         this.naan = naan;
         this.user = user;
     }
 
     public File write(List<WriterWorksheet> sheets) {
         // Create the output Filename and Write Excel File
-        String filename = project.getProjectTitle() + ".xlsx";
+        String filename = ((project == null) ? "workbook" : project.getProjectTitle()) + ".xlsx";
         File file = FileUtils.createUniqueFile(filename, System.getProperty("java.io.tmpdir"));
         try (OutputStream os = new FileOutputStream(file)) {
             Workbook workbook = new Workbook(os, "MyApplication", "1.0");
@@ -119,25 +139,23 @@ public class ExcelWorkbookWriter {
 
         // Hide NAAN in first row, first column
         instructionsSheet.value(0, 0, "~naan=" + naan + "~");
-
-        // Hide Project_id in first row, second column
-        instructionsSheet.value(0, 1, "~project_id=" + project.getProjectId() + "~");
-
         instructionsSheet.hideRow(0, true);
 
         StyleSetter styleSetter;
-        // The name of this project as specified by the sheet
-        instructionsSheet.value(row, 0, project.getProjectTitle());
-        styleSetter = instructionsSheet.style(row, 0);
-        styleHeading(styleSetter, false);
-        styleCentered(styleSetter);
+        if (project != null) {
+            // The name of this project as specified by the sheet
+            instructionsSheet.value(row, 0, project.getProjectTitle());
+            styleSetter = instructionsSheet.style(row, 0);
+            styleHeading(styleSetter, false);
+            styleCentered(styleSetter);
+        }
         row++;
 
 
         // Print todays date with user name
-        DateFormat dateFormat = new SimpleDateFormat("MMMMM dd, yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
         Calendar cal = Calendar.getInstance();
-        String dateAndUser = "Template generated ";
+        String dateAndUser = ((project == null) ? "Workbook" : "Template") + " generated ";
         if (user != null) {
             dateAndUser += "by '" + user.getUsername() + "' ";
         }
@@ -221,7 +239,7 @@ public class ExcelWorkbookWriter {
 
     private void writeHeaderRow(WriterWorksheet sheet, Worksheet worksheet) {
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.config.getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
 
         int col = 0;
         for (String column : sheet.columns) {
@@ -257,7 +275,7 @@ public class ExcelWorkbookWriter {
      */
     private void createDataFields(String sheetName, List<String> columns, Worksheet dataFieldsSheet) {
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.config.getRequiredColumns(sheetName, RuleLevel.ERROR);
 
         int row = 0;
 
@@ -273,7 +291,7 @@ public class ExcelWorkbookWriter {
 
         row++;
 
-        for (Attribute a : project.getProjectConfig().attributesForSheet(sheetName)) {
+        for (Attribute a : config.attributesForSheet(sheetName)) {
 
             if (columns.contains(a.getColumn())) {
 
@@ -326,7 +344,7 @@ public class ExcelWorkbookWriter {
         // Track which column number we're looking at
         int col = 0;
 
-        for (biocode.fims.config.models.List list : project.getProjectConfig().lists()) {
+        for (biocode.fims.config.models.List list : config.lists()) {
 
             // List of fields from this validation rule
             List<Field> fields = list.getFields();
@@ -399,7 +417,7 @@ public class ExcelWorkbookWriter {
 
 
     private List<ControlledVocabularyRule> vocabRules(String sheetName) {
-        return project.getProjectConfig().entitiesForSheet(sheetName)
+        return config.entitiesForSheet(sheetName)
                 .stream()
                 .flatMap(e -> e.getRules().stream())
                 .filter(ControlledVocabularyRule.class::isInstance)
