@@ -243,9 +243,11 @@ class WriterSheetGenerator {
 
             // rename and update the existing bcid if needed
             if (!replacedBcid) {
-                this.records.forEach(r -> {
-                    r.put(firstEntity + "_bcid", r.get("bcid"));
-                    r.remove("bcid");
+                this.records.forEach(er -> {
+                    String bcid = er.remove("bcid");
+                    if (bcid != null) {
+                        er.put(firstEntity + "_bcid", bcid);
+                    }
                 });
                 replacedBcid = true;
             }
