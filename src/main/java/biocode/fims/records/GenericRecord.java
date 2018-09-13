@@ -99,7 +99,10 @@ public class GenericRecord implements Record {
             setExpeditionCode(properties.remove(Record.EXPEDITION_CODE));
         }
         if (properties.containsKey(Record.PROJECT_ID)) {
-            setProjectId(Integer.parseInt(properties.remove(Record.PROJECT_ID)));
+            String val = properties.remove(Record.PROJECT_ID);
+            if (projectId == 0) {
+                setProjectId(Integer.parseInt(val));
+            }
         }
         if (properties.containsKey(Record.ROOT_IDENTIFIER)) {
             properties.remove(Record.ROOT_IDENTIFIER);

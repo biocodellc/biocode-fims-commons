@@ -67,8 +67,9 @@ public class RecordJoiner {
             data.putAll(r.properties());
             data.put(rootIdentifierKey, r.rootIdentifier());
         }
+        data.putAll(record.properties());
 
-        return new GenericRecord(data, null, record.projectId(), record.expeditionCode(), false);
+        return new GenericRecord(data, record.rootIdentifier(), record.projectId(), record.expeditionCode(), false);
     }
 
     /**
