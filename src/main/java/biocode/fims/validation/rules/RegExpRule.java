@@ -65,10 +65,10 @@ public class RegExpRule extends SingleColumnRule {
                 continue;
             }
 
-            if (!pattern.matcher(value).matches())
-
+            if (!pattern.matcher(value).matches()) {
                 invalidValues.add(value);
-            if (level().equals(RuleLevel.ERROR)) r.setError();
+                if (level().equals(RuleLevel.ERROR)) r.setError();
+            }
         }
 
 
