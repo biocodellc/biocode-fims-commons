@@ -28,13 +28,6 @@ fims {
 }
 
 repositories {
-    maven {
-        url "http://repo.biocodellc.com/repository/maven-dev-releases/"
-        credentials {
-            username mavenUser
-            password mavenPass
-        }
-    }
     add(fims.mavenFims())
     mavenLocal()
 }
@@ -46,9 +39,7 @@ dependencies {
     server group: 'org.glassfish.jersey.ext', name: 'jersey-spring4', version: '2.27'
     server group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.25.1'
 
-    // this version is temporary until https://github.com/dhatim/fastexcel/pull/34 is merged & released
-    // we can remove the above maven-dev-releases as well
-    server group: 'org.dhatim', name: 'fastexcel', version: '9eab1ee-SNAPSHOT'
+    server group: 'org.dhatim', name: 'fastexcel', version: '0.9.7'
 
     server 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
     server group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'

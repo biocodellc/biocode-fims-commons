@@ -139,7 +139,7 @@ public class ExcelWorkbookWriter {
 
         // Hide NAAN in first row, first column
         instructionsSheet.value(0, 0, "~naan=" + naan + "~");
-        instructionsSheet.hideRow(0, true);
+        instructionsSheet.hideRow(0);
 
         StyleSetter styleSetter;
         if (project != null) {
@@ -384,9 +384,8 @@ public class ExcelWorkbookWriter {
                         if (column > -1) {
 
                             // This defines an address range we want to place the DataValidation on
-                            Range dataRange = ws.range(1, column, 100000, column);
 
-                            ListDataValidation dataValidation = DataValidation.list(dataRange, listRange);
+                            ListDataValidation dataValidation = ws.range(1, column, 100000, column).validateWithList(listRange);
 
 
                             // Data validation styling
@@ -405,8 +404,6 @@ public class ExcelWorkbookWriter {
                                         .error(WARNING_MSG)
                                         .errorStyle(DataValidationErrorStyle.INFORMATION);
                             }
-                            // Add the validation to the worksheet
-                            ws.addValidation(dataValidation);
                         }
                     }
                 }
