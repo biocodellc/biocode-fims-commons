@@ -23,6 +23,8 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
 
     Project findByProjectId(int projectId);
 
+    List<Project> findAllByProjectConfigurationId(int configId);
+
     List<Project> findAll();
 
     @Query("select case when (count(p) > 0) then true else false end from Project p join p.projectMembers pm where p.projectId=:projectId and pm.userId=:userId")

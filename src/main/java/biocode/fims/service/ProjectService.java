@@ -1,13 +1,6 @@
 package biocode.fims.service;
 
-import biocode.fims.config.network.NetworkConfig;
 import biocode.fims.config.models.Entity;
-import biocode.fims.config.project.ProjectConfig;
-import biocode.fims.config.project.ProjectConfigUpdator;
-import biocode.fims.config.project.models.PersistedProjectConfig;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
@@ -56,7 +49,6 @@ public class ProjectService {
 
     @SetFimsUser
     public void update(Project project) {
-        validateAndSetProjectConfig(project);
         projectRepository.save(project);
     }
 
@@ -162,45 +154,13 @@ public class ProjectService {
         return filteredProjects;
     }
 
-    private void validateAndSetProjectConfig(Project project) {
-        if (project == null) {
-            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
-        }
-
-        if (!project.hasConfigChanged()) {
-            return;
-        }
-
-        ProjectConfig config = project.getProjectConfig();
-
-        NetworkConfig networkConfig = project.getNetwork().getNetworkConfig();
-
-        if (!config.isValid(networkConfig)) {
-            throw new FimsRuntimeException(ConfigCode.INVALID, 400);
-        }
-
-        PersistedProjectConfig persistedProjectConfig = projectRepository.getConfig(project.getProjectId());
-        ProjectConfig existingConfig = persistedProjectConfig.toProjectConfig(project.getNetwork().getNetworkConfig());
-
-        if (existingConfig == null) {
-            existingConfig = new ProjectConfig();
-        }
-
-        ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
-        project.setProjectConfig(updator.update(existingConfig));
-
-        if (updator.newEntities().size() > 0) {
-            createEntityBcids(updator.newEntities(), project.getProjectId());
-        }
-
-        // we don't delete records here
-    }
-
-    private void createEntityBcids(List<Entity> entities, int projectId) {
-        for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(e, entities, e.getUser());
-            e.getEntityIdentifiers().addAll(entityIdentifiers);
-            expeditionService.update(e);
+    void createEntityBcids(List<Entity> entities, int configId) {
+        for (Project project : projectRepository.findAllByProjectConfigurationId(configId)) {
+            for (Expedition e : expeditionService.getExpeditions(project.getProjectId(), true)) {
+                List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(e, entities, e.getUser());
+                e.getEntityIdentifiers().addAll(entityIdentifiers);
+                expeditionService.update(e);
+            }
         }
     }
 }

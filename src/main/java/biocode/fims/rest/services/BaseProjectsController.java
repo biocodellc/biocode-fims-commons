@@ -13,6 +13,7 @@ import javax.ws.rs.*;
  * API endpoints for working with projects. This includes fetching details associated with projects.
  * Currently, there are no REST services for creating projects, which instead must be added to the Database
  * manually by an administrator
+ *
  * @exclude
  */
 public abstract class BaseProjectsController extends FimsController {
@@ -28,7 +29,6 @@ public abstract class BaseProjectsController extends FimsController {
 
 
     /**
-     *
      * @responseType biocode.fims.rest.services.subResources.ProjectsResource
      */
     @Path("/")
@@ -37,7 +37,6 @@ public abstract class BaseProjectsController extends FimsController {
     }
 
     /**
-     *
      * @responseType biocode.fims.rest.services.subResources.ProjectTemplatesResource
      * @resourceTag Templates
      */
@@ -47,7 +46,6 @@ public abstract class BaseProjectsController extends FimsController {
     }
 
     /**
-     *
      * @responseType biocode.fims.rest.services.subResources.ExpeditionsResource
      * @resourceTag Expeditions
      */
@@ -57,7 +55,6 @@ public abstract class BaseProjectsController extends FimsController {
     }
 
     /**
-     *
      * @responseType biocode.fims.rest.services.subResources.ProjectMembersResource
      * @resourceTag Members
      */
@@ -67,11 +64,18 @@ public abstract class BaseProjectsController extends FimsController {
     }
 
     /**
-     *
-     * @responseType biocode.fims.rest.services.subResources.ProjectConfigurationResource
-     * @resourceTag Config
+     * @responseType biocode.fims.rest.services.subResources.ProjectConfigResource
      */
     @Path("/{projectId}/config")
+    public Resource getProjectConfigResource() {
+        return Resource.from(ProjectConfigResource.class);
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectConfigurationResource
+     * @resourceTag Project Configurations
+     */
+    @Path("/configs")
     public Resource getProjectConfigurationResource() {
         return Resource.from(ProjectConfigurationResource.class);
     }

@@ -31,7 +31,6 @@ public class Network {
     private Date created;
     private Date modified;
     private User user;
-    private List<Project> projects;
 
     // needed for hibernate
     Network() {}
@@ -120,16 +119,6 @@ public class Network {
     public void setUser(User user) {
         this.user = user;
     }
-
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "projects")
-//    public List<Project> getProjects() {
-//        return projects;
-//    }
-//
-//    private void setProjects(List<Project> projects) {
-//        this.projects = projects;
-//    }
 
     @Override
     public boolean equals(Object o) {

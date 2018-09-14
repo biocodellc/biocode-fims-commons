@@ -40,6 +40,7 @@ public class FimsApplication extends ResourceConfig {
         // otherwise, the VersionTransformer advice will not register with the subResource method
         register(ProjectsResource.class);
         register(ProjectMembersResource.class);
+        register(ProjectConfigResource.class);
         register(ProjectConfigurationResource.class);
         register(NetworksResource.class);
         register(NetworkConfigurationResource.class);

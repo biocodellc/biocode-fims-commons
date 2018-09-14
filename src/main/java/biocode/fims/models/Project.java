@@ -43,9 +43,7 @@ public class Project {
     private Date created;
     private Date modified;
     private String description;
-    private ProjectConfig projectConfig;
-    private PersistedProjectConfig persistedProjectConfig;
-    private boolean configChanged = false;
+    private ProjectConfiguration projectConfiguration;
     private boolean isPublic;
     private List<Expedition> expeditions;
     private User user;
@@ -58,16 +56,16 @@ public class Project {
         // Required
         private String projectCode;
         private String projectTitle;
-        private ProjectConfig projectConfig;
+        public ProjectConfiguration projectConfiguration;
 
         // Optional
         private boolean isPublic = true;
         private String description;
 
-        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig) {
+        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfiguration projectConfiguration) {
             this.projectCode = projectCode;
             this.projectTitle = projectTitle;
-            this.projectConfig = projectConfig;
+            this.projectConfiguration = projectConfiguration;
         }
 
         public ProjectBuilder isPublic(boolean isPublic) {
@@ -89,7 +87,7 @@ public class Project {
     private Project(ProjectBuilder builder) {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
-        projectConfig = builder.projectConfig;
+        projectConfiguration = builder.projectConfiguration;
         isPublic = builder.isPublic;
         description = builder.description;
     }
@@ -152,36 +150,9 @@ public class Project {
     }
 
     @JsonIgnore
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb", name = "config")
-    public PersistedProjectConfig getPersistedProjectConfig() {
-        return persistedProjectConfig;
-    }
-
-    private void setPersistedProjectConfig(PersistedProjectConfig persistedProjectConfig) {
-        this.persistedProjectConfig = persistedProjectConfig;
-    }
-
-    @JsonIgnore
     @Transient
     public ProjectConfig getProjectConfig() {
-        if (projectConfig == null) {
-            projectConfig = persistedProjectConfig.toProjectConfig(network.getNetworkConfig());
-        }
-        return projectConfig;
-    }
-
-    public void setProjectConfig(ProjectConfig projectConfig) {
-        if (!Objects.equals(projectConfig, this.projectConfig)) {
-            this.projectConfig = projectConfig;
-            this.persistedProjectConfig = PersistedProjectConfig.fromProjectConfig(projectConfig);
-            configChanged = true;
-        }
-    }
-
-    @JsonIgnore
-    public boolean hasConfigChanged() {
-        return configChanged;
+        return projectConfiguration == null ? null : projectConfiguration.getProjectConfig();
     }
 
     @JsonView(Views.Detailed.class)
@@ -258,6 +229,25 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    /**
+     * you probably want {@link #getProjectConfig()}
+     *
+     * @return
+     */
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
+    @ManyToOne
+    @JoinColumn(name = "config_id",
+            referencedColumnName = "id"
+    )
+    public ProjectConfiguration getProjectConfiguration() {
+        return projectConfiguration;
+    }
+
+    public void setProjectConfiguration(ProjectConfiguration projectConfiguration) {
+        this.projectConfiguration = projectConfiguration;
     }
 
     @JsonView(Views.Detailed.class)

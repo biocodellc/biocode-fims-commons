@@ -79,7 +79,7 @@ public class FimsRestTestAppConfig {
                 // otherwise, the VersionTransformer advice will not register with the subResource method
                 ProjectsResource.class,
                 ProjectMembersResource.class,
-                ProjectConfigurationResource.class,
+                ProjectConfigResource.class,
                 ExpeditionsResource.class,
                 ProjectTemplatesResource.class
         )));

@@ -1,18 +1,19 @@
 package biocode.fims.rest.services.subResources;
 
-import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
-import biocode.fims.models.Project;
-import biocode.fims.rest.FimsController;
+import biocode.fims.models.ProjectConfiguration;
 import biocode.fims.rest.Compress;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.ProjectService;
+import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.serializers.Views;
+import biocode.fims.service.ProjectConfigurationService;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import biocode.fims.application.config.FimsProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -28,62 +29,74 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectConfigurationResource extends FimsController {
 
-    private final ProjectService projectService;
+    private final ProjectConfigurationService projectConfigurationService;
 
     @Autowired
-    public ProjectConfigurationResource(ProjectService projectService, FimsProperties props) {
+    public ProjectConfigurationResource(ProjectConfigurationService projectConfigurationService, FimsProperties props) {
         super(props);
-        this.projectService = projectService;
+        this.projectConfigurationService = projectConfigurationService;
     }
 
     /**
-     * Get a project config
-     *
-     * @param projectId
-     * @return
+     * Get all ProjectConfigurations
      */
-    @Compress
+    @JsonView(Views.Summary.class)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public ProjectConfig getConfig(@PathParam("projectId") Integer projectId) {
-
-        Project project = projectService.getProject(projectId);
-
-        if (project == null) {
-            throw new BadRequestException("Invalid projectId");
-        }
-
-        return project.getProjectConfig();
+    public List<ProjectConfiguration> all() {
+        return projectConfigurationService.getProjectConfigurations();
     }
 
     /**
-     * Update the project config
+     * Get a ProjectConfiguration
      *
-     * @param config    The updated project object
-     * @param projectId The id of the project to update
+     * @param id
+     * @return
      */
-    @PUT
-    @Authenticated
-    @Admin
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("projectId") Integer projectId,
-                           ProjectConfig config) {
+    @JsonView(Views.DetailedConfig.class)
+    @Compress
+    @Path("{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public ProjectConfiguration get(@PathParam("id") Integer id) {
 
-        Project project = projectService.getProject(projectId);
+        ProjectConfiguration configuration = projectConfigurationService.getProjectConfiguration(id);
 
-        if (project == null) throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
-
-        if (!projectService.isProjectAdmin(userContext.getUser(), project)) {
-            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
+        if (configuration == null) {
+            throw new BadRequestException("Invalid config id");
         }
 
-        project.setProjectConfig(config);
+        return configuration;
+    }
+
+    /**
+     * Update the ProjectConfiguration
+     *
+     * @param config The updated project configuration
+     * @param id     The id of the configuration to update
+     */
+    @PUT
+    @Path("{id}")
+    @Authenticated
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response update(@PathParam("id") Integer id,
+                           ProjectConfiguration config) {
+
+        ProjectConfiguration configuration = projectConfigurationService.getProjectConfiguration(id);
+
+        if (configuration == null) {
+            throw new BadRequestException("Invalid config id");
+        }
+
+        if (!userContext.getUser().equals(configuration.getUser())) {
+            throw new ForbiddenRequestException("You must be this configuration's admin in order to update");
+        }
 
         try {
-            projectService.update(project);
+            projectConfigurationService.update(config);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.errors())).build();
+                return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.getProjectConfig().errors())).build();
             } else {
                 throw e;
             }

@@ -207,9 +207,9 @@ CREATE TABLE projects (
   project_code project_code NOT NULL,
   project_title TEXT,
   description TEXT,
-  config JSONB NOT NULL,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  config_id INTEGER NOT NULL REFERENCES project_configurations (id),
   user_id INTEGER NOT NULL REFERENCES users (id),
   network_id INTEGER NOT NULL REFERENCES networks (id),
   public BOOLEAN NOT NULL DEFAULT '1'
@@ -227,18 +227,33 @@ CREATE TRIGGER set_projects_createdtime BEFORE INSERT ON projects FOR EACH ROW E
 COMMENT ON COLUMN projects.project_code is 'The short name for this project';
 COMMENT ON COLUMN projects.public is 'Whether or not this is a public project?';
 
+DROP TABLE IF EXISTS project_configurations;
+CREATE TABLE project_configurations (
+  id SERIAL PRIMARY KEY NOT NULL,
+  description TEXT,
+  config JSONB NOT NULL,
+  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  user_id INTEGER NOT NULL REFERENCES users (id),
+  network_id INTEGER NOT NULL REFERENCES networks (id),
+  network_approved BOOLEAN NOT NULL DEFAULT '0'
+);
+CREATE INDEX project_configurations_user_id_idx ON project_configurations (user_id);
+CREATE TRIGGER update_project_configurations_modtime BEFORE INSERT OR UPDATE ON project_configurations FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER set_project_configurations_createdtime BEFORE INSERT ON project_configurations FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
 DROP TABLE IF EXISTS project_config_history;
 CREATE TABLE project_config_history
   (
     id bigserial primary key,
     user_name text,
     ts TIMESTAMP WITH TIME ZONE NOT NULL,
-    action TEXT NOT NULL CHECK (action IN ('I','D','U', 'T')),
+    action TEXT NOT NULL CHECK (action IN ('I','D','U','T')),
     config jsonb,
-    project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE
+    project_configuration_id INTEGER NOT NULL REFERENCES project_configurations (id) ON DELETE CASCADE
   );
 
-CREATE TRIGGER project_config_history AFTER INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE config_history('project_config_history', 'project_id');
+CREATE TRIGGER project_config_history AFTER INSERT OR UPDATE ON project_configurations FOR EACH ROW EXECUTE PROCEDURE config_history('project_config_history', 'project_configuration_id');
 
 COMMENT ON COLUMN project_config_history.user_name is 'user who made the change';
 COMMENT ON COLUMN project_config_history.ts is 'timestamp the change happened';
