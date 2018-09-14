@@ -43,6 +43,10 @@ public class DataSourceMetadata {
         return filename;
     }
 
+    public boolean isReload() {
+        return reload;
+    }
+
     public RecordMetadata toRecordMetadata(Set<DataReader.DataReaderType> readerTypes) {
         DataReader.DataReaderType readerType = null;
 
