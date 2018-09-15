@@ -20,7 +20,9 @@ public interface ProjectConfigurationRepository extends Repository<ProjectConfig
 
     void save(ProjectConfiguration projectConfiguration);
 
-    ProjectConfiguration findById(int projectId);
+    ProjectConfiguration findById(int id);
 
     List<ProjectConfiguration> findAll();
+
+    List<ProjectConfiguration> findAllByNetworkApproved(boolean networkApproved);
 }

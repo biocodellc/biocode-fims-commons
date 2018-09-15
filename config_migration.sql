@@ -33,8 +33,8 @@ CREATE TRIGGER project_config_history AFTER INSERT OR UPDATE ON project_configur
 INSERT INTO project_configurations (config, name, user_id, network_id) SELECT config, project_code, user_id, network_id from projects where id in (1,2);
 
 -- add existing projects to network
-alter TABLE projects add COLUMN config_id INTEGER NOT NULL REFERENCES project_configurations (id) DEFAULT 1;
 alter table projects drop column config;
+alter TABLE projects add COLUMN config_id INTEGER NOT NULL REFERENCES project_configurations (id) DEFAULT 1;
 alter table projects alter column config_id drop default;
 update project_configurations set user_id = 1, network_approved = true;
 update project_configurations set name = 'Biocode' where id = ? ;

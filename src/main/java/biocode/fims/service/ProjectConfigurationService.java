@@ -62,6 +62,10 @@ public class ProjectConfigurationService {
         return projectConfigurationRepository.findAll();
     }
 
+    public List<ProjectConfiguration> getNetworkApprovedProjectConfigurations() {
+        return projectConfigurationRepository.findAllByNetworkApproved(true);
+    }
+
     private void validateAndSetProjectConfig(ProjectConfiguration projectConfiguration) {
         if (projectConfiguration == null) {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);

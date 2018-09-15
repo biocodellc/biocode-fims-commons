@@ -1,9 +1,11 @@
 package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.Project;
 import biocode.fims.models.ProjectConfiguration;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
@@ -12,6 +14,7 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectConfigurationService;
+import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +46,11 @@ public class ProjectConfigurationResource extends FimsController {
     @JsonView(Views.Summary.class)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectConfiguration> all() {
-        return projectConfigurationService.getProjectConfigurations();
+    public List<ProjectConfiguration> all(@QueryParam("networkApproved") @DefaultValue("false") Flag networkApproved) {
+
+        return networkApproved.isPresent()
+                ? projectConfigurationService.getNetworkApprovedProjectConfigurations()
+                : projectConfigurationService.getProjectConfigurations();
     }
 
     /**
@@ -92,8 +98,10 @@ public class ProjectConfigurationResource extends FimsController {
             throw new ForbiddenRequestException("You must be this configuration's admin in order to update");
         }
 
+        updateExistingProjectConfiguration(configuration, config);
+
         try {
-            projectConfigurationService.update(config);
+            projectConfigurationService.update(configuration);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.getProjectConfig().errors())).build();
@@ -104,6 +112,18 @@ public class ProjectConfigurationResource extends FimsController {
         }
 
         return Response.ok(config).build();
+    }
+
+
+    /**
+     * method to transfer the updated {@link ProjectConfiguration} object to an existing {@link ProjectConfiguration}. This
+     * allows us to control which properties can be updated.
+     * Currently allows updating of the following properties : description, name, config
+     */
+    private void updateExistingProjectConfiguration(ProjectConfiguration existing, ProjectConfiguration updated) {
+        existing.setName(updated.getName());
+        existing.setDescription(updated.getDescription());
+        existing.setProjectConfig(updated.getProjectConfig());
     }
 
     private static class InvalidResponse {
