@@ -8,6 +8,7 @@ import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Network;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
+import biocode.fims.rest.NetworkId;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.NetworkService;
@@ -15,7 +16,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -29,6 +32,9 @@ public class NetworkConfigurationResource extends FimsController {
 
     private final NetworkService networkService;
 
+    @Context
+    private NetworkId networkId;
+
     @Autowired
     public NetworkConfigurationResource(NetworkService networkService, FimsProperties props) {
         super(props);
@@ -38,15 +44,14 @@ public class NetworkConfigurationResource extends FimsController {
     /**
      * Get a network config
      *
-     * @param networkId
      * @return
      */
     @Compress
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public NetworkConfig getConfig(@PathParam("networkId") Integer networkId) {
+    public NetworkConfig getConfig() {
 
-        Network network = networkService.getNetwork(networkId);
+        Network network = networkService.getNetwork(networkId.get());
 
         if (network == null) {
             throw new BadRequestException("Invalid networkId");
@@ -59,22 +64,20 @@ public class NetworkConfigurationResource extends FimsController {
      * Update the network config
      *
      * @param config    The updated network object
-     * @param networkId The id of the network to update
      */
     @Compress
     @PUT
     @Authenticated
     @Admin
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response update(@PathParam("networkId") Integer networkId,
-                           NetworkConfig config) {
+    public Response update(NetworkConfig config) {
 
-        if (!networkService.isNetworkAdmin(userContext.getUser(), networkId)) {
+        if (!networkService.isNetworkAdmin(userContext.getUser(), networkId.get())) {
             throw new ForbiddenRequestException("You must be this network's admin in order to update the metadata");
         }
 
         try {
-            networkService.saveConfig(config, networkId);
+            networkService.saveConfig(config, networkId.get());
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                 return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.errors())).build();

@@ -32,8 +32,8 @@ public abstract class BaseProjectsController extends FimsController {
      * @responseType biocode.fims.rest.services.subResources.ProjectsResource
      */
     @Path("/")
-    public Resource getProjectsResource() {
-        return Resource.from(ProjectsResource.class);
+    public Class<ProjectsResource> getProjectsResource() {
+        return ProjectsResource.class;
     }
 
     /**
@@ -41,8 +41,8 @@ public abstract class BaseProjectsController extends FimsController {
      * @resourceTag Templates
      */
     @Path("{projectId}/templates")
-    public Resource getTemplatesResource() {
-        return Resource.from(ProjectTemplatesResource.class);
+    public Class<ProjectTemplatesResource> getTemplatesResource() {
+        return ProjectTemplatesResource.class;
     }
 
     /**
@@ -50,8 +50,8 @@ public abstract class BaseProjectsController extends FimsController {
      * @resourceTag Expeditions
      */
     @Path("{projectId}/expeditions")
-    public Resource getExpeditionsResource() {
-        return Resource.from(ExpeditionsResource.class);
+    public Class<ExpeditionsResource> getExpeditionsResource() {
+        return ExpeditionsResource.class;
     }
 
     /**
@@ -59,16 +59,16 @@ public abstract class BaseProjectsController extends FimsController {
      * @resourceTag Members
      */
     @Path("{projectId}/members")
-    public Resource getProjectMembersResource() {
-        return Resource.from(ProjectMembersResource.class);
+    public Class<ProjectMembersResource> getProjectMembersResource() {
+        return ProjectMembersResource.class;
     }
 
     /**
      * @responseType biocode.fims.rest.services.subResources.ProjectConfigResource
      */
     @Path("/{projectId}/config")
-    public Resource getProjectConfigResource() {
-        return Resource.from(ProjectConfigResource.class);
+    public Class<ProjectConfigResource> getProjectConfigResource() {
+        return ProjectConfigResource.class;
     }
 
     /**
@@ -76,7 +76,7 @@ public abstract class BaseProjectsController extends FimsController {
      * @resourceTag Project Configurations
      */
     @Path("/configs")
-    public Resource getProjectConfigurationResource() {
-        return Resource.from(ProjectConfigurationResource.class);
+    public Class<ProjectConfigurationResource> getProjectConfigurationResource() {
+        return ProjectConfigurationResource.class;
     }
 }

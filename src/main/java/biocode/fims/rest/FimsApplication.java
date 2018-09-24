@@ -25,6 +25,7 @@ public class FimsApplication extends ResourceConfig {
 
         register(ObjectMapperContextResolver.class);
         register(JacksonFeature.class);
+        register(new NetworkId.Binder());
 
         register(FimsExceptionMapper.class);
 
