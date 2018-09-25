@@ -36,5 +36,8 @@ INSERT INTO project_configurations (config, name, user_id, network_id) SELECT co
 alter table projects drop column config;
 alter TABLE projects add COLUMN config_id INTEGER NOT NULL REFERENCES project_configurations (id) DEFAULT 1;
 alter table projects alter column config_id drop default;
+alter table projects alter column project_code drop not null;
+alter table projects alter column project_title set not null;
+CREATE UNIQUE INDEX projects_project_title_idx ON projects (project_title);
 update project_configurations set user_id = 1, network_approved = true;
 update project_configurations set name = 'Biocode' where id = ? ;

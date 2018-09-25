@@ -1,13 +1,13 @@
 package biocode.fims.service;
 
 import biocode.fims.config.models.Entity;
-import biocode.fims.models.EntityIdentifier;
-import biocode.fims.models.Expedition;
-import biocode.fims.models.Project;
-import biocode.fims.models.User;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.DataIntegrityMessage;
+import biocode.fims.models.*;
 import biocode.fims.repositories.ProjectRepository;
 import biocode.fims.repositories.SetFimsUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnitUtil;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -40,14 +41,19 @@ public class ProjectService {
         this.userService = userService;
     }
 
-    public void create(Project project, int userId) {
-        User user = entityManager.getReference(User.class, userId);
-        project.setUser(user);
+    public Project create(Project project) {
+        try {
+            Project p = projectRepository.save(project);
 
-        update(project);
+            User user = loadMemberProjects(p.getUser());
+            user.getProjectsMemberOf().add(p);
+            userService.update(user);
+            return p;
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException(new DataIntegrityMessage(e).toString(), e);
+        }
     }
 
-    @SetFimsUser
     public void update(Project project) {
         projectRepository.save(project);
     }
@@ -61,10 +67,7 @@ public class ProjectService {
     public boolean isUserMemberOfProject(User user, int projectId) {
         if (user == null) return false;
 
-        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
-        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
-            user = userService.getUserWithMemberProjects(user.getUsername());
-        }
+        user = loadMemberProjects(user);
 
         for (Project userProject : user.getProjectsMemberOf()) {
             if (userProject.getProjectId() == projectId) {
@@ -73,6 +76,14 @@ public class ProjectService {
         }
 
         return false;
+    }
+
+    private User loadMemberProjects(User user) {
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
+            return userService.getUserWithMemberProjects(user.getUsername());
+        }
+        return user;
     }
 
     public Project getProjectWithMembers(int projectId) {

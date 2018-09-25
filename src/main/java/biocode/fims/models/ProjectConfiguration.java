@@ -35,10 +35,12 @@ public class ProjectConfiguration {
     private User user;
     private Network network;
 
-    public ProjectConfiguration(String description, ProjectConfig projectConfig, Network network) {
-        this.description = description;
+    public ProjectConfiguration(String name, ProjectConfig projectConfig, Network network) {
+        this.name = name;
         this.projectConfig = projectConfig;
         this.network = network;
+        this.persistedProjectConfig = PersistedProjectConfig.fromProjectConfig(projectConfig);
+        configChanged = true;
     }
 
     // needed for hibernate

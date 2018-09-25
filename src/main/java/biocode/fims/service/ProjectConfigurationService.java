@@ -11,6 +11,7 @@ import biocode.fims.models.*;
 import biocode.fims.repositories.ProjectConfigurationRepository;
 import biocode.fims.repositories.SetFimsUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,35 +39,37 @@ public class ProjectConfigurationService {
         this.projectService = projectService;
     }
 
-    public void create(ProjectConfiguration config, int userId) {
+    @SetFimsUser
+    public ProjectConfiguration create(ProjectConfiguration config, int userId) {
         User user = entityManager.getReference(User.class, userId);
         config.setUser(user);
 
-        update(config);
+        return update(config);
     }
 
     @SetFimsUser
-    public void update(ProjectConfiguration config) {
-        validateAndSetProjectConfig(config);
-        projectConfigurationRepository.save(config);
+    public ProjectConfiguration update(ProjectConfiguration config) {
+        validateProjectConfig(config);
+        return projectConfigurationRepository.save(config);
     }
 
     public ProjectConfiguration getProjectConfiguration(int id) {
-        ProjectConfiguration config = projectConfigurationRepository.findById(id);
-        // build ProjectConfig so jackson will serialize it
-//        if (config != null) config.getProjectConfig();
-        return config;
+        return projectConfigurationRepository.findById(id);
     }
 
-    public List<ProjectConfiguration> getProjectConfigurations() {
-        return projectConfigurationRepository.findAll();
+    public List<ProjectConfiguration> getProjectConfigurations(User user) {
+        return user == null
+                ? projectConfigurationRepository.findAll()
+                : projectConfigurationRepository.findAllByUserUserId(user.getUserId());
     }
 
-    public List<ProjectConfiguration> getNetworkApprovedProjectConfigurations() {
-        return projectConfigurationRepository.findAllByNetworkApproved(true);
+    public List<ProjectConfiguration> getNetworkApprovedProjectConfigurations(User user) {
+        return user == null
+                ? projectConfigurationRepository.findAllByNetworkApproved(true)
+                : projectConfigurationRepository.findAllByNetworkApprovedOrUserUserId(true, user.getUserId());
     }
 
-    private void validateAndSetProjectConfig(ProjectConfiguration projectConfiguration) {
+    private void validateProjectConfig(ProjectConfiguration projectConfiguration) {
         if (projectConfiguration == null) {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400);
         }
@@ -83,10 +86,11 @@ public class ProjectConfigurationService {
             throw new FimsRuntimeException(ConfigCode.INVALID, 400);
         }
 
-        PersistedProjectConfig persistedProjectConfig = projectConfigurationRepository.getConfig(projectConfiguration.getId());
-        ProjectConfig existingConfig = persistedProjectConfig.toProjectConfig(projectConfiguration.getNetwork().getNetworkConfig());
-
-        if (existingConfig == null) {
+        ProjectConfig existingConfig;
+        try {
+            PersistedProjectConfig persistedProjectConfig = projectConfigurationRepository.getConfig(projectConfiguration.getId());
+            existingConfig = persistedProjectConfig.toProjectConfig(projectConfiguration.getNetwork().getNetworkConfig());
+        } catch (EmptyResultDataAccessException e) {
             existingConfig = new ProjectConfig();
         }
 

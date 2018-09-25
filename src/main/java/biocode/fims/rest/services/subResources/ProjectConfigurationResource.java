@@ -1,21 +1,18 @@
 package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
-import biocode.fims.config.project.ProjectConfig;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.Project;
 import biocode.fims.models.ProjectConfiguration;
+import biocode.fims.models.User;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.serializers.JsonViewOverride;
+import biocode.fims.rest.responses.InvalidConfigurationResponse;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectConfigurationService;
 import biocode.fims.utils.Flag;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,11 +43,17 @@ public class ProjectConfigurationResource extends FimsController {
     @JsonView(Views.Summary.class)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectConfiguration> all(@QueryParam("networkApproved") @DefaultValue("false") Flag networkApproved) {
+    public List<ProjectConfiguration> all(@QueryParam("networkApproved") @DefaultValue("false") Flag networkApproved,
+                                          @QueryParam("user") @DefaultValue("false") Flag includeUser) {
+        if (includeUser.isPresent() && userContext.getUser() == null) {
+            throw new BadRequestException("user flag must not be present for un-authenticated requests");
+        }
+
+        User user = includeUser.isPresent() ? userContext.getUser() : null;
 
         return networkApproved.isPresent()
-                ? projectConfigurationService.getNetworkApprovedProjectConfigurations()
-                : projectConfigurationService.getProjectConfigurations();
+                ? projectConfigurationService.getNetworkApprovedProjectConfigurations(user)
+                : projectConfigurationService.getProjectConfigurations(user);
     }
 
     /**
@@ -104,7 +107,7 @@ public class ProjectConfigurationResource extends FimsController {
             projectConfigurationService.update(configuration);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode().equals(ConfigCode.INVALID)) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidResponse(config.getProjectConfig().errors())).build();
+                return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidConfigurationResponse(config.getProjectConfig().errors())).build();
             } else {
                 throw e;
             }
@@ -124,14 +127,5 @@ public class ProjectConfigurationResource extends FimsController {
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         existing.setProjectConfig(updated.getProjectConfig());
-    }
-
-    private static class InvalidResponse {
-        @JsonProperty
-        private List<String> errors;
-
-        InvalidResponse(List<String> errors) {
-            this.errors = errors;
-        }
     }
 }

@@ -18,11 +18,15 @@ import java.util.List;
 @Transactional
 public interface ProjectConfigurationRepository extends Repository<ProjectConfiguration, Integer>, ProjectConfigurationCustomOperations {
 
-    void save(ProjectConfiguration projectConfiguration);
+    ProjectConfiguration save(ProjectConfiguration projectConfiguration);
 
     ProjectConfiguration findById(int id);
 
     List<ProjectConfiguration> findAll();
 
+    List<ProjectConfiguration> findAllByUserUserId(int userId);
+
     List<ProjectConfiguration> findAllByNetworkApproved(boolean networkApproved);
+
+    List<ProjectConfiguration> findAllByNetworkApprovedOrUserUserId(boolean networkApproved, int userId);
 }

@@ -204,8 +204,8 @@ CREATE DOMAIN project_code as text CHECK (length(value) <= 10);
 
 CREATE TABLE projects (
   id SERIAL PRIMARY KEY NOT NULL,
-  project_code project_code NOT NULL,
-  project_title TEXT,
+  project_code project_code,
+  project_title TEXT NOT NULL,
   description TEXT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -219,6 +219,7 @@ CREATE INDEX projects_user_id_idx ON projects (user_id);
 -- CREATE INDEX projects_network_id_idx ON projects (network_id);
 CREATE INDEX projects_public_idx ON projects (public);
 CREATE UNIQUE INDEX projects_project_code_idx ON projects (project_code);
+CREATE UNIQUE INDEX projects_project_title_idx ON projects (project_title);
 ALTER TABLE projects ADD CONSTRAINT projects_project_code_uniq UNIQUE USING INDEX projects_project_code_idx;
 
 CREATE TRIGGER update_projects_modtime BEFORE INSERT OR UPDATE ON projects FOR EACH ROW EXECUTE PROCEDURE update_modified_column();

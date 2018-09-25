@@ -1,23 +1,38 @@
 package biocode.fims.rest.services.subResources;
 
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.Network;
 import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
+import biocode.fims.models.ProjectConfiguration;
+import biocode.fims.rest.Compress;
+import biocode.fims.rest.NetworkId;
+import biocode.fims.rest.responses.InvalidConfigurationResponse;
 import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.NetworkService;
+import biocode.fims.service.ProjectConfigurationService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,18 +43,26 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectsResource extends FimsController {
     private final ProjectService projectService;
+    private final ProjectConfigurationService projectConfigurationService;
+    private final NetworkService networkService;
+
+    @Context
+    private NetworkId networkId;
 
     @Autowired
-    public ProjectsResource(ProjectService projectService,
-                            FimsProperties props) {
+    public ProjectsResource(ProjectService projectService, ProjectConfigurationService projectConfigurationService,
+                            NetworkService networkService, FimsProperties props) {
         super(props);
         this.projectService = projectService;
+        this.projectConfigurationService = projectConfigurationService;
+        this.networkService = networkService;
     }
 
     /**
      * Fetch all projects available to the current user
      *
      * @param includePublic If we should include public projects
+     * @param projectTitle  A filter on the projectTitle field.
      * @param admin         Flag used to request projects the authenticated user is an admin for. Note: this flag
      *                      takes precedence over all other query params
      */
@@ -47,12 +70,61 @@ public class ProjectsResource extends FimsController {
     @UserEntityGraph("User.withProjectsAndProjectsMemberOf")
     @GET
     public List<Project> getProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
+                                     @QueryParam("projectTitle") String projectTitle,
                                      @QueryParam("admin") @DefaultValue("false") Flag admin) {
         if (admin.isPresent()) {
             return new ArrayList<>(userContext.getUser().getProjects());
         }
 
-        return projectService.getProjects(userContext.getUser(), includePublic);
+        List<Project> projects = projectService.getProjects(userContext.getUser(), includePublic);
+
+        return projectTitle == null
+                ? projects
+                : projects.stream().filter(p -> projectTitle.equals(p.getProjectTitle())).collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Compress
+    @JsonView(Views.DetailedConfig.class)
+    @Authenticated
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response create(NewProject project) {
+        project.setUser(userContext.getUser());
+
+        if (project.getProjectConfiguration() == null && project.projectConfig == null) {
+            throw new BadRequestException("projectConfig or projectConfiguration must be present");
+        }
+
+        Network network = networkService.getNetwork(networkId.get());
+        if (network == null) {
+            throw new BadRequestException("Invalid network");
+        }
+        project.setNetwork(network);
+
+        ProjectConfiguration configuration;
+        if (project.projectConfig != null) {
+            configuration = new ProjectConfiguration(project.getProjectTitle(), project.projectConfig, network);
+            try {
+                configuration = projectConfigurationService.create(configuration, userContext.getUser().getUserId());
+            } catch (FimsRuntimeException e) {
+                if (e.getErrorCode().equals(ConfigCode.INVALID)) {
+                    return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidConfigurationResponse(configuration.getProjectConfig().errors())).build();
+                } else {
+                    throw e;
+                }
+
+            }
+        } else {
+            configuration = projectConfigurationService.getProjectConfiguration(project.getProjectConfiguration().getId());
+            if (configuration == null) {
+                throw new BadRequestException("invalid projectConfiguration id");
+            }
+        }
+
+        project.setProjectConfiguration(configuration);
+
+        return Response.ok(projectService.create(project.toProject())).build();
     }
 
 
@@ -102,5 +174,27 @@ public class ProjectsResource extends FimsController {
         existingProject.setProjectTitle(updatedProject.getProjectTitle());
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setPublic(updatedProject.isPublic());
+    }
+
+    private static class NewProject extends Project {
+        public ProjectConfig projectConfig;
+
+        public NewProject() {
+            super();
+        }
+
+        Project toProject() {
+            Project p = new Project.ProjectBuilder(
+                    this.getDescription(),
+                    this.getProjectTitle(),
+                    this.getProjectConfiguration())
+                    .isPublic(this.isPublic())
+                    .build();
+            p.setUser(this.getUser());
+            p.setProjectMembers(this.getProjectMembers());
+            p.setNetwork(this.getNetwork());
+
+            return p;
+        }
     }
 }

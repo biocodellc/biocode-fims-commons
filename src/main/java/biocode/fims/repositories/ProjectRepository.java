@@ -19,7 +19,7 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
     @Modifying
     void delete(Project project);
 
-    void save(Project project);
+    Project save(Project project);
 
     Project findByProjectId(int projectId);
 

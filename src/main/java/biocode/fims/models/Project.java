@@ -54,16 +54,16 @@ public class Project {
     public static class ProjectBuilder {
 
         // Required
-        private String projectCode;
+        private String description;
         private String projectTitle;
         public ProjectConfiguration projectConfiguration;
 
         // Optional
         private boolean isPublic = true;
-        private String description;
+        private String projectCode;
 
-        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfiguration projectConfiguration) {
-            this.projectCode = projectCode;
+        public ProjectBuilder(String description, String projectTitle, ProjectConfiguration projectConfiguration) {
+            this.description = description;
             this.projectTitle = projectTitle;
             this.projectConfiguration = projectConfiguration;
         }
@@ -73,8 +73,8 @@ public class Project {
             return this;
         }
 
-        public ProjectBuilder description(String description) {
-            this.description = description;
+        public ProjectBuilder projectCode(String projectCode) {
+            this.projectCode = projectCode;
             return this;
         }
 
@@ -93,7 +93,7 @@ public class Project {
     }
 
     // needed for hibernate
-    Project() {
+    protected Project() {
     }
 
     @JsonView(Views.Summary.class)
@@ -149,7 +149,7 @@ public class Project {
         this.modified = modified;
     }
 
-    @JsonIgnore
+    @JsonView(Views.DetailedConfig.class)
     @Transient
     public ProjectConfig getProjectConfig() {
         return projectConfiguration == null ? null : projectConfiguration.getProjectConfig();

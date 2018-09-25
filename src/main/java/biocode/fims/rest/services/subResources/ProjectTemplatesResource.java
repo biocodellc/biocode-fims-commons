@@ -115,7 +115,7 @@ public class ProjectTemplatesResource extends FimsController {
         List<Attribute> attributes = project.getProjectConfig().attributesForSheet(worksheet);
 
         if (!projectAuthorizer.userHasAccess(userContext.getUser(), project)) {
-            throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400, project.getProjectCode());
+            throw new FimsRuntimeException(ProjectCode.UNAUTHORIZED, 400, project.getProjectTitle());
         }
 
         List<String> uris = new ArrayList<>();
