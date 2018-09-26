@@ -150,7 +150,7 @@ CREATE TABLE users (
   id SERIAL PRIMARY KEY NOT NULL,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
-  email TEXT,
+  email TEXT NOT NULL,
   first_name TEXT,
   last_name TEXT,
   institution TEXT,

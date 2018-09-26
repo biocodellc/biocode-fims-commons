@@ -6,18 +6,22 @@ import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.rest.responses.AcknowledgedResponse;
 import biocode.fims.rest.responses.ConfirmationResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.rest.responses.DynamicViewResponse;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.UUID;
@@ -55,34 +59,35 @@ public abstract class BaseUserController extends FimsController {
     /**
      * get user
      *
-     * @responseMessage 403 you must be authenticated to access a users profile `biocode.fims.utils.ErrorInfo
-     * @responseMessage 403 you must be a project admin to access another user's profile `biocode.fims.utils.ErrorInfo
+     * @responseType biocode.fims.models.User
      */
     @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
     @Path("/{username}")
     @GET
-    @Authenticated
-    public User getUser(@PathParam("username") String username) {
-        if (!userContext.getUser().getUsername().equals(username) &&
-                !userService.isAProjectAdmin(userContext.getUser())) {
-            throw new ForbiddenRequestException("You must be a project admin to access another user's profile");
-        }
+    public DynamicViewResponse<User> getUser(@PathParam("username") String username, @Context ObjectMapper objectMapper) {
+        User user = userService.getUser(username);
 
-        return userService.getUser(username);
+        User authenticatedUser = userContext.getUser();
+        if (authenticatedUser != null && (
+                authenticatedUser.getUsername().equals(username) || userService.isAProjectAdmin(authenticatedUser))) {
+            return new DynamicViewResponse<>(user, Views.Detailed.class);
+        }
+        return new DynamicViewResponse<>(user, Views.Public.class);
     }
 
     /**
-     * create a new user. must have a valid invite token
+     * create a new user
      *
      * @param user
+     * @param inviteId (optional) A valid invite token
      * @responseMessage 400 invalid user object `biocode.fims.utils.ErrorInfo
      * @responseMessage 400 invalid invite code `biocode.fims.utils.ErrorInfo
      * @responseMessage 400 duplicate username `biocode.fims.utils.ErrorInfo
      */
     @JsonView(Views.Detailed.class)
     @POST
-    public User createUser(@QueryParam("id") UUID inviteId,
+    public User createUser(@QueryParam("inviteId") UUID inviteId,
                            User user) {
         return userService.create(user, user.getPassword(), inviteId);
     }

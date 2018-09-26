@@ -38,6 +38,8 @@ alter TABLE projects add COLUMN config_id INTEGER NOT NULL REFERENCES project_co
 alter table projects alter column config_id drop default;
 alter table projects alter column project_code drop not null;
 alter table projects alter column project_title set not null;
+alter table users alter column email set not null;
 CREATE UNIQUE INDEX projects_project_title_idx ON projects (project_title);
+-- CREATE UNIQUE INDEX users_user_email_idx ON users (email);
 update project_configurations set user_id = 1, network_approved = true;
 update project_configurations set name = 'Biocode' where id = ? ;
