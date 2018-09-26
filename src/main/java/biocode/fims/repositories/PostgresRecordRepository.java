@@ -17,7 +17,7 @@ import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.run.Dataset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -51,17 +51,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     public RecordResult get(String rootIdentifier, String localIdentifier) {
-        EntityIdentifierResult result = jdbcTemplate.queryForObject(
-                sql.getProperty("selectEntityIdentifier"),
-                new MapSqlParameterSource().addValue("rootIdentifier", rootIdentifier),
-                (rs, rowNum) -> {
-                    EntityIdentifierResult r = new EntityIdentifierResult();
-                    r.conceptAlias = rs.getString("conceptAlias");
-                    r.expeditionId = rs.getInt("expeditionId");
-                    r.networkId = rs.getInt("networkId");
-                    return r;
-                }
-        );
+        EntityIdentifierResult result = getEntityIdentifierResult(rootIdentifier);
 
         if (result == null) return null;
 
@@ -71,7 +61,7 @@ public class PostgresRecordRepository implements RecordRepository {
         // TODO do we want to return the actual Record type here?
         try {
             Record record = jdbcTemplate.queryForObject(
-                    StrSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
+                    StringSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
                     new MapSqlParameterSource()
                             .addValue("localIdentifier", localIdentifier)
                             .addValue("expeditionId", result.expeditionId)
@@ -86,6 +76,37 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    public boolean delete(String rootIdentifier, String localIdentifier) {
+        EntityIdentifierResult result = getEntityIdentifierResult(rootIdentifier);
+
+        if (result == null) return false;
+
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(result.networkId, result.conceptAlias);
+        tableMap.put("rootIdentifier", rootIdentifier);
+
+        return jdbcTemplate.update(
+                StringSubstitutor.replace(sql.getProperty("deleteRecord"), tableMap),
+                new MapSqlParameterSource()
+                        .addValue("identifier", localIdentifier)
+                        .addValue("expeditionId", result.expeditionId)
+        ) > 0;
+    }
+
+    private EntityIdentifierResult getEntityIdentifierResult(String rootIdentifier) {
+        return jdbcTemplate.queryForObject(
+                    sql.getProperty("selectEntityIdentifier"),
+                    new MapSqlParameterSource().addValue("rootIdentifier", rootIdentifier),
+                    (rs, rowNum) -> {
+                        EntityIdentifierResult r = new EntityIdentifierResult();
+                        r.conceptAlias = rs.getString("conceptAlias");
+                        r.expeditionId = rs.getInt("expeditionId");
+                        r.networkId = rs.getInt("networkId");
+                        return r;
+                    }
+            );
+    }
+
+    @Override
     public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
         Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
@@ -94,7 +115,7 @@ public class PostgresRecordRepository implements RecordRepository {
         sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
-                StrSubstitutor.replace(sql.getProperty("selectProjectRecords"), tableMap),
+                StringSubstitutor.replace(sql.getProperty("selectProjectRecords"), tableMap),
                 sqlParams,
                 rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
         );
@@ -110,7 +131,7 @@ public class PostgresRecordRepository implements RecordRepository {
         sqlParams.put("conceptAlias", conceptAlias);
 
         return jdbcTemplate.query(
-                StrSubstitutor.replace(sql.getProperty("selectExpeditionRecords"), tableMap),
+                StringSubstitutor.replace(sql.getProperty("selectExpeditionRecords"), tableMap),
                 sqlParams,
                 rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
         );
@@ -159,7 +180,7 @@ public class PostgresRecordRepository implements RecordRepository {
         }
 
         jdbcTemplate.update(
-                StrSubstitutor.replace(sql, tableMap),
+                StringSubstitutor.replace(sql, tableMap),
                 params
         );
     }
@@ -222,7 +243,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     for (HashMap p : insertParams) {
                         // we use query here b/c our update statement may return a value
                         List<String> old_parent = jdbcTemplate.query(
-                                StrSubstitutor.replace(sqlString, tableMap),
+                                StringSubstitutor.replace(sqlString, tableMap),
                                 p,
                                 (rs, rowNum) -> rs.getString("parent_identifier")
                         );
@@ -234,7 +255,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     }
                 } else {
                     jdbcTemplate.batchUpdate(
-                            StrSubstitutor.replace(sqlString, tableMap),
+                            StringSubstitutor.replace(sqlString, tableMap),
                             insertParams.toArray(new HashMap[insertParams.size()])
                     );
                 }
@@ -263,7 +284,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     }
 
                     jdbcTemplate.update(
-                            StrSubstitutor.replace(deleteSql, tableMap),
+                            StringSubstitutor.replace(deleteSql, tableMap),
                             deleteParams
                     );
                 } else if (updatedHashedParents.size() > 0) {
@@ -278,7 +299,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     tableMap.put("table", PostgresUtils.entityTable(networkId, recordSet.entity().getParentEntity()));
 
                     jdbcTemplate.update(
-                            StrSubstitutor.replace(deleteSql, tableMap),
+                            StringSubstitutor.replace(deleteSql, tableMap),
                             deleteParams
                     );
                 }

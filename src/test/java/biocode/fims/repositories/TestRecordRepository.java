@@ -29,6 +29,10 @@ public class TestRecordRepository implements RecordRepository {
         throw new NotImplementedException();
     }
 
+    @Override
+    public boolean delete(String rootIdentifier, String localIdentifier) {
+        throw new NotImplementedException();
+    }
 
     @Override
     public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {

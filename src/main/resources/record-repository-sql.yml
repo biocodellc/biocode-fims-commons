@@ -50,7 +50,7 @@ selectEntityIdentifier: >
   SELECT p.network_id AS "networkId", i.expedition_id AS "expeditionId", i.concept_alias AS "conceptAlias"
   FROM entity_identifiers i
     JOIN expeditions e on e.id = i.expedition_id
-    JOIN project p on e.project_id = p.id
+    JOIN projects p on e.project_id = p.id
   WHERE i.identifier = :rootIdentifier
 
 selectRecord: >
@@ -72,6 +72,11 @@ selectExpeditionRecords: >
     INNER JOIN expeditions e on r.expedition_id = e.id
     INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
   WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
+
+deleteRecord: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = :expeditionId and local_identifier = :identifier
 
 deleteRecords: >
   DELETE

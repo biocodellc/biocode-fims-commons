@@ -22,6 +22,8 @@ public interface RecordRepository {
 
     RecordResult get(String rootIdentifier, String localIdentifier);
 
+    boolean delete(String rootIdentifier, String localIdentifier);
+
     List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
 
     List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType);

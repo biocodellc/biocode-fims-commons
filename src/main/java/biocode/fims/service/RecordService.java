@@ -47,25 +47,26 @@ public class RecordService {
         props = properties;
     }
 
+    public boolean delete(User user, String arkID) {
+        Identifier identifier = parseIdentifier(arkID);
+        EntityIdentifier entityIdentifier = getEntityIdentifier(identifier);
 
-    public RecordResponse get(User user, String arkID, boolean includeParent, boolean includeChildren) {
-        Identifier identifier;
-        try {
-            identifier = new Identifier(arkID, props.divider());
-        } catch (ArrayIndexOutOfBoundsException e) {
+        if (entityIdentifier == null) {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
         }
 
-        if (!identifier.hasSuffix()) {
-            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "The provided identifier is a rootIdentifier and does not contain a suffix, therefore we can't fetch a record");
+        if (!entityIdentifier.getExpedition().getUser().equals(user) ||
+                !entityIdentifier.getExpedition().getProject().getUser().equals(user)) {
+            throw new ForbiddenRequestException("You are not authorized to delete this record");
         }
 
-        EntityIdentifier entityIdentifier;
-        try {
-            entityIdentifier = entityIdentifierRepository.findByIdentifier(new URI(identifier.getRootIdentifier()));
-        } catch (URISyntaxException e) {
-            throw new FimsRuntimeException(GenericErrorCode.SERVER_ERROR, 500);
-        }
+        return recordRepository.delete(identifier.getRootIdentifier(), identifier.getSuffix());
+    }
+
+
+    public RecordResponse get(User user, String arkID, boolean includeParent, boolean includeChildren) {
+        Identifier identifier = parseIdentifier(arkID);
+        EntityIdentifier entityIdentifier = getEntityIdentifier(identifier);
 
         if (entityIdentifier == null) return null;
 
@@ -131,5 +132,29 @@ public class RecordService {
         }
 
         return new RecordResponse(project.getProjectId(), parent, record, children.size() == 0 ? null : children);
+    }
+
+    private EntityIdentifier getEntityIdentifier(Identifier identifier) {
+        EntityIdentifier entityIdentifier;
+        try {
+            entityIdentifier = entityIdentifierRepository.findByIdentifier(new URI(identifier.getRootIdentifier()));
+        } catch (URISyntaxException e) {
+            throw new FimsRuntimeException(GenericErrorCode.SERVER_ERROR, 500);
+        }
+        return entityIdentifier;
+    }
+
+    private Identifier parseIdentifier(String arkID) {
+        Identifier identifier;
+        try {
+            identifier = new Identifier(arkID, props.divider());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
+        }
+
+        if (!identifier.hasSuffix()) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "The provided identifier is a rootIdentifier and does not contain a suffix, therefore we can't fetch a record");
+        }
+        return identifier;
     }
 }
