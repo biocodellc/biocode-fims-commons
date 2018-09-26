@@ -390,7 +390,7 @@ public class ExcelWorkbookWriter {
 
                             // Data validation styling
                             dataValidation
-                                    .showDropdown(false)
+                                    .showDropdown(true)
                                     .showErrorMessage(true);
                             // Give the user the appropriate data validation error msg, depending upon the rules error level
                             if (r.level().equals(RuleLevel.ERROR)) {
