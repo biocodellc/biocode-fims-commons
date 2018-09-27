@@ -10,6 +10,7 @@ import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
+import biocode.fims.models.ProjectConfiguration;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
@@ -662,13 +663,13 @@ public class DatasetBuilderTest {
         return project;
     }
 
-    private ProjectConfig config() {
+    private ProjectConfiguration config() {
         ProjectConfig config = new ProjectConfig();
 
         config.addEntity(eventsEntity());
         config.addEntity(samplesEntity());
 
-        return config;
+        return new ProjectConfiguration("test", config, null);
     }
 
     private Entity samplesEntity() {
