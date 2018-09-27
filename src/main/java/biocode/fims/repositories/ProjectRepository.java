@@ -17,7 +17,7 @@ import java.util.List;
 public interface ProjectRepository extends Repository<Project, Integer>, ProjectCustomOperations {
 
     @Modifying
-    void delete(Project project);
+    void deleteByProjectId(int projectId);
 
     Project save(Project project);
 

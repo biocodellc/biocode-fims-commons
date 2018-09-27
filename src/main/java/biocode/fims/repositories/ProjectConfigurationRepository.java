@@ -21,7 +21,7 @@ public interface ProjectConfigurationRepository extends Repository<ProjectConfig
     @Modifying
     @Query("delete from ProjectConfiguration where id = :id and networkApproved = false and (select count(p) from Project p where p.projectConfiguration.id = :id) = 0")
     void deleteIfNoProjects(int id);
-    
+
     ProjectConfiguration save(ProjectConfiguration projectConfiguration);
 
     ProjectConfiguration findById(int id);
