@@ -29,6 +29,10 @@ public class EntityCollectingExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visit(ProjectExpression projectExpression) {
+    }
+
+    @Override
     public void visit(ExpeditionExpression expeditionExpression) {
     }
 

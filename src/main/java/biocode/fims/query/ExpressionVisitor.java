@@ -17,6 +17,8 @@ public interface ExpressionVisitor {
 
     void visit(ExpeditionExpression expeditionExpression);
 
+    void visit(ProjectExpression projectExpression);
+
     void visit(SelectExpression selectExpression);
 
     void visit(FTSExpression ftsExpression);

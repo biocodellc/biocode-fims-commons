@@ -5,20 +5,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author rjewing
  */
 public class MessagesGroup {
     private final String name;
-    private List<Message> messages;
+    private Set<Message> messages;
 
     public MessagesGroup(String name) {
         Assert.notNull(name);
 
         this.name = name;
-        this.messages = new ArrayList<>();
+        this.messages = new HashSet<>();
     }
 
     @JsonProperty("groupMessage")
@@ -32,7 +34,7 @@ public class MessagesGroup {
 
     @JsonProperty("messages")
     public List<Message> messages() {
-        return messages;
+        return new ArrayList<>(messages);
     }
 
     @Override

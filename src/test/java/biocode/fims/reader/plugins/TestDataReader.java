@@ -1,8 +1,8 @@
 package biocode.fims.reader.plugins;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 
 import java.io.File;

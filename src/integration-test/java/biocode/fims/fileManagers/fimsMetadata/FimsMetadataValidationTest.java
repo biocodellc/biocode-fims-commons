@@ -1,7 +1,7 @@
 //package biocode.fims.fileManagers.fimsMetadata;
 //
-//import biocode.fims.projectConfig.models.Validation;
-//import biocode.fims.projectConfig.models.Mapping;
+//import biocode.fims.config.project.models.Validation;
+//import biocode.fims.config.project.models.Mapping;
 //import biocode.fims.renderers.RowMessage;
 //import biocode.fims.renderers.EntityMessages;
 //import biocode.fims.renderers.Message;

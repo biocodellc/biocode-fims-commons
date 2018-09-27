@@ -1,9 +1,9 @@
 package biocode.fims.utils;
 
-import biocode.fims.projectConfig.models.DataType;
+import biocode.fims.config.models.DataType;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 

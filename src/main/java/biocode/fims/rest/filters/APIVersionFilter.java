@@ -2,7 +2,7 @@ package biocode.fims.rest.filters;
 
 import biocode.fims.rest.versioning.APIVersion;
 import biocode.fims.rest.versioning.VersionUrlConfig;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package biocode.fims.validation;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
-import biocode.fims.projectConfig.ProjectConfig;
 import org.junit.Test;
 
 import java.util.HashMap;

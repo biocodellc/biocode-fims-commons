@@ -5,11 +5,14 @@ import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
 /**
- * Check a particular group of columns to see if the composite value combinations are unique.
+ * Check a particular group of columns to see if the composite value combinations are unique,
+ * if and only if at least 1 column in the group has a value. If all columns are empty, then
+ * this rule will pass.
  *
  * @author rjewing
  */
@@ -45,12 +48,16 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         for (Record r : recordSet.recordsToPersist()) {
             LinkedList<String> composite = new LinkedList<>();
 
+            boolean hasAValue = false;
             for (String uri : uris) {
-                composite.add(r.get(uri));
+                String val = r.get(uri);
+                composite.add(val);
+                if (!val.equals("")) hasAValue = true;
             }
 
-            if (!set.add(composite)) {
+            if (hasAValue && !set.add(composite)) {
                 duplicateValues.add(composite);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

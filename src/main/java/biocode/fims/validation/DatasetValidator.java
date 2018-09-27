@@ -1,14 +1,15 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
+import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
 
@@ -25,7 +26,7 @@ public class DatasetValidator {
     private final Dataset dataset;
     private final ProjectConfig config;
 
-    private final LinkedList<EntityMessages> messages;
+    private LinkedList<EntityMessages> messages;
     private final Map<Entity, Message> removeDuplicateMessages;
     private boolean hasError = false;
 
@@ -44,6 +45,9 @@ public class DatasetValidator {
 
         for (RecordSet r : dataset) {
 
+            // skip recordSet validation if there are not records to persist
+            if (!r.hasRecordToPersist()) continue;
+
             processorStatus.appendStatus("\nValidating entity: " + r.conceptAlias());
 
             RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);
@@ -61,8 +65,34 @@ public class DatasetValidator {
         }
 
         addRemoveDuplicateRecordMessages();
+        mergeMessages();
 
         return !hasError && isValid;
+    }
+
+    /**
+     * Multi-expedition uploads will crate duplicate EntityMessage objects, so we merge them
+     */
+    private void mergeMessages() {
+        Map<MultiKey, EntityMessages> newMessages = new HashMap<>();
+
+        messages.forEach(m -> {
+            MultiKey k = new MultiKey(m.conceptAlias(), m.sheetName());
+
+            if (newMessages.containsKey(k)) {
+                EntityMessages em = newMessages.get(k);
+
+                m.warningMessages().forEach(wm -> wm.messages()
+                        .forEach(message -> em.addWarningMessage(wm.getName(), message)));
+                m.errorMessages().forEach(wm -> wm.messages()
+                        .forEach(message -> em.addErrorMessage(wm.getName(), message)));
+
+            } else {
+                newMessages.put(k, m);
+            }
+        });
+
+        messages = new LinkedList<>(newMessages.values());
     }
 
     private void removeDuplicateParentRecords() {

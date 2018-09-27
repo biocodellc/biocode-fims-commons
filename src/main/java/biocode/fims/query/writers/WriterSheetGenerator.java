@@ -1,11 +1,11 @@
 package biocode.fims.query.writers;
 
+import biocode.fims.config.Config;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ColumnComparator;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.project.ColumnComparator;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import org.apache.commons.collections.keyvalue.MultiKey;
@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 
 class WriterSheetGenerator {
     private final QueryResults queryResults;
-    private final ProjectConfig config;
+    private final Config config;
     private final Map<String, SheetRecords> recordsBySheet;
     private final Map<String, List<Entity>> entitiesBySheet;
 
     private String currentSheet;
     private QueryResult currentResult;
 
-    WriterSheetGenerator(QueryResults queryResults, ProjectConfig config) {
+    WriterSheetGenerator(QueryResults queryResults, Config config) {
         this.queryResults = queryResults;
         this.config = config;
         recordsBySheet = new HashMap<>();
@@ -61,7 +61,7 @@ class WriterSheetGenerator {
         Map<String, LinkedList<QueryResult>> sheetResults = new HashMap<>();
 
         // sort queryResults so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
+        queryResults.sort(new QueryResults.ChildrenFirstComparator(config));
 
         // map queryResults by worksheet
         for (QueryResult queryResult : queryResults) {
@@ -243,9 +243,11 @@ class WriterSheetGenerator {
 
             // rename and update the existing bcid if needed
             if (!replacedBcid) {
-                this.records.forEach(r -> {
-                    r.put(firstEntity + "_bcid", r.get("bcid"));
-                    r.remove("bcid");
+                this.records.forEach(er -> {
+                    String bcid = er.remove("bcid");
+                    if (bcid != null) {
+                        er.put(firstEntity + "_bcid", bcid);
+                    }
                 });
                 replacedBcid = true;
             }

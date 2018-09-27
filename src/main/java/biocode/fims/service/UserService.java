@@ -12,7 +12,7 @@ import biocode.fims.repositories.UserInviteRepository;
 import biocode.fims.repositories.UserRepository;
 import biocode.fims.utils.EmailUtils;
 import biocode.fims.utils.StringGenerator;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,11 +60,6 @@ public class UserService {
 
 
     public User create(User user, String password, UUID inviteId) {
-        UserInvite invite = userInviteRepository.getInvite(inviteId, INVITE_EXPIRATION_INTEVAL);
-
-        if (invite == null) {
-            throw new FimsRuntimeException(UserCode.INVALID_INVITE, 400);
-        }
 
         if (!user.isValid(true)) {
             throw new FimsRuntimeException(UserCode.INVALID, 400);
@@ -77,15 +72,20 @@ public class UserService {
         // hash the users password
         user.setPassword(PasswordHash.createHash(password));
 
-        // add user to project members
-        Project project = projectRepository.getProjectByProjectId(invite.getProject().getProjectId(), "Project.withMembers");
-        project.getProjectMembers().add(user);
-        user.getProjectsMemberOf().add(project);
+        if (inviteId != null) {
+            UserInvite invite = userInviteRepository.getInvite(inviteId, INVITE_EXPIRATION_INTEVAL);
 
-        user = userRepository.save(user);
-        userInviteRepository.delete(invite);
+            if (invite == null) {
+                throw new FimsRuntimeException(UserCode.INVALID_INVITE, 400);
+            }
+            // add user to project members
+            Project project = projectRepository.getProjectByProjectId(invite.getProject().getProjectId(), "Project.withMembers");
+            project.getProjectMembers().add(user);
+            user.getProjectsMemberOf().add(project);
+            userInviteRepository.delete(invite);
+        }
 
-        return user;
+        return userRepository.save(user);
     }
 
     public User update(User user) {
@@ -216,6 +216,8 @@ public class UserService {
 
     public UserInvite inviteUser(String email, Project project, User inviter) {
         try {
+            // delete any existing invites
+            userInviteRepository.delete(email);
             UserInvite invite = userInviteRepository.save(new UserInvite(email, project, inviter));
 
             String accountCreateUrl = props.appRoot() + props.accountCreatePath();

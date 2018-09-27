@@ -1,21 +1,26 @@
 package biocode.fims.run;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
+import biocode.fims.models.Project;
+import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.rules.UniqueValueRule;
+import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class is responsible for taking the input data files and assembling datasets.
@@ -31,30 +36,40 @@ public class DatasetBuilder {
     private final DataConverterFactory dataConverterFactory;
     private final RecordRepository recordRepository;
     private ProjectConfig config;
-    private final int projectId;
+    private final Project project;
     private final String expeditionCode;
 
     private boolean reloadWorkbooks = false;
-    private final ArrayList<String> workbooks;
-    private final ArrayList<DataSource> dataSources;
-    private final ArrayList<RecordSet> recordSets;
-    private final ArrayList<String> projectRecordEntities;
-    private final ArrayList<String> reloadedEntities;
+    private final List<String> workbooks;
+    private final List<DataSource> dataSources;
+    private final Map<String, List<RecordSet>> recordSets;
+    private final List<String> projectRecordEntities;
+    private final List<String> reloadedEntities;
+    private final Set<Entity> childEntities;
+    private final Map<String, List<? extends Record>> projectRecords;
+    private final Map<MultiKey, Set<String>> mismatchedExpeditions;
 
-    public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository, ProjectConfig config,
-                          int projectId, String expeditionCode) {
+    public DatasetBuilder(DataReaderFactory dataReaderFactory, DataConverterFactory dataConverterFactory, RecordRepository repository,
+                          Project project, String expeditionCode) {
         this.dataReaderFactory = dataReaderFactory;
         this.dataConverterFactory = dataConverterFactory;
         this.recordRepository = repository;
-        this.config = config;
-        this.projectId = projectId;
+        this.project = project;
+        this.config = project.getProjectConfig();
         this.expeditionCode = expeditionCode;
 
         this.workbooks = new ArrayList<>();
         this.dataSources = new ArrayList<>();
-        this.recordSets = new ArrayList<>();
-        this.projectRecordEntities = new ArrayList<>();
+        this.recordSets = new HashMap<>();
         this.reloadedEntities = new ArrayList<>();
+        this.childEntities = new HashSet<>();
+        this.projectRecords = new HashMap<>();
+        this.mismatchedExpeditions = new HashMap<>();
+
+        this.projectRecordEntities = config.entities().stream()
+                .filter(Entity::getUniqueAcrossProject)
+                .map(Entity::getConceptAlias)
+                .collect(Collectors.toList());
     }
 
     public DatasetBuilder addWorkbook(String workbookFile) {
@@ -76,145 +91,230 @@ public class DatasetBuilder {
         return this;
     }
 
+    public void addRecordSet(RecordSet recordSet) {
+        String expeditionCode = (this.expeditionCode == null)
+                ? recordSet.expeditionCode()
+                : verifyExpeditionCode(recordSet);
+
+        if (expeditionCode == null) {
+            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, "data is missing an expeditionCode");
+        }
+
+        add(recordSet);
+    }
+
+
     public DatasetBuilder reloadWorkbooks(boolean reload) {
         this.reloadWorkbooks = reload;
         return this;
     }
 
+    public Map<MultiKey, Set<String>> mismatchedExpeditions() {
+        return mismatchedExpeditions;
+    }
+
     public Dataset build() {
 
-        findEntitiesToFetchProjectRecords();
         instantiateWorkbookRecords();
         instantiateDataSourceRecords();
-        addParentRecords();
+        mergeProjectRecords();
+        fetchAndMergeParentRecords();
         setRecordSetParent();
 
         if (recordSets.isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
         }
 
-        return new Dataset(recordSets);
-    }
-
-    private void findEntitiesToFetchProjectRecords() {
-        for (Entity e : config.entities()) {
-            if (e.getUniqueAcrossProject() || e.getRules().stream()
-                    .filter(r -> r instanceof UniqueValueRule)
-                    .anyMatch(r -> ((UniqueValueRule) r).uniqueAcrossProject())
-                    ) {
-                projectRecordEntities.add(e.getConceptAlias());
-            }
-        }
-
+        return new Dataset(
+                recordSets.values().stream().flatMap(List::stream).collect(Collectors.toList())
+        );
     }
 
     private void instantiateDataSourceRecords() {
         for (DataSource dataSource : dataSources) {
-            readData(dataSource.dataFile, dataSource.metadata);
+            readData(dataSource.dataFile, dataSource.metadata, false);
         }
     }
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            readData(file, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
+            readData(file, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks), true);
         }
     }
 
-    private void readData(String file, RecordMetadata metadata) {
+    private void readData(String file, RecordMetadata metadata, boolean isWorkbook) {
         DataReader reader = dataReaderFactory.getReader(file, config, metadata);
 
-        for (RecordSet set : reader.getRecordSets()) {
-            DataConverter converter = dataConverterFactory.getConverter(set.entity().type(), config);
-            RecordSet recordSet = converter.convertRecordSet(set, projectId, expeditionCode);
-            recordSets.add(recordSet);
+        // getRecordSets may return RecordSets with different expeditions but same entity
+        for (RecordSet r : reader.getRecordSets()) {
+            String expeditionCode = (this.expeditionCode == null)
+                    ? r.expeditionCode()
+                    : verifyExpeditionCode(r);
 
-            for (Record record : recordSet.records()) {
-                record.setExpeditionCode(expeditionCode);
-                record.setProjectId(projectId);
-            }
-
-            Entity e = recordSet.entity();
-            if (metadata.reload()) {
-                reloadedEntities.add(e.getConceptAlias());
-            }
-
-            if (recordSet.records().size() > 0 && projectRecordEntities.contains(e.getConceptAlias())) {
-                List<? extends Record> records = recordRepository.getRecords(projectId, e.getConceptAlias(), e.getRecordType());
-
-                // if we are reloading the dataset, we need to exclude any records for the expedition we're reloading
-                if (metadata.reload()) {
-                    records = records.stream()
-                            .filter(r -> !r.expeditionCode().equals(expeditionCode))
-                            .collect(Collectors.toList());
+            if (expeditionCode == null) {
+                String msg;
+                if (isWorkbook) {
+                    msg = "Data on the excel worksheet: \"" + r.entity().getWorksheet() + "\" is missing an expeditionCode";
+                } else {
+                    msg = "Data on the worksheet: \"" + r.entity().getWorksheet() + "\" is missing an expeditionCode";
                 }
+                throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, msg);
+            }
 
-                mergeRecords(e, records);
+            DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
+            RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
+            add(recordSet);
+        }
+
+    }
+
+    private void add(RecordSet recordSet) {
+        recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
+
+        for (Record record : recordSet.records()) {
+            record.setProjectId(project.getProjectId());
+        }
+
+        Entity e = recordSet.entity();
+
+        if (recordSet.reload()) {
+            reloadedEntities.add(e.getConceptAlias());
+        }
+        if (e.isChildEntity()) childEntities.add(e);
+    }
+
+    private String verifyExpeditionCode(RecordSet recordSet) {
+        String expeditionCode = recordSet.expeditionCode();
+        if (expeditionCode != null && !this.expeditionCode.equals(expeditionCode)) {
+            this.mismatchedExpeditions.computeIfAbsent(
+                    new MultiKey(recordSet.conceptAlias(), recordSet.entity().getWorksheet()),
+                    k -> new HashSet<>()
+            ).add(expeditionCode);
+        }
+        expeditionCode = this.expeditionCode;
+        recordSet.setExpeditionCode(expeditionCode);
+        return expeditionCode;
+    }
+
+    private void mergeProjectRecords() {
+        for (String conceptAlias : projectRecordEntities) {
+            if (!recordSets.containsKey(conceptAlias)) continue;
+
+            // get expeditionCodes for RecordSets that we are reloading so we can exclude them from the project records
+            List<String> expeditionCodes = recordSets.get(conceptAlias).stream()
+                    .filter(RecordSet::reload)
+                    .map(RecordSet::expeditionCode)
+                    .collect(Collectors.toList());
+
+            List<? extends Record> records = getProjectRecords(recordSets.get(conceptAlias).get(0).entity()).stream()
+                    .filter(r -> !expeditionCodes.contains(r.expeditionCode()))
+                    .collect(Collectors.toList());
+
+            for (RecordSet r : recordSets.get(conceptAlias)) {
+                if (!r.isEmpty()) {
+                    mergeRecords(r, records);
+                }
             }
         }
     }
 
-    private void addParentRecords() {
+    private void fetchAndMergeParentRecords() {
         Set<Entity> parentEntities = getChildRecordSetParentEntities();
 
         for (Entity e : parentEntities) {
 
-            if (fetchRecordSet(e)) {
-                List<? extends Record> records = recordRepository.getRecords(projectId, expeditionCode, e.getConceptAlias(), e.getRecordType());
+            if (fetchRecordSet(e.getConceptAlias())) {
+                Map<String, List<Record>> projectRecords = new HashMap<>();
 
-                mergeRecords(e, records);
+                if (expeditionCode != null) {
+                    List<Record> records = projectRecordEntities.contains(e.getConceptAlias())
+                            ? getProjectRecords(e).stream()
+                            .filter(r -> Objects.equals(r.expeditionCode(), expeditionCode))
+                            .collect(Collectors.toList())
+                            : (List<Record>) recordRepository.getRecords(project, expeditionCode, e.getConceptAlias(), e.getRecordType());
+                    projectRecords.put(expeditionCode, records);
+
+                } else {
+                    projectRecords.putAll(
+                            getProjectRecords(e).stream()
+                                    .collect(Collectors.groupingBy(Record::expeditionCode))
+                    );
+                }
+
+                getParentRecordSets(e).stream()
+                        .filter(r -> !r.reload())
+                        .forEach(r -> mergeRecords(
+                                r,
+                                projectRecords.getOrDefault(r.expeditionCode(), Collections.emptyList())
+                        ));
             }
         }
+    }
+
+    private List<RecordSet> getParentRecordSets(Entity e) {
+        // for each child expedition, we need a parent recordSet
+        List<String> childExpeditions = expeditionCode != null
+                ? new ArrayList<>(Collections.singletonList(expeditionCode))
+                : this.childEntities.stream()
+                .filter(entity -> e.getConceptAlias().equals(entity.getParentEntity()))
+                .flatMap(entity -> recordSets.get(entity.getConceptAlias()).stream())
+                .map(RecordSet::expeditionCode)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<RecordSet> parentRecordSets = this.recordSets.computeIfAbsent(e.getConceptAlias(), k -> new ArrayList<>());
+
+        // remove expeditions we already have a record set for
+        parentRecordSets.forEach(r -> childExpeditions.remove(r.expeditionCode()));
+
+        // add any missing parent recordSets
+        childExpeditions.forEach(expeditionCode -> {
+            RecordSet r = new RecordSet(e, false);
+            r.setExpeditionCode(expeditionCode);
+            parentRecordSets.add(r);
+        });
+        return parentRecordSets;
+    }
+
+    private List<? extends Record> getProjectRecords(Entity e) {
+        return projectRecords.computeIfAbsent(
+                e.getConceptAlias(),
+                k -> recordRepository.getRecords(project, e.getConceptAlias(), e.getRecordType())
+        );
     }
 
     private Set<Entity> getChildRecordSetParentEntities() {
         Set<Entity> parentEntities = new HashSet<>();
 
-        for (RecordSet r : recordSets) {
-
-            Entity e = r.entity();
-
-            if (e.isChildEntity()) {
-                parentEntities.add(config.entity(e.getParentEntity()));
-            }
+        for (Entity child : childEntities) {
+            parentEntities.add(config.entity(child.getParentEntity()));
         }
 
         return parentEntities;
     }
 
-    private boolean fetchRecordSet(Entity entity) {
-        return recordSets.stream()
-                .filter(r -> r.entity().equals(entity))
-                .findFirst()
-                .map(r -> !r.reload())
-                .orElse(true);
+    private boolean fetchRecordSet(String conceptAlias) {
+        return !recordSets.containsKey(conceptAlias)
+                || recordSets.get(conceptAlias).stream().anyMatch(r -> !r.reload());
     }
 
-    private void mergeRecords(Entity entity, List<? extends Record> records) {
-        RecordSet recordSet = recordSets.stream()
-                .filter(rs -> rs.entity().equals(entity))
-                .findFirst()
-                .orElse(null);
+    private void mergeRecords(RecordSet recordSet, List<? extends Record> records) {
+        Entity entity = recordSet.entity();
 
-        if (recordSet == null) {
-            recordSet = new RecordSet(entity, false);
-            recordSets.add(recordSet);
-        }
+        String parentUniqueKeyURI = entity.isChildEntity()
+                ? config.entity(entity.getParentEntity()).getUniqueKeyURI()
+                : null;
 
-        String parentUniqueKeyURI = entity.isChildEntity() ? config.entity(entity.getParentEntity()).getUniqueKeyURI() : null;
         recordSet.merge(records, parentUniqueKeyURI);
-
     }
 
     private void setRecordSetParent() {
-        List<RecordSet> recordSetsToRemove = new ArrayList<>();
-        List<RecordSet> recordSetsToAdd = new ArrayList<>();
+        for (Entity e : childEntities) {
+            List<RecordSet> recordSetsToRemove = new ArrayList<>();
+            List<RecordSet> recordSetsToAdd = new ArrayList<>();
 
-        for (RecordSet r : recordSets) {
-
-            Entity e = r.entity();
-
-            if (e.isChildEntity()) {
-                RecordSet parentRecordSet = getRecordSet(e.getParentEntity());
+            for (RecordSet r : recordSets.get(e.getConceptAlias())) {
+                RecordSet parentRecordSet = getRecordSet(e.getParentEntity(), r.expeditionCode());
                 Entity parentEntity = parentRecordSet.entity();
 
                 // if we've fetched project records for the child and the parent is reloading
@@ -238,20 +338,17 @@ public class DatasetBuilder {
                     r.setParent(parentRecordSet);
                 }
             }
-        }
 
-        recordSets.removeAll(recordSetsToRemove);
-        recordSets.addAll(recordSetsToAdd);
+            recordSets.get(e.getConceptAlias()).removeAll(recordSetsToRemove);
+            recordSets.get(e.getConceptAlias()).addAll(recordSetsToAdd);
+        }
     }
 
-    private RecordSet getRecordSet(String conceptAlias) {
-        for (RecordSet r : recordSets) {
-            if (r.conceptAlias().equals(conceptAlias)) {
-                return r;
-            }
-        }
-
-        return new RecordSet(config.entity(conceptAlias), false);
+    private RecordSet getRecordSet(String conceptAlias, String expeditionCode) {
+        return recordSets.getOrDefault(conceptAlias, new ArrayList<>()).stream()
+                .filter(r -> Objects.equals(r.expeditionCode(), expeditionCode))
+                .findFirst()
+                .orElse(new RecordSet(config.entity(conceptAlias), false));
     }
 
     private static class DataSource {

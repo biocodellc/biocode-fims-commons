@@ -5,7 +5,7 @@ import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -21,6 +21,8 @@ import java.util.Set;
                 attributeNodes = @NamedAttributeNode("projectsMemberOf")),
         @NamedEntityGraph(name = "User.withProjects",
                 attributeNodes = @NamedAttributeNode("projects")),
+        @NamedEntityGraph(name = "User.withNetworks",
+                attributeNodes = @NamedAttributeNode("networks")),
         @NamedEntityGraph(name = "User.withProjectsAndProjectsMemberOf",
                 attributeNodes = {@NamedAttributeNode("projects"), @NamedAttributeNode("projectsMemberOf")})
 })
@@ -41,8 +43,9 @@ public class User {
     private Date passwordResetExpiration;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
+    private Set<Network> networks;
     private List<Project> projectsMemberOf;
-    private Set<ProjectTemplate> projectTemplates;
+    private Set<WorksheetTemplate> worksheetTemplates;
 
     public static class UserBuilder {
         // Required
@@ -188,16 +191,6 @@ public class User {
         this.email = email;
     }
 
-    @Transient
-    @JsonProperty("projectAdmin")
-    public boolean isAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
-    }
-
     @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getInstitution() {
@@ -276,6 +269,15 @@ public class User {
     }
 
     @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    public Set<Network> getNetworks() {
+        return networks;
+    }
+
+    private void setNetworks(Set<Network> networks) {
+        this.networks = networks;
+    }
+    @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "user_projects",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -293,12 +295,12 @@ public class User {
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
-    public Set<ProjectTemplate> getProjectTemplates() {
-        return projectTemplates;
+    public Set<WorksheetTemplate> getWorksheetTemplates() {
+        return worksheetTemplates;
     }
 
-    private void setProjectTemplates(Set<ProjectTemplate> projectTemplates) {
-        this.projectTemplates = projectTemplates;
+    private void setWorksheetTemplates(Set<WorksheetTemplate> worksheetTemplates) {
+        this.worksheetTemplates = worksheetTemplates;
     }
 
     @Override

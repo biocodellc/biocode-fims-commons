@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.models.Project;
 import biocode.fims.repositories.customOperations.ProjectCustomOperations;
 
@@ -23,10 +24,10 @@ public class ProjectRepositoryImpl implements ProjectCustomOperations {
     }
 
     @Override
-    public List<Project> getAll(String entityGraph) {
-        return em.createQuery("SELECT DISTINCT p FROM Project AS p", Project.class)
+    public List<Project> getAll(List<Integer> projectIds, String entityGraph) {
+        return em.createQuery("SELECT DISTINCT p FROM Project AS p WHERE p.projectId in :ids", Project.class)
+                .setParameter("ids", projectIds)
                 .setHint("javax.persistence.fetchgraph", em.getEntityGraph(entityGraph))
                 .getResultList();
     }
-
 }

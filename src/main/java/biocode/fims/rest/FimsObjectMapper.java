@@ -1,6 +1,7 @@
 package biocode.fims.rest;
 
 import biocode.fims.serializers.FimsSerializerModifier;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
@@ -25,6 +26,7 @@ public class FimsObjectMapper extends ObjectMapper {
                         .setSerializerModifier(new FimsSerializerModifier())
         );
         this.registerModule(new ParameterNamesModule());
+        this.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     }
 
 }

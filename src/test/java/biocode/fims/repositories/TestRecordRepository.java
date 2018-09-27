@@ -1,8 +1,9 @@
 package biocode.fims.repositories;
 
+import biocode.fims.models.Project;
 import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.records.RecordSources;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordResult;
 import biocode.fims.query.QueryResults;
@@ -28,18 +29,22 @@ public class TestRecordRepository implements RecordRepository {
         throw new NotImplementedException();
     }
 
+    @Override
+    public boolean delete(String rootIdentifier, String localIdentifier) {
+        throw new NotImplementedException();
+    }
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType) {
+    public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
         return stores.stream()
-                .filter(s -> s.projectId == projectId && s.conceptAlias.equals(conceptAlias))
+                .filter(s -> s.projectId == project.getProjectId() && s.conceptAlias.equals(conceptAlias))
                 .flatMap(s -> s.records.stream())
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
-        RecordStore ex = new RecordStore(projectId, expeditionCode, conceptAlias);
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
+        RecordStore ex = new RecordStore(project.getProjectId(), expeditionCode, conceptAlias);
 
         return stores.stream()
                 .filter(s -> s.equals(ex))
@@ -49,17 +54,17 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId) {
+    public void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void saveRecord(Record record, int projectId, Entity entity, int expeditionId) {
+    public void saveRecord(Record record, int projectId, Entity entity) {
         throw new NotImplementedException();
     }
 
     @Override
-    public void saveDataset(Dataset dataset, int projectId, int expeditionId) {
+    public void saveDataset(Dataset dataset, int projectId) {
         throw new NotImplementedException();
     }
 

@@ -1,6 +1,7 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.ProjectAuthorizer;
+import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.GenericRecordRowMapper;
@@ -14,8 +15,8 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
 import biocode.fims.repositories.BcidRepository;
-import biocode.fims.service.BcidService;
-import biocode.fims.settings.SettingsManager;
+import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
@@ -37,11 +38,7 @@ import javax.ws.rs.client.ClientBuilder;
 @Import({SettingsManagerConfig.class, DataAccessConfig.class, MessageSourceConfig.class, FimsProperties.class})
 public class FimsAppConfig {
     @Autowired
-    BcidService bcidService;
-    @Autowired
     ProjectRepository projectRepository;
-    @Autowired
-    SettingsManager settingsManager;
     @Autowired
     NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -82,16 +79,22 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public ProjectConfigRepository projectConfigRepository() {
+    public NetworkConfigRepository networkConfigRepository() {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-        yaml.setResources(new ClassPathResource("project-config-repository-sql.yml"));
+        yaml.setResources(new ClassPathResource("network-config-repository-sql.yml"));
 
-        return new PostgresProjectConfigRepository(jdbcTemplate, yaml.getObject());
+        return new PostgresNetworkConfigRepository(jdbcTemplate, yaml.getObject());
     }
 
     @Bean
     public ProjectAuthorizer projectAuthorizer() {
         return new ProjectAuthorizer(projectRepository);
+    }
+
+
+    @Bean
+    public QueryAuthorizer queryAuthorizer(ProjectService projectService, ExpeditionService expeditionService, FimsProperties fimsProperties) {
+        return new QueryAuthorizer(projectService, expeditionService, fimsProperties);
     }
 
     @Bean

@@ -8,6 +8,10 @@ import org.springframework.util.Assert;
  *
  * col1::"%value"    ->  col1 ILIKE '%value'
  *
+ * also used for phrase searches
+ *
+ * col:"some value"  -> col ILIKE '%some value%'
+ *
  * @author rjewing
  */
 public class LikeExpression implements Expression {

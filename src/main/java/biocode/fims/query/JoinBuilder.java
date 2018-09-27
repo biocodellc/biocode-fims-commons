@@ -1,9 +1,9 @@
 package biocode.fims.query;
 
+import biocode.fims.config.Config;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 
 import java.util.*;
 import java.util.List;
@@ -25,16 +25,16 @@ public class JoinBuilder {
     private final Set<Entity> joinEntities;
     private final Set<Entity> selectEntities;
     private final Entity queryEntity;
-    private final ProjectConfig config;
-    private final int projectId;
+    private final Config config;
+    private final int networkId;
     private final List<Entity> joinedEntities;
     private final StringBuilder joinString;
     private boolean expeditions;
 
-    JoinBuilder(Entity queryEntity, ProjectConfig config, int projectId) {
+    JoinBuilder(Entity queryEntity, Config config, int networkId) {
         this.queryEntity = queryEntity;
         this.config = config;
-        this.projectId = projectId;
+        this.networkId = networkId;
         this.joinEntities = new HashSet<>();
         this.selectEntities = new HashSet<>();
         this.joinedEntities = new ArrayList<>();
@@ -169,14 +169,10 @@ public class JoinBuilder {
     }
 
     private void appendChildJoin(Entity parentEntity, Entity childEntity) {
-        String table = PostgresUtils.entityTableAs(projectId, childEntity.getConceptAlias());
-
-        // we left join select entities because children may not exist
-        boolean isLeftJoin = selectEntities.contains(childEntity);
+        String table = PostgresUtils.entityTableAs(networkId, childEntity.getConceptAlias());
 
         joinString
-                .append(isLeftJoin ? " LEFT " : " ")
-                .append("JOIN ")
+                .append(" LEFT JOIN ")
                 .append(table)
                 .append(" ON ")
                 .append(childEntity.getConceptAlias())
@@ -191,7 +187,7 @@ public class JoinBuilder {
     }
 
     private void appendParentJoin(Entity childEntity, Entity parentEntity) {
-        String table = PostgresUtils.entityTableAs(projectId, parentEntity.getConceptAlias());
+        String table = PostgresUtils.entityTableAs(networkId, parentEntity.getConceptAlias());
 
         joinString
                 .append(" JOIN ")

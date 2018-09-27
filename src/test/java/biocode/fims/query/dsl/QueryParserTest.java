@@ -1,15 +1,24 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.network.NetworkConfig;
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.models.Network;
 import biocode.fims.models.Project;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.parboiled.Parboiled;
+import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.ParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -19,10 +28,12 @@ import static org.junit.Assert.*;
 public class QueryParserTest {
     ParseRunner<Query> parseRunner;
     QueryBuildingExpressionVisitor queryBuilder;
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
-        queryBuilder = new QueryBuilder(project(), "event");
+        queryBuilder = new QueryBuilder(config(), 1, "event");
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, null);
         parseRunner = new ReportingParseRunner<>(parser.Parse());
     }
@@ -53,6 +64,27 @@ public class QueryParserTest {
         Query expected = new Query(queryBuilder, null, new FTSExpression(null, "value1"));
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_fts_expression() {
+        String qs = "new caledonia";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new FTSExpression(null, "new caledonia"));
+
+        assertEquals(expected, result);
+    }
+
+
+    @Test
+    public void should_not_parse_multiple_fts_with_column_expression() {
+        String qs = "col1:new caledonia";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        assertEquals(null, result);
     }
 
     @Test
@@ -165,6 +197,19 @@ public class QueryParserTest {
         assertEquals(expected, result);
     }
 
+
+    @Test
+    public void should_parse_phrase_expression_preceded_by_select_expression() {
+        // this was a bug that wasn't parsed
+        String qs = "_select_:[Tissue,Sample,Event] Event.country:\"some value\"";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("Tissue,Sample,Event", new LikeExpression("Event.country", "%some value%")));
+
+        assertEquals(expected, result);
+    }
+
     @Test
     public void should_parse_range_filter_expression() {
         String qs = " col1:[* TO 10}";
@@ -218,6 +263,39 @@ public class QueryParserTest {
         Query expected = new Query(queryBuilder, null, new ExistsExpression("col1, col2"));
 
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_project_filter_expression() {
+        String qs = "_projects_:1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ProjectExpression(Arrays.asList(1)));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_multiple_projects_filter_expression() {
+        String qs = "_projects_:[1,   2 ]";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ProjectExpression(Arrays.asList(1, 2)));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_not_parse_non_int_project_filter_expression() {
+        String qs = "_projects_:nonInt";
+
+        thrown.expect(new ExceptionMatcher(NumberFormatException.class, "java.lang.NumberFormatException: For input string: \"nonInt\""));
+        parseRunner.run(qs);
+
+        qs = "_projects_:[nonInt,nonInt2]";
+        parseRunner.run(qs);
     }
 
     @Test
@@ -306,7 +384,7 @@ public class QueryParserTest {
     }
 
     @Test
-    public void should_parse_multiple_seperate_select_with_filter_expression() {
+    public void should_parse_multiple_separate_select_with_filter_expression() {
         String qs = "_select_:entity _exists_:col1 _select_:e2";
 
         Query result = parseRunner.run(qs).resultValue;
@@ -448,15 +526,31 @@ public class QueryParserTest {
         assertEquals(expected, result);
     }
 
-    private Project project() {
+    private ProjectConfig config() {
         ProjectConfig config = new ProjectConfig();
-        config.addEntity(new Entity("event", "someURI"));
+        config.addEntity(new DefaultEntity("event", "someURI"));
+        return config;
+    }
 
-        Project project = new Project.ProjectBuilder("TEST", null, config)
-                .build();
+    class ExceptionMatcher extends BaseMatcher<ParserRuntimeException> {
 
-        project.setProjectId(1);
+        private final Class causeClass;
+        private final String partialMessage;
 
-        return project;
+        public ExceptionMatcher(Class causeClass, String partialMessage) {
+            this.causeClass = causeClass;
+            this.partialMessage = partialMessage;
+        }
+
+        @Override
+        public boolean matches(Object item) {
+            return item instanceof ParserRuntimeException
+                    && causeClass == null || ((ParserRuntimeException) item).getCause().getClass().equals(causeClass)
+                    && partialMessage == null || ((ParserRuntimeException) item).getMessage().contains(partialMessage);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+        }
     }
 }

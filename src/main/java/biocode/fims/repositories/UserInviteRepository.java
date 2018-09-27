@@ -24,5 +24,9 @@ public interface UserInviteRepository extends Repository<UserInvite, UUID>, User
     @Modifying
     void delete(UserInvite invite);
 
+    @Modifying
+    @Query("delete from UserInvite where email = :email")
+    void delete(@Param("email") String email);
+
     UserInvite save(UserInvite invite);
 }

@@ -1,11 +1,13 @@
 package biocode.fims.query.dsl;
 
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.Config;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.models.Network;
 import biocode.fims.models.Project;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.*;
 import org.parboiled.Parboiled;
 import org.parboiled.errors.ParserRuntimeException;
@@ -15,7 +17,6 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author rjewing
@@ -24,11 +25,12 @@ public class Query {
 
     private final QueryBuildingExpressionVisitor queryBuilder;
     private final Expression expression;
-    private final ProjectConfig config;
+    private Config config;
     private Set<String> expeditions;
     private Set<Entity> entities;
+    private List<Integer> projects;
 
-    public Query(QueryBuildingExpressionVisitor queryBuilder, ProjectConfig config, Expression expression) {
+    public Query(QueryBuildingExpressionVisitor queryBuilder, Config config, Expression expression) {
         this.config = config;
         Assert.notNull(queryBuilder);
         Assert.notNull(expression);
@@ -36,13 +38,13 @@ public class Query {
         this.expression = expression;
     }
 
-    public boolean isPaginated() {
-        return queryBuilder.page() != null && queryBuilder.limit() != null;
+    public Integer page() {
+        return queryBuilder.page();
     }
 
-    public Integer page() { return queryBuilder.page(); }
-
-    public Integer limit() { return queryBuilder.limit(); }
+    public Integer limit() {
+        return queryBuilder.limit();
+    }
 
     public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         expression.accept(queryBuilder);
@@ -57,6 +59,16 @@ public class Query {
         }
 
         return expeditions;
+    }
+
+    public List<Integer> projects() {
+        if (projects == null) {
+            ProjectCollectingExpressionVisitor visitor = new ProjectCollectingExpressionVisitor();
+            expression.accept(visitor);
+            projects = visitor.projects();
+        }
+
+        return projects;
     }
 
     public Entity queryEntity() {
@@ -82,19 +94,41 @@ public class Query {
         return entities;
     }
 
-    public String queryTable() {
-        return queryBuilder.queryTable();
+    /**
+     * The config can be set only if there is a single project.
+     * <p>
+     * This allows changing a NetworkConfig to a ProjectConfig
+     * after the query has been parsed. This is useful so that
+     * QueryResults are returned using the ProjectConfig entities
+     * instead of the more general NetworkConfig entities
+     *
+     * @param config
+     */
+    public void setProjectConfig(ProjectConfig config) {
+        if (projects().size() == 1) {
+            this.config = config;
+            return;
+        }
+        throw new FimsRuntimeException(
+                500,
+                new IllegalAccessException("setProjectConfig can only be called if the query contains a single project")
+        );
     }
-
 
     public static Query factory(Project project, String conceptAlias, String queryString) {
-        return factory(project, conceptAlias, queryString, null, null);
+        Query query = factory(project.getNetwork(), conceptAlias, queryString, null, null);
+
+        if (query.projects().size() == 1) {
+            query.setProjectConfig(project.getProjectConfig());
+        }
+
+        return query;
     }
 
-    public static Query factory(Project project, String conceptAlias, String queryString, Integer page, Integer limit) {
-        QueryBuilder queryBuilder = new QueryBuilder(project, conceptAlias, page, limit);
+    public static Query factory(Network network, String conceptAlias, String queryString, Integer page, Integer limit) {
+        QueryBuilder queryBuilder = new QueryBuilder(network.getNetworkConfig(), network.getId(), conceptAlias, page, limit);
 
-        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, project.getProjectConfig());
+        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, network.getNetworkConfig());
         try {
             ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(queryString);
 
@@ -102,9 +136,7 @@ public class Query {
                 throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
             }
 
-            Query query = result.resultValue;
-
-            return query;
+            return result.resultValue;
         } catch (ParserRuntimeException e) {
             String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));

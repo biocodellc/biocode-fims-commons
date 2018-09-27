@@ -1,7 +1,7 @@
 package biocode.fims.reader.plugins;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.RecordMetadata;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import org.junit.Test;

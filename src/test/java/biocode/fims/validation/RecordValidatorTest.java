@@ -1,10 +1,10 @@
 package biocode.fims.validation;
 
+import biocode.fims.config.models.*;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.*;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
@@ -144,7 +144,7 @@ public class RecordValidatorTest {
     }
 
     private Entity entity1() {
-        Entity e = new Entity("event", "someURI");
+        Entity e = new DefaultEntity("event", "someURI");
 
         e.setUniqueKey("eventId");
         e.setWorksheet("events");
@@ -164,7 +164,7 @@ public class RecordValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("parent", "someURI");
+        Entity e = new DefaultEntity("parent", "someURI");
         e.setUniqueKey("parentId");
 
         e.addAttribute(new Attribute("parentId", "parentId"));

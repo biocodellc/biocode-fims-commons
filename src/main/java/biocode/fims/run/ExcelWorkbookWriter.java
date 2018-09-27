@@ -1,28 +1,28 @@
 package biocode.fims.run;
 
+import biocode.fims.config.Config;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Field;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ColumnComparator;
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Field;
 import biocode.fims.query.writers.WriterWorksheet;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.rules.ControlledVocabularyRule;
 import biocode.fims.validation.rules.RuleLevel;
-import org.apache.poi.hssf.util.CellReference;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.*;
+import org.dhatim.fastexcel.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -36,56 +36,90 @@ public class ExcelWorkbookWriter {
     private final static String WARNING_MSG = "The value you entered is not from the recommended list. This will create a warning upon validation.";
     private final static String ERROR_MSG = "The value you entered is not from the recommended list. This will create an error upon validation.";
 
-    protected final Project project;
+    private final static String RED_FONT = "FF2600";
+
+    private final Project project;
     private final int naan;
     private final User user;
-    private final XSSFWorkbook workbook;
+    private final Config config;
 
-    private CellStyle headingStyle;
-    private CellStyle requiredStyle;
-    private CellStyle wrapStyle;
-    private CellStyle regularStyle;
-
-    public ExcelWorkbookWriter(Project project, int naan) {
-        this(project, naan, null);
+    /**
+     * Constructor for writing a network based workbook. If there is
+     * only a single project, use the ExcelWorkbookWriter(Project, int, User)
+     * constructor
+     *
+     * @param config
+     * @param naan
+     */
+    public ExcelWorkbookWriter(Config config, int naan) {
+        this.config = config;
+        this.naan = naan;
+        this.project = null;
+        this.user = null;
     }
 
+    /**
+     * Constructor for writing a project specific workbook
+     *
+     * @param project
+     * @param naan
+     * @param user
+     */
     public ExcelWorkbookWriter(Project project, int naan, User user) {
         this.project = project;
+        this.config = project.getProjectConfig();
         this.naan = naan;
         this.user = user;
-        this.workbook = new XSSFWorkbook();
-        initWorkbookStyles();
     }
 
     public File write(List<WriterWorksheet> sheets) {
-        // Create each of the sheets
-        createInstructions(
-                sheets.stream()
-                        .map(s -> s.sheetName)
-                        .collect(Collectors.toList())
-        );
-
-        for (WriterWorksheet sheet : sheets) {
-            createSheet(sheet);
-            createDataFields(sheet.sheetName, sheet.columns);
-        }
-
-        for (int i = 0; i < sheets.size(); i++) {
-            // re-order worksheets towards the beginning
-            workbook.setSheetOrder(sheets.get(i).sheetName, i + 1); // +1 b/c instructions sheet is first
-        }
-
-        createListsSheetAndValidations(sheets);
-
         // Create the output Filename and Write Excel File
-        String filename = project.getProjectTitle() + ".xlsx";
+        String filename = ((project == null) ? "workbook" : project.getProjectTitle()) + ".xlsx";
         File file = FileUtils.createUniqueFile(filename, System.getProperty("java.io.tmpdir"));
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            workbook.write(out);
-            out.close();
-        } catch (IOException e) {
+        try (OutputStream os = new FileOutputStream(file)) {
+            Workbook workbook = new Workbook(os, "MyApplication", "1.0");
+
+            List<CompletableFuture<Void>> cfs = new ArrayList<>();
+
+            // create Worksheets in order we want the output
+            // we asynchronously populate the sheet data
+
+            // Create the Instructions Sheet, which is always first
+            Worksheet ws = workbook.newWorksheet(INSTRUCTIONS_SHEET_NAME);
+            CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> createInstructions(
+                    sheets.stream()
+                            .map(s -> s.sheetName)
+                            .collect(Collectors.toList()),
+                    ws
+            ));
+            cfs.add(cf);
+
+
+            List<Worksheet> dataSheets = new ArrayList<>();
+            for (WriterWorksheet sheet : sheets) {
+                Worksheet dataWs = workbook.newWorksheet(sheet.sheetName);
+                dataSheets.add(dataWs);
+                cf = CompletableFuture.runAsync(() -> writeDataSheet(sheet, dataWs));
+                cfs.add(cf);
+            }
+
+            for (WriterWorksheet sheet : sheets) {
+                Worksheet dataFieldsSheet = workbook.newWorksheet(sheet.sheetName + "_" + DATA_FIELDS_SHEET_NAME);
+                cf = CompletableFuture.runAsync(() -> createDataFields(sheet.sheetName, sheet.columns, dataFieldsSheet));
+                cfs.add(cf);
+            }
+
+            Worksheet listsSheet = workbook.newWorksheet(LISTS_SHEET_NAME);
+            cf = CompletableFuture.runAsync(() -> createListsSheetAndValidations(sheets, listsSheet, dataSheets));
+            cfs.add(cf);
+
+            @SuppressWarnings("unchecked")
+            CompletableFuture<Void>[] fs = new CompletableFuture[cfs.size()];
+            // wait for all futures to complete
+            CompletableFuture.allOf(cfs.toArray(fs)).get();
+
+            workbook.finish();
+        } catch (InterruptedException | ExecutionException | IOException e) {
             throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
         }
 
@@ -95,92 +129,68 @@ public class ExcelWorkbookWriter {
     /**
      * Create an instructions sheet
      */
-    private void createInstructions(List<String> worksheets) {
-        // Create the Instructions Sheet, which is always first
-        XSSFSheet instructionsSheet = workbook.createSheet(INSTRUCTIONS_SHEET_NAME);
-        Row row;
-        Cell cell;
-        Integer rowIndex = 0;
-
-        // Center align & bold for title
-        CellStyle titleStyle = workbook.createCellStyle();
-        Font bold = workbook.createFont();
-        bold.setFontHeightInPoints((short) 14);
-
-        bold.setBold(true);
-        titleStyle.setFont(bold);
-        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+    private void createInstructions(List<String> worksheets, Worksheet instructionsSheet) {
 
         // Make a big first column
-        instructionsSheet.setColumnWidth(0, 160 * 256);
+        instructionsSheet.width(0, 160);
 
         // Hide the projectId in the first row
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        rowIndex++;
+        int row = 2;
 
         // Hide NAAN in first row, first column
-        cell = row.createCell(0);
-        cell.setCellValue("~naan=" + naan + "~");
+        instructionsSheet.value(0, 0, "~naan=" + naan + "~");
+        instructionsSheet.hideRow(0);
 
-        // Hide Project_id in first row, second column
-        cell = row.createCell(1);
-        cell.setCellValue("~project_id=" + project.getProjectId() + "~");
-
-        row.setZeroHeight(true);
-
-        // The name of this project as specified by the sheet
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(titleStyle);
-        cell.setCellValue(project.getProjectTitle());
+        StyleSetter styleSetter;
+        if (project != null) {
+            // The name of this project as specified by the sheet
+            instructionsSheet.value(row, 0, project.getProjectTitle());
+            styleSetter = instructionsSheet.style(row, 0);
+            styleHeading(styleSetter, false);
+            styleCentered(styleSetter);
+        }
+        row++;
 
 
         // Print todays date with user name
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(titleStyle);
-        DateFormat dateFormat = new SimpleDateFormat("MMMMM dd, yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy");
         Calendar cal = Calendar.getInstance();
-        String dateAndUser = "Template generated ";
+        String dateAndUser = ((project == null) ? "Workbook" : "Template") + " generated ";
         if (user != null) {
             dateAndUser += "by '" + user.getUsername() + "' ";
         }
         dateAndUser += "on " + dateFormat.format(cal.getTime());
-        cell.setCellValue(dateAndUser);
+        instructionsSheet.value(row, 0, dateAndUser);
 
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(titleStyle);
-        cell.setCellValue("Person(s) responsible for data entry [                       ]");
+        styleSetter = instructionsSheet.style(row, 0);
+        styleHeading(styleSetter, false);
+        styleCentered(styleSetter);
+        row++;
+
+        instructionsSheet.value(row, 0, "Person(s) responsible for data entry [                       ]");
+        styleSetter = instructionsSheet.style(row, 0);
+        styleHeading(styleSetter, false);
+        styleCentered(styleSetter);
+        row++;
 
         // Insert additional row before next content
-        rowIndex++;
+        row++;
 
         // worksheet instructions
 
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue(
+        instructionsSheet.value(row, 0,
                 worksheets.stream()
                         .collect(Collectors.joining(", "))
                         .concat(worksheets.size() > 1 ? " Tabs" : " Tab")
         );
+        styleHeading(instructionsSheet.style(row, 0));
+        row++;
 
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(wrapStyle);
+        styleWrapped(instructionsSheet.style(row, 0));
         String joinedSheets = worksheets.stream()
                 .collect(Collectors.joining("\", \""))
                 .concat(worksheets.size() > 1 ? " tabs" : " tab");
-        cell.setCellValue("Please fill out each field in the " + joinedSheets + " as completely as possible. " +
+        instructionsSheet.value(row, 0, "Please fill out each field in the " + joinedSheets + " as completely as possible. " +
                 "Fields in red are required (data cannot be uploaded to the database without these fields). " +
                 "Required and recommended fields are usually placed towards the beginning of the template. " +
                 "Some fields have a controlled vocabulary associated with them in the \"" + LISTS_SHEET_NAME + "\" tab " +
@@ -189,92 +199,72 @@ public class ExcelWorkbookWriter {
                 "please delimit your list with pipes (|).  Also please make sure that there are no newline " +
                 "characters (=carriage returns) in any of your metadata. Fields in the " + joinedSheets + " may be re-arranged " +
                 "in any order so long as you don't change the field names.");
+        row++;
+        row++;
 
         // data Fields sheet
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue(
-                worksheets.stream()
-                        .map(s -> s + "_" + DATA_FIELDS_SHEET_NAME)
-                        .collect(Collectors.joining(", "))
-                        .concat(worksheets.size() > 1 ? " Tabs" : " Tab")
+        styleHeading(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, worksheets.stream()
+                .map(s -> s + "_" + DATA_FIELDS_SHEET_NAME)
+                .collect(Collectors.joining(", "))
+                .concat(worksheets.size() > 1 ? " Tabs" : " Tab")
         );
+        row++;
 
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(wrapStyle);
-        cell.setCellValue("This tab contains column names, associated URIs and definitions for each column.");
+        styleWrapped(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, "This tab contains column names, associated URIs and definitions for each column.");
+        row++;
+        row++;
 
         //Lists Tab
-        row = instructionsSheet.createRow(rowIndex);
-        rowIndex++;
-        cell = row.createCell(0);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue(LISTS_SHEET_NAME + " Tab");
+        styleHeading(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, LISTS_SHEET_NAME + " Tab");
+        row++;
 
-        row = instructionsSheet.createRow(rowIndex);
-        cell = row.createCell(0);
-        cell.setCellStyle(wrapStyle);
-        cell.setCellValue("This tab contains controlled vocabulary lists for certain fields.  DO NOT EDIT this sheet!");
+        styleWrapped(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, "This tab contains controlled vocabulary lists for certain fields.  DO NOT EDIT this sheet!");
 
     }
 
-    /**
-     * Create a worksheet
-     */
-    private void createSheet(WriterWorksheet sheet) {
-        // Create the Default Sheet sheet
-        XSSFSheet worksheet = workbook.createSheet(sheet.sheetName);
-
+    private void writeDataSheet(WriterWorksheet sheet, Worksheet worksheet) {
         //Create the header row
-        int rowNum = 0;
-        XSSFRow row = worksheet.createRow(rowNum);
-        writeHeaderRow(sheet, row);
+        writeHeaderRow(sheet, worksheet);
 
-        rowNum++;
-
+        int rowNum = 1;
         for (Map<String, String> record : sheet.data) {
-            row = worksheet.createRow(rowNum);
-
-            addDataToRow(sheet, record, row);
+            addDataToRow(sheet, record, worksheet, rowNum);
             rowNum++;
         }
-
-        // Auto-size the columns so we can see them all to begin with
-        for (int i = 0; i <= sheet.columns.size(); i++) {
-            worksheet.autoSizeColumn(i);
-        }
     }
 
-    private void writeHeaderRow(WriterWorksheet sheet, Row row) {
+    private void writeHeaderRow(WriterWorksheet sheet, Worksheet worksheet) {
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.config.getRequiredColumns(sheet.sheetName, RuleLevel.ERROR);
 
-        int columnNum = 0;
-        for (String col : sheet.columns) {
-            Cell cell = row.createCell(columnNum++);
-            cell.setCellValue(col);
-            cell.setCellStyle(headingStyle);
+        int col = 0;
+        for (String column : sheet.columns) {
+            worksheet.value(0, col, column);
 
+            StyleSetter style = worksheet.style(0, col);
             // Make required columns red
-            if (requiredColumns.contains(col)) {
-                cell.setCellStyle(requiredStyle);
+            if (requiredColumns.contains(column)) {
+                styleRequired(style, false);
             }
+            styleHeading(style);
+            col++;
         }
     }
 
 
-    private void addDataToRow(WriterWorksheet sheet, Map<String, String> record, Row row) {
+    private void addDataToRow(WriterWorksheet sheet, Map<String, String> record, Worksheet worksheet, int row) {
         int cellNum = 0;
 
         for (String column : sheet.columns) {
-            Cell cell = row.createCell(cellNum);
+            String val = record.get(column);
 
-            cell.setCellValue(record.getOrDefault(column, ""));
+            if (val != null && !val.equals("")) {
+                worksheet.value(row, cellNum, val);
+            }
 
             cellNum++;
         }
@@ -283,96 +273,78 @@ public class ExcelWorkbookWriter {
     /**
      * Create the DataFields sheet
      */
-    private void createDataFields(String sheetName, List<String> columns) {
-        XSSFSheet dataFieldsSheet = workbook.createSheet(sheetName + "_" + DATA_FIELDS_SHEET_NAME);
-
+    private void createDataFields(String sheetName, List<String> columns, Worksheet dataFieldsSheet) {
         // First find all the required columns so we can look them up
-        Set<String> requiredColumns = this.project.getProjectConfig().getRequiredColumns(sheetName, RuleLevel.ERROR);
+        Set<String> requiredColumns = this.config.getRequiredColumns(sheetName, RuleLevel.ERROR);
 
-        int rowNum = 0;
-        Row row = dataFieldsSheet.createRow(rowNum++);
+        int row = 0;
 
         // HEADER ROWS
-        Cell cell = row.createCell(DATA_FIELDS_COLUMNS.NAME);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue("ColumnName");
+        dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.NAME, "ColumnName");
+        dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.DEFINITION, "Definition");
+        dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY, "Controlled Vocabulary (see Lists)");
+        dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.DATA_FORMAT, "Data Format");
 
-        cell = row.createCell(DATA_FIELDS_COLUMNS.DEFINITION);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue("Definition");
-
-        cell = row.createCell(DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue("Controlled Vocabulary (see Lists)");
-
-        cell = row.createCell(DATA_FIELDS_COLUMNS.DATA_FORMAT);
-        cell.setCellStyle(headingStyle);
-        cell.setCellValue("Data Format");
+        styleHeading(dataFieldsSheet.range(0, 0, 0, 3).style());
 
         List<ControlledVocabularyRule> vocabularyRules = vocabRules(sheetName);
 
-        for (Attribute a : project.getProjectConfig().attributesForSheet(sheetName)) {
+        row++;
+
+        for (Attribute a : config.attributesForSheet(sheetName)) {
 
             if (columns.contains(a.getColumn())) {
-                row = dataFieldsSheet.createRow(rowNum++);
 
                 // Column Name
-                Cell nameCell = row.createCell(DATA_FIELDS_COLUMNS.NAME);
-                nameCell.setCellValue(a.getColumn());
-                CellStyle nameStyle = requiredColumns.contains(a.getColumn())
-                        ? requiredStyle
-                        : headingStyle;
-                nameStyle.setVerticalAlignment(VerticalAlignment.TOP);
-                nameCell.setCellStyle(nameStyle);
+                dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.NAME, a.getColumn());
+                if (requiredColumns.contains(a.getColumn())) {
+                    styleRequired(dataFieldsSheet.style(row, DATA_FIELDS_COLUMNS.NAME));
+                } else {
+                    styleHeading(dataFieldsSheet.style(row, DATA_FIELDS_COLUMNS.NAME));
+                }
 
                 // Definition
-                Cell defCell = row.createCell(DATA_FIELDS_COLUMNS.DEFINITION);
-                defCell.setCellValue(a.getDefinition());
-                defCell.setCellStyle(wrapStyle);
+                if (a.getDefinition() != null) {
+                    dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.DEFINITION, a.getDefinition());
+                    styleWrapped(dataFieldsSheet.style(row, DATA_FIELDS_COLUMNS.DEFINITION));
+                }
 
                 // Controlled Vocabulary
                 for (ControlledVocabularyRule r : vocabularyRules) {
                     if (r.column().equals(a.getColumn())) {
-                        Cell controlledVocabCell = row.createCell(DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY);
-                        controlledVocabCell.setCellValue(r.listName());
-                        controlledVocabCell.setCellStyle(wrapStyle);
+                        dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY, r.listName());
+                        styleWrapped(dataFieldsSheet.style(row, DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY));
                         break;
                     }
                 }
 
                 // Data Format
-                try {
-                    Cell formatCell = row.createCell(DATA_FIELDS_COLUMNS.DATA_FORMAT);
-                    formatCell.setCellValue(a.getDataFormat());
-                    formatCell.setCellStyle(wrapStyle);
-                } catch (NullPointerException npe) {
+                if (a.getDataFormat() != null) {
+                    dataFieldsSheet.value(row, DATA_FIELDS_COLUMNS.DATA_FORMAT, a.getDataFormat());
+                    styleWrapped(dataFieldsSheet.style(row, DATA_FIELDS_COLUMNS.DATA_FORMAT));
                 }
+
+                row++;
             }
         }
 
         // Set column width
-        dataFieldsSheet.autoSizeColumn(DATA_FIELDS_COLUMNS.NAME);
-        dataFieldsSheet.setColumnWidth(DATA_FIELDS_COLUMNS.DEFINITION, 60 * 256);
-        dataFieldsSheet.setColumnWidth(DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY, 35 * 256);
-        dataFieldsSheet.setColumnWidth(DATA_FIELDS_COLUMNS.DATA_FORMAT, 25 * 256);
+        dataFieldsSheet.width(DATA_FIELDS_COLUMNS.DEFINITION, 60);
+        dataFieldsSheet.width(DATA_FIELDS_COLUMNS.CONTROLLED_VOCABULARY, 35);
+        dataFieldsSheet.width(DATA_FIELDS_COLUMNS.DATA_FORMAT, 25);
 
     }
+
 
     /**
      * This function creates a sheet called "Lists" and then creates the pertinent validations for each of the lists
      */
 
-    private void createListsSheetAndValidations(List<WriterWorksheet> sheets) {
-        // Integer for holding column index value
-        int column;
-        // Create a sheet to hold the lists
-        XSSFSheet listsSheet = workbook.createSheet(LISTS_SHEET_NAME);
-
+    private void createListsSheetAndValidations(List<WriterWorksheet> sheets, Worksheet listsSheet, List<Worksheet> dataSheets) {
         // Track which column number we're looking at
-        int listColumnNumber = 0;
+        int col = 0;
 
-
-        for (biocode.fims.projectConfig.models.List list : project.getProjectConfig().lists()) {
+        for (biocode.fims.config.models.List list : config.lists()) {
 
             // List of fields from this validation rule
             List<Field> fields = list.getFields();
@@ -381,44 +353,21 @@ public class ExcelWorkbookWriter {
             if (fields.size() > 0) {
 
                 // populate this validation list in the Lists sheet
-                int counterForRows = 0;
+                int row = 0;
                 for (Field f : fields) {
                     // Write header
-                    if (counterForRows == 0) {
-                        XSSFRow row = listsSheet.getRow(counterForRows);
-
-                        if (row == null) {
-                            row = listsSheet.createRow(counterForRows);
-                        }
-
-                        XSSFCell cell = row.createCell(listColumnNumber);
-                        cell.setCellValue(list.getAlias());
-                        cell.setCellStyle(headingStyle);
+                    if (row == 0) {
+                        listsSheet.value(row, col, list.getAlias());
+                        styleHeading(listsSheet.style(row, col));
                     }
 
                     // Write cell values
-
-                    // Set the row counter to +1 because of the header issues
-                    counterForRows++;
-                    XSSFRow row = listsSheet.getRow(counterForRows);
-                    if (row == null) {
-                        row = listsSheet.createRow(counterForRows);
-                    }
-
-                    XSSFCell cell = row.createCell(listColumnNumber);
-                    cell.setCellValue(f.getValue());
-                    cell.setCellStyle(regularStyle);
+                    row++;
+                    listsSheet.value(row, col, f.getValue());
 
                 }
 
-                // Autosize this column
-                listsSheet.autoSizeColumn(listColumnNumber);
-
-                // Get the letter of this column
-                String listColumnLetter = CellReference.convertNumToColString(listColumnNumber);
-
-                // Figure out the last row number
-                int endRowNum = fields.size() + 1;
+                Range listRange = listsSheet.range(0, col, fields.size() + 1, col);
 
                 // DATA VALIDATION COMPONENT
                 for (WriterWorksheet sheet : sheets) {
@@ -428,52 +377,44 @@ public class ExcelWorkbookWriter {
                             .filter(r -> r.listName().equals(list.getAlias()))
                             .collect(Collectors.toList());
 
+                    Worksheet ws = dataSheets.stream().filter(s -> s.getName().equals(sheet.sheetName)).findFirst().get();
+
                     for (ControlledVocabularyRule r : rules) {
-                        column = sheet.columns.indexOf(r.column());
+                        int column = sheet.columns.indexOf(r.column());
                         if (column > -1) {
 
-                            // Set the Constraint to a particular column on the lists sheet
-                            // The following syntax works well and shows popup boxes: Lists!S:S
-                            // replacing the previous syntax which does not show popup boxes ListsS
-                            // Assumes that header is in column #1
-                            String constraintSyntax = LISTS_SHEET_NAME + "!$" + listColumnLetter + "$2:$" + listColumnLetter + "$" + endRowNum;
+                            // This defines an address range we want to place the DataValidation on
 
-                            DataValidationHelper dvHelper = listsSheet.getDataValidationHelper();
+                            ListDataValidation dataValidation = ws.range(1, column, 100000, column).validateWithList(listRange);
 
-                            XSSFDataValidationConstraint dvConstraint =
-                                    (XSSFDataValidationConstraint) dvHelper.createFormulaListConstraint(constraintSyntax);
-
-                            // This defines an address range for this particular list
-                            CellRangeAddressList addressList = new CellRangeAddressList();
-                            addressList.addCellRangeAddress(1, column, 50000, column);
-
-                            XSSFDataValidation dataValidation =
-                                    (XSSFDataValidation) dvHelper.createValidation(dvConstraint, addressList);
 
                             // Data validation styling
-                            dataValidation.setSuppressDropDownArrow(true);
-                            dataValidation.setShowErrorBox(true);
+                            dataValidation
+                                    .showDropdown(true)
+                                    .showErrorMessage(true);
                             // Give the user the appropriate data validation error msg, depending upon the rules error level
                             if (r.level().equals(RuleLevel.ERROR)) {
-                                dataValidation.createErrorBox("Data Validation Error", ERROR_MSG);
-                                dataValidation.setErrorStyle(DataValidation.ErrorStyle.WARNING);
+                                dataValidation
+                                        .errorTitle("Data Validation Error")
+                                        .error(ERROR_MSG)
+                                        .errorStyle(DataValidationErrorStyle.STOP);
                             } else {
-                                dataValidation.createErrorBox("Data Validation Warning", WARNING_MSG);
-                                dataValidation.setErrorStyle(DataValidation.ErrorStyle.INFO);
+                                dataValidation
+                                        .errorTitle("Data Validation Warning")
+                                        .error(WARNING_MSG)
+                                        .errorStyle(DataValidationErrorStyle.INFORMATION);
                             }
-                            // Add the validation to the worksheet
-                            workbook.getSheet(sheet.sheetName).addValidationData(dataValidation);
                         }
                     }
                 }
-                listColumnNumber++;
+                col++;
             }
         }
     }
 
 
     private List<ControlledVocabularyRule> vocabRules(String sheetName) {
-        return project.getProjectConfig().entitiesForSheet(sheetName)
+        return config.entitiesForSheet(sheetName)
                 .stream()
                 .flatMap(e -> e.getRules().stream())
                 .filter(ControlledVocabularyRule.class::isInstance)
@@ -482,28 +423,41 @@ public class ExcelWorkbookWriter {
     }
 
 
-    private void initWorkbookStyles() {
-        // Set the default heading style
-        headingStyle = workbook.createCellStyle();
-        Font bold = workbook.createFont();
-        bold.setBold(true);
-        bold.setFontHeightInPoints((short) 14);
-        headingStyle.setFont(bold);
+    private void styleHeading(StyleSetter styleSetter) {
+        styleHeading(styleSetter, true);
+    }
 
+    private void styleHeading(StyleSetter styleSetter, boolean set) {
+        styleSetter.bold().fontSize(14);
+        if (set) styleSetter.set();
+    }
 
-        requiredStyle = workbook.createCellStyle();
-        Font redBold = workbook.createFont();
-        redBold.setBold(true);
-        redBold.setFontHeightInPoints((short) 14);
-        redBold.setColor(XSSFFont.COLOR_RED);
-        requiredStyle.setFont(redBold);
+    private void styleRequired(StyleSetter styleSetter) {
+        styleRequired(styleSetter, true);
+    }
 
-        wrapStyle = workbook.createCellStyle();
-        wrapStyle.setWrapText(true);
-        wrapStyle.setVerticalAlignment(VerticalAlignment.TOP);
+    private void styleRequired(StyleSetter styleSetter, boolean set) {
+        styleHeading(styleSetter);
+        styleSetter.fontColor(RED_FONT);
+        if (set) styleSetter.set();
+    }
 
-        // Set the style for all other cells
-        regularStyle = workbook.createCellStyle();
+    private void styleWrapped(StyleSetter styleSetter) {
+        styleWrapped(styleSetter, true);
+    }
+
+    private void styleWrapped(StyleSetter styleSetter, boolean set) {
+        styleSetter.wrapText(true).verticalAlignment("Top");
+        if (set) styleSetter.set();
+    }
+
+    private void styleCentered(StyleSetter styleSetter) {
+        styleCentered(styleSetter, true);
+    }
+
+    private void styleCentered(StyleSetter styleSetter, boolean set) {
+        styleSetter.horizontalAlignment("center");
+        if (set) styleSetter.set();
     }
 
     private class DATA_FIELDS_COLUMNS {

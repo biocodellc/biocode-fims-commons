@@ -1,5 +1,6 @@
 package biocode.fims.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.util.Assert;
 
 /**
@@ -10,13 +11,15 @@ import org.springframework.util.Assert;
 public class ExpeditionMetadataProperty {
     private String name;
     private boolean required;
+    private boolean isNetworkProp;
 
     // needed for jackson deserialization
-    ExpeditionMetadataProperty() {}
+    ExpeditionMetadataProperty() {
+    }
 
     /**
-     * @param name      The name of the metadata property
-     * @param required  Is the property required
+     * @param name     The name of the metadata property
+     * @param required Is the property required
      */
     public ExpeditionMetadataProperty(String name, boolean required) {
         Assert.notNull(name);
@@ -30,6 +33,35 @@ public class ExpeditionMetadataProperty {
 
     public boolean isRequired() {
         return required;
+    }
+
+    @JsonIgnore
+    public boolean isNetworkProp() {
+        return isNetworkProp;
+    }
+
+    public void setNetworkProp(boolean networkProp) {
+        isNetworkProp = networkProp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExpeditionMetadataProperty)) return false;
+
+        ExpeditionMetadataProperty that = (ExpeditionMetadataProperty) o;
+
+        if (isRequired() != that.isRequired()) return false;
+        if (!getName().equals(that.getName())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName().hashCode();
+        result = 31 * result + (isRequired() ? 1 : 0);
+        return result;
     }
 }
 

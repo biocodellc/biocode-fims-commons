@@ -4,7 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.rest.filters.*;
 import biocode.fims.rest.services.subResources.*;
 import biocode.fims.utils.SpringApplicationContext;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
@@ -25,6 +25,8 @@ public class FimsApplication extends ResourceConfig {
 
         register(ObjectMapperContextResolver.class);
         register(JacksonFeature.class);
+        register(new NetworkId.Binder());
+        register(DynamicViewFilter.class);
 
         register(FimsExceptionMapper.class);
 
@@ -40,7 +42,10 @@ public class FimsApplication extends ResourceConfig {
         // otherwise, the VersionTransformer advice will not register with the subResource method
         register(ProjectsResource.class);
         register(ProjectMembersResource.class);
+        register(ProjectConfigResource.class);
         register(ProjectConfigurationResource.class);
+        register(NetworksResource.class);
+        register(NetworkConfigurationResource.class);
         register(ExpeditionsResource.class);
         register(ProjectTemplatesResource.class);
         register(RecordsResource.class);
@@ -58,7 +63,7 @@ public class FimsApplication extends ResourceConfig {
         for (Class resourceClass : getClasses()) {
             if (resourceClass.getPackage().getName().startsWith("biocode.fims.rest.services")) {
 
-                // check for @Component annotation or for the bean in the applicationContexgt
+                // check for @Component annotation or for the bean in the applicationContext
                 if (AnnotationUtils.findAnnotation(resourceClass, Component.class) == null
                         && SpringApplicationContext.getBean(resourceClass) == null) {
                     nonSpringBeans.add(resourceClass);

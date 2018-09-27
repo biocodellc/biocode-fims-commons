@@ -1,17 +1,13 @@
 package biocode.fims.service;
 
-import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.models.EntityIdentifier;
-import biocode.fims.models.Expedition;
-import biocode.fims.models.Project;
-import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.ProjectConfigUpdator;
-import biocode.fims.repositories.ProjectConfigRepository;
+import biocode.fims.config.models.Entity;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.DataIntegrityMessage;
+import biocode.fims.models.*;
 import biocode.fims.repositories.ProjectRepository;
+import biocode.fims.repositories.SetFimsUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnitUtil;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -35,36 +32,29 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
-    private final ProjectConfigRepository projectConfigRepository;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository, ExpeditionService expeditionService,
-                          UserService userService, ProjectConfigRepository projectConfigRepository) {
+                          UserService userService) {
         this.expeditionService = expeditionService;
         this.projectRepository = projectRepository;
         this.userService = userService;
-        this.projectConfigRepository = projectConfigRepository;
     }
 
-    public void create(Project project, int userId) {
-        User user = entityManager.getReference(User.class, userId);
-        project.setUser(user);
+    public Project create(Project project) {
+        try {
+            Project p = projectRepository.save(project);
 
-        // saveDataset an empty config first as we can't validate the config until the projectId is generated
-        ProjectConfig config = project.getProjectConfig();
-        project.setProjectConfig(new ProjectConfig());
-
-        // we need to saveDataset here so we can get the projectId
-        projectRepository.save(project);
-
-        project.setProjectConfig(config);
-
-        createProjectSchema(project.getProjectId());
-        saveConfig(config, project.getProjectId());
+            User user = loadMemberProjects(p.getUser());
+            user.getProjectsMemberOf().add(p);
+            userService.update(user);
+            return p;
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException(new DataIntegrityMessage(e).toString(), e);
+        }
     }
 
     public void update(Project project) {
-        saveConfig(project.getProjectConfig(), project.getProjectId());
         projectRepository.save(project);
     }
 
@@ -77,10 +67,7 @@ public class ProjectService {
     public boolean isUserMemberOfProject(User user, int projectId) {
         if (user == null) return false;
 
-        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
-        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
-            user = userService.getUserWithMemberProjects(user.getUsername());
-        }
+        user = loadMemberProjects(user);
 
         for (Project userProject : user.getProjectsMemberOf()) {
             if (userProject.getProjectId() == projectId) {
@@ -89,6 +76,14 @@ public class ProjectService {
         }
 
         return false;
+    }
+
+    private User loadMemberProjects(User user) {
+        PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+        if (!unitUtil.isLoaded(user, "projectsMemberOf")) {
+            return userService.getUserWithMemberProjects(user.getUsername());
+        }
+        return user;
     }
 
     public Project getProjectWithMembers(int projectId) {
@@ -101,6 +96,18 @@ public class ProjectService {
 
     public Project getProjectWithTemplates(int projectId) {
         return projectRepository.getProjectByProjectId(projectId, "Project.withTemplates");
+    }
+
+    /**
+     * checks if a user is the admin of a specific project
+     *
+     * @param user
+     * @param project
+     * @return
+     */
+    public boolean isProjectAdmin(User user, Project project) {
+        return project.getUser().equals(user);
+
     }
 
     /**
@@ -133,8 +140,8 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public List<Project> getProjectsWithExpeditions() {
-        return projectRepository.getAll("Project.withExpeditions");
+    public List<Project> getProjectsWithExpeditions(List<Integer> projectIds) {
+        return projectRepository.getAll(projectIds, "Project.withExpeditions");
     }
 
     /**
@@ -158,43 +165,13 @@ public class ProjectService {
         return filteredProjects;
     }
 
-    public void createProjectSchema(int projectId) {
-        projectConfigRepository.createProjectSchema(projectId);
-    }
-
-    public void saveConfig(ProjectConfig config, int projectId) {
-        config.generateUris();
-
-        if (!config.isValid()) {
-            throw new FimsRuntimeException(ConfigCode.INVALID, 400);
-        }
-
-        ProjectConfig existingConfig = projectConfigRepository.getConfig(projectId);
-
-        if (existingConfig == null) {
-            existingConfig = new ProjectConfig();
-        }
-
-        ProjectConfigUpdator updator = new ProjectConfigUpdator(config);
-        config = updator.update(existingConfig);
-
-        if (updator.newEntities().size() > 0) {
-            projectConfigRepository.createEntityTables(updator.newEntities(), projectId, config);
-            createEntityBcids(updator.newEntities(), projectId);
-        }
-
-        if (updator.removedEntities().size() > 0) {
-            projectConfigRepository.removeEntityTables(updator.removedEntities(), projectId);
-        }
-
-        projectConfigRepository.save(config, projectId);
-    }
-
-    private void createEntityBcids(List<Entity> entities, int projectId) {
-        for (Expedition e : expeditionService.getExpeditions(projectId, true)) {
-            List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(e, entities, e.getUser());
-            e.getEntityIdentifiers().addAll(entityIdentifiers);
-            expeditionService.update(e);
+    void createEntityBcids(List<Entity> entities, int configId) {
+        for (Project project : projectRepository.findAllByProjectConfigurationId(configId)) {
+            for (Expedition e : expeditionService.getExpeditions(project.getProjectId(), true)) {
+                List<EntityIdentifier> entityIdentifiers = expeditionService.createEntityBcids(e, entities, e.getUser());
+                e.getEntityIdentifiers().addAll(entityIdentifiers);
+                expeditionService.update(e);
+            }
         }
     }
 }

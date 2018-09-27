@@ -3,6 +3,7 @@ package biocode.fims.service;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.bcid.Identifier;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
@@ -10,13 +11,11 @@ import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.EntityIdentifier;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.dsl.*;
 import biocode.fims.repositories.EntityIdentifierRepository;
-import biocode.fims.repositories.ProjectConfigRepository;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.responses.RecordResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,39 +36,37 @@ public class RecordService {
     private final EntityIdentifierRepository entityIdentifierRepository;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
-    private final ProjectConfigRepository projectConfigRepository;
     private final FimsProperties props;
 
     @Autowired
     public RecordService(EntityIdentifierRepository entityIdentifierRepository, RecordRepository recordRepository,
-                         QueryAuthorizer queryAuthorizer, ProjectConfigRepository projectConfigRepository,
-                         FimsProperties properties) {
+                         QueryAuthorizer queryAuthorizer, FimsProperties properties) {
         this.entityIdentifierRepository = entityIdentifierRepository;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
-        this.projectConfigRepository = projectConfigRepository;
         props = properties;
+    }
+
+    public boolean delete(User user, String arkID) {
+        Identifier identifier = parseIdentifier(arkID);
+        EntityIdentifier entityIdentifier = getEntityIdentifier(identifier);
+
+        if (entityIdentifier == null) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
+        }
+
+        if (!entityIdentifier.getExpedition().getUser().equals(user) ||
+                !entityIdentifier.getExpedition().getProject().getUser().equals(user)) {
+            throw new ForbiddenRequestException("You are not authorized to delete this record");
+        }
+
+        return recordRepository.delete(identifier.getRootIdentifier(), identifier.getSuffix());
     }
 
 
     public RecordResponse get(User user, String arkID, boolean includeParent, boolean includeChildren) {
-        Identifier identifier;
-        try {
-            identifier = new Identifier(arkID, props.divider());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
-        }
-
-        if (!identifier.hasSuffix()) {
-            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "The provided identifier is a rootIdentifier and does not contain a suffix, therefore we can't fetch a record");
-        }
-
-        EntityIdentifier entityIdentifier;
-        try {
-            entityIdentifier = entityIdentifierRepository.findByIdentifier(new URI(identifier.getRootIdentifier()));
-        } catch (URISyntaxException e) {
-            throw new FimsRuntimeException(GenericErrorCode.SERVER_ERROR, 500);
-        }
+        Identifier identifier = parseIdentifier(arkID);
+        EntityIdentifier entityIdentifier = getEntityIdentifier(identifier);
 
         if (entityIdentifier == null) return null;
 
@@ -112,7 +109,7 @@ public class RecordService {
             }
         }
 
-        Query query = new Query(new QueryBuilder(project, entityIdentifier.getConceptAlias()), config, expression);
+        Query query = new Query(new QueryBuilder(config, project.getNetwork().getId(), entityIdentifier.getConceptAlias()), config, expression);
 
         Map<String, String> parent = null;
         Map<String, String> record = null;
@@ -135,5 +132,29 @@ public class RecordService {
         }
 
         return new RecordResponse(project.getProjectId(), parent, record, children.size() == 0 ? null : children);
+    }
+
+    private EntityIdentifier getEntityIdentifier(Identifier identifier) {
+        EntityIdentifier entityIdentifier;
+        try {
+            entityIdentifier = entityIdentifierRepository.findByIdentifier(new URI(identifier.getRootIdentifier()));
+        } catch (URISyntaxException e) {
+            throw new FimsRuntimeException(GenericErrorCode.SERVER_ERROR, 500);
+        }
+        return entityIdentifier;
+    }
+
+    private Identifier parseIdentifier(String arkID) {
+        Identifier identifier;
+        try {
+            identifier = new Identifier(arkID, props.divider());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
+        }
+
+        if (!identifier.hasSuffix()) {
+            throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "The provided identifier is a rootIdentifier and does not contain a suffix, therefore we can't fetch a record");
+        }
+        return identifier;
     }
 }

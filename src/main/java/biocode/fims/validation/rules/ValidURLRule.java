@@ -50,6 +50,7 @@ public class ValidURLRule extends SingleColumnRule {
 
             if (!value.equals("") && !urlValidator.isValid(value)) {
                 invalidValues.add(value);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

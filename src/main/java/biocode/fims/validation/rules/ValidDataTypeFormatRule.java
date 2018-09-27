@@ -1,14 +1,14 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.DataType;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DataType;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.utils.DateUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -57,6 +57,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case FLOAT:
@@ -70,6 +71,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case DATE:
@@ -87,6 +89,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message(msg)
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     case BOOLEAN:
@@ -96,6 +99,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                                     new Message("\"" + a.getColumn() + "\" contains non-boolean value \"" + value + "\". Must be either true or false")
                             );
                             isValid = false;
+                            if (level().equals(RuleLevel.ERROR)) r.setError();
                         }
                         break;
                     default:
@@ -147,6 +151,21 @@ public class ValidDataTypeFormatRule extends AbstractRule {
 
     @Override
     public boolean validConfiguration(List<String> messages, Entity entity) {
+        return true;
+    }
+
+
+    @Override
+    public boolean mergeRule(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+
+        networkRule = networkRule || r.isNetworkRule();
+        return true;
+    }
+
+    @Override
+    public boolean contains(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
         return true;
     }
 }

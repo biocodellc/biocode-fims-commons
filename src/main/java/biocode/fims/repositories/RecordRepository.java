@@ -1,8 +1,9 @@
 package biocode.fims.repositories;
 
+import biocode.fims.models.Project;
 import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.records.RecordSources;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordResult;
 import biocode.fims.query.QueryResults;
@@ -21,15 +22,17 @@ public interface RecordRepository {
 
     RecordResult get(String rootIdentifier, String localIdentifier);
 
-    List<? extends Record> getRecords(int projectId, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
+    boolean delete(String rootIdentifier, String localIdentifier);
 
-    List<? extends Record> getRecords(int projectId, String conceptAlias, Class<? extends Record> recordType);
+    List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType);
 
-    void saveChildRecord(Record record, int projectId, Entity parentEntity, Entity entity, int expeditionId);
+    List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType);
 
-    void saveRecord(Record record, int projectId, Entity entity, int expeditionId);
+    void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity);
 
-    void saveDataset(Dataset dataset, int projectId, int expeditionId);
+    void saveRecord(Record record, int networkId, Entity entity);
+
+    void saveDataset(Dataset dataset, int networkId);
 
     /**
      * execute the provided sql and return a list of responseTypes.

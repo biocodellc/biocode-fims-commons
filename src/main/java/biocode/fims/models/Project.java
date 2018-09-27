@@ -1,7 +1,8 @@
 package biocode.fims.models;
 
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.models.dataTypes.JsonBinaryType;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,12 +14,13 @@ import org.hibernate.annotations.TypeDef;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * Project Entity object
  */
-@JsonIgnoreProperties({ "config" })
+@JsonIgnoreProperties({"config"})
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "projects")
@@ -41,28 +43,29 @@ public class Project {
     private Date created;
     private Date modified;
     private String description;
-    private ProjectConfig projectConfig;
+    private ProjectConfiguration projectConfiguration;
     private boolean isPublic;
     private List<Expedition> expeditions;
     private User user;
+    private Network network;
     private List<User> projectMembers;
-    private Set<ProjectTemplate> templates;
+    private Set<WorksheetTemplate> templates;
 
     public static class ProjectBuilder {
 
         // Required
-        private String projectCode;
+        private String description;
         private String projectTitle;
-        private ProjectConfig projectConfig;
+        public ProjectConfiguration projectConfiguration;
 
         // Optional
         private boolean isPublic = true;
-        private String description;
+        private String projectCode;
 
-        public ProjectBuilder(String projectCode, String projectTitle, ProjectConfig projectConfig) {
-            this.projectCode = projectCode;
+        public ProjectBuilder(String description, String projectTitle, ProjectConfiguration projectConfiguration) {
+            this.description = description;
             this.projectTitle = projectTitle;
-            this.projectConfig = projectConfig;
+            this.projectConfiguration = projectConfiguration;
         }
 
         public ProjectBuilder isPublic(boolean isPublic) {
@@ -70,8 +73,8 @@ public class Project {
             return this;
         }
 
-        public ProjectBuilder description(String description) {
-            this.description = description;
+        public ProjectBuilder projectCode(String projectCode) {
+            this.projectCode = projectCode;
             return this;
         }
 
@@ -84,13 +87,13 @@ public class Project {
     private Project(ProjectBuilder builder) {
         projectCode = builder.projectCode;
         projectTitle = builder.projectTitle;
-        projectConfig = builder.projectConfig;
+        projectConfiguration = builder.projectConfiguration;
         isPublic = builder.isPublic;
         description = builder.description;
     }
 
     // needed for hibernate
-    Project() {
+    protected Project() {
     }
 
     @JsonView(Views.Summary.class)
@@ -146,15 +149,10 @@ public class Project {
         this.modified = modified;
     }
 
-    @JsonIgnore
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb", name = "config", updatable = false)
+    @JsonView(Views.DetailedConfig.class)
+    @Transient
     public ProjectConfig getProjectConfig() {
-        return projectConfig;
-    }
-
-    public void setProjectConfig(ProjectConfig projectConfig) {
-        this.projectConfig = projectConfig;
+        return projectConfiguration == null ? null : projectConfiguration.getProjectConfig();
     }
 
     @JsonView(Views.Detailed.class)
@@ -188,7 +186,7 @@ public class Project {
 
     @Override
     public int hashCode() {
-        return 31;
+        return getProjectId();
     }
 
     @Override
@@ -218,7 +216,6 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
-    @JsonViewOverride(Views.Summary.class)
     @ManyToOne
     @JoinColumn(name = "user_id",
             referencedColumnName = "id",
@@ -232,6 +229,41 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    /**
+     * you probably want {@link #getProjectConfig()}
+     *
+     * @return
+     */
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
+    @ManyToOne
+    @JoinColumn(name = "config_id",
+            referencedColumnName = "id"
+    )
+    public ProjectConfiguration getProjectConfiguration() {
+        return projectConfiguration;
+    }
+
+    public void setProjectConfiguration(ProjectConfiguration projectConfiguration) {
+        this.projectConfiguration = projectConfiguration;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @JsonViewOverride(Views.Summary.class)
+    @ManyToOne
+    @JoinColumn(name = "network_id",
+            referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_projects_network_id"),
+            nullable = false
+    )
+    public Network getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(Network network) {
+        this.network = network;
     }
 
     @JsonIgnore
@@ -250,11 +282,11 @@ public class Project {
     @OneToMany(mappedBy = "project",
             fetch = FetchType.LAZY
     )
-    public Set<ProjectTemplate> getTemplates() {
+    public Set<WorksheetTemplate> getTemplates() {
         return templates;
     }
 
-    public void setTemplates(Set<ProjectTemplate> templates) {
+    public void setTemplates(Set<WorksheetTemplate> templates) {
         this.templates = templates;
     }
 

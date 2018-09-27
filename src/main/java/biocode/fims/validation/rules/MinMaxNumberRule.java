@@ -1,12 +1,12 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -15,11 +15,8 @@ import java.util.regex.Pattern;
 /**
  * Check that minimum/maximum numbers are entered correctly.
  * <p>
- * minimumColumn and maximumColumn must both set
- * <p>
- * 1) check that either both minimumColumn and maximumColumn are either present or missing, but not only 1 column present
- * 2) check that each column is a valid number
- * 3) check that maximumColumn is greater then the minimumColumn for each {@link Record}
+ * 1) check that each column is a valid number
+ * 2) check that maximumColumn is greater then the minimumColumn for each {@link Record}
  *
  * @author rjewing
  */
@@ -65,26 +62,15 @@ public class MinMaxNumberRule extends AbstractRule {
             String minColVal = r.get(minUri);
             String maxColVal = r.get(maxUri);
 
-            if (minColVal.equals("") && maxColVal.equals("")) {
-                continue;
-            } else if (minColVal.equals("")) {
-                isValid = false;
-                messages.addWarningMessage(
-                        "Spreadsheet check",
-                        new Message("Column \"" + maximumColumn + "\" exists but must have corresponding column \"" + minimumColumn + "\"")
-                );
-                continue;
-            } else if (maxColVal.equals("")) {
-                isValid = false;
-                messages.addWarningMessage(
-                        "Spreadsheet check",
-                        new Message("Column \"" + minimumColumn + "\" exists but must have corresponding column \"" + maximumColumn + "\"")
-                );
+            boolean hasMinColVal = !minColVal.equals("");
+            boolean hasMaxColVal = !maxColVal.equals("");
+
+            if (!hasMaxColVal && !hasMinColVal) {
                 continue;
             }
 
             boolean validNumbers = true;
-            if (!pattern.matcher(minColVal).matches()) {
+            if (hasMinColVal && !pattern.matcher(minColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
                         new Message("non-numeric value \"" + minColVal + "\" for column \"" + minimumColumn + "\""),
@@ -92,9 +78,10 @@ public class MinMaxNumberRule extends AbstractRule {
                 );
                 validNumbers = false;
                 isValid = false;
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
-            if (!pattern.matcher(maxColVal).matches()) {
+            if (hasMaxColVal && !pattern.matcher(maxColVal).matches()) {
                 messages.addMessage(
                         GROUP_MESSAGE,
                         new Message("non-numeric value \"" + maxColVal + "\" for column \"" + maximumColumn + "\""),
@@ -102,9 +89,10 @@ public class MinMaxNumberRule extends AbstractRule {
                 );
                 validNumbers = false;
                 isValid = false;
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
-            if (validNumbers) {
+            if (validNumbers && hasMinColVal && hasMaxColVal) {
                 try {
                     if (Double.parseDouble(minColVal) > Double.parseDouble(maxColVal)) {
                         messages.addMessage(
@@ -113,6 +101,7 @@ public class MinMaxNumberRule extends AbstractRule {
                                 level()
                         );
                         isValid = false;
+                        if (level().equals(RuleLevel.ERROR)) r.setError();
                     }
                 } catch (NumberFormatException e) {
                     messages.addMessage(
@@ -120,6 +109,7 @@ public class MinMaxNumberRule extends AbstractRule {
                             new Message("could not determine if \"" + minColVal + "\" is greater then \"" + maxColVal + "\". Are they both numbers?"),
                             level()
                     );
+                    if (level().equals(RuleLevel.ERROR)) r.setError();
                 }
             }
 

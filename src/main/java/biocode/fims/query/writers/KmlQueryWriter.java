@@ -5,14 +5,10 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.QueryResult;
 import biocode.fims.utils.FileUtils;
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +29,7 @@ public class KmlQueryWriter implements QueryWriter {
     }
 
     @Override
-    public File write() {
+    public List<File> write() {
         File file = FileUtils.createUniqueFile("output.kml", System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -57,7 +53,7 @@ public class KmlQueryWriter implements QueryWriter {
             throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
         }
 
-        return file;
+        return Collections.singletonList(file);
     }
 
     private void writePlacemark(Writer writer, Map<String, String> record) throws IOException {
@@ -78,9 +74,9 @@ public class KmlQueryWriter implements QueryWriter {
             for (Map.Entry<String, String> e: record.entrySet()) {
                 if (!e.getKey().equals(latColumn) || !e.getKey().equals(lngColumn) || !e.getKey().equals(nameColumn)) {
                     writer.write("<br>");
-                    StringEscapeUtils.escapeXml(writer, e.getKey());
+                    writer.write(StringEscapeUtils.escapeXml11(e.getKey()));
                     writer.write("=");
-                    StringEscapeUtils.escapeXml(writer, e.getValue());
+                    writer.write(StringEscapeUtils.escapeXml11(e.getValue()));
                 }
             }
 
@@ -89,9 +85,9 @@ public class KmlQueryWriter implements QueryWriter {
 
             writer.write("\t\t<Point>\n");
             writer.write("\t\t\t<coordinates>");
-            StringEscapeUtils.escapeXml(writer, lng);
+            writer.write(StringEscapeUtils.escapeXml11(lng));
             writer.write(",");
-            StringEscapeUtils.escapeXml(writer, lat);
+            writer.write(StringEscapeUtils.escapeXml11(lat));
             writer.write("</coordinates>\n");
             writer.write("\t\t</Point>\n");
 

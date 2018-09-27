@@ -1,7 +1,7 @@
 package biocode.fims.reader;
 
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class DataConverterFactory {
     class DefaultDataConverter implements DataConverter {
 
         @Override
-        public RecordSet convertRecordSet(RecordSet recordSet, int projectId, String expeditionCode) {
+        public RecordSet convertRecordSet(RecordSet recordSet, int networkId) {
             return recordSet;
         }
 

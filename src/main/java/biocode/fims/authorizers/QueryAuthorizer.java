@@ -78,7 +78,7 @@ public class QueryAuthorizer {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT_LIST, 500);
         }
 
-        List<Project> projects = projectService.getProjectsWithExpeditions();
+        List<Project> projects = projectService.getProjectsWithExpeditions(projectIds);
 
         if (expeditionCodes.size() > 0) {
             return authorizedExpeditionAccess(projectIds, expeditionCodes, projects, user);

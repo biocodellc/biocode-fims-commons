@@ -1,20 +1,21 @@
 package biocode.fims.reader.plugins;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.utils.RecordHasher;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -29,6 +30,7 @@ abstract class AbstractTabularDataReader implements DataReader {
 
     private List<RecordSet> recordSets;
     private boolean sortedSheetEntites = false;
+    private boolean foundExpeditionCode = false;
 
     AbstractTabularDataReader() {
     }
@@ -59,9 +61,18 @@ abstract class AbstractTabularDataReader implements DataReader {
         List<RecordSet> recordSets = new ArrayList<>();
 
         for (Map.Entry<Entity, List<Record>> e : entityRecords.entrySet()) {
-            recordSets.add(
-                    new RecordSet(e.getKey(), e.getValue(), recordMetadata.reload())
-            );
+
+            // group records by expeditionCode
+            Map<Optional<String>, List<Record>> grouped = e.getValue().stream()
+                    .collect(Collectors.groupingBy(r -> Optional.ofNullable(r.expeditionCode())));
+
+            for (Map.Entry<Optional<String>, List<Record>> ge : grouped.entrySet()) {
+                RecordSet recordSet = new RecordSet(e.getKey(), ge.getValue(), recordMetadata.reload());
+                if (ge.getKey().isPresent()) {
+                    recordSet.setExpeditionCode(ge.getKey().get());
+                }
+                recordSets.add(recordSet);
+            }
         }
 
         return recordSets;
@@ -69,18 +80,28 @@ abstract class AbstractTabularDataReader implements DataReader {
 
     void instantiateRecordsFromRow(LinkedList<String> row) {
         if (addRow(row)) {
+            // get the expeditionCode if the data has it
+            String expeditionCode = (colNames.contains(Record.EXPEDITION_CODE))
+                    ? row.get(colNames.indexOf(Record.EXPEDITION_CODE))
+                    : null;
+
+            if (!foundExpeditionCode && expeditionCode != null) {
+                foundExpeditionCode = true;
+            }
 
             // this ensures that parent entities come before children
             // so we can update the child parent identifier for hashed
             // entices
             if (!sortedSheetEntites) sortSheetEntities();
 
+            // hashed Records for the row
             Map<String, Record> hashedRecords = new HashMap<>();
 
             for (Entity e : sheetEntities) {
                 try {
                     Record r = e.getRecordType().newInstance();
                     r.setMetadata(recordMetadata);
+                    r.setExpeditionCode(expeditionCode);
 
                     for (Attribute a : e.getAttributes()) {
                         if (colNames.contains(a.getColumn())) {

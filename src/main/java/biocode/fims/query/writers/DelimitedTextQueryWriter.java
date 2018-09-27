@@ -1,13 +1,13 @@
 package biocode.fims.query.writers;
 
+import biocode.fims.config.Config;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryResults;
 import biocode.fims.utils.FileUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.*;
@@ -23,14 +23,14 @@ public class DelimitedTextQueryWriter implements QueryWriter {
 
     private WriterWorksheet worksheet;
 
-    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter, ProjectConfig config) {
+    public DelimitedTextQueryWriter(QueryResults queryResults, String delimiter, Config config) {
         this.delimiter = delimiter;
         isCsv = StringUtils.equals(delimiter.trim(), ",");
         this.writerSheetGenerator = new WriterSheetGenerator(queryResults, config);
     }
 
     @Override
-    public File write() {
+    public List<File> write() {
         List<WriterWorksheet> sheets = writerSheetGenerator.recordsToWriterSheets();
 
         List<File> files = sheets.stream()
@@ -40,19 +40,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
 
         if (files.size() == 0) throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
 
-        if (files.size() == 1) {
-            return files.get(0);
-        } else {
-            Map<String, File> fileMap = new HashMap<>();
-
-            for (File f : files) {
-                // we create a uniqueFile which may end up like sample.2.csv. This will make it sample.csv
-                String name = f.getName().replaceFirst("\\.\\d+\\.", ".");
-                fileMap.put(name, f);
-            }
-
-            return FileUtils.zip(fileMap, System.getProperty("java.io.tmpdir"));
-        }
+        return files;
     }
 
     private File writeWorksheet(WriterWorksheet worksheet) {
@@ -84,7 +72,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
             for (String column : worksheet.columns) {
                 String val = record.getOrDefault(column, "");
                 if (isCsv) {
-                    StringEscapeUtils.escapeCsv(writer, val);
+                    writer.write(StringEscapeUtils.escapeCsv(val));
                 } else {
                     writer.write(val);
                 }
@@ -98,7 +86,7 @@ public class DelimitedTextQueryWriter implements QueryWriter {
     private void writeHeader(Writer writer) throws IOException {
         for (String column : worksheet.columns) {
             if (isCsv) {
-                StringEscapeUtils.escapeCsv(writer, column);
+                writer.write(StringEscapeUtils.escapeCsv(column));
             } else {
                 writer.write(column);
             }

@@ -1,6 +1,6 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
@@ -65,6 +65,7 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
             if (!valid) {
                 String uniqueKey = r.get(uniqueKeyUri);
                 columnsMissingValues.add(uniqueKey);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }

@@ -1,11 +1,11 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Field;
-import biocode.fims.projectConfig.models.List;
+import biocode.fims.config.models.Field;
+import biocode.fims.config.models.List;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.ListMessage;
 import biocode.fims.validation.messages.Message;

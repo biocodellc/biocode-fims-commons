@@ -3,6 +3,9 @@ package biocode.fims.query.dsl;
 import biocode.fims.query.ExpressionVisitor;
 import org.springframework.util.Assert;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Full Text Search Expression.
  * <p>
@@ -13,7 +16,8 @@ import org.springframework.util.Assert;
  * col1:value               ->  fts for "value"
  * col1:val*                ->  prefix matching
  * TODO:co1:(value1 | !value2)   -> fts for "value1 | !value2
- * TODO:co1:(value1  value2)   -> fts for "value1 & value2
+ * co1:(value1 value2)      -> fts for value1 & value2
+ * new caladonia            -> fts for new & caladonia
  *
  * @author rjewing
  */

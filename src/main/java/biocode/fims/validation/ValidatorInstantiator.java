@@ -1,6 +1,6 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 
 /**
  * @author rjewing

@@ -1,21 +1,20 @@
 package biocode.fims.query.dsl;
 
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.Config;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.*;
-import org.parboiled.matchers.AbstractMatcher;
-import org.parboiled.matchers.Matcher;
-import org.parboiled.matchervisitors.MatcherVisitor;
 import org.parboiled.support.StringVar;
 import org.parboiled.support.ValueStack;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static biocode.fims.query.dsl.LogicalOperator.AND;
 import static biocode.fims.query.dsl.LogicalOperator.OR;
-import static org.parboiled.common.Preconditions.checkArgNotNull;
 
 /**
  * @author rjewing
@@ -23,11 +22,11 @@ import static org.parboiled.common.Preconditions.checkArgNotNull;
 @SuppressWarnings({"InfiniteRecursion", "WeakerAccess"})
 public class QueryParser extends BaseParser<Object> {
     private final QueryBuildingExpressionVisitor queryBuilder;
-    private final ProjectConfig projectConfig;
+    private final Config config;
 
-    public QueryParser(QueryBuildingExpressionVisitor queryBuilder, ProjectConfig config) {
+    public QueryParser(QueryBuildingExpressionVisitor queryBuilder, Config config) {
         this.queryBuilder = queryBuilder;
-        this.projectConfig = config;
+        this.config = config;
     }
 
     public Rule Parse() {
@@ -41,7 +40,7 @@ public class QueryParser extends BaseParser<Object> {
                         ValueStack stack = context.getValueStack();
 
                         if (stack.isEmpty()) {
-                            push(new Query(queryBuilder, projectConfig, new EmptyExpression()));
+                            push(new Query(queryBuilder, config, new EmptyExpression()));
                         } else if (stack.size() == 1) {
                             Expression expression = popExp();
 
@@ -49,7 +48,7 @@ public class QueryParser extends BaseParser<Object> {
                                 ((SelectExpression) expression).setExpression(new AllExpression());
                             }
 
-                            push(new Query(queryBuilder, projectConfig, expression));
+                            push(new Query(queryBuilder, config, expression));
                         } else {
                             List<String> selectEntities = new ArrayList<>();
                             Expression expression = null;
@@ -79,7 +78,7 @@ public class QueryParser extends BaseParser<Object> {
                                     // If we have no other objects, then we have an AllExpression
                                     e = new SelectExpression(String.join(",", selectEntities), new AllExpression());
                                 }
-                                push(new Query(queryBuilder, projectConfig, e));
+                                push(new Query(queryBuilder, config, e));
                             }
                         }
 
@@ -102,10 +101,23 @@ public class QueryParser extends BaseParser<Object> {
                         SubExpression(),
                         ZeroOrMore(
                                 WhiteSpaceChars(),
-                                OrChars(),
-                                WhiteSpaceChars(),
-                                SubExpression(),
-                                logicalAction(OR)
+                                FirstOf(
+                                        Sequence(
+                                                new Action() {
+                                                    @Override
+                                                    public boolean run(Context context) {
+                                                        return peek() instanceof SelectExpression;
+                                                    }
+                                                },
+                                                SubExpression()
+                                        ),
+                                        Sequence(
+                                                OrChars(),
+                                                WhiteSpaceChars(),
+                                                SubExpression(),
+                                                logicalAction(OR)
+                                        )
+                                )
                         ),
                         WhiteSpace()
                 )
@@ -127,10 +139,13 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule Expression() {
         return Sequence(
+                // SelectExpression doesn't need to be preceded by "and" or "or"
+//                Optional(SelectExpression()),
                 FirstOf(
                         NotExpression(),
                         FilterExpression(),
                         ExistsExpression(),
+                        ProjectsExpression(),
                         ExpeditionsExpression(),
                         SelectExpression(),
                         FTSExpression(),
@@ -171,6 +186,29 @@ public class QueryParser extends BaseParser<Object> {
                 WhiteSpace(),
                 SpecialPrefixExpression(ExistsChars()),
                 push(new ExistsExpression(popStr()))
+        );
+    }
+
+    Rule ProjectsExpression() {
+        return Sequence(
+                WhiteSpace(),
+                SpecialPrefixExpression(ProjectChars()),
+                new Action() {
+                    @Override
+                    public boolean run(Context context) {
+                        String val = popStr();
+
+                        List<Integer> projects;
+                        if (val.contains(",")) {
+                            projects = Arrays.stream(val.replaceAll(" ", "").split(","))
+                                    .map(Integer::parseInt)
+                                    .collect(Collectors.toList());
+                        } else {
+                            projects = Collections.singletonList(Integer.parseInt(val.trim()));
+                        }
+                        return push(new ProjectExpression(projects));
+                    }
+                }
         );
     }
 
@@ -219,6 +257,7 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule FTSExpression() {
         StringVar column = new StringVar();
+        StringVar val = new StringVar();
         return Sequence(
                 WhiteSpace(),
                 Optional(
@@ -226,11 +265,21 @@ public class QueryParser extends BaseParser<Object> {
                         WhiteSpace(),
                         SemiColon(),
                         column.set(popStr())
-
                 ),
                 WhiteSpace(),
                 Chars(),
-                push(new FTSExpression(column.get(), popStr()))
+                val.set(popStr()),
+                ZeroOrMore(
+                        Test(column.isEmpty()), // don't parse multi-term fts if a column is specified
+                        WhiteSpace(),
+                        TestNot(AndChars()),
+                        TestNot(OrChars()),
+                        TestNot(NotChars()),
+                        Chars(),
+                        val.append(" "),
+                        val.append(popStr())
+                ),
+                push(new FTSExpression(column.get(), val.get()))
         );
     }
 
@@ -380,6 +429,7 @@ public class QueryParser extends BaseParser<Object> {
                 ComparisonOperatorChars(),
                 SemiColon(),
                 ExpeditionsChars(),
+                ProjectChars(),
                 SelectChars(),
                 QuoteChar(),
                 OpenParen(),
@@ -412,6 +462,10 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule EscapeChar() {
         return Ch('\\');
+    }
+
+    Rule ProjectChars() {
+        return String("_projects_");
     }
 
     Rule ExpeditionsChars() {

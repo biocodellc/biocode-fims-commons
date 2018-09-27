@@ -9,9 +9,9 @@ import java.util.Map;
  */
 public class ParametrizedQuery {
     private final String sql;
-    private final Map<String, String> params;
+    private final Map<String, ?> params;
 
-    public ParametrizedQuery(String sql, Map<String, String> params) {
+    public ParametrizedQuery(String sql, Map<String, ?> params) {
         Assert.notNull(sql);
         Assert.notNull(params);
         this.sql = sql;
@@ -22,7 +22,7 @@ public class ParametrizedQuery {
         return sql;
     }
 
-    public Map<String, String> params() {
+    public Map<String, ?> params() {
         return params;
     }
 

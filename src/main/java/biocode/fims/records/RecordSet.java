@@ -1,14 +1,17 @@
 package biocode.fims.records;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
+import org.apache.commons.collections.keyvalue.MultiKey;
 import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * A group of records for a single entity in a single expedition
+ *
  * @author rjewing
  */
 public class RecordSet {
@@ -17,6 +20,9 @@ public class RecordSet {
     private RecordSet parent;
     private Entity entity;
     private boolean reload;
+    private String expeditionCode;
+    private final Map<MultiKey, List<Record>> recordCache;
+    private boolean cacheBuilt;
 
     private boolean deduplicated = false;
 
@@ -25,6 +31,7 @@ public class RecordSet {
         this.entity = entity;
         this.reload = reload;
         this.records = new ArrayList<>();
+        this.recordCache = new HashMap<>();
     }
 
     public RecordSet(Entity entity, List<Record> records, boolean reload) {
@@ -50,7 +57,9 @@ public class RecordSet {
 
     public void add(Record record) {
         deduplicated = false;
-        this.records.add(record);
+        if (!cacheBuilt && records.isEmpty()) cacheBuilt = true;
+        records.add(record);
+        addToCache(record);
     }
 
     public List<Record> records() {
@@ -65,12 +74,37 @@ public class RecordSet {
         );
     }
 
-    public String expeditionCode() {
+    public boolean hasRecordToPersist() {
         return records.stream()
+                .anyMatch(Record::persist);
+    }
+
+    public void setExpeditionCode(String expeditionCode) {
+        if (!Objects.equals(expeditionCode, this.expeditionCode)) {
+            cacheBuilt = false; // need to rebuild cache if expeditionCode has changed
+            records.stream().filter(Record::persist).forEach(r -> r.setExpeditionCode(expeditionCode));
+            this.expeditionCode = expeditionCode;
+        }
+    }
+
+    public String expeditionCode() {
+        if (expeditionCode != null) return expeditionCode;
+
+        expeditionCode = records.stream()
                 .filter(Record::persist)
                 .findFirst()
                 .orElse(new GenericRecord())
                 .expeditionCode();
+
+        return expeditionCode;
+    }
+
+    public int projectId() {
+        return records.stream()
+                .filter(Record::persist)
+                .findFirst()
+                .orElse(new GenericRecord())
+                .projectId();
     }
 
     public String conceptAlias() {
@@ -94,56 +128,78 @@ public class RecordSet {
             return;
         }
 
+        buildCache();
+
         List<String> invalidRecordIdentifiers = new ArrayList<>();
-        Map<String, Record> recordMap = new HashMap<>();
+        List<Record> recordsToRemove = new ArrayList<>();
 
         String identifierUri = entity.getUniqueKeyURI();
 
-        for (Record r : records()) {
-            String identifier = r.get(identifierUri);
+        recordCache.values().forEach(records -> {
+            if (records.size() > 1) {
+                Record record = records.get(0);
 
-            if (recordMap.containsKey(identifier)) {
-
-                if (!recordMap.get(identifier).equals(r)) {
-                    invalidRecordIdentifiers.add(identifier);
+                boolean isFirst = true;
+                for (Record r : records) {
+                    if (!record.equals(r)) {
+                        invalidRecordIdentifiers.add(record.get(identifierUri));
+                        break;
+                    }
+                    if (!isFirst) recordsToRemove.add(r);
+                    isFirst = false;
                 }
-
-            } else {
-                recordMap.put(identifier, r);
             }
-        }
+        });
 
         if (invalidRecordIdentifiers.size() > 0) {
             throw new FimsRuntimeException(DataReaderCode.INVALID_RECORDS, 400, String.join(", ", invalidRecordIdentifiers));
         }
 
         // remove any duplicate records
-        records = new LinkedList<>(new LinkedHashSet<>(records));
+        for (Record r : recordsToRemove) {
+            recordCache.get(getCacheKey(r)).remove(r);
+            records.remove(r);
+        }
 
         deduplicated = true;
     }
 
     public void merge(List<? extends Record> records, String parentUniqueKey) {
+        buildCache();
         for (Record r : records) {
-            if (addRecord(r, parentUniqueKey)) {
-                this.records.add(r);
+            if (shouldAddRecord(r, parentUniqueKey)) {
+                add(r);
             }
         }
     }
 
-    private boolean addRecord(Record record, String parentUniqueKey) {
-        String uniqueKey = entity.getUniqueKeyURI();
+    private boolean shouldAddRecord(Record record, String parentUniqueKey) {
+        List<Record> records = recordCache.get(getCacheKey(record));
+        if (records == null || records.size() == 0) return true;
 
+        // records are cached by projectId, expeditionCode, and uniqueKey
+        // here we only need to check if parentUniqueKey matches
         return records.stream()
-                .noneMatch(r ->
-                        record.get(uniqueKey).equals(r.get(uniqueKey))
-                                && (parentUniqueKey == null || record.get(parentUniqueKey).equals(r.get(parentUniqueKey)))
-                                && record.projectId() == r.projectId()
-                                && record.expeditionCode().equals(r.expeditionCode())
-                );
+                .noneMatch(r -> (parentUniqueKey == null || record.get(parentUniqueKey).equals(r.get(parentUniqueKey))));
     }
 
     public boolean hasParent() {
         return parent != null;
+    }
+
+    private void buildCache() {
+        if (cacheBuilt) return;
+        recordCache.clear();
+        records.stream().forEach(this::addToCache);
+        cacheBuilt = true;
+    }
+
+    private void addToCache(Record r) {
+        recordCache.computeIfAbsent(getCacheKey(r), key -> new ArrayList<>()).add(r);
+    }
+
+    private MultiKey getCacheKey(Record r) {
+        String uniqueKey = entity.getUniqueKeyURI();
+        return new MultiKey(r.projectId(), r.expeditionCode(), r.get(uniqueKey));
     }
 }

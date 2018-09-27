@@ -1,10 +1,14 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.bcid.BcidBuilder;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.Entity;
+import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
+import biocode.fims.records.RecordMapper;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -51,57 +55,25 @@ public class QueryResult {
      * @return
      */
     public LinkedList<Map<String, String>> get(boolean includeEmpty, List<String> source) {
-        LinkedList<Map<String, String>> transformedRecords = new LinkedList<>();
-        boolean skipSourceFilter = source.size() == 0;
+        RecordMapper recordMapper = getRecordMapper(includeEmpty, source);
+        return records.stream()
+                .map(recordMapper::map)
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
 
-        for (Record record : records) {
-            Map<String, String> properties = new LinkedHashMap<>();
+    public LinkedList<Record> getAsRecord(boolean includeEmpty) {
+        return getAsRecord(includeEmpty, Collections.emptyList());
+    }
 
-            for (Map.Entry<String, String> e : record.properties().entrySet()) {
-                String col = entity.getAttributeColumn(e.getKey());
-                if (col == null) col = e.getKey();
+    public LinkedList<Record> getAsRecord(boolean includeEmpty, List<String> source) {
+        RecordMapper recordMapper = getRecordMapper(includeEmpty, source);
+        return records.stream()
+                .map(recordMapper::mapAsRecord)
+                .collect(Collectors.toCollection(LinkedList::new));
+    }
 
-                if (skipSourceFilter || source.contains(col)) {
-                    properties.put(
-                            col,
-                            e.getValue()
-                    );
-                }
-            }
-
-            if (includeEmpty) {
-                for (Attribute a : entity.getAttributes()) {
-                    if (!properties.containsKey(a.getColumn()) && (skipSourceFilter || source.contains(a.getColumn()))) {
-                        properties.put(
-                                a.getColumn(),
-                                record.get(a.getUri())
-                        );
-                    }
-                }
-            }
-
-            if ((skipSourceFilter || source.contains("expeditionCode")) && record.expeditionCode() != null) {
-                properties.put("expeditionCode", record.expeditionCode());
-            }
-            if ((skipSourceFilter || source.contains("projectId")) && record.projectId() != 0 ) {
-                properties.put("projectId", record.projectId() == 0 ? null : String.valueOf(record.projectId()));
-            }
-
-            if (skipSourceFilter || source.contains("bcid")) {
-                String bcid = record.rootIdentifier();
-                if (entity.isChildEntity() && entity.getUniqueKey() != null) {
-                    bcid += record.get(entity.getUniqueKeyURI());
-                } else if (entity.isChildEntity()) {
-                    bcid += record.get(parentEntity.getUniqueKeyURI());
-                } else {
-                    bcid += record.get(entity.getUniqueKeyURI());
-                }
-                properties.put("bcid", bcid);
-            }
-
-            transformedRecords.add(properties);
-        }
-
-        return transformedRecords;
+    private RecordMapper getRecordMapper(boolean includeEmpty, List<String> source) {
+        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity);
+        return new RecordMapper(bcidBuilder, entity.getAttributes(), includeEmpty, source);
     }
 }

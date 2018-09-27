@@ -10,5 +10,5 @@ import java.util.List;
 public interface ProjectCustomOperations {
     Project getProjectByProjectId(int projectId, String entityGraph);
 
-    List<Project> getAll(String entityGraph);
+    List<Project> getAll(List<Integer> projectIds, String entityGraph);
 }

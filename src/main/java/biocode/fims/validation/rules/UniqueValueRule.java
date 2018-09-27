@@ -51,31 +51,39 @@ public class UniqueValueRule extends SingleColumnRule {
 
         String uri = recordSet.entity().getAttributeUri(column);
 
-        Set<String> set = new HashSet<>();
+        Set<String> existingValues = new HashSet<>();
         List<String> duplicateValues = new ArrayList<>();
 
-        List<Record> recordsToCheck;
         List<Record> recordsToPersist = recordSet.recordsToPersist();
 
-        if (recordsToPersist.size() == 0) {
-            recordsToCheck = new ArrayList<>();
-        } else if (uniqueAcrossProject) {
-            recordsToCheck = recordSet.records();
-        } else {
-            // can only upload to a single expedition, so we can look at the first record to persist
-            String uploadingExpeditionCode = recordSet.expeditionCode();
+        if (recordsToPersist.size() > 0) {
+            if (uniqueAcrossProject) {
+                existingValues.addAll(
+                        recordSet.records().stream()
+                                .filter(r -> !r.persist())
+                                .map(r -> r.get(uri))
+                                .collect(Collectors.toList())
+                );
+            } else {
+                // can only upload to a single expedition, so we can look at the first record to persist
+                String uploadingExpeditionCode = recordSet.expeditionCode();
 
-            recordsToCheck = recordSet.records().stream()
-                    .filter(r -> r.expeditionCode().equals(uploadingExpeditionCode))
-                    .collect(Collectors.toList());
+                existingValues.addAll(
+                        recordSet.records().stream()
+                                .filter(r -> r.expeditionCode().equals(uploadingExpeditionCode) && !r.persist())
+                                .map(r -> r.get(uri))
+                                .collect(Collectors.toList())
+                );
+            }
         }
 
-        for (Record r : recordsToCheck) {
+        for (Record r : recordsToPersist) {
 
             String value = r.get(uri);
 
-            if (!value.equals("") && !set.add(value)) {
+            if (!value.equals("") && !existingValues.add(value)) {
                 duplicateValues.add(value);
+                if (level().equals(RuleLevel.ERROR)) r.setError();
             }
 
         }
@@ -110,20 +118,36 @@ public class UniqueValueRule extends SingleColumnRule {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UniqueValueRule)) return false;
-        if (!super.equals(o)) return false;
+    public boolean mergeRule(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
 
-        UniqueValueRule that = (UniqueValueRule) o;
+        UniqueValueRule rule = (UniqueValueRule) r;
 
-        return uniqueAcrossProject == that.uniqueAcrossProject;
+        if (rule.level().equals(level())
+                && rule.column().equals(column)) {
+            if (rule.uniqueAcrossProject && rule.networkRule
+                    || uniqueAcrossProject && networkRule
+                    || (!rule.uniqueAcrossProject && !uniqueAcrossProject) && (networkRule || rule.networkRule)) {
+                networkRule = true;
+            }
+            uniqueAcrossProject = uniqueAcrossProject || rule.uniqueAcrossProject;
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (uniqueAcrossProject ? 1 : 0);
-        return result;
+    public boolean contains(Rule r) {
+        if (!r.getClass().equals(this.getClass())) return false;
+
+        UniqueValueRule rule = (UniqueValueRule) r;
+
+        if (rule.level().equals(level())
+                && rule.column().equals(column)) {
+
+            // rule needs tobe as strict or more strict to consider r contained within the rule
+            return !rule.uniqueAcrossProject || uniqueAcrossProject;
+        }
+        return false;
     }
 }

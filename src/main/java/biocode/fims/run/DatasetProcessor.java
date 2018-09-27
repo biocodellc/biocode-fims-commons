@@ -5,17 +5,20 @@ import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.records.RecordMetadata;
+import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.DatasetValidator;
 import biocode.fims.validation.RecordValidatorFactory;
+import biocode.fims.validation.messages.Message;
+import org.apache.commons.collections.keyvalue.MultiKey;
 
 
 import java.io.File;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Validate and Upload Datasets
@@ -32,17 +36,19 @@ public class DatasetProcessor {
     private final DataConverterFactory dataConverterFactory;
     private final RecordValidatorFactory validatorFactory;
     private final RecordRepository recordRepository;
-    private final ExpeditionService expeditionService;
-    private final ProjectConfig projectConfig;
     private final ProcessorStatus processorStatus;
 
     private final String expeditionCode;
-    private final int projectId;
+    private final Project project;
     private final User user;
     private final String workbookFile;
     private final Map<String, RecordMetadata> datasetSources;
+    private final List<RecordSet> recordSets;
     private final boolean reloadWorkbooks;
     private final boolean ignoreUser;
+    private final boolean isUpload;
+    private final boolean writeToServer;
+    private final boolean uploadValid;
     private final String serverDataDir;
     private Dataset dataset;
     private boolean hasError = false;
@@ -50,38 +56,47 @@ public class DatasetProcessor {
 
     private DatasetProcessor(Builder builder) {
         expeditionCode = builder.expeditionCode;
-        projectId = builder.projectId;
+        project = builder.project;
         user = builder.user;
         readerFactory = builder.readerFactory;
         dataConverterFactory = builder.dataConverterFactory;
         validatorFactory = builder.validatorFactory;
         recordRepository = builder.recordRepository;
-        expeditionService = builder.expeditionService;
-        projectConfig = builder.projectConfig;
         processorStatus = builder.processorStatus;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
+        recordSets = builder.recordSets;
         reloadWorkbooks = builder.reloadWorkbooks;
         ignoreUser = builder.ignoreUser;
+        isUpload = builder.isUpload;
+        writeToServer = builder.writeToServer;
+        uploadValid = builder.uploadValid;
         serverDataDir = builder.serverDataDir;
-        messages = Collections.emptyList();
+        messages = new ArrayList<>();
     }
 
     public boolean validate() {
         processorStatus.appendStatus("\nValidating...\n");
 
         DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, dataConverterFactory,
-                recordRepository, projectConfig, projectId, expeditionCode)
+                recordRepository, project, expeditionCode)
                 .reloadWorkbooks(reloadWorkbooks)
                 .addWorkbook(workbookFile);
 
         for (Map.Entry<String, RecordMetadata> dataset : datasetSources.entrySet()) {
+            if (isUpload && expeditionCode == null && !TabularDataReaderType.READER_TYPE.equals(dataset.getValue().readerType())) {
+                throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, "expeditionCode is required if you are uploading a non-tabular Dataset");
+            }
             datasetBuilder.addDatasource(dataset.getKey(), dataset.getValue());
+        }
+
+        for (RecordSet recordSet : recordSets) {
+            datasetBuilder.addRecordSet(recordSet);
         }
 
         dataset = datasetBuilder.build();
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, projectConfig);
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, project.getProjectConfig());
 
         boolean valid = validator.validate(processorStatus);
 
@@ -90,35 +105,70 @@ public class DatasetProcessor {
             messages = validator.messages();
         }
 
+        if (datasetBuilder.mismatchedExpeditions().size() > 0) {
+            valid = false;
+            for (Map.Entry<MultiKey, Set<String>> e : datasetBuilder.mismatchedExpeditions().entrySet()) {
+                String conceptAlias = (String) e.getKey().getKey(0);
+                String worksheet = (String) e.getKey().getKey(1);
+
+                List<EntityMessages> entityMessages = messages.stream()
+                        .filter(m -> Objects.equals(m.conceptAlias(), conceptAlias) && Objects.equals(m.sheetName(), worksheet))
+                        .collect(Collectors.toList());
+
+                if (entityMessages.isEmpty()) {
+                    EntityMessages m = new EntityMessages(conceptAlias, worksheet);
+                    m.addWarningMessage(
+                            "Mismatched expeditionCode(s)",
+                            new Message("We found the following expeditionCodes in this worksheet that differ from the specified upload expedition: " + e.getValue())
+                    );
+                    messages.add(m);
+                } else {
+                    entityMessages.forEach(m ->
+                            m.addWarningMessage(
+                                    "Mismatched expeditionCode(s)",
+                                    new Message("We found the following expeditionCodes in this worksheet that differ from the specified upload expedition: " + e.getValue())
+                            )
+                    );
+                }
+            }
+        }
+
         return valid;
     }
 
     public boolean upload() {
         if (dataset == null) {
-            if (!validate() && hasError) {
+            if (!validate() && hasError && !uploadValid) {
                 return false;
             }
         }
 
-        if (hasError) {
-            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500);
+        if (hasError && !uploadValid) {
+            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500, "Server Error");
         }
 
         if (user == null) {
             throw new FimsRuntimeException("you must be logged in to upload", 400);
         }
 
-        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+        List<String> expeditionCodes = dataset.stream()
+                .filter(RecordSet::hasRecordToPersist)
+                .map(RecordSet::expeditionCode)
+                .distinct()
+                .collect(Collectors.toList());
 
-        if (expedition == null) {
-            throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, expeditionCode);
-        } else if (!ignoreUser) {
-            if (expedition.getUser().getUserId() != user.getUserId()) {
-                throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
+        for (String expeditionCode : expeditionCodes) {
+            Expedition expedition = project.getExpedition(expeditionCode);
+            if (expedition == null) {
+                throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, expeditionCode);
+            } else if (!ignoreUser) {
+                if (!expedition.getUser().equals(user)) {
+                    throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
+                }
             }
         }
 
-        recordRepository.saveDataset(dataset, projectId, expedition.getExpeditionId());
+        recordRepository.saveDataset(dataset, project.getNetwork().getId());
 
         writeDataSources();
         return true;
@@ -140,7 +190,12 @@ public class DatasetProcessor {
         return processorStatus;
     }
 
+    public Dataset dataset() {
+        return dataset;
+    }
+
     private void writeDataSources() {
+        if (!writeToServer) return;
 
         if (workbookFile != null) {
             writeFileToServer(workbookFile);
@@ -153,7 +208,7 @@ public class DatasetProcessor {
 
     private void writeFileToServer(String file) {
         String ext = FileUtils.getExtension(file, null);
-        String filename = "project_" + projectId + "_expedition_" + expeditionCode + "_dataSource." + ext;
+        String filename = "project_" + project.getProjectId() + "_expedition_" + expeditionCode + "_dataSource." + ext;
         File outputFile = FileUtils.createUniqueFile(filename, serverDataDir);
 
         try {
@@ -165,30 +220,33 @@ public class DatasetProcessor {
 
     public static class Builder {
         // Required
-        private int projectId;
+        private Project project;
         private String expeditionCode;
         private DataReaderFactory readerFactory;
         private DataConverterFactory dataConverterFactory;
         private RecordValidatorFactory validatorFactory;
         private RecordRepository recordRepository;
-        private ProjectConfig projectConfig;
         private ProcessorStatus processorStatus;
-        private ExpeditionService expeditionService;
         private String serverDataDir;
 
         private String workbookFile;
         private Map<String, RecordMetadata> datasets;
+        private List<RecordSet> recordSets;
 
         // Optional
         private User user;
         private boolean reloadWorkbooks = false;
         private boolean ignoreUser = false;
+        private boolean isUpload = false;
+        private boolean writeToServer = false;
+        private boolean uploadValid = false;
 
-        public Builder(int projectId, String expeditionCode, ProcessorStatus processorStatus) {
-            this.projectId = projectId;
+        public Builder(Project project, String expeditionCode, ProcessorStatus processorStatus) {
+            this.project = project;
             this.expeditionCode = expeditionCode;
             this.processorStatus = processorStatus;
             this.datasets = new HashMap<>();
+            this.recordSets = new ArrayList<>();
         }
 
         public Builder readerFactory(DataReaderFactory readerFactory) {
@@ -211,16 +269,6 @@ public class DatasetProcessor {
             return this;
         }
 
-        public Builder expeditionService(ExpeditionService expeditionService) {
-            this.expeditionService = expeditionService;
-            return this;
-        }
-
-        public Builder projectConfig(ProjectConfig projectConfig) {
-            this.projectConfig = projectConfig;
-            return this;
-        }
-
         public Builder workbook(String workbookFile) {
             this.workbookFile = workbookFile;
             return this;
@@ -231,6 +279,11 @@ public class DatasetProcessor {
             return this;
         }
 
+        public Builder addRecordSet(RecordSet r) {
+            recordSets.add(r);
+            return this;
+        }
+
         public Builder user(User user) {
             this.user = user;
             return this;
@@ -238,6 +291,32 @@ public class DatasetProcessor {
 
         public Builder ignoreUser(boolean ignoreUser) {
             this.ignoreUser = ignoreUser;
+            return this;
+        }
+
+        public Builder upload() {
+            this.isUpload = true;
+            return this;
+        }
+
+        /**
+         * Upload any records that don't have a validation error
+         *
+         * @return
+         */
+        public Builder uploadValid() {
+            upload();
+            this.uploadValid = true;
+            return this;
+        }
+
+        /**
+         * Save Dataset & Workbook files to the server
+         *
+         * @return
+         */
+        public Builder writeToServer() {
+            this.writeToServer = true;
             return this;
         }
 
@@ -263,11 +342,10 @@ public class DatasetProcessor {
             return processorStatus != null &&
                     validatorFactory != null &&
                     recordRepository != null &&
-                    readerFactory != null &&
-                    expeditionService != null &&
+                    (recordSets.size() > 0 || readerFactory != null) &&
                     serverDataDir != null &&
-                    projectConfig != null &&
-                    (workbookFile != null || datasets.size() > 0);
+                    project != null &&
+                    (workbookFile != null || datasets.size() > 0 || recordSets.size() > 0);
         }
 
         public DatasetProcessor build() {
@@ -275,7 +353,7 @@ public class DatasetProcessor {
                 return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
-                        "expeditionService, projectConfig must not be null and either a workbook or dataset are required.", 500);
+                        "project must not be null and either a workbook, dataset, or recordSet are required.", 500);
             }
         }
     }

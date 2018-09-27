@@ -78,12 +78,23 @@ public class CompositeUniqueValueRuleTest extends AbstractRuleTest {
         Record r1 = new GenericRecord();
         r1.set("urn:col1", "");
         r1.set("urn:col2", "some value");
+        recordSet.add(r1);
         Record r2 = new GenericRecord();
         r2.set("urn:col1", "shrimp");
         r2.set("urn:col2", "test");
+        recordSet.add(r2);
         Record r3 = new GenericRecord();
         r3.set("urn:col1", "shrimp");
         r3.set("urn:col2", "some value");
+        recordSet.add(r3);
+        Record r4 = new GenericRecord();
+        r4.set("urn:col1", "");
+        r4.set("urn:col2", "");
+        recordSet.add(r4);
+        Record r5 = new GenericRecord();
+        r5.set("urn:col1", "");
+        r5.set("urn:col2", "");
+        recordSet.add(r5);
 
         return recordSet;
     }

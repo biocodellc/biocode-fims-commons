@@ -1,7 +1,8 @@
 package biocode.fims.validation.rules;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.validation.messages.EntityMessages;
 import org.junit.Before;
 
@@ -17,7 +18,7 @@ abstract class AbstractRuleTest {
     }
 
     protected Entity entity() {
-        Entity entity = new Entity("Samples", "someURI");
+        Entity entity = new DefaultEntity("Samples", "someURI");
 
         Attribute a = new Attribute("col1", "urn:col1");
         Attribute a2 = new Attribute("col2", "urn:col2");

@@ -1,11 +1,12 @@
 package biocode.fims.validation;
 
-import biocode.fims.projectConfig.models.Attribute;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Attribute;
+import biocode.fims.config.models.DefaultEntity;
+import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.run.Dataset;
@@ -121,8 +122,9 @@ public class DatasetValidatorTest {
         RecordValidatorFactory validatorFactory = new RecordValidatorFactory(new HashMap<>());
         Dataset dataset = new Dataset();
 
-        RecordSet events = new RecordSet(entity1(), false);
-        RecordSet samples = new RecordSet(entity2(), false);
+        ProjectConfig config = config();
+        RecordSet events = new RecordSet(config.entity("event"), false);
+        RecordSet samples = new RecordSet(config.entity("sample"), false);
         samples.setParent(events);
 
         dataset.add(events);
@@ -150,7 +152,7 @@ public class DatasetValidatorTest {
         samples.add(s1);
 
 
-        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
+        DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config);
 
         assertFalse(validator.validate(new ProcessorStatus()));
         assertTrue(validator.hasError());
@@ -177,11 +179,13 @@ public class DatasetValidatorTest {
         config.addEntity(entity1());
         config.addEntity(entity2());
 
+        config.addDefaultRules();
+
         return config;
     }
 
     private Entity entity1() {
-        Entity e = new Entity("event", "someURI");
+        Entity e = new DefaultEntity("event", "someURI");
         e.setUniqueKey("eventId");
         e.setWorksheet("sheet1");
 
@@ -194,7 +198,7 @@ public class DatasetValidatorTest {
     }
 
     private Entity entity2() {
-        Entity e = new Entity("sample", "someURI");
+        Entity e = new DefaultEntity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.setWorksheet("sheet1");

@@ -13,6 +13,7 @@ public class GenericRecord implements Record {
     private int projectId;
     private String expeditionCode;
     protected boolean persist = true;
+    private boolean hasError = false;
 
     public GenericRecord(Map<String, String> properties, String rootIdentifier, int projectId, String expeditionCode, boolean shouldPersist) {
         this.properties = properties;
@@ -20,10 +21,12 @@ public class GenericRecord implements Record {
         this.projectId = projectId;
         this.expeditionCode = expeditionCode;
         this.persist = shouldPersist;
+        removeFieldProperties();
     }
 
     public GenericRecord(Map<String, String> properties) {
         this.properties = properties;
+        removeFieldProperties();
     }
 
     public GenericRecord() {
@@ -48,8 +51,7 @@ public class GenericRecord implements Record {
 
     @Override
     public void setExpeditionCode(String expeditionCode) {
-        if (this.expeditionCode == null) this.expeditionCode = expeditionCode;
-        else throw new IllegalStateException("expeditionCode has already been set");
+        this.expeditionCode = expeditionCode;
     }
 
     @Override
@@ -79,11 +81,32 @@ public class GenericRecord implements Record {
     }
 
     @Override
-    public void setMetadata(RecordMetadata recordMetadata) {}
+    public void setError() {
+        hasError = true;
+    }
+
+    @Override
+    public void setMetadata(RecordMetadata recordMetadata) {
+    }
 
     @Override
     public boolean persist() {
-        return persist;
+        return !hasError && persist;
+    }
+
+    private void removeFieldProperties() {
+        if (properties.containsKey(Record.EXPEDITION_CODE)) {
+            setExpeditionCode(properties.remove(Record.EXPEDITION_CODE));
+        }
+        if (properties.containsKey(Record.PROJECT_ID)) {
+            String val = properties.remove(Record.PROJECT_ID);
+            if (projectId == 0) {
+                setProjectId(Integer.parseInt(val));
+            }
+        }
+        if (properties.containsKey(Record.ROOT_IDENTIFIER)) {
+            properties.remove(Record.ROOT_IDENTIFIER);
+        }
     }
 
     @Override

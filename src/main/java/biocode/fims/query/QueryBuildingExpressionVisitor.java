@@ -1,6 +1,6 @@
 package biocode.fims.query;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 
 /**
  * @author rjewing

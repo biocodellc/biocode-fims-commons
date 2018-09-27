@@ -1,11 +1,11 @@
 package biocode.fims.serializers;
 
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.DefaultEntity;
 
 /**
  * @author rjewing
  */
-public class EntityInWrongPackage extends Entity {
+public class EntityInWrongPackage extends DefaultEntity {
     public static final String UNIQUE_KEY = "invalid entity";
     public static final String TYPE = "INVALID_TEST";
 

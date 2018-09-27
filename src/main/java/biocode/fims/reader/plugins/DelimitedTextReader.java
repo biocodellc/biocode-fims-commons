@@ -4,7 +4,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.DataReaderCode;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.records.RecordMetadata;
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import com.opencsv.*;
 import com.opencsv.CSVReader;
 
@@ -33,7 +33,7 @@ import java.util.*;
  * <p>
  * - sheetName
  */
-abstract class DelimitedTextReader extends AbstractTabularDataReader {
+public abstract class DelimitedTextReader extends AbstractTabularDataReader {
     public static final String SHEET_NAME_KEY = "sheetName";
 
     // FEFF because this is the Unicode char represented by the UTF-8 byte order mark (EF BB BF).

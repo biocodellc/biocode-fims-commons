@@ -24,7 +24,7 @@ public class ExpeditionExpression implements Expression {
     }
 
     public List<String> expeditions() {
-        return Arrays.asList(expeditionsString.split(" ?, ?"));
+        return Arrays.asList(expeditionsString.replaceAll(" ", "").split(","));
     }
 
     @Override

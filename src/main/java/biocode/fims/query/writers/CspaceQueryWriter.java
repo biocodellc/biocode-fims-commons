@@ -1,15 +1,16 @@
 package biocode.fims.query.writers;
 
-import biocode.fims.projectConfig.models.Field;
+import biocode.fims.config.Config;
+import biocode.fims.config.models.Field;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryResult;
 import biocode.fims.utils.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -24,15 +25,15 @@ import java.util.Map;
 public class CspaceQueryWriter implements QueryWriter {
 
     private final QueryResult queryResult;
-    private final ProjectConfig projectConfig;
+    private final Config config;
 
-    public CspaceQueryWriter(QueryResult queryResult, ProjectConfig projectConfig) {
+    public CspaceQueryWriter(QueryResult queryResult, Config config) {
         this.queryResult = queryResult;
-        this.projectConfig = projectConfig;
+        this.config = config;
     }
 
     @Override
-    public File write() {
+    public List<File> write() {
         File file = FileUtils.createUniqueFile("output.cspace.xml", System.getProperty("java.io.tmpdir"));
 
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -215,7 +216,7 @@ public class CspaceQueryWriter implements QueryWriter {
             throw new FimsRuntimeException(FileCode.WRITE_ERROR, 500);
         }
 
-        return file;
+        return Collections.singletonList(file);
 
     }
 
@@ -262,7 +263,7 @@ public class CspaceQueryWriter implements QueryWriter {
 
     private String fieldURILookup(String fieldName, String value) {
         // Loop XML attribute value of ScientificName to get the REFNAME
-        biocode.fims.projectConfig.models.List l = projectConfig.findList(fieldName);
+        biocode.fims.config.models.List l = config.findList(fieldName);
 
         if (l == null) {
             return value;
