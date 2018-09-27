@@ -3,9 +3,9 @@ package biocode.fims.rest;
 import biocode.fims.rest.responses.DynamicViewResponse;
 import com.fasterxml.jackson.annotation.JsonView;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.ext.WriterInterceptor;
-import javax.ws.rs.ext.WriterInterceptorContext;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -16,13 +16,17 @@ import java.util.Arrays;
  * @author rjewing
  */
 
-public class DynamicViewWriterInterceptor implements WriterInterceptor {
+public class DynamicViewFilter implements ContainerResponseFilter {
 
     @Override
-    public void aroundWriteTo(WriterInterceptorContext context)
-            throws IOException, WebApplicationException {
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext context) throws IOException {
         if (context.getEntity() instanceof DynamicViewResponse) {
             DynamicViewResponse response = (DynamicViewResponse) context.getEntity();
+
+            if (response.getEntity() == null) {
+                context.setStatus(204);
+                return;
+            }
 
             Annotation view = new JsonView() {
                 @Override
@@ -37,7 +41,7 @@ public class DynamicViewWriterInterceptor implements WriterInterceptor {
             };
 
             boolean setView = false;
-            Annotation[] annotations = context.getAnnotations();
+            Annotation[] annotations = context.getEntityAnnotations();
             for (int i = 0; i < annotations.length; i++) {
                 Annotation annotation = annotations[i];
 
@@ -52,12 +56,9 @@ public class DynamicViewWriterInterceptor implements WriterInterceptor {
             if (!setView) {
                 annotations = Arrays.copyOf(annotations, annotations.length + 1);
                 annotations[annotations.length - 1] = view;
-                context.setAnnotations(annotations);
             }
-
-            context.setEntity(response.getEntity());
-            context.setGenericType(response.getEntity().getClass());
+            context.setEntity(response.getEntity(), annotations, context.getMediaType());
         }
-        context.proceed();
+
     }
 }
