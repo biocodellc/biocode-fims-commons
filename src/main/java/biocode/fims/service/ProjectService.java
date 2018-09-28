@@ -1,11 +1,9 @@
 package biocode.fims.service;
 
 import biocode.fims.config.models.Entity;
-import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.DataIntegrityMessage;
 import biocode.fims.models.*;
-import biocode.fims.repositories.ProjectConfigurationRepository;
 import biocode.fims.repositories.ProjectRepository;
 import biocode.fims.repositories.SetFimsUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +32,13 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
-    private final ProjectConfigurationRepository projectConfigurationRepository;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository, ExpeditionService expeditionService,
-                          UserService userService, ProjectConfigurationRepository projectConfigurationRepository) {
+                          UserService userService) {
         this.expeditionService = expeditionService;
         this.projectRepository = projectRepository;
         this.userService = userService;
-        this.projectConfigurationRepository = projectConfigurationRepository;
     }
 
     public Project create(Project project) {
@@ -60,12 +56,6 @@ public class ProjectService {
 
     public void update(Project project) {
         projectRepository.save(project);
-    }
-
-    public void delete(Project project) {
-        ProjectConfiguration projectConfiguration = project.getProjectConfiguration();
-        projectRepository.deleteByProjectId(project.getProjectId());
-        projectConfigurationRepository.deleteIfNoProjects(projectConfiguration.getId());
     }
 
     public Project getProject(int projectId) {
