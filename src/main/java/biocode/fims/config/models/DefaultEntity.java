@@ -256,7 +256,7 @@ public class DefaultEntity implements Entity {
             }
         }
 
-        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
+        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500, column);
     }
 
     @Override
@@ -267,7 +267,7 @@ public class DefaultEntity implements Entity {
             }
         }
 
-        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
+        throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500, uri);
     }
 
     /**

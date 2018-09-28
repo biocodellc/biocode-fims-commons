@@ -40,10 +40,7 @@ public class ProjectConfigurationService {
     }
 
     @SetFimsUser
-    public ProjectConfiguration create(ProjectConfiguration config, int userId) {
-        User user = entityManager.getReference(User.class, userId);
-        config.setUser(user);
-
+    public ProjectConfiguration create(ProjectConfiguration config) {
         return update(config);
     }
 
@@ -51,6 +48,11 @@ public class ProjectConfigurationService {
     public ProjectConfiguration update(ProjectConfiguration config) {
         validateProjectConfig(config);
         return projectConfigurationRepository.save(config);
+    }
+
+    @SetFimsUser
+    public void deleteIfNoProjects(int id) {
+        projectConfigurationRepository.deleteIfNoProjects(id);
     }
 
     public ProjectConfiguration getProjectConfiguration(int id) {

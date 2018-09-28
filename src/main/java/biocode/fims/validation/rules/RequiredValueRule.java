@@ -8,6 +8,7 @@ import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * For each column in Columns, check that there are no missing values
@@ -133,12 +134,21 @@ public class RequiredValueRule extends MultiColumnRule {
         MultiColumnRule rule = (MultiColumnRule) r;
 
         if (rule.level().equals(level())) {
-            for (String c: rule.columns) {
+            for (String c : rule.columns) {
                 if (!columns.contains(c)) return false;
             }
 
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Rule toProjectRule(List<String> columns) {
+        if (level().equals(RuleLevel.ERROR)) return this;
+
+        LinkedHashSet<String> c = columns.stream().filter(columns::contains).collect(Collectors.toCollection(LinkedHashSet::new));
+
+        return new RequiredValueRule(c, level());
     }
 }

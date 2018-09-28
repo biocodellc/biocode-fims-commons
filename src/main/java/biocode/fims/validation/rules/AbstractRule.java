@@ -108,6 +108,11 @@ public abstract class AbstractRule implements Rule {
     }
 
     @Override
+    public Rule toProjectRule(List<String> columns) {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractRule)) return false;

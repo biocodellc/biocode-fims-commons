@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.records.RecordSet;
@@ -68,6 +69,19 @@ public interface Rule {
      */
     @JsonIgnore
     boolean contains(Rule r);
+
+    /**
+     * Get a rule instance for a project.
+     *
+     * Transforms this rule into an applicable rule for the provided columns/requiredColumns.
+     * If the rule uses a column no in either list, then this rule is not applicable.
+     * If the rule uses multiple columns, a modified rule instance will be returned that
+     * only uses the provided columns if possible.
+     *
+     * @return Rule or null if the rule isn't applicable to the provided columns
+     */
+    @JsonIgnore
+    Rule toProjectRule(List<String> columns);
 
     @JsonIgnore
     void setProjectConfig(ProjectConfig config);

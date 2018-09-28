@@ -83,7 +83,12 @@ public class ProjectsResource extends FimsController {
                 : projects.stream().filter(p -> projectTitle.equals(p.getProjectTitle())).collect(Collectors.toList());
     }
 
-    @Transactional
+    /**
+     * Create a new project
+     *
+     * @param project
+     * @return
+     */
     @Compress
     @JsonView(Views.DetailedConfig.class)
     @Authenticated
@@ -102,11 +107,14 @@ public class ProjectsResource extends FimsController {
         }
         project.setNetwork(network);
 
+        boolean createdConfig = false;
         ProjectConfiguration configuration;
         if (project.projectConfig != null) {
             configuration = new ProjectConfiguration(project.getProjectTitle(), project.projectConfig, network);
+            configuration.setUser(userContext.getUser());
             try {
-                configuration = projectConfigurationService.create(configuration, userContext.getUser().getUserId());
+                configuration = projectConfigurationService.create(configuration);
+                createdConfig = true;
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                     return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidConfigurationResponse(configuration.getProjectConfig().errors())).build();
@@ -124,7 +132,14 @@ public class ProjectsResource extends FimsController {
 
         project.setProjectConfiguration(configuration);
 
-        return Response.ok(projectService.create(project.toProject())).build();
+        try {
+            return Response.ok(projectService.create(project.toProject())).build();
+        } catch (Exception e) {
+            if (createdConfig) {
+                projectConfigurationService.deleteIfNoProjects(configuration.getId());
+            }
+            throw e;
+        }
     }
 
 

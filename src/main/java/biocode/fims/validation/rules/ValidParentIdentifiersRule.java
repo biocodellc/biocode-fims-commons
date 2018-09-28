@@ -98,7 +98,6 @@ public class ValidParentIdentifiersRule extends AbstractRule {
 
     @Override
     public boolean contains(Rule r) {
-        if (!r.getClass().equals(this.getClass())) return false;
-        return true;
+        return r.getClass().equals(this.getClass());
     }
 }

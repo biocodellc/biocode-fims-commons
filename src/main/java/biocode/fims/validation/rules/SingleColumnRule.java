@@ -4,7 +4,9 @@ import biocode.fims.config.models.Entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.StringUtils;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -34,6 +36,12 @@ abstract class SingleColumnRule extends AbstractRule {
         }
 
         return entityHasAttribute(messages, entity, column);
+    }
+
+    @Override
+    public Rule toProjectRule(List<String> columns) {
+        if (columns.contains(column)) return this;
+        return null;
     }
 
     @Override
