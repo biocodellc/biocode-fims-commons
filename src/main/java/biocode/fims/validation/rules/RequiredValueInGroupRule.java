@@ -100,7 +100,9 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
 
     @Override
     public Rule toProjectRule(List<String> columns) {
-        LinkedHashSet<String> c = columns.stream().filter(columns::contains).collect(Collectors.toCollection(LinkedHashSet::new));
+        LinkedHashSet<String> c = columns.stream()
+                .filter(this.columns::contains)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (c.size() == 0 && level().equals(RuleLevel.ERROR)) return this;
 

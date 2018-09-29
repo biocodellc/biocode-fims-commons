@@ -147,7 +147,9 @@ public class RequiredValueRule extends MultiColumnRule {
     public Rule toProjectRule(List<String> columns) {
         if (level().equals(RuleLevel.ERROR)) return this;
 
-        LinkedHashSet<String> c = columns.stream().filter(columns::contains).collect(Collectors.toCollection(LinkedHashSet::new));
+        LinkedHashSet<String> c = columns.stream()
+                .filter(this.columns::contains)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         return new RequiredValueRule(c, level());
     }

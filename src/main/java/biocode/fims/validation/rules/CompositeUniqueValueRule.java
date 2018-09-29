@@ -98,7 +98,7 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     @Override
     public Rule toProjectRule(List<String> columns) {
         LinkedHashSet<String> c = columns.stream()
-                .filter(columns::contains)
+                .filter(this.columns::contains)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (c.size() == 1) return new UniqueValueRule(c.iterator().next(), false, level());
