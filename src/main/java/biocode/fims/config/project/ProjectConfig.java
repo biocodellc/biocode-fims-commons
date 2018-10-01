@@ -4,10 +4,14 @@ import biocode.fims.config.Config;
 import biocode.fims.config.network.NetworkConfig;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
+import biocode.fims.validation.rules.Rule;
+import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -63,8 +67,6 @@ public class ProjectConfig extends Config {
             entity.setParentEntity(e.getParentEntity());
             entity.setRecordType(e.getRecordType());
 
-            entity.addRules(e.getRules());
-
             Map<String, Attribute> networkAttributes = new HashMap<>();
             e.getAttributes().forEach(a -> networkAttributes.put(a.getUri(), a));
 
@@ -83,7 +85,23 @@ public class ProjectConfig extends Config {
                     a.setGroup(networkAttribute.getGroup());
                 }
                 if (a.getDefinition() == null) {
-                    a.setDelimitedBy(networkAttribute.getDefinition());
+                    a.setDefinition(networkAttribute.getDefinition());
+                }
+            });
+
+            // ensure all required network attributes are added to the config
+            networkConfig.getRequiredColumnsForEntity(e, RuleLevel.ERROR).stream()
+                    .filter(c -> entity.getAttribute(c) == null)
+                    .forEach(c -> entity.addAttribute(e.getAttribute(c)));
+
+            List<String> entityColumns = entity.getAttributes().stream()
+                    .map(Attribute::getColumn)
+                    .collect(Collectors.toList());
+
+            e.getRules().forEach(r -> {
+                r = r.toProjectRule(entityColumns);
+                if (r != null) {
+                    entity.addRule(r);
                 }
             });
         });

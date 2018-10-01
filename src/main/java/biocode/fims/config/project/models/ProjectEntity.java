@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Object for storing @link{Entity} information configurable by the project
@@ -122,14 +124,22 @@ public class ProjectEntity {
         e.setUniqueKey(uniqueKey);
         e.setWorksheet(worksheet);
 
-        e.getRules().forEach(r -> r.setNetworkRule(true));
-        e.addRules(rules);
-
         e.getAttributes().clear();
         attributes.forEach(a -> {
             Attribute baseAttribute = base.getAttributeByUri(a.getUri());
             e.addAttribute(a.toAttribute(baseAttribute));
         });
+
+        List<String> columns = e.getAttributes().stream()
+                .map(Attribute::getColumn)
+                .collect(Collectors.toList());
+
+        e.getRules().clear();
+        base.getRules().forEach(r -> {
+            r = r.toProjectRule(columns);
+            if (r != null) e.addRule(r);
+        });
+        e.addRules(this.rules);
 
         return e;
     }

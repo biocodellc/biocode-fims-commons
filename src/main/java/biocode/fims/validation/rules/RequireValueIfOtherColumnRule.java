@@ -94,6 +94,17 @@ public class RequireValueIfOtherColumnRule extends SingleColumnRule {
     }
 
     @Override
+    public Rule toProjectRule(List<String> columns) {
+        if (level().equals(RuleLevel.ERROR)) {
+            if (columns.contains(column) || columns.contains(otherColumn)) return this;
+        } else {
+            if (columns.contains(column) && columns.contains(otherColumn)) return this;
+        }
+
+        return null;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof RequireValueIfOtherColumnRule)) return false;

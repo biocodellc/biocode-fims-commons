@@ -7,8 +7,10 @@ import biocode.fims.models.Network;
 import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.models.ProjectConfiguration;
+import biocode.fims.models.User;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.NetworkId;
+import biocode.fims.rest.responses.ConfirmationResponse;
 import biocode.fims.rest.responses.InvalidConfigurationResponse;
 import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
@@ -83,14 +85,20 @@ public class ProjectsResource extends FimsController {
                 : projects.stream().filter(p -> projectTitle.equals(p.getProjectTitle())).collect(Collectors.toList());
     }
 
-    @Transactional
+    /**
+     * Create a new project
+     *
+     * @param project
+     * @return
+     */
     @Compress
     @JsonView(Views.DetailedConfig.class)
     @Authenticated
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(NewProject project) {
-        project.setUser(userContext.getUser());
+        User user = userContext.getUser();
+        project.setUser(user);
 
         if (project.getProjectConfiguration() == null && project.projectConfig == null) {
             throw new BadRequestException("projectConfig or projectConfiguration must be present");
@@ -102,11 +110,19 @@ public class ProjectsResource extends FimsController {
         }
         project.setNetwork(network);
 
+        boolean createdConfig = false;
         ProjectConfiguration configuration;
         if (project.projectConfig != null) {
+
+            if (!user.isSubscribed() && !network.getUser().equals(user)) {
+                throw new BadRequestException("only subscribed users can create a new project configuration");
+            }
+
             configuration = new ProjectConfiguration(project.getProjectTitle(), project.projectConfig, network);
+            configuration.setUser(user);
             try {
-                configuration = projectConfigurationService.create(configuration, userContext.getUser().getUserId());
+                configuration = projectConfigurationService.create(configuration);
+                createdConfig = true;
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode().equals(ConfigCode.INVALID)) {
                     return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidConfigurationResponse(configuration.getProjectConfig().errors())).build();
@@ -124,7 +140,14 @@ public class ProjectsResource extends FimsController {
 
         project.setProjectConfiguration(configuration);
 
-        return Response.ok(projectService.create(project.toProject())).build();
+        try {
+            return Response.ok(projectService.create(project.toProject())).build();
+        } catch (Exception e) {
+            if (createdConfig) {
+                projectConfigurationService.deleteIfNoProjects(configuration.getId());
+            }
+            throw e;
+        }
     }
 
 
@@ -136,23 +159,21 @@ public class ProjectsResource extends FimsController {
      * @responseType biocode.fims.models.Project
      * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
      */
-    @UserEntityGraph("User.withProjects")
     @JsonView(Views.Detailed.class)
     @PUT
     @Authenticated
-    @Admin
     @Path("/{projectId}/")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateProject(@PathParam("projectId") Integer projectId,
                                   Project project) {
-        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
-            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
-        }
-
         Project existingProject = projectService.getProject(projectId);
 
         if (existingProject == null) {
             throw new FimsRuntimeException("project not found", 404);
+        }
+
+        if (!existingProject.getUser().equals(userContext.getUser())) {
+            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
 
         updateExistingProject(existingProject, project);
@@ -174,6 +195,32 @@ public class ProjectsResource extends FimsController {
         existingProject.setProjectTitle(updatedProject.getProjectTitle());
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setPublic(updatedProject.isPublic());
+    }
+
+    /**
+     * delete a project
+     *
+     * @param projectId The id of the project to delete
+     * @responseMessage 403 not the project's admin `biocode.fims.utils.ErrorInfo
+     */
+    @DELETE
+    @Authenticated
+    @Path("/{projectId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ConfirmationResponse delete(@PathParam("projectId") Integer projectId) {
+        Project project = projectService.getProject(projectId);
+
+        if (project == null) {
+            throw new FimsRuntimeException("project not found", 404);
+        }
+
+        if (!project.getUser().equals(userContext.getUser())) {
+            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
+        }
+        projectService.delete(project);
+
+        return new ConfirmationResponse(true);
     }
 
     private static class NewProject extends Project {

@@ -138,6 +138,12 @@ public class MinMaxNumberRule extends AbstractRule {
     }
 
     @Override
+    public Rule toProjectRule(List<String> columns) {
+        if (columns.contains(minimumColumn) && columns.contains(maximumColumn)) return this;
+        return null;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MinMaxNumberRule)) return false;

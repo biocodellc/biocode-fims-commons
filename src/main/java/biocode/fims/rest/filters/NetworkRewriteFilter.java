@@ -34,7 +34,7 @@ public class NetworkRewriteFilter implements ContainerRequestFilter {
         String mappedPath = networkPaths.get(path);
         if (mappedPath != null) {
             requestContext.setRequestUri(
-                    uriInfo.getBaseUriBuilder().path(mappedPath).replaceQuery(uriInfo.getAbsolutePath().getRawQuery()).build()
+                    uriInfo.getBaseUriBuilder().path(mappedPath).replaceQuery(uriInfo.getRequestUri().getRawQuery()).build()
             );
         }
     }

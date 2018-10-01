@@ -60,4 +60,9 @@ public class RuleInWrongPackage implements Rule {
     @Override
     public void setProjectConfig(ProjectConfig config) {
     }
+
+    @Override
+    public Rule toProjectRule(List<String> columns) {
+        return null;
+    }
 }

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,9 +35,8 @@ public class User {
     private int userId;
     private String username;
     private String password;
-    private boolean hasSetPassword;
     private String email;
-    private boolean admin;
+    private LocalDate subscriptionExpirationDate;
     private String institution;
     private String firstName;
     private String lastName;
@@ -56,9 +57,6 @@ public class User {
         private String firstName;
         private String lastName;
 
-        // Optional
-        private boolean hasSetPassword = false;
-
         public UserBuilder(String username, String password) {
             this.username = username;
             this.password = password;
@@ -77,11 +75,6 @@ public class User {
         public UserBuilder name(String firstName, String lastName) {
             this.firstName = firstName;
             this.lastName = lastName;
-            return this;
-        }
-
-        public UserBuilder hasSetPassword(boolean hasSetPassword) {
-            this.hasSetPassword = hasSetPassword;
             return this;
         }
 
@@ -108,7 +101,6 @@ public class User {
         institution = builder.institution;
         firstName = builder.firstName;
         lastName = builder.lastName;
-        hasSetPassword = builder.hasSetPassword;
         projectsMemberOf = new ArrayList<>();
     }
 
@@ -172,16 +164,6 @@ public class User {
     }
 
     @JsonView(Views.Detailed.class)
-    @Column(nullable = false, name = "has_set_password")
-    public boolean getHasSetPassword() {
-        return hasSetPassword;
-    }
-
-    public void setHasSetPassword(boolean hasSetPassword) {
-        this.hasSetPassword = hasSetPassword;
-    }
-
-    @JsonView(Views.Detailed.class)
     @Column(nullable = false)
     public String getEmail() {
         return email;
@@ -225,6 +207,27 @@ public class User {
     @Transient
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    @JsonIgnore
+    @Column(name = "subscription_expiration_date")
+    public LocalDate getSubscriptionExpirationDate() {
+        return subscriptionExpirationDate;
+    }
+
+    @JsonIgnore
+    public void setSubscriptionExpirationDate(LocalDate subscriptionExpirationDate) {
+        this.subscriptionExpirationDate = subscriptionExpirationDate;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @JsonProperty
+    @Transient
+    public boolean isSubscribed() {
+        if (subscriptionExpirationDate == null) return false;
+
+        LocalDate currentDate = LocalDate.now();
+        return currentDate.minusYears(1).isBefore(subscriptionExpirationDate);
     }
 
     @JsonIgnore
@@ -277,6 +280,7 @@ public class User {
     private void setNetworks(Set<Network> networks) {
         this.networks = networks;
     }
+
     @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "user_projects",
@@ -323,7 +327,6 @@ public class User {
                 "userId=" + userId +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", getHasSetPassword=" + hasSetPassword +
                 ", email='" + email + '\'' +
                 ", institution='" + institution + '\'' +
                 ", firstName='" + firstName + '\'' +

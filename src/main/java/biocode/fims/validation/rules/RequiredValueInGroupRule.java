@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * check that at least 1 column in the columns list has a value
@@ -97,4 +98,17 @@ public class RequiredValueInGroupRule extends MultiColumnRule {
         return NAME;
     }
 
+    @Override
+    public Rule toProjectRule(List<String> columns) {
+        LinkedHashSet<String> c = columns.stream()
+                .filter(this.columns::contains)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (c.size() == 0 && level().equals(RuleLevel.ERROR)) return this;
+
+        if (c.size() == 1) return new RequiredValueRule(c, level());
+        else if (c.size() > 0) return new RequiredValueInGroupRule(c, level());
+
+        return null;
+    }
 }

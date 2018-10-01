@@ -8,8 +8,10 @@ import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.Rule;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * class to validate @link(ProjectConfig) instances
@@ -77,7 +79,16 @@ public class ProjectConfigValidator extends ConfigValidator {
     }
 
     private void entityContainsNetworkRules(Entity e) {
+        List<String> columns = e.getAttributes().stream()
+                .map(Attribute::getColumn)
+                .collect(Collectors.toList());
+
         for (Rule r : networkEntity.getRules()) {
+            // we convert to a ProjectRule first b/c not all network rules are applicable
+            // for the attributes contained in the project entity
+            r = r.toProjectRule(columns);
+            if (r == null) continue;;
+
             boolean found = false;
             for (Rule rule : e.getRules()) {
                 if (rule.equals(r) || rule.contains(r)) {

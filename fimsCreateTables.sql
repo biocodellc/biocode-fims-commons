@@ -154,6 +154,7 @@ CREATE TABLE users (
   first_name TEXT,
   last_name TEXT,
   institution TEXT,
+  subscription_expiration_date DATE,
   has_set_password BOOLEAN NOT NULL DEFAULT '0',
   password_reset_token TEXT,
   password_reset_expiration TIMESTAMP

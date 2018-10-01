@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Check a particular group of columns to see if the composite value combinations are unique,
@@ -92,5 +93,17 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
     @Override
     public String name() {
         return NAME;
+    }
+
+    @Override
+    public Rule toProjectRule(List<String> columns) {
+        LinkedHashSet<String> c = columns.stream()
+                .filter(this.columns::contains)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (c.size() == 1) return new UniqueValueRule(c.iterator().next(), false, level());
+        if (c.size() > 0) return new CompositeUniqueValueRule(c, level());
+
+        return null;
     }
 }
