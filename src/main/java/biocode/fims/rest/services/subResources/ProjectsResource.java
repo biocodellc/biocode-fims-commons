@@ -7,6 +7,7 @@ import biocode.fims.models.Network;
 import biocode.fims.models.Project;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.models.ProjectConfiguration;
+import biocode.fims.models.User;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.NetworkId;
 import biocode.fims.rest.responses.ConfirmationResponse;
@@ -96,7 +97,8 @@ public class ProjectsResource extends FimsController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(NewProject project) {
-        project.setUser(userContext.getUser());
+        User user = userContext.getUser();
+        project.setUser(user);
 
         if (project.getProjectConfiguration() == null && project.projectConfig == null) {
             throw new BadRequestException("projectConfig or projectConfiguration must be present");
@@ -111,8 +113,13 @@ public class ProjectsResource extends FimsController {
         boolean createdConfig = false;
         ProjectConfiguration configuration;
         if (project.projectConfig != null) {
+
+            if (!user.isSubscribed() && !network.getUser().equals(user)) {
+                throw new BadRequestException("only subscribed users can create a new project configuration");
+            }
+
             configuration = new ProjectConfiguration(project.getProjectTitle(), project.projectConfig, network);
-            configuration.setUser(userContext.getUser());
+            configuration.setUser(user);
             try {
                 configuration = projectConfigurationService.create(configuration);
                 createdConfig = true;

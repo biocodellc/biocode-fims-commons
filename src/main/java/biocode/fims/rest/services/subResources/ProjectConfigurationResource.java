@@ -78,16 +78,20 @@ public class ProjectConfigurationResource extends FimsController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response create(ProjectConfiguration configuration) {
-        configuration.setUser(userContext.getUser());
+        User user = userContext.getUser();
+        configuration.setUser(user);
 
         Network network = networkService.getNetwork(networkId.get());
         if (network == null) {
             throw new BadRequestException("Invalid network");
         }
 
-        if (!network.getUser().equals(userContext.getUser())) {
+        if (!network.getUser().equals(user)) {
             throw new ForbiddenRequestException("Only network admins can directly create a configuration");
         }
+//        if (!user.isSubscribed()) {
+//            throw new BadRequestException("only subscribed users can create a new project configuration");
+//        }
 
         configuration.setNetwork(network);
 
@@ -135,6 +139,7 @@ public class ProjectConfigurationResource extends FimsController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response update(@PathParam("id") Integer id,
                            ProjectConfiguration config) {
+        User user = userContext.getUser();
 
         ProjectConfiguration configuration = projectConfigurationService.getProjectConfiguration(id);
 
@@ -142,11 +147,15 @@ public class ProjectConfigurationResource extends FimsController {
             throw new BadRequestException("Invalid config id");
         }
 
-        if (!userContext.getUser().equals(configuration.getUser())) {
+        if (!user.isSubscribed() && !configuration.getNetwork().getUser().equals(user)) {
+            throw new BadRequestException("only subscribed users can update a project configuration");
+        }
+
+        if (!user.equals(configuration.getUser())) {
             throw new ForbiddenRequestException("You must be this configuration's admin in order to update");
         }
 
-        updateExistingProjectConfiguration(configuration, config);
+        updateExistingProjectConfiguration(configuration, config, configuration.getNetwork().getUser().equals(user));
 
         try {
             projectConfigurationService.update(configuration);
@@ -168,9 +177,12 @@ public class ProjectConfigurationResource extends FimsController {
      * allows us to control which properties can be updated.
      * Currently allows updating of the following properties : description, name, config
      */
-    private void updateExistingProjectConfiguration(ProjectConfiguration existing, ProjectConfiguration updated) {
+    private void updateExistingProjectConfiguration(ProjectConfiguration existing, ProjectConfiguration updated, boolean isNetworkAdmin) {
         existing.setName(updated.getName());
         existing.setDescription(updated.getDescription());
         existing.setProjectConfig(updated.getProjectConfig());
+        if (isNetworkAdmin) {
+            existing.setNetworkApproved(updated.isNetworkApproved());
+        }
     }
 }
