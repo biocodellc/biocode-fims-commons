@@ -669,7 +669,7 @@ public class DatasetBuilderTest {
         config.addEntity(eventsEntity());
         config.addEntity(samplesEntity());
 
-        return new ProjectConfiguration("", config, null);
+        return new ProjectConfiguration("test", config, null);
     }
 
     private Entity samplesEntity() {
