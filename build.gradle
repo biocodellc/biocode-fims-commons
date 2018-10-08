@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         maven {
-            url "http://repo.biocodellc.com/repository/maven-private/"
+            url "https://repo.biocodellc.com/repository/maven-private/"
             credentials {
                 username mavenUser
                 password mavenPass
