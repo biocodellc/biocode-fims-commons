@@ -3,6 +3,7 @@ package biocode.fims.models;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +19,7 @@ import java.util.Set;
 /**
  * User entity object
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "User.withProjectsMemberOf",
                 attributeNodes = @NamedAttributeNode("projectsMemberOf")),
