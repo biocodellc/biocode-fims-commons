@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.*;
 
 /**
  * TemplateConfig Entity object
@@ -73,7 +73,8 @@ public class WorksheetTemplate {
     }
 
     public void setColumns(List<String> columns) {
-        this.columns = columns;
+        Set<String> cols = new HashSet<>(columns);
+        this.columns = new ArrayList<>(cols);
     }
 
     @Override
