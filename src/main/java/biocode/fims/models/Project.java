@@ -289,13 +289,4 @@ public class Project {
     public void setTemplates(Set<WorksheetTemplate> templates) {
         this.templates = templates;
     }
-
-    // TODO move this to projectService?
-    public Expedition getExpedition(String expeditionCode) {
-        for (Expedition expedition : getExpeditions()) {
-            if (expedition.getExpeditionCode().equals(expeditionCode))
-                return expedition;
-        }
-        return null;
-    }
 }

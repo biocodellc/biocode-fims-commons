@@ -35,6 +35,7 @@ public class DatasetProcessor {
     private final DataReaderFactory readerFactory;
     private final DataConverterFactory dataConverterFactory;
     private final RecordValidatorFactory validatorFactory;
+    private final DatasetAuthorizer datasetAuthorizer;
     private final RecordRepository recordRepository;
     private final ProcessorStatus processorStatus;
 
@@ -45,7 +46,6 @@ public class DatasetProcessor {
     private final Map<String, RecordMetadata> datasetSources;
     private final List<RecordSet> recordSets;
     private final boolean reloadWorkbooks;
-    private final boolean ignoreUser;
     private final boolean isUpload;
     private final boolean writeToServer;
     private final boolean uploadValid;
@@ -61,13 +61,13 @@ public class DatasetProcessor {
         readerFactory = builder.readerFactory;
         dataConverterFactory = builder.dataConverterFactory;
         validatorFactory = builder.validatorFactory;
+        datasetAuthorizer = builder.datasetAuthorizer;
         recordRepository = builder.recordRepository;
         processorStatus = builder.processorStatus;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
         recordSets = builder.recordSets;
         reloadWorkbooks = builder.reloadWorkbooks;
-        ignoreUser = builder.ignoreUser;
         isUpload = builder.isUpload;
         writeToServer = builder.writeToServer;
         uploadValid = builder.uploadValid;
@@ -147,25 +147,8 @@ public class DatasetProcessor {
             throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 500, "Server Error");
         }
 
-        if (user == null) {
-            throw new FimsRuntimeException("you must be logged in to upload", 400);
-        }
-
-        List<String> expeditionCodes = dataset.stream()
-                .filter(RecordSet::hasRecordToPersist)
-                .map(RecordSet::expeditionCode)
-                .distinct()
-                .collect(Collectors.toList());
-
-        for (String expeditionCode : expeditionCodes) {
-            Expedition expedition = project.getExpedition(expeditionCode);
-            if (expedition == null) {
-                throw new FimsRuntimeException(UploadCode.INVALID_EXPEDITION, 400, expeditionCode);
-            } else if (!ignoreUser) {
-                if (!expedition.getUser().equals(user)) {
-                    throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, expeditionCode);
-                }
-            }
+        if (!datasetAuthorizer.authorize(dataset, project, user)) {
+            throw new FimsRuntimeException(UploadCode.UNAUTHORIZED, 400);
         }
 
         recordRepository.saveDataset(dataset, project.getNetwork().getId());
@@ -225,6 +208,7 @@ public class DatasetProcessor {
         private DataReaderFactory readerFactory;
         private DataConverterFactory dataConverterFactory;
         private RecordValidatorFactory validatorFactory;
+        private DatasetAuthorizer datasetAuthorizer;
         private RecordRepository recordRepository;
         private ProcessorStatus processorStatus;
         private String serverDataDir;
@@ -236,7 +220,6 @@ public class DatasetProcessor {
         // Optional
         private User user;
         private boolean reloadWorkbooks = false;
-        private boolean ignoreUser = false;
         private boolean isUpload = false;
         private boolean writeToServer = false;
         private boolean uploadValid = false;
@@ -269,6 +252,11 @@ public class DatasetProcessor {
             return this;
         }
 
+        public Builder datasetAuthorizer(DatasetAuthorizer authorizer) {
+            this.datasetAuthorizer = authorizer;
+            return this;
+        }
+
         public Builder workbook(String workbookFile) {
             this.workbookFile = workbookFile;
             return this;
@@ -286,11 +274,6 @@ public class DatasetProcessor {
 
         public Builder user(User user) {
             this.user = user;
-            return this;
-        }
-
-        public Builder ignoreUser(boolean ignoreUser) {
-            this.ignoreUser = ignoreUser;
             return this;
         }
 
@@ -341,6 +324,7 @@ public class DatasetProcessor {
 //            return expeditionCode != null &&
             return processorStatus != null &&
                     validatorFactory != null &&
+                    datasetAuthorizer != null &&
                     recordRepository != null &&
                     (recordSets.size() > 0 || readerFactory != null) &&
                     serverDataDir != null &&
@@ -353,7 +337,7 @@ public class DatasetProcessor {
                 return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
-                        "project must not be null and either a workbook, dataset, or recordSet are required.", 500);
+                        "datasetAuthorizer, project must not be null and either a workbook, dataset, or recordSet are required.", 500);
             }
         }
     }
