@@ -114,13 +114,21 @@ public class GenericRecord implements Record {
         if (this == o) return true;
         if (!(o instanceof GenericRecord)) return false;
 
-        GenericRecord record = (GenericRecord) o;
+        GenericRecord that = (GenericRecord) o;
 
-        return properties.equals(record.properties);
+        if (projectId != that.projectId) return false;
+        if (properties != null ? !properties.equals(that.properties) : that.properties != null) return false;
+        if (rootIdentifier != null ? !rootIdentifier.equals(that.rootIdentifier) : that.rootIdentifier != null)
+            return false;
+        return expeditionCode != null ? expeditionCode.equals(that.expeditionCode) : that.expeditionCode == null;
     }
 
     @Override
     public int hashCode() {
-        return properties.hashCode();
+        int result = properties != null ? properties.hashCode() : 0;
+        result = 31 * result + (rootIdentifier != null ? rootIdentifier.hashCode() : 0);
+        result = 31 * result + projectId;
+        result = 31 * result + (expeditionCode != null ? expeditionCode.hashCode() : 0);
+        return result;
     }
 }
