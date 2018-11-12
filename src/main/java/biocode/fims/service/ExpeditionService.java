@@ -13,6 +13,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.repositories.ExpeditionRepository;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -198,11 +199,38 @@ public class ExpeditionService {
             if (p.isRequired() && !metadata.containsKey(p.getName())) {
                 missingMetadata.add(p.getName());
             }
+
+            Object value = metadata.get(p.getName());
+            if (value != null) {
+                switch (p.getType()) {
+                    case BOOLEAN:
+                        if (!isBooleanValue(value)) {
+                            throw new FimsRuntimeException(ExpeditionCode.INVALID_METADATA, 400);
+                        }
+                        metadata.put(p.getName(), Boolean.parseBoolean(String.valueOf(value)));
+                        break;
+                    case LIST:
+                        if (!p.getValues().contains(String.valueOf(value))) {
+                            throw new FimsRuntimeException(ExpeditionCode.INVALID_METADATA, 400);
+                        }
+                        break;
+                    case STRING:
+                        break;
+                }
+            }
         }
 
         if (missingMetadata.size() > 0) {
             throw new FimsRuntimeException(ExpeditionCode.MISSING_METADATA, 400, String.join(", ", missingMetadata));
         }
+    }
+
+    private boolean isBooleanValue(Object val) {
+        if (val == null) return false;
+
+        String v = String.valueOf(val).toLowerCase();
+
+        return v.equals("true") || v.equals("false");
     }
 
     /**
