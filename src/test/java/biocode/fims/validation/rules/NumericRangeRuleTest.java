@@ -100,7 +100,37 @@ public class NumericRangeRuleTest extends AbstractRuleTest {
     }
 
     @Test
-    public void should_be_valid_when_uknown_allowed() {
+    public void should_be_valid_when_tbd_allowed() {
+
+        Rule rule = new NumericRangeRule("col1", "<10");
+
+        RecordSet recordSet = new RecordSet(entity(), false);
+        recordSet.entity().getAttribute("col1").setAllowTBD(true);
+
+        Record r1 = new GenericRecord();
+        r1.set("urn:col1", "-11");
+        Record r2 = new GenericRecord();
+        r2.set("urn:col1", "11");
+        Record r3 = new GenericRecord();
+        r3.set("urn:col1", "to Be determined");
+        recordSet.add(r1);
+        recordSet.add(r2);
+        recordSet.add(r3);
+
+        assertFalse(rule.run(recordSet, messages));
+
+        EntityMessages expectedMessages = new EntityMessages("Samples");
+        expectedMessages.addWarningMessage(
+                "Invalid number format",
+                new Message("Value \"11\" out of range for \"col1\" using range validation = \"<10\""
+                )
+        );
+
+        assertEquals(expectedMessages, messages);
+    }
+
+    @Test
+    public void should_be_valid_when_unknown_allowed() {
 
         Rule rule = new NumericRangeRule("col1", "<10");
 

@@ -13,3 +13,5 @@ $function$;
 ALTER TABLE expeditions ADD COLUMN tsv TSVECTOR;
 CREATE TRIGGER tsvector_update BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE expeditions_tsv_trigger();
 CREATE INDEX idx_expeditions_tsv ON expeditions USING GIN (tsv);
+
+update expeditions set metadata = metadata;

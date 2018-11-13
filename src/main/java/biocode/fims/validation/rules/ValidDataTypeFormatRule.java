@@ -11,6 +11,7 @@ import biocode.fims.utils.DateUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -45,12 +46,20 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                     continue;
                 }
 
+                List<String> acceptableValues = new ArrayList<>();
+                if (a.getAllowUnknown()) {
+                    acceptableValues.add("Unknown");
+                }
+                if (a.getAllowTBD()) {
+                    acceptableValues.add("to be determined");
+                    acceptableValues.add("tbd");
+                }
                 switch (a.getDataType()) {
                     case INTEGER:
-                        if (!isIntegerDataFormat(value, a.getAllowUnknown())) {
+                        if (!isIntegerDataFormat(value, a.getAllowUnknown(), a.getAllowTBD())) {
                             String msg = "\"" + a.getColumn() + "\" contains non-integer value \"" + value + "\"";
-                            if (a.getAllowUnknown()) {
-                                msg += ". Value can also be \"Unknown\"";
+                            if (a.getAllowUnknown() || a.getAllowTBD()) {
+                                msg += ". Value can also be \"" + String.join("\", \"", acceptableValues) + "\"";
                             }
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
@@ -61,10 +70,10 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                         }
                         break;
                     case FLOAT:
-                        if (!isFloatDataFormat(value, a.getAllowUnknown())) {
+                        if (!isFloatDataFormat(value, a.getAllowUnknown(), a.getAllowTBD())) {
                             String msg = "\"" + a.getColumn() + "\" contains non-float value \"" + value + "\"";
-                            if (a.getAllowUnknown()) {
-                                msg += ". Value can also be \"Unknown\"";
+                            if (a.getAllowUnknown() || a.getAllowTBD()) {
+                                msg += ". Value can also be \"" + String.join("\", \"", acceptableValues) + "\"";
                             }
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
@@ -77,12 +86,12 @@ public class ValidDataTypeFormatRule extends AbstractRule {
                     case DATE:
                     case TIME:
                     case DATETIME:
-                        if (!isDateDataFormat(value, a.getDataType(), a.getDataFormat(), a.getAllowUnknown())) {
+                        if (!isDateDataFormat(value, a.getDataType(), a.getDataFormat(), a.getAllowUnknown(), a.getAllowTBD())) {
                             String msg = "\"" + a.getColumn() + "\" contains invalid date value \"" +
                                     value + "\". " + "Format must be one of [" + a.getDataFormat() + "]. If this " +
                                     "is an Excel workbook, the value can also be an Excel DATE cell";
-                            if (a.getAllowUnknown()) {
-                                msg += ". Value can also be \"Unknown\"";
+                            if (a.getAllowUnknown() || a.getAllowTBD()) {
+                                msg += ". Value can also be \"" + String.join("\", \"", acceptableValues) + "\"";
                             }
                             messages.addErrorMessage(
                                     GROUP_MESSAGE,
@@ -112,19 +121,19 @@ public class ValidDataTypeFormatRule extends AbstractRule {
         return isValid;
     }
 
-    private boolean isIntegerDataFormat(String value, boolean allowUnknown) {
-        return INT_PATTERN.matcher(value).matches() || (allowUnknown && value.toLowerCase().equals("unknown"));
+    private boolean isIntegerDataFormat(String value, boolean allowUnknown, boolean allowTBD) {
+        return INT_PATTERN.matcher(value).matches() || (allowUnknown && Attribute.isUnknownValue(value)) || (allowTBD && Attribute.isTBDValue(value));
     }
 
-    private boolean isFloatDataFormat(String value, boolean allowUnknown) {
-        return INT_PATTERN.matcher(value).matches() || FLOAT_PATTERN.matcher(value).matches() || (allowUnknown && value.toLowerCase().equals("unknown"));
+    private boolean isFloatDataFormat(String value, boolean allowUnknown, boolean allowTBD) {
+        return INT_PATTERN.matcher(value).matches() || FLOAT_PATTERN.matcher(value).matches() || (allowUnknown && Attribute.isUnknownValue(value)) || (allowTBD && Attribute.isTBDValue(value));
     }
 
     private boolean isBooleanDataFormat(String value) {
         return BOOL_PATTERN.matcher(value).matches();
     }
 
-    private boolean isDateDataFormat(String value, DataType dataType, String dataformat, boolean allowUnknown) {
+    private boolean isDateDataFormat(String value, DataType dataType, String dataformat, boolean allowUnknown, boolean allowTBD) {
         // if the Excel cell is a DateCell, then ExcelReader will parse it as joda-time value.
         // therefore we need to add this format
         String jodaFormat;
@@ -141,7 +150,7 @@ public class ValidDataTypeFormatRule extends AbstractRule {
         }
         String[] formats = (String[]) ArrayUtils.add(dataformat.split(","), jodaFormat);
 
-        return DateUtils.isValidDateFormat(value, formats) || (allowUnknown && value.toLowerCase().equals("unknown"));
+        return DateUtils.isValidDateFormat(value, formats) || (allowUnknown && Attribute.isUnknownValue(value)) || (allowTBD && Attribute.isTBDValue(value));
     }
 
     @Override
