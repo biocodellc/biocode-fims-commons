@@ -218,7 +218,7 @@ public class ExpeditionsResource extends FimsController {
     /**
      * method to transfer the updated {@link Expedition} object to an existing {@link Expedition}. This
      * allows us to control which properties can be updated.
-     * Currently allows updating of the following properties : expeditionTitle, visibility, and isPublic
+     * Currently allows updating of the following properties : expeditionTitle, visibility, metadata, and isPublic
      *
      * @param existingExpedition
      * @param updatedExpedition
@@ -228,6 +228,7 @@ public class ExpeditionsResource extends FimsController {
         // TODO remove this when we remove Expedition.public
         existingExpedition.setPublic(updatedExpedition.getVisibility() == ExpeditionVisibility.ANYONE);
         existingExpedition.setVisibility(updatedExpedition.getVisibility());
+        existingExpedition.setMetadata(updatedExpedition.getMetadata());
     }
 
     /**

@@ -260,6 +260,20 @@ public class QueryBuilderTest {
     }
 
     @Test
+    public void should_write_valid_sql_for_expedition_metadata_query() {
+        QueryBuilder queryBuilder = singleEntityProjectQueryBuilder();
+        queryBuilder.visit(new ComparisonExpression("Expedition.prop1", "value", ComparisonOperator.EQUALS));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "value");
+        ParametrizedQuery expected = new ParametrizedQuery(
+                "SELECT event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.event AS event JOIN expeditions ON expeditions.id = event.expedition_id LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' WHERE expeditions.metadata->>'prop1' = :1 ORDER BY event.local_identifier, event.expedition_id",
+                params
+        );
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
     public void should_write_valid_sql_for_single_entity_project_with_column_path() {
         QueryBuilder queryBuilder = singleEntityProjectQueryBuilder();
         queryBuilder.visit(new ComparisonExpression("event.col2", "value", ComparisonOperator.LESS_THEN_EQUAL));

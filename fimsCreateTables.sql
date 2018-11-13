@@ -297,6 +297,16 @@ CREATE TRIGGER delete_expired_user_invites AFTER INSERT ON user_invite EXECUTE P
 
 DROP TABLE IF EXISTS expeditions;
 
+CREATE OR REPLACE FUNCTION expeditions_tsv_trigger()
+  RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+begin
+  new.tsv = to_tsvector(string_agg((j).value::text, ' ')) from jsonb_each(new.metadata) as j;
+  return new;
+end
+$function$;
+
 CREATE TABLE expeditions (
   id SERIAL NOT NULL PRIMARY KEY,
   project_id INTEGER NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
@@ -309,6 +319,7 @@ CREATE TABLE expeditions (
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   public BOOLEAN NOT NULL DEFAULT '1',
   metadata jsonb,
+  tsv TSVECTOR,
   CONSTRAINT expeditions_code_project_id_uniq UNIQUE (expedition_code, project_id)
 );
 
@@ -316,6 +327,8 @@ CREATE INDEX expeditions_project_id_idx ON expeditions (project_id);
 
 CREATE TRIGGER update_expeditions_modtime BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER set_expeditions_createdtime BEFORE INSERT ON expeditions FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER tsvector_update BEFORE INSERT OR UPDATE ON expeditions FOR EACH ROW EXECUTE PROCEDURE expeditions_tsv_trigger();
+CREATE INDEX idx_expeditions_tsv ON expeditions USING GIN (tsv);
 
 COMMENT ON COLUMN expeditions.expedition_code is 'The short name for this expedition';
 COMMENT ON COLUMN expeditions.public is 'Whether or not this is a public expedition';

@@ -81,6 +81,7 @@ public class ExpeditionService {
     }
 
     public void update(Expedition expedition) {
+        checkExpeditionMetadata(expedition);
         expeditionRepository.save(expedition);
     }
 
@@ -241,6 +242,10 @@ public class ExpeditionService {
     public void update(List<Expedition> expeditions, int projectId) {
         if (!expeditionsBelongToProject(expeditions, projectId)) {
             throw new FimsRuntimeException(ProjectCode.INVALID_EXPEDITION, 400);
+        }
+
+        for (Expedition expedition: expeditions) {
+            checkExpeditionMetadata(expedition);
         }
 
         expeditionRepository.save(expeditions);
