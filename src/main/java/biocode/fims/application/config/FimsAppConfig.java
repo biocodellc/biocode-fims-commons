@@ -15,6 +15,8 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.*;
 import biocode.fims.repositories.BcidRepository;
+import biocode.fims.run.DatasetAuthorizer;
+import biocode.fims.run.FimsDatasetAuthorizer;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.RecordValidator;
@@ -105,5 +107,10 @@ public class FimsAppConfig {
     @Bean
     public PostgresRepositoryAuditAdvice postgresRepositoryAuditAdvice() {
         return new PostgresRepositoryAuditAdvice();
+    }
+
+    @Bean
+    public FimsDatasetAuthorizer fimsDatasetAuthorizer(FimsProperties props, ExpeditionService expeditionService) {
+        return new FimsDatasetAuthorizer(props, expeditionService);
     }
 }

@@ -18,6 +18,7 @@ import biocode.fims.query.dsl.*;
 import biocode.fims.repositories.EntityIdentifierRepository;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.responses.RecordResponse;
+import biocode.fims.run.DatasetAuthorizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +37,16 @@ public class RecordService {
     private final EntityIdentifierRepository entityIdentifierRepository;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
+    private final DatasetAuthorizer datasetAuthorizer;
     private final FimsProperties props;
 
     @Autowired
     public RecordService(EntityIdentifierRepository entityIdentifierRepository, RecordRepository recordRepository,
-                         QueryAuthorizer queryAuthorizer, FimsProperties properties) {
+                         QueryAuthorizer queryAuthorizer, DatasetAuthorizer datasetAuthorizer, FimsProperties properties) {
         this.entityIdentifierRepository = entityIdentifierRepository;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
+        this.datasetAuthorizer = datasetAuthorizer;
         props = properties;
     }
 
@@ -55,8 +58,7 @@ public class RecordService {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
         }
 
-        if (!entityIdentifier.getExpedition().getUser().equals(user) ||
-                !entityIdentifier.getExpedition().getProject().getUser().equals(user)) {
+        if (!datasetAuthorizer.authorize(entityIdentifier, user)) {
             throw new ForbiddenRequestException("You are not authorized to delete this record");
         }
 

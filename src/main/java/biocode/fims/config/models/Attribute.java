@@ -3,6 +3,8 @@ package biocode.fims.config.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Arrays;
+
 /**
  * Attribute representation
  */
@@ -23,6 +25,7 @@ public class Attribute implements Comparable {
     private String group;
     private String definition;
     private boolean allowUnknown = false;
+    private boolean allowTBD = false;
 
     public Attribute() {
     }
@@ -92,6 +95,19 @@ public class Attribute implements Comparable {
         this.allowUnknown = allowUnknown;
     }
 
+    /**
+     * Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes
+     * @return
+     */
+    // TODO move to DataType Object
+    public boolean getAllowTBD() {
+        return allowTBD;
+    }
+
+    public void setAllowTBD(boolean allowTBD) {
+        this.allowTBD = allowTBD;
+    }
+
     public String getUri() {
         return uri;
     }
@@ -158,5 +174,13 @@ public class Attribute implements Comparable {
     @Override
     public int hashCode() {
         return getUri() != null ? getUri().hashCode() : 0;
+    }
+
+    public static boolean isUnknownValue(String val) {
+        return val != null && val.toLowerCase().equals("unknown");
+    }
+
+    public static boolean isTBDValue(String val) {
+        return val != null && Arrays.asList("tbd", "to be determined").contains(val.toLowerCase());
     }
 }

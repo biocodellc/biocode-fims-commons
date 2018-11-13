@@ -15,6 +15,7 @@ public class ProjectAttribute {
     private String group;
     private String definition;
     private Boolean allowUnknown;
+    private Boolean allowTBD;
 
     // needed for Jackson
     ProjectAttribute() {
@@ -25,6 +26,7 @@ public class ProjectAttribute {
         group = a.getGroup();
         definition = a.getDefinition();
         allowUnknown = a.getAllowUnknown();
+        allowTBD = a.getAllowTBD();
     }
 
     public String getUri() {
@@ -55,6 +57,14 @@ public class ProjectAttribute {
         this.allowUnknown = allowUnknown;
     }
 
+    public Boolean getAllowTBD() {
+        return allowTBD;
+    }
+
+    public void setAllowTBD(Boolean allowTBD) {
+        this.allowTBD = allowTBD;
+    }
+
     Attribute toAttribute(Attribute base) {
         if (base == null) {
             throw new FimsRuntimeException(ConfigCode.MISSING_ATTRIBUTE, 500);
@@ -68,6 +78,7 @@ public class ProjectAttribute {
         a.setGroup(group != null ? group : base.getGroup());
         a.setDefinition(definition != null ? definition : base.getDefinition());
         a.setAllowUnknown(allowUnknown != null ? allowUnknown : base.getAllowUnknown());
+        a.setAllowTBD(allowTBD != null ? allowTBD: base.getAllowTBD());
 
         return a;
     }

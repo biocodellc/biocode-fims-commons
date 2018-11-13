@@ -283,6 +283,9 @@ public class DatasetBuilder {
         );
     }
 
+    // note this will not fetch grandParents. Currently we only fetch the parent
+    // recordSet of any record that is being updated. We should not need to
+    // fetch the entire hierarchy
     private Set<Entity> getChildRecordSetParentEntities() {
         Set<Entity> parentEntities = new HashSet<>();
 

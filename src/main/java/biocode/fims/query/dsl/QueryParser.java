@@ -1,11 +1,11 @@
 package biocode.fims.query.dsl;
 
 import biocode.fims.config.Config;
-import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuildingExpressionVisitor;
 import org.parboiled.*;
 import org.parboiled.support.StringVar;
 import org.parboiled.support.ValueStack;
+import org.parboiled.support.Var;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -169,7 +169,8 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule FilterExpression() {
         return Sequence(
-                Chars(),
+                WhiteSpace(),
+                Column(),
                 WhiteSpace(),
                 FirstOf(
                         PhraseComparisonExpression(),
@@ -261,7 +262,7 @@ public class QueryParser extends BaseParser<Object> {
         return Sequence(
                 WhiteSpace(),
                 Optional(
-                        Chars(),
+                        Column(),
                         WhiteSpace(),
                         SemiColon(),
                         column.set(popStr())
@@ -354,6 +355,61 @@ public class QueryParser extends BaseParser<Object> {
 
     //***** Helper Rules for Consuming Text *****//
 
+    Rule Column() {
+        StringVar text = new StringVar("");
+
+        return Sequence(
+                OneOrMore(
+                        FirstOf(
+                                AppendEscapedReservedChars(text),
+                                Sequence(
+                                        TestNot(DotChar()),
+                                        TestNot(WhiteSpaceChars()),
+                                        TestNot(ReservedChars())
+                                )
+                        ),
+                        ANY,
+                        text.append(match())
+                ),
+                Optional(
+                        PathedColumn(),
+                        text.append((String) pop())
+                ),
+                push(text.get())
+        );
+    }
+
+    Rule PathedColumn() {
+        Var<Boolean> dotMatch = new Var<>(false);
+        return FirstOf(
+                Sequence(
+                        FirstOf(
+                                Sequence(DotChar(), dotMatch.set(true)),
+                                Sequence(WhiteSpace(), OpenBracket())
+                        ),
+                        AnyQuote(),
+                        PhraseChars(AnyQuote(), false),
+                        AnyQuote(),
+                        FirstOf(
+                                // if dotMatch == true, then we return, otherwise we require a CloseBracket()
+                                ACTION(dotMatch.get()),
+                                Sequence(WhiteSpace(), CloseBracket())
+                        ),
+                        push("." + pop())
+
+                ),
+                Sequence(
+                        // no delims found, consume chars to whitespace
+                        DotChar(),
+                        Chars(),
+                        // Chars() pushes on to stack, so we throw that away
+                        // b/c we want the entire match() from PathedColumn()
+                        popAction(),
+                        push("." + match())
+                )
+        );
+    }
+
     Rule Phrase() {
         return Sequence(
                 QuoteChar(),
@@ -443,6 +499,10 @@ public class QueryParser extends BaseParser<Object> {
         );
     }
 
+    Rule AnyQuote() {
+        return FirstOf(QuoteChar(), SingleQuoteChar());
+    }
+
     Rule WhiteSpace() {
         return ZeroOrMore(WhiteSpaceChars());
     }
@@ -496,6 +556,10 @@ public class QueryParser extends BaseParser<Object> {
         return Ch(']');
     }
 
+    Rule DotChar() {
+        return Ch('.');
+    }
+
     Rule LikeChar() {
         return String("::");
     }
@@ -516,6 +580,10 @@ public class QueryParser extends BaseParser<Object> {
         return Ch('"');
     }
 
+    Rule SingleQuoteChar() {
+        return Ch('\'');
+    }
+
     Rule OrChars() {
         return IgnoreCase("or");
     }
@@ -534,6 +602,16 @@ public class QueryParser extends BaseParser<Object> {
 
 
     //***** Helper functions *****//
+
+    Action popAction() {
+        return new Action() {
+            @Override
+            public boolean run(Context context) {
+                pop();
+                return true;
+            }
+        };
+    }
 
     Expression popExp() {
         return (Expression) pop();

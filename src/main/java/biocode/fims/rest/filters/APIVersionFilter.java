@@ -3,11 +3,14 @@ package biocode.fims.rest.filters;
 import biocode.fims.rest.versioning.APIVersion;
 import biocode.fims.rest.versioning.VersionUrlConfig;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.glassfish.jersey.JerseyPriorities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -34,6 +37,7 @@ import java.util.regex.Pattern;
  * VersionUrlData.versionUrl. We will then set any defaultQueryParams froun in {@link VersionUrlConfig.VersionUrlData#getDefaultQueryParams()}.
  * These defaultQueryParams will be overridden by any incoming queryParams.
  */
+@Priority(0)
 @PreMatching
 public class APIVersionFilter implements ContainerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(APIVersionFilter.class);

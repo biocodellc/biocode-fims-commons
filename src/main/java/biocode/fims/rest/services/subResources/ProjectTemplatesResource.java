@@ -3,6 +3,7 @@ package biocode.fims.rest.services.subResources;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.config.models.Attribute;
+import biocode.fims.config.project.ColumnComparator;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
@@ -249,7 +250,12 @@ public class ProjectTemplatesResource extends FimsController {
         ExcelWorkbookWriter workbookWriter = new ExcelWorkbookWriter(project, props.naan(), userContext.getUser());
 
         File file = workbookWriter.write(
-                worksheetTemplates.stream().map(t -> new WriterWorksheet(t.getWorksheet(), t.getColumns()))
+                worksheetTemplates.stream().map(t -> {
+                    List<String> columns = t.getColumns();
+                    columns.sort(new ColumnComparator(project.getProjectConfig(), t.getWorksheet()));
+
+                    return new WriterWorksheet(t.getWorksheet(), columns);
+                })
                         .collect(Collectors.toList())
         );
 

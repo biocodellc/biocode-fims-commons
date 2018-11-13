@@ -100,7 +100,7 @@ public class DatasetValidator {
 
             Entity entity = r.entity();
 
-            if (entity.isChildEntity() && config.isMultiSheetEntity(entity.getConceptAlias())) {
+            if (entity.isChildEntity() && config.isMultiSheetEntity(entity.getConceptAlias()) && r.hasParent()) {
                 Entity parentEntity = r.parent().entity();
                 try {
                     r.parent().removeDuplicates();

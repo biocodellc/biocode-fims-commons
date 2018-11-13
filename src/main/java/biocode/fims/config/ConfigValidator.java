@@ -195,6 +195,15 @@ public abstract class ConfigValidator {
                             dupColumn = dupColumn && !Objects.equals(parent.getUniqueKey(), a.getColumn());
                             dupUri = dupUri && !Objects.equals(parent.getUniqueKeyURI(), a.getUri());
                         }
+                        if (dupColumn || dupUri) {
+                            boolean hasChild = entities.stream()
+                                    .anyMatch(entity -> entity.isChildEntity() && Objects.equals(entity.getParentEntity(), e.getConceptAlias()));
+
+                            if (hasChild) {
+                                dupColumn = dupColumn && !Objects.equals(e.getUniqueKey(), a.getColumn());
+                                dupUri = dupUri && !Objects.equals(e.getUniqueKeyURI(), a.getUri());
+                            }
+                        }
                     }
 
                     if (dupColumn) {

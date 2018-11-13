@@ -7,9 +7,9 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.dsl.*;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * {@link QueryBuildingExpressionVisitor} to build PostgreSQL SELECT queries.
@@ -72,37 +72,39 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public void visit(ComparisonExpression expression) {
-        ColumnUri columnUri = lookupColumnUri(expression.column());
-        appendComparison(columnUri, expression.operator(), expression.term());
+        QueryColumn queryColumn = lookupQueryColumn(expression.column());
+        appendComparison(queryColumn, expression.operator(), expression.term());
     }
 
     @Override
     public void visit(ExistsExpression expression) {
-        Map<String, List<String>> entityColumns = getEntityColumnUris(expression);
+        Map<String, List<QueryColumn>> entityColumns = getEntityQueryColumns(expression);
 
         if (entityColumns.size() > 1) {
             whereBuilder.append("(");
         }
 
         int c = 1;
-        for (Map.Entry<String, List<String>> entry : entityColumns.entrySet()) {
-            String conceptAlias = entry.getKey();
-            List<String> columns = entry.getValue();
+        for (Map.Entry<String, List<QueryColumn>> entry : entityColumns.entrySet()) {
+            String table = entry.getKey();
+            List<QueryColumn> columns = entry.getValue();
 
             whereBuilder
-                    .append(conceptAlias)
-                    .append(".data ??");
+                    .append(table)
+                    .append(".")
+                    .append(columns.get(0).column())
+                    .append(" ??");
 
             if (columns.size() == 1) {
 
                 whereBuilder
                         .append(" ")
-                        .append(putParam(columns.get(0)))
+                        .append(putParam(columns.get(0).property()))
                         .append(" ");
             } else {
                 whereBuilder
                         .append("& array[")
-                        .append(String.join(", ", putParams(columns)))
+                        .append(String.join(", ", putParams(columns.stream().map(QueryColumn::property).collect(Collectors.toList()))))
                         .append("] ");
             }
 
@@ -120,15 +122,15 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
     }
 
-    private Map<String, List<String>> getEntityColumnUris(ExistsExpression expression) {
-        Map<String, List<String>> entityColumns = new HashMap<>();
+    private Map<String, List<QueryColumn>> getEntityQueryColumns(ExistsExpression expression) {
+        Map<String, List<QueryColumn>> entityColumns = new HashMap<>();
 
         for (String column : expression.columns()) {
-            ColumnUri columnUri = lookupColumnUri(column);
+            QueryColumn queryColumn = lookupQueryColumn(column);
             // localIdentifier & parentIdentifier are never null, so exclude from query
-            if (columnUri.isLocalIdentifier() || columnUri.isParentIdentifier()) continue;
+            if (queryColumn.isLocalIdentifier() || queryColumn.isParentIdentifier()) continue;
 
-            entityColumns.computeIfAbsent(columnUri.conceptAlias(), k -> new ArrayList<>()).add(columnUri.uri());
+            entityColumns.computeIfAbsent(queryColumn.table(), k -> new ArrayList<>()).add(queryColumn);
         }
         return entityColumns;
     }
@@ -195,7 +197,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
                 whereBuilder.append(" OR ");
 
-                for (Entity entity: parentEntities) {
+                for (Entity entity : parentEntities) {
                     joinBuilder.add(entity);
                     appendFTSTSVQuery(entity.getConceptAlias(), key);
                     whereBuilder.append(" OR ");
@@ -206,18 +208,20 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                 whereBuilder.append(")");
             }
         } else {
-            ColumnUri columnUri = lookupColumnUri(expression.column());
+            QueryColumn queryColumn = lookupQueryColumn(expression.column());
 
             whereBuilder
                     .append("(to_tsvector(")
-                    .append(columnUri.conceptAlias())
-                    .append(".data->>'")
-                    .append(columnUri.uri())
+                    .append(queryColumn.table())
+                    .append(".")
+                    .append(queryColumn.column())
+                    .append("->>'")
+                    .append(queryColumn.property())
                     .append("') @@ to_tsquery(")
                     .append(key)
                     .append(") AND ");
 
-            appendFTSTSVQuery(columnUri.conceptAlias(), key);
+            appendFTSTSVQuery(queryColumn.table(), key);
             whereBuilder.append(")");
         }
     }
@@ -240,10 +244,9 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public void visit(LikeExpression expression) {
-        ColumnUri columnUri = lookupColumnUri(expression.column());
+        QueryColumn queryColumn = lookupQueryColumn(expression.column());
 
-        whereBuilder.append(columnUri.conceptAlias());
-        addColumn(columnUri);
+        addColumn(queryColumn);
         whereBuilder
                 .append(" ILIKE ")
                 .append(putParam(expression.term()));
@@ -263,7 +266,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(RangeExpression expression) {
         //TODO verify that column is a Integer, Date, DateTime, or Time dataType
 
-        ColumnUri columnUri = lookupColumnUri(expression.column());
+        QueryColumn queryColumn = lookupQueryColumn(expression.column());
 
         RangeExpression.ParsedRange range = expression.parsedRange();
 
@@ -273,7 +276,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         boolean hasRight = range.rightValue() != null;
 
         if (hasLeft) {
-            appendComparison(columnUri, range.leftOperator(), range.leftValue());
+            appendComparison(queryColumn, range.leftOperator(), range.leftValue());
 
             if (hasRight) {
                 whereBuilder.append(" AND ");
@@ -281,20 +284,20 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         if (hasRight) {
-            appendComparison(columnUri, range.rightOperator(), range.rightValue());
+            appendComparison(queryColumn, range.rightOperator(), range.rightValue());
         }
 
         whereBuilder.append(")");
 
     }
 
-    private void appendComparison(ColumnUri columnUri, ComparisonOperator operator, String value) {
+    private void appendComparison(QueryColumn queryColumn, ComparisonOperator operator, String value) {
         String valCast = null;
         String castFunc = null;
 
         if (operator != ComparisonOperator.EQUALS && operator != ComparisonOperator.NOT_EQUALS) {
-            castFunc = lookupCastFunction(columnUri.dataType());
-            valCast = lookupCast(columnUri.dataType());
+            castFunc = lookupCastFunction(queryColumn.dataType());
+            valCast = lookupCast(queryColumn.dataType());
         }
 
         if (castFunc != null) {
@@ -303,8 +306,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
                     .append("(");
         }
 
-        whereBuilder.append(columnUri.conceptAlias());
-        addColumn(columnUri);
+        addColumn(queryColumn);
         whereBuilder
                 .append(castFunc == null ? " " : ") ")
                 .append(operator)
@@ -335,14 +337,17 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         this.allQuery = true;
     }
 
-    private void addColumn(ColumnUri columnUri) {
-        if (columnUri.isLocalIdentifier()) {
+    private void addColumn(QueryColumn queryColumn) {
+        whereBuilder.append(queryColumn.table());
+        if (queryColumn.isLocalIdentifier()) {
             whereBuilder.append(".local_identifier");
-        } else if (columnUri.isParentIdentifier()) {
+        } else if (queryColumn.isParentIdentifier()) {
             whereBuilder.append(".parent_identifier");
         } else {
-            whereBuilder.append(".data->>'")
-                    .append(columnUri.uri())
+            whereBuilder.append(".")
+                    .append(queryColumn.column())
+                    .append("->>'")
+                    .append(queryColumn.property())
                     .append("'");
         }
     }
@@ -475,21 +480,26 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
     }
 
-    private ColumnUri lookupColumnUri(String column) {
+    private QueryColumn lookupQueryColumn(String column) {
         try {
             return (multiEntityConfig()) ?
-                    lookupMultiEntityColumnUri(column) :
-                    lookupSingleEntityColumnUri(column);
+                    lookupMultiEntityQueryColumn(column) :
+                    lookupSingleEntityQueryColumn(column);
         } catch (IllegalArgumentException e) {
             throw new FimsRuntimeException(QueryCode.UNKNOWN_COLUMN, 400, column);
         }
     }
 
-    private ColumnUri lookupSingleEntityColumnUri(String column) {
+    private QueryColumn lookupSingleEntityQueryColumn(String column) {
         Entity entity = config.entities().get(0);
 
         if (pathBasedColumn(column)) {
             String[] columnPath = splitColumnPath(column);
+
+            if (isExpeditionPropQuery(columnPath[0])) {
+                joinBuilder.joinExpeditions(true);
+                return new ExpeditionProp(config, columnPath[1]);
+            }
 
             if (!entity.getConceptAlias().equals(columnPath[0])) {
                 throw new FimsRuntimeException(QueryCode.UNKNOWN_COLUMN, 400, column);
@@ -503,21 +513,22 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
     }
 
-    private ColumnUri lookupMultiEntityColumnUri(String column) {
-        ColumnUri columnUri;
+    private QueryColumn lookupMultiEntityQueryColumn(String column) {
+        QueryColumn queryColumn;
 
         if (pathBasedColumn(column)) {
             String[] columnPath = splitColumnPath(column);
-            columnUri = lookupColumnUriFromPath(columnPath[0], columnPath[1]);
+            queryColumn = lookupQueryColumnFromPath(columnPath[0], columnPath[1]);
         } else {
-            columnUri = lookupAmbiguousColumnUri(column);
+            queryColumn = lookupAmbiguousQueryColumn(column);
         }
 
-        if (!queryEntity.getConceptAlias().equals(columnUri.conceptAlias())) {
-            joinBuilder.add(columnUri.entity());
+
+        if (!(queryColumn instanceof ExpeditionProp) && !queryEntity.getConceptAlias().equals(queryColumn.table())) {
+            joinBuilder.add(queryColumn.entity());
         }
 
-        return columnUri;
+        return queryColumn;
     }
 
     private boolean pathBasedColumn(String column) {
@@ -528,7 +539,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         return column.split("\\.");
     }
 
-    private ColumnUri lookupAmbiguousColumnUri(String column) {
+    private QueryColumn lookupAmbiguousQueryColumn(String column) {
 
         String entityAttributeUri = queryEntity.getAttributeUri(column);
         if (!StringUtils.isBlank(entityAttributeUri)) {
@@ -546,7 +557,12 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         throw new IllegalArgumentException("Could not find Attribute for column.");
     }
 
-    private ColumnUri lookupColumnUriFromPath(String conceptAlias, String column) {
+    private QueryColumn lookupQueryColumnFromPath(String conceptAlias, String column) {
+        if (isExpeditionPropQuery(conceptAlias)) {
+            joinBuilder.joinExpeditions(true);
+            return new ExpeditionProp(config, column);
+        }
+
         Entity entity = config.entity(conceptAlias);
 
         if (entity == null) {
@@ -554,6 +570,10 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         return new ColumnUri(entity, entity.getAttributeUri(column), isParentIdentifier(entity, column));
+    }
+
+    private boolean isExpeditionPropQuery(String table) {
+        return table.equalsIgnoreCase("expedition");
     }
 
     private boolean multiEntityConfig() {
@@ -578,43 +598,5 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         }
 
         return keys;
-    }
-
-    private static class ColumnUri {
-        private final Entity entity;
-        private final String uri;
-        private boolean parentIdentifier;
-
-        private ColumnUri(Entity entity, String uri, boolean isParentIdentifier) {
-            Assert.notNull(uri);
-            Assert.notNull(entity);
-            this.entity = entity;
-            this.uri = uri;
-            this.parentIdentifier = isParentIdentifier;
-        }
-
-        String conceptAlias() {
-            return entity.getConceptAlias();
-        }
-
-        String uri() {
-            return uri;
-        }
-
-        DataType dataType() {
-            return entity.getAttributeByUri(uri).getDataType();
-        }
-
-        Entity entity() {
-            return entity;
-        }
-
-        boolean isLocalIdentifier() {
-            return uri.equals(entity.getUniqueKeyURI());
-        }
-
-        boolean isParentIdentifier() {
-            return parentIdentifier;
-        }
     }
 }

@@ -1,5 +1,6 @@
 package biocode.fims.validation.rules;
 
+import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
@@ -51,6 +52,7 @@ public class NumericRangeRule extends SingleColumnRule {
 
         String uri = recordSet.entity().getAttributeUri(column);
         boolean allowUnknown = recordSet.entity().getAttribute(column).getAllowUnknown();
+        boolean allowTBD = recordSet.entity().getAttribute(column).getAllowTBD();
 
         List<String> invalidValues = new ArrayList<>();
 
@@ -95,8 +97,8 @@ public class NumericRangeRule extends SingleColumnRule {
                         }
                     }
                 } catch (NumberFormatException e) {
-                    if (allowUnknown && value.toLowerCase().equals("unknown")) {
-                        // unknown is a valid value
+                    if ((allowUnknown && Attribute.isUnknownValue(value)) || (allowTBD && Attribute.isTBDValue(value))) {
+                        // unknown/tbd is a valid value
                     } else {
                         if (level().equals(RuleLevel.ERROR)) r.setError();
                         invalidValues.add(value);
@@ -116,7 +118,7 @@ public class NumericRangeRule extends SingleColumnRule {
     }
 
     private void setMessages(List<String> invalidValues, EntityMessages messages) {
-        for (String value: invalidValues) {
+        for (String value : invalidValues) {
             messages.addMessage(
                     GROUP_MESSAGE,
                     new Message(

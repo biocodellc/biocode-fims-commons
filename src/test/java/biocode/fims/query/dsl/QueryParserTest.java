@@ -121,6 +121,61 @@ public class QueryParserTest {
     }
 
     @Test
+    public void should_parse_pathed_column_equals_filter_expression() {
+        String qs = "Event.col1 = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("Event.col1", "value1", ComparisonOperator.EQUALS));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_quoted_pathed_column_equals_filter_expression() {
+        String qs = "Expedition.\"Expedition Metadata 1\" = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("Expedition.Expedition Metadata 1", "value1", ComparisonOperator.EQUALS));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_bracket_quoted_pathed_column_equals_filter_expression() {
+        String qs = "Expedition[\"Expedition Metadata 1\"] = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("Expedition.Expedition Metadata 1", "value1", ComparisonOperator.EQUALS));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_single_quoted_pathed_column_equals_filter_expression() {
+        String qs = "Expedition.'Expedition Metadata 1' = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("Expedition.Expedition Metadata 1", "value1", ComparisonOperator.EQUALS));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_bracket_single_quoted_pathed_column_equals_filter_expression() {
+        String qs = "Expedition['Expedition Metadata 1'] = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new ComparisonExpression("Expedition.Expedition Metadata 1", "value1", ComparisonOperator.EQUALS));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void should_parse_greater_then_filter_expression() {
         String qs = "col1 > value1";
 
@@ -327,6 +382,17 @@ public class QueryParserTest {
         Query result = parseRunner.run(qs).resultValue;
 
         Query expected = new Query(queryBuilder, null, new SelectExpression("entity", new ExistsExpression("col1")));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void should_parse_select_with_pathed_column_filter_expression() {
+        String qs = "_select_:entity Expedition['Expedition Metadata 1'] = value1";
+
+        Query result = parseRunner.run(qs).resultValue;
+
+        Query expected = new Query(queryBuilder, null, new SelectExpression("entity", new ComparisonExpression("Expedition.Expedition Metadata 1", "value1", ComparisonOperator.EQUALS)));
 
         assertEquals(expected, result);
     }

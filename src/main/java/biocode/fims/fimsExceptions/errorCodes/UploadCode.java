@@ -7,5 +7,6 @@ public enum UploadCode implements ErrorCode {
     USER_NO_OWN_EXPEDITION,
     INVALID_EXPEDITION,
     EXPEDITION_CREATE,
+    UNAUTHORIZED,
     DATA_SERIALIZATION_ERROR
 }
