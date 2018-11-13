@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Project Entity object
  */
-@JsonIgnoreProperties({"config"})
+@JsonIgnoreProperties(value = {"config"}, ignoreUnknown = true)
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Entity
 @Table(name = "projects")
