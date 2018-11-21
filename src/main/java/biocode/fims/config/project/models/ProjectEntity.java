@@ -10,9 +10,7 @@ import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +31,7 @@ public class ProjectEntity {
     private String uniqueKey;
     private boolean uniqueAcrossProject = false;
     private boolean hashed = false;
+    private Map<String, Object> additionalProps;
 
     // needed for Jackson
     ProjectEntity() {}
@@ -43,6 +42,7 @@ public class ProjectEntity {
         uniqueKey = e.getUniqueKey();
         uniqueAcrossProject = e.getUniqueAcrossProject();
         hashed = e.isHashed();
+        additionalProps = e.additionalProps() != null ? e.additionalProps() : Collections.emptyMap();
 
         rules = new LinkedHashSet<>();
         e.getRules().stream()
@@ -123,6 +123,7 @@ public class ProjectEntity {
         e.setUniqueAcrossProject(uniqueAcrossProject);
         e.setUniqueKey(uniqueKey);
         e.setWorksheet(worksheet);
+        e.setAdditionalProps(additionalProps);
 
         e.getAttributes().clear();
         attributes.forEach(a -> {

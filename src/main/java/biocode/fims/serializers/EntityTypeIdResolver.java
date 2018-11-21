@@ -28,7 +28,7 @@ import java.util.Objects;
  * <p>
  * This will dynamically register all Entity implementation classes that exists in the same
  * package as the {@link Entity} class. This allows for packages to provide custom Entities
- * (ex. biocode-fims-sequences FastaEntity) and for those entities to be correctly serialized
+ * (ex. biocode-fims-tissues FastaEntity) and for those entities to be correctly serialized
  * & deserialized.
  *
  * @author rjewing

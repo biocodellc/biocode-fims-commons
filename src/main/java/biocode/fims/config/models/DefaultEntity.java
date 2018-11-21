@@ -387,9 +387,19 @@ public class DefaultEntity implements Entity {
     }
 
     @Override
-    public Entity clone() {
-        DefaultEntity entity = new DefaultEntity(conceptAlias, conceptURI);
+    public Map<String, Object> additionalProps() {
+        return Collections.emptyMap();
+    }
 
+    @Override
+    public void setAdditionalProps(Map<String, Object> props) {}
+
+    @Override
+    public Entity clone() {
+        return clone(new DefaultEntity(conceptAlias, conceptURI));
+    }
+
+    protected Entity clone(Entity entity) {
         rules.forEach(r -> {
             // TODO create a Rule method clone()
             // hacky way to make a copy of the rule
@@ -401,13 +411,13 @@ public class DefaultEntity implements Entity {
         });
         attributes.forEach(a -> entity.addAttribute(a.clone()));
 
-        entity.parentEntity = parentEntity;
-        entity.recordType = recordType;
+        entity.setParentEntity(parentEntity);
+        entity.setRecordType(recordType);
 
-        entity.worksheet = worksheet;
-        entity.uniqueKey = uniqueKey;
-        entity.uniqueAcrossProject = uniqueAcrossProject;
-        entity.hashed = hashed;
+        entity.setWorksheet(worksheet);
+        entity.setUniqueKey(uniqueKey);
+        entity.setUniqueAcrossProject(uniqueAcrossProject);
+        entity.setHashed(hashed);
 
         return entity;
     }

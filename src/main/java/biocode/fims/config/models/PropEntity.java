@@ -32,12 +32,12 @@ public abstract class PropEntity<E extends Enum<E> & EntityProps> extends ChildE
     protected void init() {
         for (EntityProps p : values) {
             try {
-                Attribute a = getAttribute(p.value());
-                a.setUri(p.value());
+                Attribute a = getAttribute(p.uri());
+                a.setUri(p.uri());
                 a.setDataType(DataType.STRING);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == MISSING_ATTRIBUTE) {
-                    addAttribute(new Attribute(p.value(), p.value()));
+                    addAttribute(new Attribute(p.column(), p.uri()));
                 } else {
                     throw e;
                 }
@@ -50,7 +50,7 @@ public abstract class PropEntity<E extends Enum<E> & EntityProps> extends ChildE
      * so we don't overwrite the default values during deserialization.
      */
     protected static abstract class PropEntitySanitizer<T extends PropEntity> extends StdConverter<T, T> {
-        public PropEntitySanitizer() {
+        PropEntitySanitizer() {
             super();
         }
 
