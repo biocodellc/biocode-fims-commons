@@ -132,6 +132,18 @@ public abstract class Config {
         return entities;
     }
 
+    public LinkedList<Entity> entities(EntitySort order) {
+        LinkedList<Entity> e = new LinkedList<>(entities);
+
+        e.sort(
+                EntitySort.CHILDREN_FIRST.equals(order)
+                        ? new ChildrenFirstComparator(this)
+                        : new ChildrenFirstComparator(this).reversed()
+        );
+
+        return e;
+    }
+
     public void addEntity(Entity entity) {
         entities.add(entity);
         validated = false;
@@ -282,5 +294,21 @@ public abstract class Config {
 
     public void addExpeditionMetadataProperty(ExpeditionMetadataProperty prop) {
         expeditionMetadataProperties.add(prop);
+    }
+
+    private static class ChildrenFirstComparator implements Comparator<Entity> {
+
+        private final Config config;
+
+        private ChildrenFirstComparator(Config config) {
+            this.config = config;
+        }
+
+        @Override
+        public int compare(Entity e1, Entity e2) {
+            if (e1.isChildEntity() && config.isParentEntity(e1, e2)) return -1;
+            if (e2.isChildEntity() && config.isParentEntity(e2, e1)) return 1;
+            return 0;
+        }
     }
 }

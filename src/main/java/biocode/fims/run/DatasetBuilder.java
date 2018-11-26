@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.config.EntitySort;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -318,7 +319,11 @@ public class DatasetBuilder {
     }
 
     private void setRecordSetParent() {
-        for (Entity e : childEntities) {
+        // we have to process parents first b/c we may replace the RecordSet and we want the parent() to be the most
+        // up-to-date RecordSet
+        for (Entity e : config.entities(EntitySort.PARENTS_FIRST)) {
+            if (!childEntities.contains(e)) continue;
+
             List<RecordSet> recordSetsToRemove = new ArrayList<>();
             List<RecordSet> recordSetsToAdd = new ArrayList<>();
 
