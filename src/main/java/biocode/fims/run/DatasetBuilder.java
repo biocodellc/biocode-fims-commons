@@ -161,6 +161,10 @@ public class DatasetBuilder {
                 throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, msg);
             }
 
+            for (Record record : r.records()) {
+                record.setProjectId(project.getProjectId());
+            }
+
             DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
             RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
             add(recordSet);
@@ -171,8 +175,10 @@ public class DatasetBuilder {
     private void add(RecordSet recordSet) {
         recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
 
-        for (Record record : recordSet.records()) {
-            record.setProjectId(project.getProjectId());
+        if (recordSet.projectId() == 0) {
+            for (Record record : recordSet.records()) {
+                record.setProjectId(project.getProjectId());
+            }
         }
 
         Entity e = recordSet.entity();

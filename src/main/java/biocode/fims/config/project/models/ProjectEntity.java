@@ -99,6 +99,14 @@ public class ProjectEntity {
         this.uniqueAcrossProject = uniqueAcrossProject;
     }
 
+    public Map<String, Object> getAdditionalProps() {
+        return additionalProps;
+    }
+
+    public void setAdditionalProps(Map<String, Object> additionalProps) {
+        this.additionalProps = additionalProps;
+    }
+
     public boolean isHashed() {
         return hashed;
     }

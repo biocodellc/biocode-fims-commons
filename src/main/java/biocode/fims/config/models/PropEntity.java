@@ -32,7 +32,7 @@ public abstract class PropEntity<E extends Enum<E> & EntityProps> extends ChildE
     protected void init() {
         for (EntityProps p : values) {
             try {
-                Attribute a = getAttribute(p.uri());
+                Attribute a = getAttribute(p.column());
                 a.setUri(p.uri());
                 a.setDataType(DataType.STRING);
             } catch (FimsRuntimeException e) {
