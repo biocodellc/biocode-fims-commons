@@ -23,6 +23,8 @@ public interface ProjectRepository extends Repository<Project, Integer>, Project
 
     Project findByProjectId(int projectId);
 
+    Project findByProjectTitle(String projectTitle);
+
     List<Project> findAllByProjectConfigurationId(int configId);
 
     List<Project> findAll();

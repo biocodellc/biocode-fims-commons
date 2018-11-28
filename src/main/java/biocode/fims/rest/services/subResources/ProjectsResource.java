@@ -60,6 +60,12 @@ public class ProjectsResource extends FimsController {
         this.networkService = networkService;
     }
 
+    @GET
+    @Path("exists/{projectTitle}")
+    public boolean projectExists(@PathParam("projectTitle") String projectTitle) {
+        return projectService.findByProjectTitle(projectTitle) != null;
+    }
+
     /**
      * Fetch all projects available to the current user
      *
