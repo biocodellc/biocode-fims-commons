@@ -192,7 +192,7 @@ public class DatasetBuilder {
 
     private String verifyExpeditionCode(RecordSet recordSet) {
         String expeditionCode = recordSet.expeditionCode();
-        if (expeditionCode != null && !this.expeditionCode.equals(expeditionCode)) {
+        if (expeditionCode != null && !expeditionCode.equals("") && !this.expeditionCode.equals(expeditionCode)) {
             this.mismatchedExpeditions.computeIfAbsent(
                     new MultiKey(recordSet.conceptAlias(), recordSet.entity().getWorksheet()),
                     k -> new HashSet<>()
