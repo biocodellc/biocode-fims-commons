@@ -46,9 +46,12 @@ abstract class DelimitedTextReaderTest {
             assertTrue(r.has("urn:decimalLongitude"));
             assertTrue(r.has("urn:ObservationDate"));
             assertTrue(r.has("urn:timeCollected"));
+            assertTrue(r.has("urn:hasLegs"));
+
+            // 2nd record has these vals, but not 1st
+            r = set.records().get(1);
             assertTrue(r.has("urn:collectionTimestamp"));
             assertTrue(r.has("urn:elevation"));
-            assertTrue(r.has("urn:hasLegs"));
         }
     }
 
@@ -67,13 +70,19 @@ abstract class DelimitedTextReaderTest {
                     assertTrue(r.has("urn:decimalLatitude"));
                     assertTrue(r.has("urn:decimalLongitude"));
                     assertTrue(r.has("urn:timeCollected"));
+
+                    // 2nd record has elevation val, but not 1st
+                    r = set.records().get(1);
                     assertTrue(r.has("urn:elevation"));
                     break;
                 case "events":
                     assertTrue(r.has("urn:hasLegs"));
-                    assertTrue(r.has("urn:collectionTimestamp"));
                     assertTrue(r.has("urn:ObservationDate"));
                     assertTrue(r.has("urn:locality"));
+                    // 2nd record has collectionTimestamp val, but not 1st
+                    r = set.records().get(1);
+                    assertTrue(r.has("urn:collectionTimestamp"));
+
                     break;
                 default:
                     fail("Should only contain \"samples\" and \"events\" RecordSets");

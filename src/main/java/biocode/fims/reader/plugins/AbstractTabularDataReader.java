@@ -109,7 +109,9 @@ abstract class AbstractTabularDataReader implements DataReader {
                                     colNames.indexOf(a.getColumn())
                             );
 
-                            r.set(a.getUri(), val);
+                            if (!val.equals("")) {
+                                r.set(a.getUri(), val);
+                            }
                         }
                     }
 
