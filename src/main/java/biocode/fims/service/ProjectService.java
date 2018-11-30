@@ -175,6 +175,10 @@ public class ProjectService {
         return filteredProjects;
     }
 
+    public Project findByProjectTitle(String projectTitle) {
+        return projectRepository.findByProjectTitle(projectTitle);
+    }
+
     void createEntityBcids(List<Entity> entities, int configId) {
         for (Project project : projectRepository.findAllByProjectConfigurationId(configId)) {
             for (Expedition e : expeditionService.getExpeditions(project.getProjectId(), true)) {

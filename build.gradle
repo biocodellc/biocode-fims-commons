@@ -48,6 +48,7 @@ dependencies {
     compile 'org.apache.poi:poi-ooxml:4.0.0'
     compile 'commons-validator:commons-validator:1.5.0'
     compile 'commons-cli:commons-cli:1.4'
+    // needed for apache-poi to evaluate array/matrix functions
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.0'
     compile 'org.apache.commons:commons-dbcp2:2.1.1'
     compile 'org.apache.commons:commons-lang3:3.8'

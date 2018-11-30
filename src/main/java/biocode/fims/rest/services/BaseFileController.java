@@ -46,7 +46,7 @@ public abstract class BaseFileController extends FimsController {
 
             String name = !StringUtils.isBlank(cf.getName()) ? cf.getName() : file.getName();
             response.header("Content-Disposition",
-                    "attachment; filename=" + name);
+                    "attachment; filename=\"" + name + "\"");
 
             // Return response
             return response.build();

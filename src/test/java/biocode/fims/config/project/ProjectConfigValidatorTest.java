@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -24,20 +25,34 @@ public class ProjectConfigValidatorTest {
     }
 
     @Test
-    public void invalid_if_list_not_in_network() {
+    public void invalid_if_list_differs_from_network_list_with_same_alias() {
         NetworkConfig networkConfig = networkConfig();
 
         ProjectConfig config = new ProjectConfig();
         config.entities().addAll(networkConfig.entities());
-        config.addList(networkConfig.lists().get(0));
+        List networkList = networkConfig.lists().get(0);
+        List differingList = new List(networkList.getAlias());
+        config.addList(differingList);
         config.addExpeditionMetadataProperty(networkConfig.expeditionMetadataProperties().get(0));
-
-        config.addList(new List());
 
         ProjectConfigValidator validator = new ProjectConfigValidator(config, networkConfig);
 
         assertFalse(validator.isValid());
-        assertEquals(Arrays.asList("Project config validation lists differ from the network config validation lists"), validator.errors());
+        assertEquals(Arrays.asList("Project config validation list \"" + networkList.getAlias() + "\" differs from the network config validation list with the same alias"), validator.errors());
+    }
+
+    @Test
+    public void invalid_if_missing_network_list() {
+        NetworkConfig networkConfig = networkConfig();
+
+        ProjectConfig config = new ProjectConfig();
+        config.entities().addAll(networkConfig.entities());
+        config.addExpeditionMetadataProperty(networkConfig.expeditionMetadataProperties().get(0));
+
+        ProjectConfigValidator validator = new ProjectConfigValidator(config, networkConfig);
+
+        assertFalse(validator.isValid());
+        assertEquals(Arrays.asList("Project config validation lists are missing the following network config validation lists: [\""  + String.join("\", \"", networkConfig.lists().stream().map(List::getAlias).collect(Collectors.toList())) + "\"]"), validator.errors());
     }
 
     @Test
@@ -465,8 +480,7 @@ public class ProjectConfigValidatorTest {
 
         c.addEntity(sample);
 
-        List l = new List();
-        l.setAlias("list1");
+        List l = new List("list1");
         l.setCaseInsensitive(true);
         Field f = new Field();
         f.setUri("uri1");

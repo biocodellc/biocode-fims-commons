@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.config.EntitySort;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -161,6 +162,10 @@ public class DatasetBuilder {
                 throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, msg);
             }
 
+            for (Record record : r.records()) {
+                record.setProjectId(project.getProjectId());
+            }
+
             DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
             RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
             add(recordSet);
@@ -171,8 +176,10 @@ public class DatasetBuilder {
     private void add(RecordSet recordSet) {
         recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
 
-        for (Record record : recordSet.records()) {
-            record.setProjectId(project.getProjectId());
+        if (recordSet.projectId() == 0) {
+            for (Record record : recordSet.records()) {
+                record.setProjectId(project.getProjectId());
+            }
         }
 
         Entity e = recordSet.entity();
@@ -185,7 +192,7 @@ public class DatasetBuilder {
 
     private String verifyExpeditionCode(RecordSet recordSet) {
         String expeditionCode = recordSet.expeditionCode();
-        if (expeditionCode != null && !this.expeditionCode.equals(expeditionCode)) {
+        if (expeditionCode != null && !expeditionCode.equals("") && !this.expeditionCode.equals(expeditionCode)) {
             this.mismatchedExpeditions.computeIfAbsent(
                     new MultiKey(recordSet.conceptAlias(), recordSet.entity().getWorksheet()),
                     k -> new HashSet<>()
@@ -312,7 +319,11 @@ public class DatasetBuilder {
     }
 
     private void setRecordSetParent() {
-        for (Entity e : childEntities) {
+        // we have to process parents first b/c we may replace the RecordSet and we want the parent() to be the most
+        // up-to-date RecordSet
+        for (Entity e : config.entities(EntitySort.PARENTS_FIRST)) {
+            if (!childEntities.contains(e)) continue;
+
             List<RecordSet> recordSetsToRemove = new ArrayList<>();
             List<RecordSet> recordSetsToAdd = new ArrayList<>();
 

@@ -109,7 +109,6 @@ public class ProjectConfiguration {
         this.persistedProjectConfig = persistedProjectConfig;
     }
 
-    //    @JsonIgnore
     @JsonProperty("config")
     @JsonView(Views.Detailed.class)
     @Transient
@@ -120,7 +119,6 @@ public class ProjectConfiguration {
         return projectConfig;
     }
 
-//    @JsonIgnore
     public void setProjectConfig(ProjectConfig projectConfig) {
         if (!Objects.equals(projectConfig, this.projectConfig)) {
             this.projectConfig = projectConfig;

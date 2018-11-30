@@ -88,6 +88,12 @@ public class ProjectConfigurationService {
             throw new FimsRuntimeException(ConfigCode.INVALID, 400);
         }
 
+        // TODO: fix this hack. we shouldn't modify ProjectConfig
+        // config.isValid will set List.isNetworkList after that is set,
+        // we need to ensure that the PersistedProjectConfig is updated
+        projectConfiguration.setProjectConfig(new ProjectConfig());
+        projectConfiguration.setProjectConfig(config);
+
         ProjectConfig existingConfig;
         try {
             PersistedProjectConfig persistedProjectConfig = projectConfigurationRepository.getConfig(projectConfiguration.getId());

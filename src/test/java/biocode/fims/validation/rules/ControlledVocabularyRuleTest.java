@@ -154,8 +154,7 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
     private ProjectConfig config() {
         ProjectConfig config = new ProjectConfig();
 
-        List l1 = new List();
-        l1.setAlias("yesNo");
+        List l1 = new List("yesNo");
         Field f1 = new Field();
         f1.setValue("yes");
         l1.addField(f1);
@@ -163,9 +162,8 @@ public class ControlledVocabularyRuleTest extends AbstractRuleTest {
         f2.setValue("no");
         l1.addField(f2);
 
-        List l2 = new List();
+        List l2 = new List("trueFalse");
         l2.setCaseInsensitive(true);
-        l2.setAlias("trueFalse");
         Field f3 = new Field();
         f3.setValue("true");
         l2.addField(f3);

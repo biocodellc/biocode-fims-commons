@@ -10,9 +10,7 @@ import biocode.fims.serializers.EntityTypeIdResolver;
 import biocode.fims.validation.rules.Rule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +31,7 @@ public class ProjectEntity {
     private String uniqueKey;
     private boolean uniqueAcrossProject = false;
     private boolean hashed = false;
+    private Map<String, Object> additionalProps;
 
     // needed for Jackson
     ProjectEntity() {}
@@ -43,10 +42,11 @@ public class ProjectEntity {
         uniqueKey = e.getUniqueKey();
         uniqueAcrossProject = e.getUniqueAcrossProject();
         hashed = e.isHashed();
+        additionalProps = e.additionalProps() != null ? e.additionalProps() : Collections.emptyMap();
 
         rules = new LinkedHashSet<>();
         e.getRules().stream()
-                .filter(entity -> !entity.isNetworkRule())
+                .filter(rule -> !rule.isNetworkRule())
                 .forEach(rules::add);
 
         attributes = new LinkedList<>();
@@ -99,6 +99,14 @@ public class ProjectEntity {
         this.uniqueAcrossProject = uniqueAcrossProject;
     }
 
+    public Map<String, Object> getAdditionalProps() {
+        return additionalProps;
+    }
+
+    public void setAdditionalProps(Map<String, Object> additionalProps) {
+        this.additionalProps = additionalProps;
+    }
+
     public boolean isHashed() {
         return hashed;
     }
@@ -123,6 +131,7 @@ public class ProjectEntity {
         e.setUniqueAcrossProject(uniqueAcrossProject);
         e.setUniqueKey(uniqueKey);
         e.setWorksheet(worksheet);
+        e.setAdditionalProps(additionalProps);
 
         e.getAttributes().clear();
         attributes.forEach(a -> {

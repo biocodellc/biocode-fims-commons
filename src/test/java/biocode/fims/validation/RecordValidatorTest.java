@@ -180,8 +180,7 @@ public class RecordValidatorTest {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(entity1());
 
-        List yesNoList = new List();
-        yesNoList.setAlias("yesNo");
+        List yesNoList = new List("yesNo");
         Field f1 = new Field();
         f1.setValue("yes");
         yesNoList.addField(f1);

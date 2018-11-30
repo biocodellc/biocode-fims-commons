@@ -94,6 +94,18 @@ public interface Entity {
 
     boolean canReload();
 
+    /**
+     * Additional user configurable entity properties that need to be persisted
+     * when converting to/from a {@link biocode.fims.config.project.models.ProjectEntity}
+     *
+     * @return
+     */
+    @JsonIgnore
+    Map<String, Object> additionalProps();
+
+    @JsonIgnore
+    void setAdditionalProps(Map<String, Object> props);
+
     @JsonIgnore
     Entity clone();
 

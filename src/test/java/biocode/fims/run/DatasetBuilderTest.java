@@ -22,8 +22,10 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
+import biocode.fims.validation.rules.*;
 import junit.framework.Assert;
 import org.apache.commons.collections.keyvalue.MultiKey;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -40,6 +42,13 @@ import static org.junit.Assert.assertTrue;
 public class DatasetBuilderTest {
     private static final int PROJECT_ID = 1;
     private static final String EXPEDITION_CODE = "demo";
+
+    private ProjectConfiguration projectConfiguration;
+
+    @Before
+    public void clearProjectConfiguration() {
+        projectConfiguration = null;
+    }
 
     @Test
     public void should_throw_exception_if_empty_dataset() {
@@ -664,50 +673,62 @@ public class DatasetBuilderTest {
     }
 
     private ProjectConfiguration config() {
+        if (projectConfiguration != null) return projectConfiguration;
+
         ProjectConfig config = new ProjectConfig();
 
-        config.addEntity(eventsEntity());
-        config.addEntity(samplesEntity());
+        // note: the following entity adding can not be factored out and b/c we need to call
+        // addDefaultRules() in order for the entities to match the record set entities
+        // if addDefaultRules() is not called, the resulting hashCode for the sample/event
+        // entity will be different
+        Entity eventEntity = new DefaultEntity("event", "someURI");
+        eventEntity.setWorksheet("events");
+        eventEntity.setUniqueKey("eventID");
 
-        return new ProjectConfiguration("test", config, null);
-    }
+        Attribute a11 = new Attribute("location", "urn:location");
+        Attribute a21 = new Attribute("country", "urn:country");
+        Attribute a31 = new Attribute("island", "urn:island");
+        Attribute a41 = new Attribute("latitude", "urn:latitude");
+        Attribute a5 = new Attribute("longitude", "urn:longitude");
+        Attribute a6 = new Attribute("eventID", "urn:eventID");
+        eventEntity.addAttribute(a11);
+        eventEntity.addAttribute(a21);
+        eventEntity.addAttribute(a31);
+        eventEntity.addAttribute(a41);
+        eventEntity.addAttribute(a5);
+        eventEntity.addAttribute(a6);
 
-    private Entity samplesEntity() {
-        Entity entity = new DefaultEntity("sample", "someURI");
-        entity.setWorksheet("samples");
-        entity.setParentEntity("event");
+        config.addEntity(eventEntity);
+
+        Entity sampleEntity = new DefaultEntity("sample", "someURI");
+        sampleEntity.setWorksheet("samples");
+        sampleEntity.setParentEntity("event");
+        sampleEntity.setUniqueKey("sampleID");
 
         Attribute a1 = new Attribute("sampleID", "urn:sampleID");
         Attribute a2 = new Attribute("pi", "urn:pi");
         Attribute a3 = new Attribute("genus", "urn:genus");
         Attribute a4 = new Attribute("species", "urn:species");
-        entity.addAttribute(a1);
-        entity.addAttribute(a2);
-        entity.addAttribute(a3);
-        entity.addAttribute(a4);
+        sampleEntity.addAttribute(a1);
+        sampleEntity.addAttribute(a2);
+        sampleEntity.addAttribute(a3);
+        sampleEntity.addAttribute(a4);
 
-        return entity;
+        config.addEntity(sampleEntity);
+
+        // for some reason, the java LinkedHashMap implementation is failing
+        // to recognize that 2 RequiredValueRule w/ same hashCode is equal.
+        // so we always return the same projectConfiguration instance
+        projectConfiguration = new ProjectConfiguration("test", config, null);
+        return projectConfiguration;
     }
 
     private Entity eventsEntity() {
-        Entity entity = new DefaultEntity("event", "someURI");
-        entity.setWorksheet("events");
-        entity.setUniqueKey("eventID");
+       return config().getProjectConfig().entity("event");
+    }
 
-        Attribute a1 = new Attribute("location", "urn:location");
-        Attribute a2 = new Attribute("country", "urn:country");
-        Attribute a3 = new Attribute("island", "urn:island");
-        Attribute a4 = new Attribute("latitude", "urn:latitude");
-        Attribute a5 = new Attribute("longitude", "urn:longitude");
-        Attribute a6 = new Attribute("eventID", "urn:eventID");
-        entity.addAttribute(a1);
-        entity.addAttribute(a2);
-        entity.addAttribute(a3);
-        entity.addAttribute(a4);
-        entity.addAttribute(a5);
-        entity.addAttribute(a6);
-
-        return entity;
+    private Entity samplesEntity() {
+        return config().getProjectConfig().entity("sample");
     }
 
     private DataReaderFactory dataReaderFactory(DataReader reader) {

@@ -1,20 +1,17 @@
 package biocode.fims.models;
 
 import biocode.fims.config.project.ProjectConfig;
-import biocode.fims.config.project.models.PersistedProjectConfig;
 import biocode.fims.models.dataTypes.JsonBinaryType;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**

@@ -125,8 +125,11 @@ public class ExcelReaderTest {
             assertTrue(r.has("urn:genus"));
             assertTrue(r.has("urn:species"));
             assertTrue(r.has("urn:preservative"));
-            assertTrue(r.has("urn:container"));
             assertTrue(r.has("urn:96_well_num"));
+
+            // 2nd record has a container val, but not 1st
+            r = set.records().get(1);
+            assertTrue(r.has("urn:container"));
         }
     }
 
@@ -156,8 +159,11 @@ public class ExcelReaderTest {
                     break;
                 case "tissues":
                     assertTrue(r.has("urn:preservative"));
-                    assertTrue(r.has("urn:container"));
                     assertTrue(r.has("urn:96_well_num"));
+
+                    // 2nd record has a container val, but not 1st
+                    r = set.records().get(1);
+                    assertTrue(r.has("urn:container"));
                     break;
                 default:
                     fail("Should only contain \"samples\" and \"tissues\" RecordSets");
@@ -208,8 +214,11 @@ public class ExcelReaderTest {
 
         Record tissuesRecord = tissuesSet.get().records().get(0);
         assertTrue(tissuesRecord.has("urn:preservative"));
-        assertTrue(tissuesRecord.has("urn:container"));
         assertTrue(tissuesRecord.has("urn:96_well_num"));
+
+        // 2nd record has a container val, but not 1st
+        tissuesRecord = tissuesSet.get().records().get(1);
+        assertTrue(tissuesRecord.has("urn:container"));
     }
 
     private ProjectConfig getSingleEntityConfig() {

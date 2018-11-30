@@ -210,6 +210,16 @@ public class NetworkEntity implements Entity {
     }
 
     @Override
+    public Map<String, Object> additionalProps() {
+        return entity.additionalProps();
+    }
+
+    @Override
+    public void setAdditionalProps(Map<String, Object> props) {
+        entity.setAdditionalProps(props);
+    }
+
+    @Override
     public Entity clone() {
         return entity.clone();
     }

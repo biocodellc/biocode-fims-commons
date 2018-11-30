@@ -21,7 +21,9 @@ public class RecordHasher {
         StringBuilder sb = new StringBuilder();
 
         sortedMap.forEach((k, v) -> {
-            sb.append(k.trim()).append(v.trim());
+            if (!v.trim().equals("")) {
+                sb.append(k.trim()).append(v.trim());
+            }
         });
 
         return Hasher.hash(sb.toString());
