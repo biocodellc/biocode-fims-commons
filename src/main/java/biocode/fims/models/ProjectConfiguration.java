@@ -109,7 +109,6 @@ public class ProjectConfiguration {
         this.persistedProjectConfig = persistedProjectConfig;
     }
 
-    //    @JsonIgnore
     @JsonProperty("config")
     @JsonView(Views.Detailed.class)
     @Transient
