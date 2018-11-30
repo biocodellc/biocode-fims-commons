@@ -46,7 +46,7 @@ public class ProjectEntity {
 
         rules = new LinkedHashSet<>();
         e.getRules().stream()
-                .filter(entity -> !entity.isNetworkRule())
+                .filter(rule -> !rule.isNetworkRule())
                 .forEach(rules::add);
 
         attributes = new LinkedList<>();

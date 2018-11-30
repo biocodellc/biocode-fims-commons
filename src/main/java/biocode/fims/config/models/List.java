@@ -1,17 +1,26 @@
 package biocode.fims.config.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.LinkedList;
 
 /**
  * A list of data to use in the validator.  We store data in lists because we find that different rules can refer
  * to the same list, and so we need only define them once.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class List {
     private String alias;
     private boolean caseInsensitive = false;
-    //private java.util.List fields = new ArrayList();
-     // Loop all the lists associated with the validation element
     private final LinkedList<Field> fields = new LinkedList<Field>();
+    private boolean isNetworkList = false;
+
+    @JsonCreator
+    public List(String alias) {
+        this.alias = alias;
+    }
 
     /**
      * return the alias for which this list is known
@@ -20,15 +29,6 @@ public class List {
      */
     public String getAlias() {
         return alias;
-    }
-
-    /**
-     * set the alias by which this list is known
-     *
-     * @param alias
-     */
-    public void setAlias(String alias) {
-        this.alias = alias;
     }
 
     public boolean getCaseInsensitive() {
@@ -57,8 +57,12 @@ public class List {
         return fields;
     }
 
-    public void run(Object o) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public boolean isNetworkList() {
+        return this.isNetworkList;
+    }
+
+    public void setNetworkList() {
+        isNetworkList = true;
     }
 
     @Override
@@ -69,6 +73,7 @@ public class List {
         List list = (List) o;
 
         if (getCaseInsensitive() != list.getCaseInsensitive()) return false;
+        if (isNetworkList() != list.isNetworkList()) return false;
         if (getAlias() != null ? !getAlias().equals(list.getAlias()) : list.getAlias() != null) return false;
         return getFields() != null ? getFields().equals(list.getFields()) : list.getFields() == null;
     }
@@ -78,6 +83,7 @@ public class List {
         int result = getAlias() != null ? getAlias().hashCode() : 0;
         result = 31 * result + (getCaseInsensitive() ? 1 : 0);
         result = 31 * result + (getFields() != null ? getFields().hashCode() : 0);
+        result = 31 * result + (isNetworkList() ? 1 : 0);
         return result;
     }
 }

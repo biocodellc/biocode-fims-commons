@@ -120,7 +120,6 @@ public class ProjectConfiguration {
         return projectConfig;
     }
 
-//    @JsonIgnore
     public void setProjectConfig(ProjectConfig projectConfig) {
         if (!Objects.equals(projectConfig, this.projectConfig)) {
             this.projectConfig = projectConfig;

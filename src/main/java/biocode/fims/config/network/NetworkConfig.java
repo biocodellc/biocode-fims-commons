@@ -7,11 +7,9 @@ import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.RuleLevel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -19,7 +17,7 @@ import java.util.stream.Collectors;
 public class NetworkConfig extends Config {
 
     // contains all available network entities which projects can toggle on/off
-    // contains network validation lists TODO maybe projects can extend?
+    // contains network defined validation lists
     // minimal required expedition metadata which projects can extend
 
 
@@ -31,6 +29,17 @@ public class NetworkConfig extends Config {
     // jackson setter
     private void setEntities(List<Entity> entities) {
         entities.forEach(this::addEntity);
+    }
+
+    @Override
+    public void addList(biocode.fims.config.models.List list) {
+        super.addList(list);
+        list.setNetworkList();
+    }
+
+    // jackson setter
+    private void setLists(List<biocode.fims.config.models.List> lists) {
+        lists.forEach(this::addList);
     }
 
     @JsonIgnore

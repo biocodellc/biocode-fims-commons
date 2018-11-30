@@ -1,16 +1,13 @@
 package biocode.fims.config.project;
 
 import biocode.fims.config.ConfigValidator;
+import biocode.fims.config.models.*;
 import biocode.fims.config.network.NetworkConfig;
-import biocode.fims.config.models.Attribute;
-import biocode.fims.config.models.Entity;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.Rule;
 
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,9 +43,25 @@ public class ProjectConfigValidator extends ConfigValidator {
     }
 
     private void hasValidValidationLists() {
-        if (config.lists().equals(networkConfig.lists())) return;
+        Map<String, biocode.fims.config.models.List> networkListsByAlias = new HashMap<>();
+        networkConfig.lists().forEach(l -> networkListsByAlias.put(l.getAlias(), l));
+        Set<String> networkListAliases = networkListsByAlias.keySet();
 
-        errorMessages.add("Project config validation lists differ from the network config validation lists");
+        for (biocode.fims.config.models.List l: config.lists()) {
+            if (networkListsByAlias.containsKey(l.getAlias())) {
+                biocode.fims.config.models.List networkList = networkListsByAlias.get(l.getAlias());
+                if (!networkList.equals(l)) {
+                    errorMessages.add("Project config validation list \"" + l.getAlias() + "\" differs from the network config validation list with the same alias");
+                }
+                // remove so we can determine if any network lists are missing
+                networkListAliases.remove(l.getAlias());
+            }
+        }
+
+        if (networkListAliases.size() > 0) {
+            errorMessages.add("Project config validation lists are missing the following network config validation lists: [\"" + String.join("\", \"", networkListAliases) + "\"]");
+        }
+
     }
 
     private void containsNetworkExpeditionProps() {

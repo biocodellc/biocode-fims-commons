@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -44,7 +45,12 @@ public class ProjectConfig extends Config {
         });
 
         networkConfig.lists().forEach(l -> {
-            if (!lists().contains(l)) addList(l);
+            Optional<biocode.fims.config.models.List> projectList = lists().stream()
+                    .filter(list -> l.getAlias().equals(list.getAlias()))
+                    .findFirst();
+
+            if (projectList.isPresent()) projectList.get().setNetworkList();
+            else addList(l);
         });
 
         networkConfig.entities().forEach(e -> {

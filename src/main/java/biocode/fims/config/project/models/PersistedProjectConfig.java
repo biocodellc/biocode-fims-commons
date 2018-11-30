@@ -1,6 +1,7 @@
 package biocode.fims.config.project.models;
 
 import biocode.fims.config.models.Entity;
+import biocode.fims.config.models.List;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,10 +20,13 @@ public class PersistedProjectConfig {
     @JsonProperty
     private final LinkedList<ProjectEntity> entities;
     @JsonProperty
+    private final LinkedList<List> lists;
+    @JsonProperty
     private final java.util.List<ExpeditionMetadataProperty> expeditionMetadataProperties;
 
     private PersistedProjectConfig() {
         this.entities = new LinkedList<>();
+        this.lists = new LinkedList<>();
         this.expeditionMetadataProperties = new ArrayList<>();
     }
 
@@ -40,9 +44,11 @@ public class PersistedProjectConfig {
                         .collect(Collectors.toList())
         );
 
-        for (Entity e : projectConfig.entities()) {
-            config.entities.add(new ProjectEntity(e));
-        }
+        projectConfig.entities().forEach(e -> config.entities.add(new ProjectEntity(e)));
+
+        projectConfig.lists().stream()
+                .filter(l -> !l.isNetworkList())
+                .forEach(config.lists::add);
 
         return config;
     }
@@ -54,12 +60,13 @@ public class PersistedProjectConfig {
         config.expeditionMetadataProperties().forEach(p -> p.setNetworkProp(true));
         config.expeditionMetadataProperties().addAll(expeditionMetadataProperties);
 
-        config.lists().addAll(networkConfig.lists());
-
         for (ProjectEntity pe : entities) {
             Entity networkEntity = networkConfig.entity(pe.getConceptAlias());
             config.addEntity(pe.toEntity(networkEntity));
         }
+
+        config.lists().addAll(networkConfig.lists());
+        config.lists().addAll(lists);
 
         config.addDefaultRules();
         return config;
