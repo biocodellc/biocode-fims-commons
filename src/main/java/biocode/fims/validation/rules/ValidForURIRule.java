@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * This is necessary for cases where data is constructed as a URI, such as uniqueKey values.
  * One approach is to encode all characters, however, this creates a mis-leading ARK identifier.
  * <p/>
- * Characters that are disallowed are: %$&+,/:;=?@<>#%\
+ * Characters that are allowed are: a-zA-Z0-9+=:._()~*
  * <p/>
  * Note that this rule does not check if this a valid URI in its entirety, only that the portion of
  * the string, when appended onto other valid URI syntax, will not break the URI itself
