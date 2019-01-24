@@ -1,6 +1,7 @@
 package biocode.fims.query;
 
 import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 
 /**
  * @author rjewing
@@ -15,4 +16,6 @@ public interface QueryBuildingExpressionVisitor extends ExpressionVisitor {
     Integer page();
 
     Integer limit();
+
+    void setProjectConfig(ProjectConfig config);
 }

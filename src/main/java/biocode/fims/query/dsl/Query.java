@@ -107,6 +107,7 @@ public class Query {
     public void setProjectConfig(ProjectConfig config) {
         if (projects().size() == 1) {
             this.config = config;
+            this.queryBuilder.setProjectConfig(config);
             return;
         }
         throw new FimsRuntimeException(

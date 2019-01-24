@@ -3,6 +3,7 @@ package biocode.fims.query;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.DataType;
 import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.dsl.*;
@@ -19,10 +20,10 @@ import java.util.stream.Collectors;
 public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     private final StringBuilder whereBuilder;
-    private final Entity queryEntity;
     private final JoinBuilder joinBuilder;
-    private final Config config;
     private final int networkId;
+    private Entity queryEntity;
+    private Config config;
     private boolean allQuery;
     private boolean excludedExistsColumn;
     private Map<String, Object> params;
@@ -181,7 +182,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public void visit(SelectExpression expression) {
-        expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(config.entity(conceptAlias)));
+        expression.entites().stream()
+                .map(config::entity)
+                .filter(Objects::nonNull) // drop any entities that don't exist in the project
+                .forEach(joinBuilder::addSelect);
+
         if (expression.expression() != null) {
             expression.expression().accept(this);
         }
@@ -359,6 +364,16 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     @Override
     public String queryTable() {
         return buildTable(queryEntity.getConceptAlias());
+    }
+
+    @Override
+    public void setProjectConfig(ProjectConfig config) {
+        this.config = config;
+        this.queryEntity = config.entity(this.queryEntity.getConceptAlias());
+        if (queryEntity == null) {
+            throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, this.queryEntity.getConceptAlias());
+        }
+        this.joinBuilder.setProjectConfig(config, queryEntity);
     }
 
     @Override

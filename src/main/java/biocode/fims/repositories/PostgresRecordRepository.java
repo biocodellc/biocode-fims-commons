@@ -460,7 +460,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 // conceptAlias's are not case-sensitive
                 if (e.getConceptAlias().equalsIgnoreCase(conceptAlias)) return e;
             }
-            throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 500);
+            throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 500, conceptAlias);
         }
     }
 

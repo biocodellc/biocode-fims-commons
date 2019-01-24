@@ -1,6 +1,7 @@
 package biocode.fims.query;
 
 import biocode.fims.config.Config;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.config.models.Entity;
@@ -24,11 +25,11 @@ public class JoinBuilder {
 
     private final Set<Entity> joinEntities;
     private final Set<Entity> selectEntities;
-    private final Entity queryEntity;
-    private final Config config;
     private final int networkId;
     private final List<Entity> joinedEntities;
     private final StringBuilder joinString;
+    private Entity queryEntity;
+    private Config config;
     private boolean expeditions;
 
     JoinBuilder(Entity queryEntity, Config config, int networkId) {
@@ -205,5 +206,10 @@ public class JoinBuilder {
 
     private boolean alreadyJoined(Entity joinEntity) {
         return joinedEntities.contains(joinEntity);
+    }
+
+    public void setProjectConfig(ProjectConfig config, Entity queryEntity) {
+        this.config = config;
+        this.queryEntity = queryEntity;
     }
 }
