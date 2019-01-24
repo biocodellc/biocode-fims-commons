@@ -264,7 +264,9 @@ public class ProjectTemplatesResource extends FimsController {
             return null;
         }
 
-        String fileId = fileCache.cacheFileForUser(file, userContext.getUser());
+        String filename = ((project == null) ? "workbook" : project.getProjectTitle()) + ".xlsx";
+
+        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), filename);
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
