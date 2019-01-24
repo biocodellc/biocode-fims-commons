@@ -24,6 +24,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     private final Config config;
     private final int networkId;
     private boolean allQuery;
+    private boolean excludedExistsColumn;
     private Map<String, Object> params;
     private Integer page;
     private Integer limit;
@@ -128,7 +129,10 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         for (String column : expression.columns()) {
             QueryColumn queryColumn = lookupQueryColumn(column);
             // localIdentifier & parentIdentifier are never null, so exclude from query
-            if (queryColumn.isLocalIdentifier() || queryColumn.isParentIdentifier()) continue;
+            if (queryColumn.isLocalIdentifier() || queryColumn.isParentIdentifier()) {
+                this.excludedExistsColumn = true;
+                continue;
+            }
 
             entityColumns.computeIfAbsent(queryColumn.table(), k -> new ArrayList<>()).add(queryColumn);
         }
@@ -359,7 +363,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
-        if (!allQuery && whereBuilder.toString().trim().length() == 0) {
+        if (!allQuery && !excludedExistsColumn && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
         } else if (allQuery && whereBuilder.toString().trim().length() > 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
