@@ -133,6 +133,7 @@ public class RecordService {
             }
         }
 
+        if (record == null) return null;
         return new RecordResponse(project.getProjectId(), parent, record, children.size() == 0 ? null : children);
     }
 
