@@ -55,7 +55,7 @@ public class QueryParser extends BaseParser<Object> {
 
                             for (Object o : stack) {
                                 if (o instanceof SelectExpression) {
-                                    selectEntities.addAll(((SelectExpression) o).entites());
+                                    selectEntities.addAll(((SelectExpression) o).entities());
                                 } else {
                                     // We should only have 0 or 1 objects other the SelectExpressions in the stack.
                                     // If we have more, then there was an issue parsing

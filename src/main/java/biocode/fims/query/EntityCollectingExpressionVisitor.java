@@ -38,7 +38,7 @@ public class EntityCollectingExpressionVisitor implements ExpressionVisitor {
 
     @Override
     public void visit(SelectExpression selectExpression) {
-        entities.addAll(selectExpression.entites());
+        entities.addAll(selectExpression.entities());
     }
 
     @Override

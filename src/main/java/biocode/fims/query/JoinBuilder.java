@@ -5,9 +5,11 @@ import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.config.models.Entity;
+import biocode.fims.models.EntityRelation;
 
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Used to generate a SQL JOIN statement for queries on {@link Entity} queryEntity and any related entities.
@@ -111,14 +113,13 @@ public class JoinBuilder {
     }
 
     private void buildJoinEntities() {
-        for (Entity entity : joinEntities) {
+        // sorting provides deterministic behavior so we can correctly test
+        ArrayList<Entity> sortedJoinEntities = new ArrayList<>(joinEntities);
+        sortedJoinEntities.sort(Comparator.comparing(Entity::getConceptAlias));
+        for (Entity entity : sortedJoinEntities) {
             verifyRelated(entity);
 
-            if (config.isEntityChildDescendent(queryEntity, entity)) {
-                buildChildJoin(entity);
-            } else {
-                buildParentJoin(entity);
-            }
+            buildJoin(entity);
         }
     }
 
@@ -128,46 +129,30 @@ public class JoinBuilder {
         }
     }
 
-    private void buildChildJoin(Entity entity) {
-        LinkedList<Entity> entityHierarchy = config.entitiesInRelation(queryEntity, entity);
-        entityHierarchy.remove(queryEntity);
+    private void buildJoin(Entity entity) {
+        Entity prevEntity = queryEntity;
 
-        Entity parentEntity = queryEntity;
+        // TODO: This logic may break when we temporarily step down a relationship graph
+        // and then continue traversing up. I'm not sure if we will ever run into this
+        // sort of edge case.
+        for (EntityRelation relation: config.getEntityRelations(queryEntity, entity)) {
 
-        for (Entity childEntity : entityHierarchy) {
+            if (relation.getChildEntity().equals(prevEntity)) {
+                prevEntity = relation.getParentEntity();
+                if (alreadyJoined(prevEntity)) continue;
 
-            if (alreadyJoined(childEntity)) {
-                parentEntity = childEntity;
-                continue;
+                appendParentJoin(relation.getChildEntity(), relation.getParentEntity());
+            } else {
+                prevEntity = relation.getChildEntity();
+                if (alreadyJoined(prevEntity)) continue;
+
+                appendChildJoin(relation.getParentEntity(), relation.getChildEntity());
             }
 
-            appendChildJoin(parentEntity, childEntity);
-
-            joinedEntities.add(childEntity);
-            parentEntity = childEntity;
+            joinedEntities.add(prevEntity);
         }
     }
 
-    private void buildParentJoin(Entity entity) {
-        LinkedList<Entity> entityHierarchy = config.entitiesInRelation(entity, queryEntity);
-        entityHierarchy.remove(queryEntity);
-        Collections.reverse(entityHierarchy);
-
-        Entity childEntity = queryEntity;
-
-        for (Entity parentEntity : entityHierarchy) {
-
-            if (alreadyJoined(parentEntity)) {
-                childEntity = parentEntity;
-                continue;
-            }
-
-            appendParentJoin(childEntity, parentEntity);
-
-            joinedEntities.add(parentEntity);
-            childEntity = parentEntity;
-        }
-    }
 
     private void appendChildJoin(Entity parentEntity, Entity childEntity) {
         String table = PostgresUtils.entityTableAs(networkId, childEntity.getConceptAlias());
@@ -205,7 +190,7 @@ public class JoinBuilder {
     }
 
     private boolean alreadyJoined(Entity joinEntity) {
-        return joinedEntities.contains(joinEntity);
+        return joinedEntities.contains(joinEntity) || queryEntity.equals(joinEntity);
     }
 
     public void setProjectConfig(ProjectConfig config, Entity queryEntity) {
