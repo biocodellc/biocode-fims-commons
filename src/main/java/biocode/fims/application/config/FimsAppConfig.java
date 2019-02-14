@@ -95,8 +95,8 @@ public class FimsAppConfig {
 
 
     @Bean
-    public QueryAuthorizer queryAuthorizer(ProjectService projectService, ExpeditionService expeditionService, FimsProperties fimsProperties) {
-        return new QueryAuthorizer(projectService, expeditionService, fimsProperties);
+    public QueryAuthorizer queryAuthorizer(ProjectService projectService, ExpeditionService expeditionService) {
+        return new QueryAuthorizer(projectService, expeditionService);
     }
 
     @Bean

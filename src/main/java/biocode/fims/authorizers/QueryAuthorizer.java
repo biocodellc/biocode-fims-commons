@@ -25,16 +25,13 @@ import java.util.List;
  * @author RJ Ewing
  */
 public class QueryAuthorizer {
-    private final static Logger logger = LoggerFactory.getLogger(QueryAuthorizer.class);
 
     private final ProjectService projectService;
     private final ExpeditionService expeditionService;
-    private final FimsProperties props;
 
-    public QueryAuthorizer(ProjectService projectService, ExpeditionService expeditionService, FimsProperties props) {
+    public QueryAuthorizer(ProjectService projectService, ExpeditionService expeditionService) {
         this.projectService = projectService;
         this.expeditionService = expeditionService;
-        this.props = props;
     }
 
     /**
@@ -119,11 +116,7 @@ public class QueryAuthorizer {
     }
 
     private boolean authorizedUserForProject(Project project, User user) {
-        if (project.isPublic()) return true;
-        if (user == null) {
-            return project.isPublic();
-        }
-        return projectService.isUserMemberOfProject(user, project.getProjectId());
+        return project.isPublic() || projectService.isUserMemberOfProject(user, project.getProjectId());
     }
 
     /**
@@ -171,49 +164,5 @@ public class QueryAuthorizer {
 
         // check that we found all expeditions to be in a Project in the projectIds list
         return foundExpeditionCodes.size() == expeditionCodes.size();
-    }
-
-    /**
-     * Checks that the {@param user} has access to the {@param projectIds} and expedition.expeditionCode within the
-     * {@param esQueryNode}
-     *
-     * @param projectIds
-     * @param esQueryNode
-     * @param user
-     * @return
-     */
-    public boolean authorizedQuery(List<Integer> projectIds, ObjectNode esQueryNode, User user) {
-        JsonParser parser = esQueryNode.traverse();
-        List<String> expeditionCodes = new ArrayList<>();
-
-        JsonToken token;
-        try {
-            while ((token = parser.nextToken()) != null) {
-
-                if (token.equals(JsonToken.FIELD_NAME)) {
-                    if (parser.getCurrentName().equals("expedition.expeditionCode")) {
-
-                        if (parser.nextToken() == JsonToken.START_OBJECT) {
-
-                            while ((token = parser.nextToken()) != JsonToken.END_OBJECT) {
-
-                                if (token.equals(JsonToken.FIELD_NAME) && parser.getCurrentName().equals("query")) {
-                                    parser.nextToken();
-                                    expeditionCodes.add(parser.getValueAsString());
-                                    break;
-                                }
-                            }
-                        } else {
-                            expeditionCodes.add(parser.getValueAsString());
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.warn("IOException parsing esQueryNode in QueryAuthorizer");
-            return false;
-        }
-
-        return authorizedQuery(projectIds, expeditionCodes, user);
     }
 }
