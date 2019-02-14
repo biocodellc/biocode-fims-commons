@@ -5,6 +5,7 @@ import biocode.fims.config.Config;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.errorCodes.ErrorCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
@@ -24,11 +25,13 @@ import java.util.stream.Collectors;
 public class Query {
 
     private final QueryBuildingExpressionVisitor queryBuilder;
-    private final Expression expression;
+    private Expression expression;
     private Config config;
     private Set<String> expeditions;
     private Set<Entity> entities;
     private List<Integer> projects;
+    private List<Integer> restrictToProjects;
+    private boolean onlyPublicExpeditions = false;
 
     public Query(QueryBuildingExpressionVisitor queryBuilder, Config config, Expression expression) {
         this.config = config;
@@ -46,7 +49,14 @@ public class Query {
         return queryBuilder.limit();
     }
 
-    public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
+    public ParametrizedQuery parameterizedQuery() {
+        if (restrictToProjects != null) {
+            expression = new LogicalExpression(
+                    LogicalOperator.AND,
+                    expression,
+                    new ProjectExpression(restrictToProjects)
+            );
+        }
         expression.accept(queryBuilder);
         return queryBuilder.parameterizedQuery(onlyPublicExpeditions);
     }
@@ -114,6 +124,17 @@ public class Query {
                 500,
                 new IllegalAccessException("setProjectConfig can only be called if the query contains a single project")
         );
+    }
+
+    public void restrictToProjects(List<Integer> restrictToProjects) {
+        if (this.projects().size() > 0) {
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 500, "Query already contains projects");
+        }
+        this.restrictToProjects = restrictToProjects;
+    }
+
+    public void restrictToPublicExpeditions() {
+        this.onlyPublicExpeditions = true;
     }
 
     public static Query build(Project project, String conceptAlias, String queryString) {

@@ -339,8 +339,7 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SuppressWarnings({"unchecked"})
     public QueryResults query(Query query) {
-        boolean onlyPublicExpeditions = query.expeditions().isEmpty();
-        ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
+        ParametrizedQuery q = query.parameterizedQuery();
 
         logger.info(q.toString());
 
@@ -353,8 +352,7 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SuppressWarnings({"unchecked"})
     public PaginatedResponse<Map<String, List<Map<String, String>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
-        boolean onlyPublicExpeditions = query.expeditions().isEmpty();
-        ParametrizedQuery q = query.parameterizedQuery(onlyPublicExpeditions);
+        ParametrizedQuery q = query.parameterizedQuery();
 
         logger.info(q.toString());
 

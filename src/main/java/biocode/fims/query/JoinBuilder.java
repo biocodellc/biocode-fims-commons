@@ -32,7 +32,7 @@ public class JoinBuilder {
     private final StringBuilder joinString;
     private Entity queryEntity;
     private Config config;
-    private boolean expeditions;
+    private boolean expeditions = false;
 
     JoinBuilder(Entity queryEntity, Config config, int networkId) {
         this.queryEntity = queryEntity;
@@ -42,7 +42,6 @@ public class JoinBuilder {
         this.selectEntities = new HashSet<>();
         this.joinedEntities = new ArrayList<>();
         this.joinString = new StringBuilder();
-        this.expeditions = false;
     }
 
     public void add(Entity entity) {
@@ -135,7 +134,7 @@ public class JoinBuilder {
         // TODO: This logic may break when we temporarily step down a relationship graph
         // and then continue traversing up. I'm not sure if we will ever run into this
         // sort of edge case.
-        for (EntityRelation relation: config.getEntityRelations(queryEntity, entity)) {
+        for (EntityRelation relation : config.getEntityRelations(queryEntity, entity)) {
 
             if (relation.getChildEntity().equals(prevEntity)) {
                 prevEntity = relation.getParentEntity();
