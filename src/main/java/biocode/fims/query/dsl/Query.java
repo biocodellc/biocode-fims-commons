@@ -116,8 +116,8 @@ public class Query {
         );
     }
 
-    public static Query factory(Project project, String conceptAlias, String queryString) {
-        Query query = factory(project.getNetwork(), conceptAlias, queryString, null, null);
+    public static Query build(Project project, String conceptAlias, String queryString) {
+        Query query = build(project.getNetwork(), conceptAlias, queryString, null, null);
 
         if (query.projects().size() == 1) {
             query.setProjectConfig(project.getProjectConfig());
@@ -126,7 +126,7 @@ public class Query {
         return query;
     }
 
-    public static Query factory(Network network, String conceptAlias, String queryString, Integer page, Integer limit) {
+    public static Query build(Network network, String conceptAlias, String queryString, Integer page, Integer limit) {
         QueryBuilder queryBuilder = new QueryBuilder(network.getNetworkConfig(), network.getId(), conceptAlias, page, limit);
 
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder, network.getNetworkConfig());
