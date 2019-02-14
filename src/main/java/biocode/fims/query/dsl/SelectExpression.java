@@ -29,7 +29,7 @@ public class SelectExpression implements Expression {
         return expression;
     }
 
-    public List<String> entites() {
+    public List<String> entities() {
         return Arrays.asList(selectString.split(" ?, ?"));
     }
 

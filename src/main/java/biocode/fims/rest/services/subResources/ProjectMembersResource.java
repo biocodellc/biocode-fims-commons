@@ -48,7 +48,7 @@ public class ProjectMembersResource extends FimsController {
     @GET
     @Authenticated
     public List<User> getMembers(@PathParam("projectId") Integer projectId) {
-        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
+        if (!projectService.isUserMemberOfProject(userContext.getUser(), projectId)) {
             throw new ForbiddenRequestException("You are not an admin to this project");
         }
 

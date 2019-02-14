@@ -4,11 +4,13 @@ import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.DefaultEntity;
 import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.models.EntityRelation;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +29,7 @@ public class NetworkConfigTest {
     @Test(expected = FimsRuntimeException.class)
     public void should_throw_exception_for_non_existing_entity_when_fetching_related_entities() {
         config.addEntity(parent());
-        config.entitiesInRelation(parent(), new DefaultEntity("notRelated", "someURI"));
+        config.getEntityRelations(parent(), new DefaultEntity("notRelated", "someURI"));
     }
 
     @Test
@@ -37,6 +39,13 @@ public class NetworkConfigTest {
 
         assertTrue(config.areRelatedEntities("parent", "child"));
         assertTrue(config.areRelatedEntities("child", "parent"));
+    }
+
+    @Test
+    public void should_return_false_for_same_entity() {
+        config.addEntity(parent());
+
+        assertFalse(config.areRelatedEntities("parent", "parent"));
     }
 
     @Test
@@ -81,12 +90,16 @@ public class NetworkConfigTest {
         Entity parent = config.entity(parent().getConceptAlias());
         Entity child = config.entity(child().getConceptAlias());
 
-        LinkedList<Entity> result = config.entitiesInRelation(parent, child);
+        List<EntityRelation> result = config.getEntityRelations(parent, child);
 
-        LinkedList<Entity> expected = new LinkedList<>();
-        expected.add(parent);
-        expected.add(child);
+        // only min required entities to build the relationship should be returned
+        List<EntityRelation> expected = new ArrayList<>();
+        expected.add(new EntityRelation(parent, child));
 
+        assertEquals(expected, result);
+
+        // since order maters, check the inverse
+        result = config.getEntityRelations(child, parent);
         assertEquals(expected, result);
     }
 
@@ -96,13 +109,20 @@ public class NetworkConfigTest {
         Entity unrelated = new DefaultEntity("unrelated", "someURI");
         config.addEntity(unrelated);
 
-        LinkedList<Entity> result = config.entitiesInRelation(
+        List<EntityRelation> result = config.getEntityRelations(
                 config.entity(parent().getConceptAlias()),
                 config.entity(unrelated.getConceptAlias())
         );
 
-        LinkedList<Entity> expected = new LinkedList<>();
+        List<EntityRelation> expected = new ArrayList<>();
 
+        assertEquals(expected, result);
+
+        // since order maters, check the inverse
+        result = config.getEntityRelations(
+                config.entity(unrelated.getConceptAlias()),
+                config.entity(parent().getConceptAlias())
+        );
         assertEquals(expected, result);
     }
 
@@ -116,12 +136,62 @@ public class NetworkConfigTest {
         Entity child = config.entity(child().getConceptAlias());
         Entity grandChild = config.entity(grandChild().getConceptAlias());
 
-        LinkedList<Entity> result = config.entitiesInRelation(parent, grandChild);
+        List<EntityRelation> result = config.getEntityRelations(parent, grandChild);
 
-        LinkedList<Entity> expected = new LinkedList<>();
-        expected.add(parent);
-        expected.add(child);
-        expected.add(grandChild);
+        List<EntityRelation> expected = new ArrayList<>();
+        expected.add(new EntityRelation(parent, child));
+        expected.add(new EntityRelation(child, grandChild));
+
+        assertEquals(expected, result);
+
+        // since order maters, check the inverse
+        result = config.getEntityRelations(grandChild, parent);
+
+        expected = new ArrayList<>();
+        expected.add(new EntityRelation(child, grandChild));
+        expected.add(new EntityRelation(parent, child));
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Should return all entities required to build the relationship between greatGrandChild and grandChild2
+     * relationships as follows:
+     * <p>
+     * parent -> child -> grandChild -> greatGrandChild
+     * *              \
+     * *               -> grandChild2
+     */
+    @Test
+    public void should_return_correct_entities_for_treed_relationship() {
+        config.addEntity(greatGrandChild());
+        config.addEntity(grandChild());
+        config.addEntity(parent());
+        config.addEntity(child());
+        config.addEntity(grandChild2());
+
+        Entity child = config.entity(child().getConceptAlias());
+        Entity grandChild2 = config.entity(grandChild2().getConceptAlias());
+        Entity grandChild = config.entity(grandChild().getConceptAlias());
+        Entity greatGrandChild = config.entity(greatGrandChild().getConceptAlias());
+
+        List<EntityRelation> result = config.getEntityRelations(greatGrandChild, grandChild2);
+
+        // only min required entities to build the relationship should be returned
+        List<EntityRelation> expected = new ArrayList<>();
+        expected.add(new EntityRelation(grandChild, greatGrandChild));
+        expected.add(new EntityRelation(child, grandChild));
+        expected.add(new EntityRelation(child, grandChild2));
+
+        assertEquals(expected, result);
+
+        // since order maters, check the inverse
+        result = config.getEntityRelations(grandChild2, greatGrandChild);
+
+        // only min required entities to build the relationship should be returned
+        expected = new ArrayList<>();
+        expected.add(new EntityRelation(child, grandChild2));
+        expected.add(new EntityRelation(child, grandChild));
+        expected.add(new EntityRelation(grandChild, greatGrandChild));
 
         assertEquals(expected, result);
     }
@@ -178,6 +248,18 @@ public class NetworkConfigTest {
     private Entity grandChild() {
         Entity entity = new DefaultEntity("grandChild", "someURI");
         entity.setParentEntity("child");
+        return entity;
+    }
+
+    private Entity grandChild2() {
+        Entity entity = new DefaultEntity("grandChild2", "someURI");
+        entity.setParentEntity("child");
+        return entity;
+    }
+
+    private Entity greatGrandChild() {
+        Entity entity = new DefaultEntity("greatGrandChild", "someURI");
+        entity.setParentEntity("grandChild");
         return entity;
     }
 }

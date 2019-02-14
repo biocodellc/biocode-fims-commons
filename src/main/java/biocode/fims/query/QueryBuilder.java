@@ -3,6 +3,7 @@ package biocode.fims.query;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.DataType;
 import biocode.fims.config.models.Entity;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.dsl.*;
@@ -19,10 +20,10 @@ import java.util.stream.Collectors;
 public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     private final StringBuilder whereBuilder;
-    private final Entity queryEntity;
     private final JoinBuilder joinBuilder;
-    private final Config config;
     private final int networkId;
+    private Entity queryEntity;
+    private Config config;
     private boolean allQuery;
     private Map<String, Object> params;
     private Integer page;
@@ -91,8 +92,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
             whereBuilder
                     .append(table)
-                    .append(".")
-                    .append(columns.get(0).column())
+                    .append(".data") // always use the data column
                     .append(" ??");
 
             if (columns.size() == 1) {
@@ -127,9 +127,6 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         for (String column : expression.columns()) {
             QueryColumn queryColumn = lookupQueryColumn(column);
-            // localIdentifier & parentIdentifier are never null, so exclude from query
-            if (queryColumn.isLocalIdentifier() || queryColumn.isParentIdentifier()) continue;
-
             entityColumns.computeIfAbsent(queryColumn.table(), k -> new ArrayList<>()).add(queryColumn);
         }
         return entityColumns;
@@ -177,7 +174,11 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
     @Override
     public void visit(SelectExpression expression) {
-        expression.entites().forEach(conceptAlias -> joinBuilder.addSelect(config.entity(conceptAlias)));
+        expression.entities().stream()
+                .map(config::entity)
+                .filter(Objects::nonNull) // drop any entities that don't exist in the project
+                .forEach(joinBuilder::addSelect);
+
         if (expression.expression() != null) {
             expression.expression().accept(this);
         }
@@ -187,7 +188,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     public void visit(FTSExpression expression) {
         String key = putParam(expression.term().replaceAll("\\s+", " & "));
         if (StringUtils.isBlank(expression.column())) {
-            LinkedList<Entity> parentEntities = config.parentEntities(queryEntity.getConceptAlias());
+            List<Entity> parentEntities = config.parentEntities(queryEntity.getConceptAlias());
 
             if (parentEntities.isEmpty()) {
                 appendFTSTSVQuery(queryEntity.getConceptAlias(), key);
@@ -358,6 +359,16 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
     }
 
     @Override
+    public void setProjectConfig(ProjectConfig config) {
+        this.config = config;
+        this.queryEntity = config.entity(this.queryEntity.getConceptAlias());
+        if (this.queryEntity == null) {
+            throw new FimsRuntimeException(QueryCode.UNKNOWN_ENTITY, 400, this.queryEntity.getConceptAlias());
+        }
+        this.joinBuilder.setProjectConfig(config, queryEntity);
+    }
+
+    @Override
     public ParametrizedQuery parameterizedQuery(boolean onlyPublicExpeditions) {
         if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
@@ -390,10 +401,15 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
             addPublicExpeditions();
         }
 
-        return new ParametrizedQuery(
-                sql + joinBuilder.build() + " WHERE " + whereBuilder.append(orderBy).toString(),
-                params
-        );
+        sql += joinBuilder.build();
+
+        if (whereBuilder.toString().trim().length() > 0) {
+            sql += " WHERE " + whereBuilder.append(orderBy).toString();
+        } else {
+            sql += orderBy.toString();
+        }
+
+        return new ParametrizedQuery(sql, params);
     }
 
     private void addPublicExpeditions() {

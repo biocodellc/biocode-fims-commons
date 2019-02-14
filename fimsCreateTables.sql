@@ -339,7 +339,7 @@ CREATE TABLE entity_identifiers (
   id SERIAL,
   expedition_id INTEGER NOT NULL REFERENCES expeditions (id) ON DELETE CASCADE,
   concept_alias TEXT NOT NULL,
-  identifier TEXT NOT NULL,
+  identifier TEXT NOT NULL UNIQUE,
   CONSTRAINT entitiy_identifiers_expediton_id_concept_alias_uniq UNIQUE (expedition_id, concept_alias)
 );
 

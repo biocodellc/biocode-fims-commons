@@ -452,7 +452,7 @@ public class QueryBuilderTest {
     @Test
     public void should_write_valid_sql_for_project_expression_multiple_projects() {
         QueryBuilder queryBuilder = queryBuilder("event");
-        queryBuilder.visit(new ProjectExpression(Arrays.asList(11,20)));
+        queryBuilder.visit(new ProjectExpression(Arrays.asList(11, 20)));
 
         Map<String, Object> params = new HashMap<>();
         params.put("1", new Integer("11"));
@@ -904,6 +904,47 @@ public class QueryBuilderTest {
         assertEquals(expected, queryBuilder.parameterizedQuery(false));
     }
 
+    @Test
+    public void should_add_joins_for_multi_entity_query_with_treed_relationship() {
+        QueryBuilder queryBuilder = queryBuilder("tissue");
+
+        queryBuilder.visit(new ExistsExpression("eventPhoto.photoId"));
+
+        String expectedSql = "SELECT tissue.data AS \"tissue_data\", tissue_entity_identifiers.identifier AS \"tissue_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\" FROM network_1.tissue AS tissue " +
+                "JOIN network_1.sample AS sample ON sample.local_identifier = tissue.parent_identifier and sample.expedition_id = tissue.expedition_id " +
+                "JOIN network_1.event AS event ON event.local_identifier = sample.parent_identifier and event.expedition_id = sample.expedition_id " +
+                "LEFT JOIN network_1.eventPhoto AS eventPhoto ON eventPhoto.parent_identifier = event.local_identifier and eventPhoto.expedition_id = event.expedition_id " +
+                "LEFT JOIN entity_identifiers AS tissue_entity_identifiers ON tissue_entity_identifiers.expedition_id = tissue.expedition_id and tissue_entity_identifiers.concept_alias = 'tissue' " +
+                "WHERE eventPhoto.data ?? :1 ORDER BY tissue.local_identifier, tissue.expedition_id";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "urn:photoId");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
+    @Test
+    public void should_add_joins_for_multi_entity_query_with_treed_relationship_failing_query() {
+        QueryBuilder queryBuilder = queryBuilder("tissue");
+
+        SelectExpression exp = new SelectExpression("event,sample", new ExistsExpression("samplePhoto.photoId"));
+        queryBuilder.visit(exp);
+
+        String expectedSql = "SELECT tissue.data AS \"tissue_data\", tissue_entity_identifiers.identifier AS \"tissue_rootIdentifier\", expeditions.expedition_code AS \"expeditionCode\", expeditions.project_id AS \"projectId\", event.data AS \"event_data\", event_entity_identifiers.identifier AS \"event_rootIdentifier\", sample.data AS \"sample_data\", sample_entity_identifiers.identifier AS \"sample_rootIdentifier\" FROM network_1.tissue AS tissue " +
+                "JOIN network_1.sample AS sample ON sample.local_identifier = tissue.parent_identifier and sample.expedition_id = tissue.expedition_id " +
+                "JOIN network_1.event AS event ON event.local_identifier = sample.parent_identifier and event.expedition_id = sample.expedition_id " +
+                "LEFT JOIN network_1.samplePhoto AS samplePhoto ON samplePhoto.parent_identifier = sample.local_identifier and samplePhoto.expedition_id = sample.expedition_id " +
+                "LEFT JOIN entity_identifiers AS tissue_entity_identifiers ON tissue_entity_identifiers.expedition_id = tissue.expedition_id and tissue_entity_identifiers.concept_alias = 'tissue' " +
+                "LEFT JOIN entity_identifiers AS event_entity_identifiers ON event_entity_identifiers.expedition_id = event.expedition_id and event_entity_identifiers.concept_alias = 'event' " +
+                "LEFT JOIN entity_identifiers AS sample_entity_identifiers ON sample_entity_identifiers.expedition_id = sample.expedition_id and sample_entity_identifiers.concept_alias = 'sample' " +
+                "WHERE samplePhoto.data ?? :1 ORDER BY tissue.local_identifier, tissue.expedition_id";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "urn:photoId");
+        ParametrizedQuery expected = new ParametrizedQuery(expectedSql, params);
+        assertEquals(expected, queryBuilder.parameterizedQuery(false));
+    }
+
 
     private QueryBuilder queryBuilder(String conceptAlias) {
         return new QueryBuilder(config(), 1, conceptAlias);
@@ -920,7 +961,9 @@ public class QueryBuilderTest {
     private ProjectConfig config() {
         ProjectConfig config = new ProjectConfig();
         config.addEntity(event());
+        config.addEntity(eventPhoto());
         config.addEntity(sample());
+        config.addEntity(samplePhoto());
         config.addEntity(tissue());
         config.addEntity(non_linked_entity());
         return config;
@@ -950,12 +993,35 @@ public class QueryBuilderTest {
         return e;
     }
 
+    private Entity eventPhoto() {
+        Entity e = new DefaultEntity("eventPhoto", "someURI");
+        e.setParentEntity("event");
+        e.setUniqueKey("photoId");
+        e.addAttribute(new Attribute("photoId", "urn:photoId"));
+        e.addAttribute(new Attribute("eventId", "eventPhoto_eventId"));
+        e.addAttribute(new Attribute("col3", "urn:col3"));
+        e.addAttribute(new Attribute("col4", "urn:col4"));
+        return e;
+    }
+
     private Entity sample() {
         Entity e = new DefaultEntity("sample", "someURI");
         e.setParentEntity("event");
         e.setUniqueKey("sampleId");
         e.addAttribute(new Attribute("sampleId", "urn:sampleId"));
         e.addAttribute(new Attribute("eventId", "sample_eventId"));
+        e.addAttribute(new Attribute("col3", "urn:col3"));
+        e.addAttribute(new Attribute("col4", "urn:col4"));
+        return e;
+    }
+
+
+    private Entity samplePhoto() {
+        Entity e = new DefaultEntity("samplePhoto", "someURI");
+        e.setParentEntity("sample");
+        e.setUniqueKey("photoId");
+        e.addAttribute(new Attribute("photoId", "urn:photoId"));
+        e.addAttribute(new Attribute("sampleId", "samplePhoto_eventId"));
         e.addAttribute(new Attribute("col3", "urn:col3"));
         e.addAttribute(new Attribute("col4", "urn:col4"));
         return e;

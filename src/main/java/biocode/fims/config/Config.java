@@ -4,6 +4,7 @@ import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
+import biocode.fims.models.EntityRelation;
 import biocode.fims.models.ExpeditionMetadataProperty;
 import biocode.fims.validation.rules.RequiredValueRule;
 import biocode.fims.validation.rules.RuleLevel;
@@ -91,17 +92,21 @@ public abstract class Config {
             return false;
         }
 
-        if (entity1.isChildEntity() && checkEntityRelation(entity1, entity2)) {
-            return true;
-        } else if (entity2.isChildEntity() && checkEntityRelation(entity2, entity1)) {
-            return true;
+        if (entity1.equals(entity2)) return false;
+
+        // if entities have a common ancestor, then they can be considered related
+        ArrayList<Entity> entity1Parents = parentEntities(entity1.getConceptAlias());
+
+        if (entity1Parents.contains(entity2)) return true;
+
+        for (Entity entity : parentEntities(entity2.getConceptAlias())) {
+
+            if (entity1Parents.contains(entity) || entity1.equals(entity)) {
+                return true;
+            }
         }
 
         return false;
-    }
-
-    public boolean isParentEntity(Entity childEntity, Entity elderEntity) {
-        return checkEntityRelation(childEntity, elderEntity);
     }
 
     /**
@@ -111,7 +116,7 @@ public abstract class Config {
      * @param elderEntity
      * @return
      */
-    private boolean checkEntityRelation(Entity childEntity, Entity elderEntity) {
+    public boolean isParentEntity(Entity childEntity, Entity elderEntity) {
         Entity parentEntity;
         do {
             parentEntity = entity(childEntity.getParentEntity());
@@ -177,53 +182,74 @@ public abstract class Config {
     }
 
     public boolean isEntityChildDescendent(Entity elderEntity, Entity childEntity) {
-        return childEntity.isChildEntity() && checkEntityRelation(childEntity, elderEntity);
+        return childEntity.isChildEntity() && isParentEntity(childEntity, elderEntity);
     }
 
     /**
-     * get of all entities that form the relation. Beginning with the elderEntity and ending with the childEntity
+     * get of all entities that form the relation.
      * <p>
-     * If the entities are directly related the returned value would be [elderEntity, childEntity]
-     * If the entities are not directly related the returned list would be [elderEntity, intermediaryEntity, ... ,childEntity]
-     * If the entites are not related, an empty list will be returned
+     * If the entities are directly related the returned value would be [EntityRelation(elderEntity, childEntity)]
+     * If the entities are not directly related the returned list would be [EntityRelation(intermediaryEntity, childEntity), ... , EntityRelation(parentEntity, intermediaryEntity)]
+     * If the entities are not related, an empty list will be returned
      *
-     * @param elderEntity
-     * @param childEntity
-     * @return
+     * @param primaryEntity
+     * @param entity2
+     * @return Sorted list of {@link EntityRelation}s in the correct order needed to walk from the primaryEntity to entity2 via a relationship graph
      */
-    public LinkedList<Entity> entitiesInRelation(Entity elderEntity, Entity childEntity) {
-        LinkedList<Entity> relatedEntities = new LinkedList<>();
-        boolean found = false;
+    public List<EntityRelation> getEntityRelations(Entity primaryEntity, Entity entity2) {
+        List<EntityRelation> relations = new ArrayList<>();
 
-        if (!entities.contains(elderEntity) || !entities.contains(childEntity)) {
+        if (!entities.contains(primaryEntity) || !entities.contains(entity2)) {
             throw new FimsRuntimeException("Server Error", "Entity doesn't exist", 500);
         }
 
-        relatedEntities.add(childEntity);
+        ArrayList<Entity> entity2Parents = parentEntities(entity2.getConceptAlias());
+        Collections.reverse(entity2Parents);
 
-        Entity parentEntity;
-        do {
-            parentEntity = entity(childEntity.getParentEntity());
+        List<Entity> primaryEntityParentsToJoin = null;
 
-            if (parentEntity == null) {
-                break;
-            }
+        boolean found = false;
 
-            relatedEntities.add(parentEntity);
-
-            if (parentEntity.getConceptAlias().equals(elderEntity.getConceptAlias())) {
-                found = true;
-            }
-
-            childEntity = parentEntity;
-        } while (!found && parentEntity.isChildEntity());
-
-        if (!found) {
-            return new LinkedList<>();
+        if (entity2Parents.contains(primaryEntity)) {
+            int i = entity2Parents.indexOf(primaryEntity);
+            primaryEntityParentsToJoin = entity2Parents.subList(i, entity2Parents.size());
         }
 
-        Collections.reverse(relatedEntities);
-        return relatedEntities;
+        Entity prevEntity = primaryEntity;
+        for (Entity entity : parentEntities(primaryEntity.getConceptAlias())) {
+            relations.add(new EntityRelation(entity, prevEntity));
+
+            int i = entity2Parents.indexOf(entity);
+            if (i > -1) {
+                // we've found a common ancestor, now set primaryEntityParentsToJoin
+                primaryEntityParentsToJoin = entity2Parents.subList(i, entity2Parents.size());
+                break;
+            } else if (entity.equals(entity2)) {
+                found = true;
+                break;
+            }
+            prevEntity = entity;
+        }
+
+        if (primaryEntityParentsToJoin != null) {
+            prevEntity = primaryEntityParentsToJoin.remove(0);
+            // primaryEntityParentsToJoin is reversed & ordered top-down
+            for (Entity entity : primaryEntityParentsToJoin) {
+                // we've found a common ancestor, now build the relation
+                // entity2Parents is reversed & ordered top-down
+                relations.add(new EntityRelation(prevEntity, entity));
+                prevEntity = entity;
+
+                // we should only need to walk down both lists adding to relations for each entry
+                // need to reverse this loop? b/c we want all children of the common ancestor
+            }
+            relations.add(new EntityRelation(prevEntity, entity2));
+            found = true;
+        }
+
+        if (!found) return Collections.emptyList();
+
+        return relations;
     }
 
     /**
@@ -232,8 +258,8 @@ public abstract class Config {
      * @param conceptAlias
      * @return Ordered List of entities from parent -> GrandParent -> GreatGrandParent -> ...
      */
-    public LinkedList<Entity> parentEntities(String conceptAlias) {
-        LinkedList<Entity> parentEntities = new LinkedList<>();
+    public ArrayList<Entity> parentEntities(String conceptAlias) {
+        ArrayList<Entity> parentEntities = new ArrayList<>();
         Entity entity = entity(conceptAlias);
 
         while (entity.isChildEntity()) {
