@@ -38,8 +38,8 @@ public class JoinBuilder {
         this.queryEntity = queryEntity;
         this.config = config;
         this.networkId = networkId;
-        this.joinEntities = new HashSet<>();
-        this.selectEntities = new HashSet<>();
+        this.joinEntities = new LinkedHashSet<>();
+        this.selectEntities = new LinkedHashSet<>();
         this.joinedEntities = new ArrayList<>();
         this.joinString = new StringBuilder();
     }
@@ -112,10 +112,7 @@ public class JoinBuilder {
     }
 
     private void buildJoinEntities() {
-        // sorting provides deterministic behavior so we can correctly test
-        ArrayList<Entity> sortedJoinEntities = new ArrayList<>(joinEntities);
-        sortedJoinEntities.sort(Comparator.comparing(Entity::getConceptAlias));
-        for (Entity entity : sortedJoinEntities) {
+        for (Entity entity : joinEntities) {
             verifyRelated(entity);
 
             buildJoin(entity);
