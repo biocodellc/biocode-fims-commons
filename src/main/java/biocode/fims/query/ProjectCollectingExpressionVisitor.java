@@ -67,6 +67,7 @@ public class ProjectCollectingExpressionVisitor implements ExpressionVisitor {
 
     @Override
     public void visit(GroupExpression groupExpression) {
+        groupExpression.expression().accept(this);
     }
 
     @Override
