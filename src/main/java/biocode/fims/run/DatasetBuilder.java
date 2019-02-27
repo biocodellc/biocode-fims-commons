@@ -219,7 +219,7 @@ public class DatasetBuilder {
 
             for (RecordSet r : recordSets.get(conceptAlias)) {
                 if (!r.isEmpty()) {
-                    mergeRecords(r, records);
+                    r.merge(records);
                 }
             }
         }
@@ -250,8 +250,7 @@ public class DatasetBuilder {
 
                 getParentRecordSets(e).stream()
                         .filter(r -> !r.reload())
-                        .forEach(r -> mergeRecords(
-                                r,
+                        .forEach(r -> r.merge(
                                 projectRecords.getOrDefault(r.expeditionCode(), Collections.emptyList())
                         ));
             }
@@ -306,16 +305,6 @@ public class DatasetBuilder {
     private boolean fetchRecordSet(String conceptAlias) {
         return !recordSets.containsKey(conceptAlias)
                 || recordSets.get(conceptAlias).stream().anyMatch(r -> !r.reload());
-    }
-
-    private void mergeRecords(RecordSet recordSet, List<? extends Record> records) {
-        Entity entity = recordSet.entity();
-
-        String parentUniqueKeyURI = entity.isChildEntity()
-                ? config.entity(entity.getParentEntity()).getUniqueKeyURI()
-                : null;
-
-        recordSet.merge(records, parentUniqueKeyURI);
     }
 
     private void setRecordSetParent() {
