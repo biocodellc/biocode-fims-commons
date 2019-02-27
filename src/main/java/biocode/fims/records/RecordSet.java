@@ -164,23 +164,18 @@ public class RecordSet {
         deduplicated = true;
     }
 
-    public void merge(List<? extends Record> records, String parentUniqueKey) {
+    public void merge(List<? extends Record> records) {
         buildCache();
         for (Record r : records) {
-            if (shouldAddRecord(r, parentUniqueKey)) {
+            if (shouldAddRecord(r)) {
                 add(r);
             }
         }
     }
 
-    private boolean shouldAddRecord(Record record, String parentUniqueKey) {
+    private boolean shouldAddRecord(Record record) {
         List<Record> records = recordCache.get(getCacheKey(record));
-        if (records == null || records.size() == 0) return true;
-
-        // records are cached by projectId, expeditionCode, and uniqueKey
-        // here we only need to check if parentUniqueKey matches
-        return records.stream()
-                .noneMatch(r -> (parentUniqueKey == null || record.get(parentUniqueKey).equals(r.get(parentUniqueKey))));
+        return records == null || records.size() == 0;
     }
 
     public boolean hasParent() {
