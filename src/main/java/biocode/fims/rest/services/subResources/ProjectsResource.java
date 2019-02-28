@@ -16,7 +16,6 @@ import biocode.fims.serializers.Views;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
-import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectConfigurationService;
@@ -25,16 +24,12 @@ import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -192,7 +187,7 @@ public class ProjectsResource extends FimsController {
     /**
      * method to transfer the updated {@link Project} object to an existing {@link Project}. This
      * allows us to control which properties can be updated.
-     * Currently allows updating of the following properties : description, projectTitle, isPublic, and validationXml
+     * Currently allows updating of the following properties : description, projectTitle, isPublic, and isEnforceExpeditionAccess
      *
      * @param existingProject
      * @param updatedProject
@@ -201,6 +196,7 @@ public class ProjectsResource extends FimsController {
         existingProject.setProjectTitle(updatedProject.getProjectTitle());
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setPublic(updatedProject.isPublic());
+        existingProject.setEnforceExpeditionAccess(updatedProject.isEnforceExpeditionAccess());
     }
 
     /**
@@ -242,6 +238,7 @@ public class ProjectsResource extends FimsController {
                     this.getProjectTitle(),
                     this.getProjectConfiguration())
                     .isPublic(this.isPublic())
+                    .enforceExpeditionAccess(this.isEnforceExpeditionAccess())
                     .build();
             p.setUser(this.getUser());
             p.setProjectMembers(this.getProjectMembers());

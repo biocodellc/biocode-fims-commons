@@ -9,6 +9,7 @@ import biocode.fims.models.Project;
 import biocode.fims.models.User;
 import biocode.fims.records.RecordSet;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -22,19 +23,25 @@ public class FimsDatasetAuthorizer implements DatasetAuthorizer {
 
     private final FimsProperties props;
     private final ExpeditionService expeditionService;
+    private final ProjectService projectService;
 
     @Autowired
-    public FimsDatasetAuthorizer(FimsProperties props, ExpeditionService expeditionService) {
+    public FimsDatasetAuthorizer(FimsProperties props, ExpeditionService expeditionService, ProjectService projectService) {
         this.props = props;
         this.expeditionService = expeditionService;
+        this.projectService = projectService;
     }
 
     @Override
     public boolean authorize(Dataset dataset, Project project, User user) {
         checkNullUser(user);
 
+        if (!projectService.isUserMemberOfProject(user, project.getProjectId())) {
+            throw new FimsRuntimeException(UploadCode.USER_NOT_PROJECT_MEMBER, 400, project.getProjectTitle());
+        }
+
         // projectAdmin can modify expedition data
-        boolean ignoreUser = props.ignoreUser() || project.getUser().equals(user);
+        boolean ignoreUser = props.ignoreUser() || !project.isEnforceExpeditionAccess() || project.getUser().equals(user);
 
         List<String> expeditionCodes = dataset.stream()
                 .filter(RecordSet::hasRecordToPersist)
@@ -63,8 +70,14 @@ public class FimsDatasetAuthorizer implements DatasetAuthorizer {
     public boolean authorize(EntityIdentifier entityIdentifier, User user) {
         checkNullUser(user);
 
+        Project project = entityIdentifier.getExpedition().getProject();
+
+        if (!projectService.isUserMemberOfProject(user, project.getProjectId())) {
+            throw new FimsRuntimeException(UploadCode.USER_NOT_PROJECT_MEMBER, 400, project.getProjectTitle());
+        }
+
         // projectAdmin can modify expedition data
-        boolean ignoreUser = props.ignoreUser() || entityIdentifier.getExpedition().getProject().getUser().equals(user);
+        boolean ignoreUser = props.ignoreUser() || !project.isEnforceExpeditionAccess() || project.getUser().equals(user);
 
         if (!ignoreUser && !entityIdentifier.getExpedition().getUser().equals(user)) {
             throw new FimsRuntimeException(UploadCode.USER_NO_OWN_EXPEDITION, 400, entityIdentifier.getExpedition().getExpeditionCode());

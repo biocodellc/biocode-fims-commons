@@ -213,7 +213,8 @@ CREATE TABLE projects (
   config_id INTEGER NOT NULL REFERENCES project_configurations (id),
   user_id INTEGER NOT NULL REFERENCES users (id),
   network_id INTEGER NOT NULL REFERENCES networks (id),
-  public BOOLEAN NOT NULL DEFAULT '1'
+  public BOOLEAN NOT NULL DEFAULT '1',
+  enforce_expedition_access BOOLEAN NOT NULL DEFAULT '1'
 );
 
 CREATE INDEX projects_user_id_idx ON projects (user_id);

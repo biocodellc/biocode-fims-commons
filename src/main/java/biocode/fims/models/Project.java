@@ -42,6 +42,7 @@ public class Project {
     private String description;
     private ProjectConfiguration projectConfiguration;
     private boolean isPublic;
+    private boolean enforceExpeditionAccess;
     private List<Expedition> expeditions;
     private User user;
     private Network network;
@@ -57,6 +58,7 @@ public class Project {
 
         // Optional
         private boolean isPublic = true;
+        private boolean enforceExpeditionAccess = true;
         private String projectCode;
 
         public ProjectBuilder(String description, String projectTitle, ProjectConfiguration projectConfiguration) {
@@ -67,6 +69,11 @@ public class Project {
 
         public ProjectBuilder isPublic(boolean isPublic) {
             this.isPublic = isPublic;
+            return this;
+        }
+
+        public ProjectBuilder enforceExpeditionAccess(boolean enforceExpeditionAccess) {
+            this.enforceExpeditionAccess = enforceExpeditionAccess;
             return this;
         }
 
@@ -86,6 +93,7 @@ public class Project {
         projectTitle = builder.projectTitle;
         projectConfiguration = builder.projectConfiguration;
         isPublic = builder.isPublic;
+        enforceExpeditionAccess = builder.enforceExpeditionAccess;
         description = builder.description;
     }
 
@@ -163,6 +171,16 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
+    @Column(name = "enforce_expedition_access", nullable = false)
+    public boolean isEnforceExpeditionAccess() {
+        return enforceExpeditionAccess;
+    }
+
+    public void setEnforceExpeditionAccess(boolean enforceExpeditionAccess) {
+        this.enforceExpeditionAccess = enforceExpeditionAccess;
+    }
+
+    @JsonView(Views.Detailed.class)
     public String getDescription() {
         return description;
     }
@@ -195,6 +213,7 @@ public class Project {
                 ", created=" + created +
                 ", modified=" + modified +
                 ", isPublic=" + isPublic +
+                ", isEnforceExpeditionAccess=" + enforceExpeditionAccess +
                 ", user=" + user +
                 ", public=" + isPublic() +
                 '}';

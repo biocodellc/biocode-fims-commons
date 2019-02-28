@@ -110,7 +110,7 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public FimsDatasetAuthorizer fimsDatasetAuthorizer(FimsProperties props, ExpeditionService expeditionService) {
-        return new FimsDatasetAuthorizer(props, expeditionService);
+    public FimsDatasetAuthorizer fimsDatasetAuthorizer(FimsProperties props, ExpeditionService expeditionService, ProjectService projectService) {
+        return new FimsDatasetAuthorizer(props, expeditionService, projectService);
     }
 }
