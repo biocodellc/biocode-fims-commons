@@ -39,7 +39,10 @@ dependencies {
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-spring4', version: '2.27'
     compile group: 'org.glassfish.jersey.bundles.repackaged', name: 'jersey-guava', version: '2.25.1'
 
-    compile group: 'org.dhatim', name: 'fastexcel', version: '0.9.7'
+    // this version is temporary until https://github.com/dhatim/fastexcel/pull/75 is merged & released
+    // we can remove the above maven-dev-releases as well
+    compile group: 'org.dhatim', name: 'fastexcel', version: '41c4f50-SNAPSHOT'
+    compile group: 'com.github.rzymek', name: 'opczip', version: '1.0.1'
 
     compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
     compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.27'
