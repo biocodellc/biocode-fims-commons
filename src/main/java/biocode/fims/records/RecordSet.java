@@ -151,14 +151,14 @@ public class RecordSet {
             }
         });
 
-        if (invalidRecordIdentifiers.size() > 0) {
-            throw new FimsRuntimeException(DataReaderCode.INVALID_RECORDS, 400, String.join(", ", invalidRecordIdentifiers));
-        }
-
         // remove any duplicate records
         for (Record r : recordsToRemove) {
             recordCache.get(getCacheKey(r)).remove(r);
             records.remove(r);
+        }
+
+        if (invalidRecordIdentifiers.size() > 0) {
+            throw new FimsRuntimeException(DataReaderCode.INVALID_RECORDS, 400, String.join(", ", invalidRecordIdentifiers));
         }
 
         deduplicated = true;
