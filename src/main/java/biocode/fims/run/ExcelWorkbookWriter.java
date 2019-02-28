@@ -367,7 +367,7 @@ public class ExcelWorkbookWriter {
 
                 }
 
-                Range listRange = listsSheet.range(0, col, fields.size() + 1, col);
+                Range listRange = listsSheet.range(1, col, fields.size(), col);
 
                 // DATA VALIDATION COMPONENT
                 for (WriterWorksheet sheet : sheets) {
