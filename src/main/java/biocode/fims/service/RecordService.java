@@ -24,9 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +86,10 @@ public class RecordService {
         Expression expression = new LogicalExpression(LogicalOperator.AND,
                 new ExpeditionExpression(entityIdentifier.getExpedition().getExpeditionCode()),
                 new ComparisonExpression(uniqueKey, identifier.getSuffix(), ComparisonOperator.EQUALS)
+        );
+        expression = new LogicalExpression(LogicalOperator.AND,
+                new ProjectExpression(Collections.singletonList(entityIdentifier.getExpedition().getProject().getProjectId())),
+                expression
         );
 
         if (includeParent || includeChildren) {
