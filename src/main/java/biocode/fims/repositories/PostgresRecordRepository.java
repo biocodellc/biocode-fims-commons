@@ -94,16 +94,16 @@ public class PostgresRecordRepository implements RecordRepository {
 
     private EntityIdentifierResult getEntityIdentifierResult(String rootIdentifier) {
         return jdbcTemplate.queryForObject(
-                    sql.getProperty("selectEntityIdentifier"),
-                    new MapSqlParameterSource().addValue("rootIdentifier", rootIdentifier),
-                    (rs, rowNum) -> {
-                        EntityIdentifierResult r = new EntityIdentifierResult();
-                        r.conceptAlias = rs.getString("conceptAlias");
-                        r.expeditionId = rs.getInt("expeditionId");
-                        r.networkId = rs.getInt("networkId");
-                        return r;
-                    }
-            );
+                sql.getProperty("selectEntityIdentifier"),
+                new MapSqlParameterSource().addValue("rootIdentifier", rootIdentifier),
+                (rs, rowNum) -> {
+                    EntityIdentifierResult r = new EntityIdentifierResult();
+                    r.conceptAlias = rs.getString("conceptAlias");
+                    r.expeditionId = rs.getInt("expeditionId");
+                    r.networkId = rs.getInt("networkId");
+                    return r;
+                }
+        );
     }
 
     @Override
@@ -224,7 +224,7 @@ public class PostgresRecordRepository implements RecordRepository {
                     insertParams.add(recordParams);
                 }
 
-                if (insertParams.isEmpty()) continue;
+                if (insertParams.isEmpty() && !recordSet.reload()) continue;
 
                 boolean executeReturning = false;
                 String sqlString;
@@ -239,25 +239,27 @@ public class PostgresRecordRepository implements RecordRepository {
 
                 // used to remove hashed parents that have been updated and no longer have a child entity attached
                 List<String> updatedHashedParents = new ArrayList<>();
-                if (executeReturning) {
-                    for (HashMap p : insertParams) {
-                        // we use query here b/c our update statement may return a value
-                        List<String> old_parent = jdbcTemplate.query(
-                                StringSubstitutor.replace(sqlString, tableMap),
-                                p,
-                                (rs, rowNum) -> rs.getString("parent_identifier")
-                        );
-                        if (old_parent.size() == 1 && old_parent.get(0) != null) {
-                            updatedHashedParents.add(old_parent.get(0));
-                        } else if (old_parent.size() > 1) {
-                            throw new FimsRuntimeException(QueryCode.UNEXPECTED_RESULT, 500);
+                if (!insertParams.isEmpty()) {
+                    if (executeReturning) {
+                        for (HashMap p : insertParams) {
+                            // we use query here b/c our update statement may return a value
+                            List<String> old_parent = jdbcTemplate.query(
+                                    StringSubstitutor.replace(sqlString, tableMap),
+                                    p,
+                                    (rs, rowNum) -> rs.getString("parent_identifier")
+                            );
+                            if (old_parent.size() == 1 && old_parent.get(0) != null) {
+                                updatedHashedParents.add(old_parent.get(0));
+                            } else if (old_parent.size() > 1) {
+                                throw new FimsRuntimeException(QueryCode.UNEXPECTED_RESULT, 500);
+                            }
                         }
+                    } else {
+                        jdbcTemplate.batchUpdate(
+                                StringSubstitutor.replace(sqlString, tableMap),
+                                insertParams.toArray(new HashMap[insertParams.size()])
+                        );
                     }
-                } else {
-                    jdbcTemplate.batchUpdate(
-                            StringSubstitutor.replace(sqlString, tableMap),
-                            insertParams.toArray(new HashMap[insertParams.size()])
-                    );
                 }
 
                 // Delete any records not in the current RecordSet
@@ -277,10 +279,16 @@ public class PostgresRecordRepository implements RecordRepository {
                             );
                         }
 
-                        deleteParams.put("identifiers", identifierTuples);
+                        if (!identifierTuples.isEmpty()) {
+                            deleteSql += sql.getProperty("deleteChildRecordsIdentifierClause");
+                            deleteParams.put("identifiers", identifierTuples);
+                        }
                     } else {
                         deleteSql = sql.getProperty("deleteRecords");
-                        deleteParams.put("identifiers", localIdentifiers);
+                        if (!localIdentifiers.isEmpty()) {
+                            deleteSql += sql.getProperty("deleteRecordsIdentifierClause");
+                            deleteParams.put("identifiers", localIdentifiers);
+                        }
                     }
 
                     jdbcTemplate.update(
