@@ -23,10 +23,6 @@ public class FimsProperties {
         return env.getRequiredProperty("appRoot");
     }
 
-    public String divider() {
-        return env.getRequiredProperty("divider");
-    }
-
     public String publisher() {
         return env.getRequiredProperty("bcid.publisher");
     }

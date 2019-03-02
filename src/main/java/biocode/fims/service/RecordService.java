@@ -1,6 +1,5 @@
 package biocode.fims.service;
 
-import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.bcid.Identifier;
 import biocode.fims.config.project.ProjectConfig;
@@ -36,16 +35,14 @@ public class RecordService {
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
     private final DatasetAuthorizer datasetAuthorizer;
-    private final FimsProperties props;
 
     @Autowired
     public RecordService(EntityIdentifierRepository entityIdentifierRepository, RecordRepository recordRepository,
-                         QueryAuthorizer queryAuthorizer, DatasetAuthorizer datasetAuthorizer, FimsProperties properties) {
+                         QueryAuthorizer queryAuthorizer, DatasetAuthorizer datasetAuthorizer) {
         this.entityIdentifierRepository = entityIdentifierRepository;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
         this.datasetAuthorizer = datasetAuthorizer;
-        props = properties;
     }
 
     public boolean delete(User user, String arkID) {
@@ -152,7 +149,7 @@ public class RecordService {
     private Identifier parseIdentifier(String arkID) {
         Identifier identifier;
         try {
-            identifier = new Identifier(arkID, props.divider());
+            identifier = new Identifier(arkID);
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new FimsRuntimeException(GenericErrorCode.BAD_REQUEST, 400, "Invalid identifier");
         }

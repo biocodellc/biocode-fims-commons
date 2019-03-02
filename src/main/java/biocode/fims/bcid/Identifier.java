@@ -10,11 +10,9 @@ public class Identifier {
     private String naan;
     private String shoulder;
     private String suffix;
-    private String divider;
 
-    public Identifier(String identifier, String divider) {
+    public Identifier(String identifier) {
         this.identifier = identifier;
-        this.divider = divider;
 
         decode(identifier);
     }
@@ -74,11 +72,6 @@ public class Identifier {
         }
         shoulder = sbShoulder.toString();
         suffix = sbSuffix.toString();
-
-        // String the slash between the shoulder and the suffix
-        if (!divider.equals("") && suffix.startsWith(divider)) {
-            suffix = suffix.replaceFirst(divider, "");
-        }
     }
 
     public boolean hasSuffix() {
