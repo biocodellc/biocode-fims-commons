@@ -51,11 +51,29 @@ public class Query {
 
     public ParametrizedQuery parameterizedQuery() {
         if (restrictToProjects != null) {
-            expression = new LogicalExpression(
-                    LogicalOperator.AND,
-                    expression,
-                    new ProjectExpression(restrictToProjects)
-            );
+            Expression projectExpression = new ProjectExpression(restrictToProjects);
+            if (expression instanceof AllExpression) {
+                expression = projectExpression;
+            } else if (expression instanceof SelectExpression) {
+                SelectExpression selectExpression = (SelectExpression) expression;
+                if (selectExpression.expression() instanceof AllExpression) {
+                    selectExpression.setExpression(projectExpression);
+                } else {
+                    selectExpression.setExpression(
+                            new LogicalExpression(
+                                    LogicalOperator.AND,
+                                    selectExpression.expression(),
+                                    projectExpression
+                            )
+                    );
+                }
+            } else {
+                expression = new LogicalExpression(
+                        LogicalOperator.AND,
+                        expression,
+                        projectExpression
+                );
+            }
         }
         expression.accept(queryBuilder);
         return queryBuilder.parameterizedQuery(onlyPublicExpeditions);
