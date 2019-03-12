@@ -162,9 +162,7 @@ public class DatasetBuilder {
                 throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, msg);
             }
 
-            for (Record record : r.records()) {
-                record.setProjectId(project.getProjectId());
-            }
+            r.setProjectId(project.getProjectId());
 
             DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
             RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
@@ -177,9 +175,10 @@ public class DatasetBuilder {
         recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
 
         if (recordSet.projectId() == 0) {
-            for (Record record : recordSet.records()) {
-                record.setProjectId(project.getProjectId());
-            }
+            recordSet.setProjectId(project.getProjectId());
+        }
+        if (this.expeditionCode != null && recordSet.expeditionCode() == null) {
+            recordSet.setExpeditionCode(this.expeditionCode);
         }
 
         Entity e = recordSet.entity();
@@ -334,6 +333,14 @@ public class DatasetBuilder {
 
                     // we can't update a RecordSet records, so we create a new one
                     RecordSet newRecordSet = new RecordSet(e, childrenToKeep, r.reload());
+
+                    if (newRecordSet.isEmpty()) {
+                        // we set these here incase the RecordSet is empty. We may need this information
+                        // in downstream processing
+                        newRecordSet.setExpeditionCode(r.expeditionCode());
+                        newRecordSet.setProjectId(r.projectId());
+                    }
+
                     newRecordSet.setParent(parentRecordSet);
                     recordSetsToAdd.add(newRecordSet);
                     recordSetsToRemove.add(r);

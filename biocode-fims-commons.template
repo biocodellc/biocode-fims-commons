@@ -26,5 +26,3 @@ mailUser = user@email.com
 mailFrom = user@email.com
 mailPassword = emailPassword
 
-# The divider to use that separates the ARK portion and the Suffix Portion
-divider = _

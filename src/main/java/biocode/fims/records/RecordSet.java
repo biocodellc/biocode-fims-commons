@@ -21,6 +21,7 @@ public class RecordSet {
     private Entity entity;
     private boolean reload;
     private String expeditionCode;
+    private int projectId;
     private final Map<MultiKey, List<Record>> recordCache;
     private boolean cacheBuilt;
 
@@ -99,12 +100,24 @@ public class RecordSet {
         return expeditionCode;
     }
 
+    public void setProjectId(int projectId) {
+        if (!Objects.equals(projectId, this.projectId)) {
+//            cacheBuilt = false; // need to rebuild cache if expeditionCode has changed
+            records.stream().filter(Record::persist).forEach(r -> r.setProjectId(projectId));
+            this.projectId = projectId;
+        }
+    }
+
     public int projectId() {
-        return records.stream()
+        if (projectId > 0) return this.projectId;
+
+        projectId = records.stream()
                 .filter(Record::persist)
                 .findFirst()
                 .orElse(new GenericRecord())
                 .projectId();
+
+        return projectId;
     }
 
     public String conceptAlias() {

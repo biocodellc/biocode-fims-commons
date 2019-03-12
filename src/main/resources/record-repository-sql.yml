@@ -82,12 +82,16 @@ deleteRecords: >
   DELETE
   FROM ${table}
   WHERE expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+
+deleteRecordsIdentifierClause: >
    and local_identifier not in (:identifiers)
 
 deleteChildRecords: >
   DELETE
   FROM ${table}
   WHERE expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+
+deleteChildRecordsIdentifierClause: >
    and (parent_identifier, local_identifier) not in (:identifiers)
 
 deleteOrphanedParentRecords: >
