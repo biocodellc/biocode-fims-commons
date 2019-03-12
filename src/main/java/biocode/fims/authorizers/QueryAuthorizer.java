@@ -162,7 +162,6 @@ public class QueryAuthorizer {
 
         }
 
-        // check that we found all expeditions to be in a Project in the projectIds list
-        return foundExpeditionCodes.size() == expeditionCodes.size();
+        return true;
     }
 }

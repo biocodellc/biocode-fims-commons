@@ -373,7 +373,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
         if (!allQuery && whereBuilder.toString().trim().length() == 0) {
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "query must not be empty");
         } else if (allQuery && whereBuilder.toString().trim().length() > 0) {
-            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400);
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, "");
         }
 
         String sql = buildSelect() + "FROM " +
