@@ -56,4 +56,6 @@ public interface Record {
      * @return
      */
     void setError();
+
+    Record clone();
 }

@@ -22,8 +22,7 @@ public class DataConverterFactory {
     class DefaultDataConverter implements DataConverter {
 
         @Override
-        public RecordSet convertRecordSet(RecordSet recordSet, int networkId) {
-            return recordSet;
+        public void convertRecordSet(RecordSet recordSet, int networkId) {
         }
 
         @Override

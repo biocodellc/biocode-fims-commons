@@ -56,6 +56,11 @@ public class RecordSet {
         return this.reload && entity.canReload();
     }
 
+    public void remove(Record record) {
+        records.remove(record);
+        removeFromCache(record);
+    }
+
     public void add(Record record) {
         deduplicated = false;
         if (!cacheBuilt && records.isEmpty()) cacheBuilt = true;
@@ -102,7 +107,7 @@ public class RecordSet {
 
     public void setProjectId(int projectId) {
         if (!Objects.equals(projectId, this.projectId)) {
-//            cacheBuilt = false; // need to rebuild cache if expeditionCode has changed
+            cacheBuilt = false; // need to rebuild cache if projectId has changed
             records.stream().filter(Record::persist).forEach(r -> r.setProjectId(projectId));
             this.projectId = projectId;
         }
@@ -198,12 +203,19 @@ public class RecordSet {
     private void buildCache() {
         if (cacheBuilt) return;
         recordCache.clear();
-        records.stream().forEach(this::addToCache);
+        records.forEach(this::addToCache);
         cacheBuilt = true;
     }
 
     private void addToCache(Record r) {
         recordCache.computeIfAbsent(getCacheKey(r), key -> new ArrayList<>()).add(r);
+    }
+
+    private void removeFromCache(Record r) {
+        MultiKey key = getCacheKey(r);
+        if (recordCache.containsKey(key)) {
+            recordCache.get(key).remove(r);
+        }
     }
 
     private MultiKey getCacheKey(Record r) {
