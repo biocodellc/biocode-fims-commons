@@ -121,6 +121,7 @@ public class DatasetBuilder {
         mergeProjectRecords();
         fetchAndMergeParentRecords();
         setRecordSetParent();
+        runDataConverters();
 
         if (recordSets.isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.EMPTY_DATASET, 400);
@@ -164,9 +165,7 @@ public class DatasetBuilder {
 
             r.setProjectId(project.getProjectId());
 
-            DataConverter converter = dataConverterFactory.getConverter(r.entity().type(), config);
-            RecordSet recordSet = converter.convertRecordSet(r, project.getNetwork().getId());
-            add(recordSet);
+            add(r);
         }
 
     }
@@ -351,6 +350,15 @@ public class DatasetBuilder {
 
             recordSets.get(e.getConceptAlias()).removeAll(recordSetsToRemove);
             recordSets.get(e.getConceptAlias()).addAll(recordSetsToAdd);
+        }
+    }
+
+    private void runDataConverters() {
+        for (Entity e : config.entities(EntitySort.PARENTS_FIRST)) {
+            for (RecordSet r : recordSets.getOrDefault(e.getConceptAlias(), Collections.emptyList())) {
+                DataConverter converter = dataConverterFactory.getConverter(e.type(), config);
+                converter.convertRecordSet(r, project.getNetwork().getId());
+            }
         }
     }
 

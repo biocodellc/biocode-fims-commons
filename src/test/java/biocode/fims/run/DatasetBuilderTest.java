@@ -724,7 +724,7 @@ public class DatasetBuilderTest {
     }
 
     private Entity eventsEntity() {
-       return config().getProjectConfig().entity("event");
+        return config().getProjectConfig().entity("event");
     }
 
     private Entity samplesEntity() {
@@ -746,8 +746,7 @@ public class DatasetBuilderTest {
             public DataConverter getConverter(String entityType, ProjectConfig projectConfig) {
                 return converter != null ? converter : new DataConverter() {
                     @Override
-                    public RecordSet convertRecordSet(RecordSet recordSet, int projectId) {
-                        return recordSet;
+                    public void convertRecordSet(RecordSet recordSet, int projectId) {
                     }
 
                     @Override

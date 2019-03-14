@@ -33,10 +33,15 @@ class WriterSheetGenerator {
 
         for (Map.Entry<String, LinkedList<QueryResult>> entry : queryResultsBySheet().entrySet()) {
             currentSheet = entry.getKey();
+            System.out.println(config.getClass());
+            System.out.println(config);
+            System.out.println(currentSheet);
 
             for (QueryResult queryResult : entry.getValue()) {
                 currentResult = queryResult;
                 entitiesBySheet.computeIfAbsent(currentSheet, k -> new ArrayList<>()).add(currentResult.entity());
+                System.out.println(currentResult.entity().getConceptAlias());
+                System.out.println(config.entitiesForSheet(currentSheet).stream().map(Entity::getConceptAlias).collect(Collectors.joining(",")));
 
                 if (recordsBySheet.containsKey(currentSheet)) {
                     mergeSheetRecords();

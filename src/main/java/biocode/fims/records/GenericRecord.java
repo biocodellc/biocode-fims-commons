@@ -94,6 +94,13 @@ public class GenericRecord implements Record {
         return !hasError && persist;
     }
 
+    @Override
+    public Record clone() {
+        GenericRecord newRecord = new GenericRecord(new HashMap<>(properties), rootIdentifier, projectId, expeditionCode, persist);
+        newRecord.hasError = hasError;
+        return newRecord;
+    }
+
     private void removeFieldProperties() {
         if (properties.containsKey(Record.EXPEDITION_CODE)) {
             setExpeditionCode(properties.remove(Record.EXPEDITION_CODE));
