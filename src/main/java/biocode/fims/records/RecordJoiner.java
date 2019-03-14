@@ -8,10 +8,7 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class RecordJoiner {
@@ -84,13 +81,13 @@ public class RecordJoiner {
 
         for (QueryResult queryResult : queryResultsToJoinParent(conceptAlias)) {
             String joinKey = queryResult.entity().getUniqueKeyURI();
-            String joinValue = record.get(joinKey);
+            String joinValue = r.get(joinKey);
 
             if (joinValue.equals("")) {
                 joinValue = record.get(joinKey);
             }
 
-            if (joinValue == null) {
+            if (Objects.equals(joinValue, "")) {
                 throw new FimsRuntimeException(QueryCode.MISSING_RECORD, 500, record.get(recordEntity.getUniqueKeyURI()));
             }
 
