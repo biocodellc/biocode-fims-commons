@@ -12,6 +12,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +60,7 @@ public class FimsApplication extends ResourceConfig {
     @PostConstruct
     public void resourceBeanCheck() {
         List<Class> nonSpringBeans = new ArrayList<>();
+        List<Class> invalidScopedBeans = new ArrayList<>();
 
         for (Class resourceClass : getClasses()) {
             if (resourceClass.getPackage().getName().startsWith("biocode.fims.rest.services")) {
@@ -68,6 +70,14 @@ public class FimsApplication extends ResourceConfig {
                         && SpringApplicationContext.getBean(resourceClass) == null) {
                     nonSpringBeans.add(resourceClass);
                 }
+
+                // by default jersey resources are request scoped, however spring @Components are
+                // singleton scoped. If the resource is singleton scope, we need to mark it w/
+                // @Singleton to enable more resource validation by Jersey
+                if (!SpringApplicationContext.isPrototypeScopedBean(resourceClass) &&
+                        AnnotationUtils.findAnnotation(resourceClass, Singleton.class) == null) {
+                    invalidScopedBeans.add(resourceClass);
+                }
             }
         }
 
@@ -76,6 +86,12 @@ public class FimsApplication extends ResourceConfig {
                     " spring bean. All resource classes must be annotated with either @Controller, " +
                     "@Component, @Service, or @Repository. This is to ensure that the " +
                     "VersionTransformer.class aop advice registers all REST resource methods", 500);
+        }
+
+        if (!invalidScopedBeans.isEmpty()) {
+            throw new FimsRuntimeException("Jersey Resource Class " + ArrayUtils.toString(invalidScopedBeans) + " is not" +
+                    " request scoped and is missing the @Singleton annotation. This is necessary to ensure that the " +
+                    "Jersey performs the correct resource validation for non request-scoped beans (Jersey default).", 500);
         }
     }
 }

@@ -1,31 +1,27 @@
 package biocode.fims.rest.services.subResources;
 
-import biocode.fims.config.project.ProjectConfig;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
-import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
-import biocode.fims.models.Project;
-import biocode.fims.rest.FimsController;
-import biocode.fims.rest.Compress;
-import biocode.fims.rest.filters.Admin;
-import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.ProjectService;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import biocode.fims.application.config.FimsProperties;
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.models.Project;
+import biocode.fims.rest.Compress;
+import biocode.fims.rest.FimsController;
+import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.inject.Singleton;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.GET;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * @author RJ Ewing
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class ProjectConfigResource extends FimsController {
 
     private final ProjectService projectService;

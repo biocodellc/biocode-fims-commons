@@ -11,9 +11,9 @@ import biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode;
 import biocode.fims.models.Project;
 import biocode.fims.models.WorksheetTemplate;
 import biocode.fims.query.writers.WriterWorksheet;
-import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.run.ExcelWorkbookWriter;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.ProjectService;
@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -38,6 +39,7 @@ import static biocode.fims.fimsExceptions.errorCodes.ProjectTemplateCode.UNKNOWN
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class ProjectTemplatesResource extends FimsController {
 
     private final ProjectTemplateService projectTemplateService;

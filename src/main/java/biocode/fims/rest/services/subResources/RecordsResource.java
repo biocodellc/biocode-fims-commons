@@ -1,8 +1,8 @@
 package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
-import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.responses.ConfirmationResponse;
@@ -12,6 +12,7 @@ import biocode.fims.utils.Flag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -20,6 +21,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class RecordsResource extends FimsController {
     private final RecordService recordService;
 
