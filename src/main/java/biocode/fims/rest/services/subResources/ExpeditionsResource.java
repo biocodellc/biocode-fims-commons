@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class ExpeditionsResource extends FimsController {
     private final ExpeditionService expeditionService;
     private final ProjectService projectService;

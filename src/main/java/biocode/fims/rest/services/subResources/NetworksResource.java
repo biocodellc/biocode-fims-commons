@@ -1,8 +1,6 @@
 package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.models.Network;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
@@ -12,16 +10,14 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.NetworkService;
-import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +25,7 @@ import java.util.List;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class NetworksResource extends FimsController {
     private final NetworkService networkService;
 

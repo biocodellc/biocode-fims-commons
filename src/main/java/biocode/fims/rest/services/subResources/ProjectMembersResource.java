@@ -1,10 +1,10 @@
 package biocode.fims.rest.services.subResources;
 
-import biocode.fims.models.Project;
-import biocode.fims.models.User;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.models.Project;
+import biocode.fims.models.User;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.UserEntityGraph;
 import biocode.fims.rest.filters.Authenticated;
@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class ProjectMembersResource extends FimsController {
     private final ProjectService projectService;
     private final UserService userService;

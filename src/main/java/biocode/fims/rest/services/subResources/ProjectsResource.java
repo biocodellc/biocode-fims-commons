@@ -1,22 +1,23 @@
 package biocode.fims.rest.services.subResources;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
-import biocode.fims.application.config.FimsProperties;
 import biocode.fims.models.ProjectConfiguration;
 import biocode.fims.models.User;
 import biocode.fims.rest.Compress;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.NetworkId;
+import biocode.fims.rest.UserEntityGraph;
+import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.responses.ConfirmationResponse;
 import biocode.fims.rest.responses.InvalidConfigurationResponse;
 import biocode.fims.serializers.Views;
-import biocode.fims.fimsExceptions.*;
-import biocode.fims.rest.FimsController;
-import biocode.fims.rest.UserEntityGraph;
-import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectConfigurationService;
 import biocode.fims.service.ProjectService;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Singleton
 public class ProjectsResource extends FimsController {
     private final ProjectService projectService;
     private final ProjectConfigurationService projectConfigurationService;
