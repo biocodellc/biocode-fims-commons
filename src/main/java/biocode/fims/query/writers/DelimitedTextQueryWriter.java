@@ -67,10 +67,10 @@ public class DelimitedTextQueryWriter implements QueryWriter {
     }
 
     private void writeData(Writer writer) throws IOException {
-        for (Map<String, String> record : worksheet.data) {
+        for (Map<String, Object> record : worksheet.data) {
 
             for (String column : worksheet.columns) {
-                String val = record.getOrDefault(column, "");
+                String val = String.valueOf(record.getOrDefault(column, ""));
                 if (isCsv) {
                     writer.write(StringEscapeUtils.escapeCsv(val));
                 } else {

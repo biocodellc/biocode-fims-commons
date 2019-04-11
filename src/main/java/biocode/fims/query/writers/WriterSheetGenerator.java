@@ -99,7 +99,7 @@ class WriterSheetGenerator {
      */
     private void mergeSheetRecords() {
         String conceptAlias = currentResult.entity().getConceptAlias();
-        LinkedList<Map<String, String>> records = currentResult.get(false);
+        LinkedList<Map<String, Object>> records = currentResult.get(false);
         try {
             recordsBySheet.get(currentSheet).addRecords(conceptAlias, records);
         } catch (FimsRuntimeException exp) {
@@ -118,7 +118,7 @@ class WriterSheetGenerator {
     private List<WriterWorksheet> generateWriterWorksheets() {
         List<WriterWorksheet> sheets = new ArrayList<>();
         for (String sheetName : recordsBySheet.keySet()) {
-            List<Map<String, String>> records = recordsBySheet.get(sheetName).records();
+            List<Map<String, Object>> records = recordsBySheet.get(sheetName).records();
 
 
             LinkedList<String> columns = new LinkedList<>(config.attributesForSheet(sheetName)
@@ -146,7 +146,7 @@ class WriterSheetGenerator {
             // remove any auto-generated keys
             if (hashedEntitiesKeys.size() > 0) {
                 columns.removeAll(hashedEntitiesKeys);
-                for (Map<String, String> r : records) {
+                for (Map<String, Object> r : records) {
                     for (String k : hashedEntitiesKeys) {
                         r.remove(k);
                     }
@@ -164,8 +164,8 @@ class WriterSheetGenerator {
     private static class SheetRecords {
         private final HashMap<String, Entity> sheetEntities;
 
-        private List<Map<String, String>> records;
-        private Map<MultiKey, List<Map<String, String>>> recordKeys;
+        private List<Map<String, Object>> records;
+        private Map<MultiKey, List<Map<String, Object>>> recordKeys;
         private String firstEntity;
         private boolean replacedBcid = false;
 
@@ -181,7 +181,7 @@ class WriterSheetGenerator {
             addRecords(queryResult.entity().getConceptAlias(), queryResult.get(false));
         }
 
-        SheetRecords(List<Entity> sheetEntities, String conceptAlias, List<Map<String, String>> records) {
+        SheetRecords(List<Entity> sheetEntities, String conceptAlias, List<Map<String, Object>> records) {
             this(sheetEntities);
             addRecords(conceptAlias, records);
         }
@@ -196,7 +196,7 @@ class WriterSheetGenerator {
          * @param conceptAlias
          * @param records
          */
-        void addRecords(String conceptAlias, List<Map<String, String>> records) {
+        void addRecords(String conceptAlias, List<Map<String, Object>> records) {
             Entity e = sheetEntities.get(conceptAlias);
             String uniqueKey = e.getUniqueKey();
 
@@ -217,7 +217,7 @@ class WriterSheetGenerator {
 
             // for each record, join to any existing records that match the key (conceptAlias, projectId, expeditionCode, uniqueKey)
             // otherwise add to records list
-            for (Map<String, String> r : records) {
+            for (Map<String, Object> r : records) {
                 MultiKey k = new MultiKey(conceptAlias, r.get("projectId"), r.get("expeditionCode"), r.get(uniqueKey));
 
                 if (!e.isHashed()) {
@@ -225,7 +225,7 @@ class WriterSheetGenerator {
                 }
                 r.remove("bcid");
 
-                List<Map<String, String>> keyedRecords = new ArrayList<>();
+                List<Map<String, Object>> keyedRecords = new ArrayList<>();
 
                 // not all parent records have a child record
                 if (!this.recordKeys.containsKey(k)) {
@@ -233,7 +233,7 @@ class WriterSheetGenerator {
                     keyedRecords.add(r);
                 } else {
                     // append the record properties for any existing records that match the key
-                    for (Map<String, String> existingRecord : recordKeys.get(k)) {
+                    for (Map<String, Object> existingRecord : recordKeys.get(k)) {
                         existingRecord.putAll(r);
                         keyedRecords.add(existingRecord);
                     }
@@ -249,7 +249,7 @@ class WriterSheetGenerator {
             // rename and update the existing bcid if needed
             if (!replacedBcid) {
                 this.records.forEach(er -> {
-                    String bcid = er.remove("bcid");
+                    String bcid = String.valueOf(er.remove("bcid"));
                     if (bcid != null) {
                         er.put(firstEntity + "_bcid", bcid);
                     }
@@ -258,7 +258,7 @@ class WriterSheetGenerator {
             }
         }
 
-        List<Map<String, String>> records() {
+        List<Map<String, Object>> records() {
             return records;
         }
     }

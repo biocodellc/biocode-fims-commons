@@ -5,7 +5,6 @@ import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -18,7 +18,7 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
     private final static JavaType TYPE;
 
     static {
-        TYPE = TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, String.class);
+        TYPE = TypeFactory.defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -45,7 +45,7 @@ public class GenericRecordRowMapper implements FimsRowMapper<GenericRecord> {
         }
 
         try {
-            Map<String, String> properties = (Map<String, String>) JacksonUtil.fromString(data, TYPE);
+            Map<String, Object> properties = (Map<String, Object>) JacksonUtil.fromString(data, TYPE);
             return new GenericRecord(properties, rootIdentifier, projectId, expeditionCode, false);
         } catch (Exception e) {
             throw new SQLException(e);

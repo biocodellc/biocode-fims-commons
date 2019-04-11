@@ -22,7 +22,6 @@ import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.plugins.TestDataReader;
 import biocode.fims.repositories.TestRecordRepository;
-import biocode.fims.validation.rules.*;
 import junit.framework.Assert;
 import org.apache.commons.collections.keyvalue.MultiKey;
 import org.junit.Before;
@@ -615,7 +614,7 @@ public class DatasetBuilderTest {
     }
 
     private Record eventRecord2(boolean shouldPersist) {
-        HashMap<String, String> r = new HashMap<>();
+        HashMap<String, Object> r = new HashMap<>();
 
         r.put("urn:eventID", "2");
         r.put("urn:location", "Channel");

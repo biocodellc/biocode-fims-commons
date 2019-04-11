@@ -97,7 +97,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         List<Record> validRecords = getValidRecords();
         validRecords.forEach(recordSet::add);
 
-        HashMap<String, String> props = new HashMap<>();
+        HashMap<String, Object> props = new HashMap<>();
         props.put("urn:col1", "value3"); // this k:v is in the validRecords list
         Record r1 = new GenericRecord(props, null, 1, "exp2", false);
         recordSet.add(r1);
