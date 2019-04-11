@@ -37,7 +37,7 @@ public class RecordJoiner {
      * @param record The child record were should join data for
      */
     public Record joinRecords(Record record) {
-        Map<String, String> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
 
         for (QueryResult queryResult : queryResults.results()) {
             if (queryResult.entity().equals(recordEntity)) continue;
@@ -46,7 +46,7 @@ public class RecordJoiner {
             String joinValue = record.get(joinKey);
 
             if (joinValue.equals("")) {
-                joinValue = data.get(joinKey);
+                joinValue = String.valueOf(data.get(joinKey));
             }
 
             if (joinValue == null) {

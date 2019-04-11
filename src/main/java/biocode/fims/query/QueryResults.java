@@ -43,8 +43,8 @@ public class QueryResults implements Iterable<QueryResult> {
                 .noneMatch(r -> r.get(false).size() > 0);
     }
 
-    public Map<String, List<Map<String, String>>> toMap(boolean includeEmpty, RecordSources sources) {
-        Map<String, List<Map<String, String>>> map = new HashMap<>();
+    public Map<String, List<Map<String, Object>>> toMap(boolean includeEmpty, RecordSources sources) {
+        Map<String, List<Map<String, Object>>> map = new HashMap<>();
 
         for (QueryResult result : results) {
             String conceptAlias = result.entity().getConceptAlias();

@@ -1,16 +1,10 @@
 package biocode.fims.records;
 
 import biocode.fims.bcid.BcidBuilder;
-import biocode.fims.config.Config;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.query.QueryResult;
-import biocode.fims.query.QueryResults;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Utility class for transforming a {@link Record} before being returned to the user.
@@ -47,12 +41,12 @@ public class RecordMapper {
     /**
      * Returns a {@link Map} of {@link Record#properties()} as column->value pairs
      */
-    public Map<String, String> map(Record record) {
+    public Map<String, Object> map(Record record) {
         boolean skipSourceFilter = source.size() == 0;
 
-        Map<String, String> properties = new LinkedHashMap<>();
+        Map<String, Object> properties = new LinkedHashMap<>();
 
-        for (Map.Entry<String, String> e : record.properties().entrySet()) {
+        for (Map.Entry<String, Object> e : record.properties().entrySet()) {
             String col = attributes.get(e.getKey());
             if (col == null) col = e.getKey();
 

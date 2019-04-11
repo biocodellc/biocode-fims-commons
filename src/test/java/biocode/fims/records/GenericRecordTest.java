@@ -37,7 +37,7 @@ public class GenericRecordTest {
 
     @Test
     public void should_load_properties_in_constructor() {
-        Map<String, String> properties = new HashMap<>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put("property1", "test_value");
         properties.put("property2", "test_value2");
 

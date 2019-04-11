@@ -112,9 +112,9 @@ public class RecordService {
 
         Query query = new Query(new QueryBuilder(config, project.getNetwork().getId(), entityIdentifier.getConceptAlias()), config, expression);
 
-        Map<String, String> parent = null;
-        Map<String, String> record = null;
-        List<Map<String, String>> children = new ArrayList<>();
+        Map<String, Object> parent = null;
+        Map<String, Object> record = null;
+        List<Map<String, Object>> children = new ArrayList<>();
 
         for (QueryResult result : recordRepository.query(query)) {
             if (result.entity().getConceptAlias().equals(entity.getConceptAlias())) {
@@ -126,7 +126,7 @@ public class RecordService {
                 parent = result.get(false).get(0);
                 parent.put("entity", result.entity().getConceptAlias());
             } else {
-                List<Map<String, String>> childs = result.get(false);
+                List<Map<String, Object>> childs = result.get(false);
                 childs.forEach(c -> c.put("entity", result.entity().getConceptAlias()));
                 children.addAll(childs);
             }

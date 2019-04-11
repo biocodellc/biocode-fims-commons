@@ -7,7 +7,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
 import biocode.fims.models.Project;
-import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.records.RecordSet;
@@ -15,13 +14,10 @@ import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
-import biocode.fims.validation.messages.EntityMessages;
-import biocode.fims.validation.rules.UniqueValueRule;
 import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class is responsible for taking the input data files and assembling datasets.

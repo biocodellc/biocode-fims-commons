@@ -84,7 +84,7 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
         throw new NotImplementedException();
     }
 

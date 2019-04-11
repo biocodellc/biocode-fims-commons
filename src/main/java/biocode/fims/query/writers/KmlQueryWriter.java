@@ -35,7 +35,7 @@ public class KmlQueryWriter implements QueryWriter {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
 
-            List<Map<String, String>> records = queryResult.get(false);
+            List<Map<String, Object>> records = queryResult.get(false);
 
             if (records.size() == 0) {
                 throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
@@ -43,7 +43,7 @@ public class KmlQueryWriter implements QueryWriter {
 
             startDocument(writer);
 
-            for (Map<String, String> record: records) {
+            for (Map<String, Object> record: records) {
                 writePlacemark(writer, record);
             }
 
@@ -56,27 +56,27 @@ public class KmlQueryWriter implements QueryWriter {
         return Collections.singletonList(file);
     }
 
-    private void writePlacemark(Writer writer, Map<String, String> record) throws IOException {
-        String lat = record.getOrDefault(latColumn, "");
-        String lng = record.getOrDefault(lngColumn, "");
+    private void writePlacemark(Writer writer, Map<String, Object> record) throws IOException {
+        String lat = String.valueOf(record.getOrDefault(latColumn, ""));
+        String lng = String.valueOf(record.getOrDefault(lngColumn, ""));
 
         if (!lat.trim().equals("") || !lng.trim().equals("")) {
 
             writer.write("\t<Placemark>\n");
 
             writer.write("\t\t<name>");
-            writer.write(record.getOrDefault(nameColumn, ""));
+            writer.write(String.valueOf(record.getOrDefault(nameColumn, "")));
             writer.write("\t\t</name>\n");
 
             writer.write("\t\t<description>\n");
             writer.write("\t\t<![CDATA[");
 
-            for (Map.Entry<String, String> e: record.entrySet()) {
+            for (Map.Entry<String, Object> e: record.entrySet()) {
                 if (!e.getKey().equals(latColumn) || !e.getKey().equals(lngColumn) || !e.getKey().equals(nameColumn)) {
                     writer.write("<br>");
                     writer.write(StringEscapeUtils.escapeXml11(e.getKey()));
                     writer.write("=");
-                    writer.write(StringEscapeUtils.escapeXml11(e.getValue()));
+                    writer.write(StringEscapeUtils.escapeXml11(String.valueOf(e.getValue())));
                 }
             }
 

@@ -31,13 +31,15 @@ public interface Record {
 
     String get(String property);
 
+    Object getAsObject(String property);
+
     boolean has(String property);
 
     @JsonAnySetter
-    void set(String property, String value);
+    void set(String property, Object value);
 
     @JsonAnyGetter
-    Map<String, String> properties();
+    Map<String, Object> properties();
 
     void setMetadata(RecordMetadata recordMetadata);
 

@@ -16,13 +16,14 @@ public class RecordHasher {
      */
     public static String hash(Record r) {
         // will sort by natural ordering of keys
-        TreeMap<String, String> sortedMap = new TreeMap<>(r.properties());
+        TreeMap<String, Object> sortedMap = new TreeMap<>(r.properties());
 
         StringBuilder sb = new StringBuilder();
 
         sortedMap.forEach((k, v) -> {
-            if (!v.trim().equals("")) {
-                sb.append(k.trim()).append(v.trim());
+            String val = String.valueOf(v).trim();
+            if (!val.equals("")) {
+                sb.append(k.trim()).append(val);
             }
         });
 

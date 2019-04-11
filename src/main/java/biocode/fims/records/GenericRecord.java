@@ -8,14 +8,14 @@ import java.util.Map;
  * @author rjewing
  */
 public class GenericRecord implements Record {
-    protected Map<String, String> properties;
+    protected Map<String, Object> properties;
     private String rootIdentifier;
     private int projectId;
     private String expeditionCode;
     protected boolean persist = true;
     private boolean hasError = false;
 
-    public GenericRecord(Map<String, String> properties, String rootIdentifier, int projectId, String expeditionCode, boolean shouldPersist) {
+    public GenericRecord(Map<String, Object> properties, String rootIdentifier, int projectId, String expeditionCode, boolean shouldPersist) {
         this.properties = properties;
         this.rootIdentifier = rootIdentifier;
         this.projectId = projectId;
@@ -24,8 +24,8 @@ public class GenericRecord implements Record {
         removeFieldProperties();
     }
 
-    public GenericRecord(Map<String, String> properties) {
-        this.properties = properties;
+    public GenericRecord(Map<String, Object> properties) {
+        this.properties = new HashMap<>(properties);
         removeFieldProperties();
     }
 
@@ -61,7 +61,12 @@ public class GenericRecord implements Record {
 
     @Override
     public String get(String property) {
-        return properties.getOrDefault(property, "").trim();
+        return String.valueOf(properties.getOrDefault(property, "")).trim();
+    }
+
+    @Override
+    public Object getAsObject(String property) {
+        return properties.getOrDefault(property, "");
     }
 
     @Override
@@ -70,12 +75,12 @@ public class GenericRecord implements Record {
     }
 
     @Override
-    public Map<String, String> properties() {
+    public Map<String, Object> properties() {
         return Collections.unmodifiableMap(properties);
     }
 
     @Override
-    public void set(String property, String value) {
+    public void set(String property, Object value) {
         properties.put(property, value);
         persist = true;
     }
@@ -103,10 +108,10 @@ public class GenericRecord implements Record {
 
     private void removeFieldProperties() {
         if (properties.containsKey(Record.EXPEDITION_CODE)) {
-            setExpeditionCode(properties.remove(Record.EXPEDITION_CODE));
+            setExpeditionCode(String.valueOf(properties.remove(Record.EXPEDITION_CODE)));
         }
         if (properties.containsKey(Record.PROJECT_ID)) {
-            String val = properties.remove(Record.PROJECT_ID);
+            String val = String.valueOf(properties.remove(Record.PROJECT_ID));
             if (projectId == 0) {
                 setProjectId(Integer.parseInt(val));
             }

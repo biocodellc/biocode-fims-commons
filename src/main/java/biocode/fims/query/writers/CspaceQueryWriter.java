@@ -39,7 +39,7 @@ public class CspaceQueryWriter implements QueryWriter {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
 
-            List<Map<String, String>> records = queryResult.get(true);
+            List<Map<String, Object>> records = queryResult.get(true);
 
             if (records.size() == 0) {
                 throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
@@ -48,7 +48,7 @@ public class CspaceQueryWriter implements QueryWriter {
             writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             writer.write("<imports>\n");
 
-            for (Map<String, String> record : records) {
+            for (Map<String, Object> record : records) {
 
                 //Variables pertaining to row level only
                 String year = "", month = "", day = "", taxon = "", identBy = "", date = "";
@@ -59,9 +59,9 @@ public class CspaceQueryWriter implements QueryWriter {
 
                 writer.write("<import service='CollectionObjects' type='CollectionObject'>\n");
 
-                for (Map.Entry<String, String> e : record.entrySet()) {
+                for (Map.Entry<String, Object> e : record.entrySet()) {
                     String fieldName = e.getKey();
-                    String value = e.getValue();
+                    String value = String.valueOf(e.getValue());
 
                     // Write out XML Values
                     if (fieldName.equals("bcid")) {

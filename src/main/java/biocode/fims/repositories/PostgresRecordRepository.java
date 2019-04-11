@@ -171,7 +171,7 @@ public class PostgresRecordRepository implements RecordRepository {
         params.addValues(extraValues);
 
         ObjectMapper mapper = new FimsObjectMapper();
-        Map<String, String> properties = record.properties();
+        Map<String, Object> properties = record.properties();
 
         try {
             params.addValue("data", mapper.writeValueAsString(removeEmptyProperties(properties)));
@@ -218,7 +218,7 @@ public class PostgresRecordRepository implements RecordRepository {
                         parentIdentifiers.add(parentIdentifier);
                     }
 
-                    Map<String, String> properties = record.properties();
+                    Map<String, Object> properties = record.properties();
                     recordParams.put("data", mapper.writeValueAsString(removeEmptyProperties(properties)));
 
                     insertParams.add(recordParams);
@@ -359,7 +359,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
         ParametrizedQuery q = query.parameterizedQuery();
 
         logger.info(q.toString());
@@ -377,13 +377,13 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
 
-    private Map<String, String> removeEmptyProperties(Map<String, String> properties) {
-        Map<String, String> nonEmptyProps = new HashMap<>();
+    private Map<String, Object> removeEmptyProperties(Map<String, Object> properties) {
+        Map<String, Object> nonEmptyProps = new HashMap<>();
 
-        for (Map.Entry<String, String> entry : properties.entrySet()) {
-            String value = entry.getValue();
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            Object value = entry.getValue();
 
-            if (value == null || value.trim().equals("")) {
+            if (value == null || (value instanceof String && ((String) value).trim().equals(""))) {
                 continue;
             }
 

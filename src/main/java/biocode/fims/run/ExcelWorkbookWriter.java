@@ -231,7 +231,7 @@ public class ExcelWorkbookWriter {
         writeHeaderRow(sheet, worksheet);
 
         int rowNum = 1;
-        for (Map<String, String> record : sheet.data) {
+        for (Map<String, Object> record : sheet.data) {
             addDataToRow(sheet, record, worksheet, rowNum);
             rowNum++;
         }
@@ -256,11 +256,11 @@ public class ExcelWorkbookWriter {
     }
 
 
-    private void addDataToRow(WriterWorksheet sheet, Map<String, String> record, Worksheet worksheet, int row) {
+    private void addDataToRow(WriterWorksheet sheet, Map<String, Object> record, Worksheet worksheet, int row) {
         int cellNum = 0;
 
         for (String column : sheet.columns) {
-            String val = record.get(column);
+            String val = String.valueOf(record.get(column));
 
             if (val != null && !val.equals("")) {
                 worksheet.value(row, cellNum, val);

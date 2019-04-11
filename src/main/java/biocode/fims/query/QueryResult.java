@@ -43,7 +43,7 @@ public class QueryResult {
      * @param includeEmpty if true, the result will include entries for all {@link Attribute}s in the {@link Entity}
      * @return
      */
-    public LinkedList<Map<String, String>> get(boolean includeEmpty) {
+    public LinkedList<Map<String, Object>> get(boolean includeEmpty) {
         return get(includeEmpty, Collections.emptyList());
     }
 
@@ -54,7 +54,7 @@ public class QueryResult {
      * @param source       specifies the record columns to return. If empty list, no filtering will occur
      * @return
      */
-    public LinkedList<Map<String, String>> get(boolean includeEmpty, List<String> source) {
+    public LinkedList<Map<String, Object>> get(boolean includeEmpty, List<String> source) {
         RecordMapper recordMapper = getRecordMapper(includeEmpty, source);
         return records.stream()
                 .map(recordMapper::map)
