@@ -325,6 +325,7 @@ public class DatasetProcessor {
             return processorStatus != null &&
                     validatorFactory != null &&
                     datasetAuthorizer != null &&
+                    dataConverterFactory != null &&
                     recordRepository != null &&
                     (recordSets.size() > 0 || readerFactory != null) &&
                     serverDataDir != null &&
@@ -337,7 +338,7 @@ public class DatasetProcessor {
                 return new DatasetProcessor(this);
             } else {
                 throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
-                        "datasetAuthorizer, project must not be null and either a workbook, dataset, or recordSet are required.", 500);
+                        "datasetAuthorizer, dataConverterFactory, project must not be null and either a workbook, dataset, or recordSet are required.", 500);
             }
         }
     }
