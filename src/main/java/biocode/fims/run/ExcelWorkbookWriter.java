@@ -260,7 +260,7 @@ public class ExcelWorkbookWriter {
         int cellNum = 0;
 
         for (String column : sheet.columns) {
-            String val = String.valueOf(record.get(column));
+            Object val = record.get(column);
 
             if (val != null && !val.equals("")) {
                 worksheet.value(row, cellNum, val);
