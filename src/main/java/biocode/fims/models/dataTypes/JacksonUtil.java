@@ -41,7 +41,7 @@ public class JacksonUtil {
         }
     }
 
-    public static <T> T fromMap(Map<String, String> map, Class<T> clazz) {
+    public static <T> T fromMap(Map<String, ?> map, Class<T> clazz) {
         try {
             return OBJECT_MAPPER.convertValue(map, clazz);
         } catch (IllegalArgumentException e) {
