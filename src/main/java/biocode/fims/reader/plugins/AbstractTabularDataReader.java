@@ -84,6 +84,7 @@ abstract class AbstractTabularDataReader implements DataReader {
             String expeditionCode = (colNames.contains(Record.EXPEDITION_CODE))
                     ? row.get(colNames.indexOf(Record.EXPEDITION_CODE))
                     : null;
+            if (Objects.equals(expeditionCode, "")) expeditionCode = null;
 
             if (!foundExpeditionCode && expeditionCode != null) {
                 foundExpeditionCode = true;
