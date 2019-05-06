@@ -167,7 +167,19 @@ public class DatasetBuilder {
     }
 
     private void add(RecordSet recordSet) {
-        recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>()).add(recordSet);
+        List<RecordSet> entityRecordSets = this.recordSets.computeIfAbsent(recordSet.conceptAlias(), k -> new ArrayList<>());
+
+        if (this.expeditionCode != null && entityRecordSets.size() == 1) {
+            // ExcelDataReader will return 1 RecordSet per (Entity, ExpeditionCode) combination.
+            // If we have specified an expeditionCode, then we are saying that all these records
+            // belong to the specified expedition. We should end up with a single RecordSet per
+            // entity, so we merge them. This bug appeared when part (but not all) of the records
+            // specified the expeditionCode in the sheet.
+            RecordSet existing = entityRecordSets.get(0);
+            recordSet.records().forEach(existing::add);
+        } else {
+            entityRecordSets.add(recordSet);
+        }
 
         if (recordSet.projectId() == 0) {
             recordSet.setProjectId(project.getProjectId());
