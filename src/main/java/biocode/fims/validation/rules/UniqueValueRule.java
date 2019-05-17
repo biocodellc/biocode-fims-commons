@@ -7,10 +7,7 @@ import biocode.fims.validation.messages.Message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +67,7 @@ public class UniqueValueRule extends SingleColumnRule {
 
                 existingValues.addAll(
                         recordSet.records().stream()
-                                .filter(r -> r.expeditionCode().equals(uploadingExpeditionCode) && !r.persist())
+                                .filter(r -> Objects.equals(r.expeditionCode(), uploadingExpeditionCode) && !r.persist())
                                 .map(r -> r.get(uri))
                                 .collect(Collectors.toList())
                 );

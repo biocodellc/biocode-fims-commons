@@ -89,14 +89,7 @@ public class DatasetBuilder {
     }
 
     public void addRecordSet(RecordSet recordSet) {
-        String expeditionCode = (this.expeditionCode == null)
-                ? recordSet.expeditionCode()
-                : verifyExpeditionCode(recordSet);
-
-        if (expeditionCode == null) {
-            throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, "data is missing an expeditionCode");
-        }
-
+        if (this.expeditionCode != null) verifyExpeditionCode(recordSet);
         add(recordSet);
     }
 
@@ -130,34 +123,22 @@ public class DatasetBuilder {
 
     private void instantiateDataSourceRecords() {
         for (DataSource dataSource : dataSources) {
-            readData(dataSource.dataFile, dataSource.metadata, false);
+            readData(dataSource.dataFile, dataSource.metadata);
         }
     }
 
     private void instantiateWorkbookRecords() {
         for (String file : workbooks) {
-            readData(file, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks), true);
+            readData(file, new RecordMetadata(TabularDataReaderType.READER_TYPE, reloadWorkbooks));
         }
     }
 
-    private void readData(String file, RecordMetadata metadata, boolean isWorkbook) {
+    private void readData(String file, RecordMetadata metadata) {
         DataReader reader = dataReaderFactory.getReader(file, config, metadata);
 
         // getRecordSets may return RecordSets with different expeditions but same entity
         for (RecordSet r : reader.getRecordSets()) {
-            String expeditionCode = (this.expeditionCode == null)
-                    ? r.expeditionCode()
-                    : verifyExpeditionCode(r);
-
-            if (expeditionCode == null) {
-                String msg;
-                if (isWorkbook) {
-                    msg = "Data on the excel worksheet: \"" + r.entity().getWorksheet() + "\" is missing an expeditionCode";
-                } else {
-                    msg = "Data on the worksheet: \"" + r.entity().getWorksheet() + "\" is missing an expeditionCode";
-                }
-                throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400, msg);
-            }
+            if (this.expeditionCode != null) verifyExpeditionCode(r);
 
             r.setProjectId(project.getProjectId());
 
@@ -334,7 +315,7 @@ public class DatasetBuilder {
                             .collect(Collectors.toList());
 
                     List<Record> childrenToKeep = r.records().stream()
-                            .filter(record -> !record.expeditionCode().equals(expeditionCode)
+                            .filter(record -> !Objects.equals(r.expeditionCode(), expeditionCode)
                                     || parentIdentifiers.contains(record.get(parentEntity.getUniqueKeyURI())))
                             .collect(Collectors.toList());
 
@@ -364,8 +345,10 @@ public class DatasetBuilder {
     private void runDataConverters() {
         for (Entity e : config.entities(EntitySort.PARENTS_FIRST)) {
             for (RecordSet r : recordSets.getOrDefault(e.getConceptAlias(), Collections.emptyList())) {
-                DataConverter converter = dataConverterFactory.getConverter(e.type(), config);
-                converter.convertRecordSet(r, project.getNetwork().getId());
+                if (r.expeditionCode() != null) {
+                    DataConverter converter = dataConverterFactory.getConverter(e.type(), config);
+                    converter.convertRecordSet(r, project.getNetwork().getId());
+                }
             }
         }
     }
