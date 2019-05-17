@@ -480,4 +480,11 @@ public class DefaultEntity implements Entity {
         result = 31 * result + (getRecordType() != null ? getRecordType().hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "DefaultEntity{" +
+                "conceptAlias='" + conceptAlias + '\'' +
+                '}';
+    }
 }
