@@ -7,10 +7,7 @@ import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +44,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
                 .collect(Collectors.toSet());
 
         String uri = recordSet.entity().getAttributeUri(recordSet.parent().entity().getUniqueKey());
-        List<String> invalidIdentifiers = new LinkedList<>();
+        Set<String> invalidIdentifiers = new LinkedHashSet<>();
 
         for (Record r : recordSet.recordsToPersist()) {
 
@@ -69,7 +66,7 @@ public class ValidParentIdentifiersRule extends AbstractRule {
         return false;
     }
 
-    private void setMessages(List<String> invalidValues, EntityMessages messages, String parentEntityAlias) {
+    private void setMessages(Set<String> invalidValues, EntityMessages messages, String parentEntityAlias) {
         messages.addMessage(
                 GROUP_MESSAGE,
                 new Message(

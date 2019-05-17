@@ -9,6 +9,7 @@ import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import biocode.fims.run.Dataset;
 import biocode.fims.run.ProcessorStatus;
+import biocode.fims.validation.rules.RuleLevel;
 import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
@@ -60,6 +61,25 @@ public class DatasetValidator {
                 }
 
                 messages.add(validator.messages());
+            }
+
+            if (r.expeditionCode() == null) {
+                EntityMessages entityMessages = messages.stream()
+                        .filter(e -> e.conceptAlias().equals(r.conceptAlias()))
+                        .findFirst()
+                        .orElseGet(() -> {
+                            EntityMessages em = new EntityMessages(r.conceptAlias(), r.entity().getWorksheet());
+                            messages.add(em);
+                            return em;
+                        });
+
+                entityMessages.addErrorMessage(
+                        "Missing expeditionCode",
+                        new Message("One or more records are missing an expeditionCode. Please ensure that all records have an expeditionCode specified.")
+                );
+
+                isValid = false;
+                hasError = true;
             }
 
         }

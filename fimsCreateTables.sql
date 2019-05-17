@@ -144,6 +144,14 @@ This will create an entry in the config_history for each config that is updated 
 This is useful for creating a history of all changes to project/network configs.
 $body$;
 
+CREATE OR REPLACE FUNCTION set_users_last_login()
+  RETURNS TRIGGER AS $$
+BEGIN
+  EXECUTE 'update users set last_login = now() where id = ' || NEW.user_id;
+  RETURN NULL;
+END;
+$$ language 'plpgsql';
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
@@ -157,7 +165,9 @@ CREATE TABLE users (
   subscription_expiration_date DATE,
   has_set_password BOOLEAN NOT NULL DEFAULT '0',
   password_reset_token TEXT,
-  password_reset_expiration TIMESTAMP
+  password_reset_expiration TIMESTAMP,
+  date_joined TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  last_login TIMESTAMP
 );
 
 COMMENT ON COLUMN users.password_reset_token is 'Unique token used to reset a users password';
@@ -392,6 +402,7 @@ CREATE INDEX oauth_tokens_token_idx on oauth_tokens (token);
 CREATE INDEX oauth_tokens_refresh_token_idx on oauth_tokens (refresh_token);
 
 CREATE TRIGGER set_oauth_tokens_createdtime BEFORE INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_users_last_login AFTER INSERT ON oauth_tokens FOR EACH ROW EXECUTE PROCEDURE set_users_last_login();
 
 COMMENT ON COLUMN oauth_tokens.token is 'The generated token used by the client app';
 COMMENT ON COLUMN oauth_tokens.refresh_token is 'The generated token used to gain a new access_token';
