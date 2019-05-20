@@ -165,7 +165,7 @@ public class User {
         this.password = password;
     }
 
-    @JsonView(Views.Public.class)
+    @JsonView(Views.Summary.class)
     @Column(nullable = false)
     public String getEmail() {
         return email;
