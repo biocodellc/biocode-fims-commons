@@ -93,9 +93,6 @@ public class ProjectConfigurationResource extends FimsController {
         if (!network.getUser().equals(user)) {
             throw new ForbiddenRequestException("Only network admins can directly create a configuration");
         }
-//        if (!user.isSubscribed()) {
-//            throw new BadRequestException("only subscribed users can create a new project configuration");
-//        }
 
         configuration.setNetwork(network);
 
@@ -151,9 +148,6 @@ public class ProjectConfigurationResource extends FimsController {
             throw new BadRequestException("Invalid config id");
         }
 
-        if (!user.isSubscribed() && !configuration.getNetwork().getUser().equals(user)) {
-            throw new BadRequestException("only subscribed users can update a project configuration");
-        }
 
         if (!user.equals(configuration.getUser())) {
             throw new ForbiddenRequestException("You must be this configuration's admin in order to update");
