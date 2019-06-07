@@ -14,6 +14,8 @@ import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.validation.rules.CompositeUniqueValueRule;
+import biocode.fims.validation.rules.UniqueValueRule;
 import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
@@ -41,6 +43,7 @@ public class DatasetBuilder {
     private final List<DataSource> dataSources;
     private final Map<String, List<RecordSet>> recordSets;
     private final List<String> projectRecordEntities;
+    private final List<String> uniqueConstraintEntities;
     private final List<String> reloadedEntities;
     private final Set<Entity> childEntities;
     private final Map<String, List<? extends Record>> projectRecords;
@@ -64,7 +67,21 @@ public class DatasetBuilder {
         this.mismatchedExpeditions = new HashMap<>();
 
         this.projectRecordEntities = config.entities().stream()
-                .filter(Entity::getUniqueAcrossProject)
+                .filter(e -> e.getUniqueAcrossProject()
+                        || e.getRules().stream().anyMatch(r -> r instanceof UniqueValueRule && ((UniqueValueRule) r).uniqueAcrossProject()))
+                .map(Entity::getConceptAlias)
+                .collect(Collectors.toList());
+        this.uniqueConstraintEntities = config.entities().stream()
+                .filter(e -> e.getRules().stream().anyMatch(r -> {
+                    if (r instanceof CompositeUniqueValueRule) return true;
+
+                    // ignore UniqueValueRule for uniqueKey b/c this is just an update to an existing record.
+                    // We don't need to fetch existing records in this case
+                    return r instanceof UniqueValueRule
+                            && !((UniqueValueRule) r).column().equals(e.getUniqueKey())
+                            && !((UniqueValueRule) r).uniqueAcrossProject();
+
+                }))
                 .map(Entity::getConceptAlias)
                 .collect(Collectors.toList());
     }
@@ -110,6 +127,7 @@ public class DatasetBuilder {
         mergeProjectRecords();
         fetchAndMergeParentRecords();
         setRecordSetParent();
+        mergeExistingRecordsForUniqueConstraints();
         runDataConverters();
 
         if (recordSets.isEmpty()) {
@@ -244,6 +262,34 @@ public class DatasetBuilder {
         }
     }
 
+    private void mergeExistingRecordsForUniqueConstraints() {
+        List<String> parentEntities = getChildRecordSetParentEntities().stream().map(Entity::getConceptAlias).collect(Collectors.toList());
+
+        for (String conceptAlias : uniqueConstraintEntities) {
+            // projectRecordEntities & parentEntities have already fetched/merged the existing data
+            if (projectRecordEntities.contains(conceptAlias)
+                    || parentEntities.contains(conceptAlias)
+                    || !recordSets.containsKey(conceptAlias))
+                continue;
+
+            // get expeditionCodes for RecordSets that we need to fetch
+            List<String> expeditionCodes = recordSets.get(conceptAlias).stream()
+                    .filter(r -> !r.reload())
+                    .map(RecordSet::expeditionCode)
+                    .collect(Collectors.toList());
+
+            List<? extends Record> records = expeditionCodes.stream()
+                    .flatMap(e -> getExpeditionRecords(recordSets.get(conceptAlias).get(0).entity(), e).stream())
+                    .collect(Collectors.toList());
+
+            for (RecordSet r : recordSets.get(conceptAlias)) {
+                if (!r.isEmpty()) {
+                    r.merge(records);
+                }
+            }
+        }
+    }
+
     private List<RecordSet> getParentRecordSets(Entity e) {
         // for each child expedition, we need a parent recordSet
         List<String> childExpeditions = expeditionCode != null
@@ -274,6 +320,10 @@ public class DatasetBuilder {
                 e.getConceptAlias(),
                 k -> recordRepository.getRecords(project, e.getConceptAlias(), e.getRecordType())
         );
+    }
+
+    private List<? extends Record> getExpeditionRecords(Entity e, String expeditionCode) {
+        return recordRepository.getRecords(project, expeditionCode, e.getConceptAlias(), e.getRecordType());
     }
 
     // note this will not fetch grandParents. Currently we only fetch the parent
