@@ -34,7 +34,8 @@ public class ProjectEntity {
     private Map<String, Object> additionalProps;
 
     // needed for Jackson
-    ProjectEntity() {}
+    ProjectEntity() {
+    }
 
     public ProjectEntity(Entity e) {
         conceptAlias = e.getConceptAlias();
@@ -138,6 +139,10 @@ public class ProjectEntity {
             Attribute baseAttribute = base.getAttributeByUri(a.getUri());
             e.addAttribute(a.toAttribute(baseAttribute));
         });
+
+        base.getAttributes().stream()
+                .filter(a -> a.isInternal() && !e.getAttributes().contains(a))
+                .forEach(e::addAttribute);
 
         List<String> columns = e.getAttributes().stream()
                 .map(Attribute::getColumn)
