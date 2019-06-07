@@ -81,8 +81,8 @@ public class DatasetValidator {
                                 "specified for all records (in the column \"expeditionCode\"). You can obtain " +
                                 "a list of all expedition codes for your project by first downloading a workbook " +
                                 "generated for your project, either through the \"Project Overview\" page " +
-                                "or from the \"Query\" page, and updating records. If you need to insert NEW records, " +
-                                "first generate them on a new or existing single expedition.")
+                                "or from the \"Query\" page, and updating records. Note: All expedition codes in " +
+                                "the worksheet MUST EXIST.")
                 );
 
                 isValid = false;
