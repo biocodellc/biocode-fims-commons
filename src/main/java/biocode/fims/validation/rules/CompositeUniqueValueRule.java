@@ -4,6 +4,7 @@ import biocode.fims.records.Record;
 import biocode.fims.records.RecordSet;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
+import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -45,17 +46,18 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         Set<LinkedList<String>> set = new HashSet<>();
         List<LinkedList<String>> duplicateValues = new ArrayList<>();
 
+        String uploadingExpeditionCode = recordSet.expeditionCode();
+        set.addAll(
+                recordSet.records().stream()
+                        .filter(r -> Objects.equals(r.expeditionCode(), uploadingExpeditionCode) && !r.persist())
+                        .map(r -> buildCompositeValue(uris, r))
+                        .collect(Collectors.toList())
+        );
+
         for (Record r : recordSet.recordsToPersist()) {
-            LinkedList<String> composite = new LinkedList<>();
+            LinkedList<String> composite = buildCompositeValue(uris, r);
 
-            boolean hasAValue = false;
-            for (String uri : uris) {
-                String val = r.get(uri);
-                composite.add(val);
-                if (!val.equals("")) hasAValue = true;
-            }
-
-            if (hasAValue && !set.add(composite)) {
+            if (composite.size() > 0 && !set.add(composite)) {
                 duplicateValues.add(composite);
                 if (level().equals(RuleLevel.ERROR)) r.setError();
             }
@@ -69,6 +71,19 @@ public class CompositeUniqueValueRule extends MultiColumnRule {
         setMessages(messages, duplicateValues);
         setError();
         return false;
+    }
+
+    private LinkedList<String> buildCompositeValue(LinkedList<String> uris, Record r) {
+        LinkedList<String> composite = new LinkedList<>();
+
+        boolean hasAValue = false;
+        for (String uri : uris) {
+            String val = r.get(uri);
+            composite.add(val);
+            if (!val.equals("")) hasAValue = true;
+        }
+
+        return hasAValue ? composite : new LinkedList<String>();
     }
 
     private void setMessages(EntityMessages messages, List<LinkedList<String>> invalidValues) {

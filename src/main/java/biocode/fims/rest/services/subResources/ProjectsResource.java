@@ -118,10 +118,6 @@ public class ProjectsResource extends FimsController {
         ProjectConfiguration configuration;
         if (project.projectConfig != null) {
 
-            if (!user.isSubscribed() && !network.getUser().equals(user)) {
-                throw new BadRequestException("only subscribed users can create a new project configuration");
-            }
-
             configuration = new ProjectConfiguration(project.getProjectTitle(), project.projectConfig, network);
             configuration.setUser(user);
             try {

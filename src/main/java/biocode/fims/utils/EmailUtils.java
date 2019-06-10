@@ -95,7 +95,7 @@ public class EmailUtils {
 
                 message.setRecipient(Message.RecipientType.TO,
                         new InternetAddress(to));
-                message.setSubject("[Biocode-Fims Application] " + subject);
+                message.setSubject(subject);
                 message.setRecipients(Message.RecipientType.CC, ccAddresses);
                 message.setText(text);
 

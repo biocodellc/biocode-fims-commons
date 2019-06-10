@@ -75,7 +75,14 @@ public class DatasetValidator {
 
                 entityMessages.addErrorMessage(
                         "Missing expeditionCode",
-                        new Message("One or more records are missing an expeditionCode. Please ensure that all records have an expeditionCode specified.")
+                        new Message("One or more records are missing an expeditionCode. " +
+                                "When uploading data from multiple expeditions, each record in the " +
+                                r.conceptAlias() + "worksheet must have a pre-existing expeditionCode " +
+                                "specified for all records (in the column \"expeditionCode\"). You can obtain " +
+                                "a list of all expedition codes for your project by first downloading a workbook " +
+                                "generated for your project, either through the \"Project Overview\" page " +
+                                "or from the \"Query\" page, and updating records. Note: All expedition codes in " +
+                                "the worksheet MUST EXIST.")
                 );
 
                 isValid = false;
