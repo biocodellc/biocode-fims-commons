@@ -297,7 +297,7 @@ public class NetworkConfigValidatorTest {
     }
 
     @Test
-    public void invalid_if_most_atomic_entity_in_sheet_is_hashed() {
+    public void invalid_if_all_entites_on_sheet_are_hashed() {
         NetworkConfig config = new NetworkConfig();
 
         Entity e = entity1();
@@ -314,7 +314,7 @@ public class NetworkConfigValidatorTest {
         NetworkConfigValidator validator = new NetworkConfigValidator(config);
 
         List<String> expected = Arrays.asList(
-                "Entity \"resource3\" is the most atomic (child) entity in the worksheet: \"worksheet1\". This entity can not be a hashed entity."
+                "At least 1 entity on the worksheet: \"worksheet1\" must specify a uniqueKey and can not be a hashed entity."
         );
 
         assertFalse(validator.isValid());

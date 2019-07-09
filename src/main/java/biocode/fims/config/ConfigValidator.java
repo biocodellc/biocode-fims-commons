@@ -35,7 +35,7 @@ public abstract class ConfigValidator {
         config.entities().forEach(e -> e.configure(config));
 
         validateConfig();
-        mostAtomicWorksheetEntityHasUniqueKey();
+        worksheetEntityHasUniqueKey();
         worksheetAttributesAreUnique();
         allExpeditionMetadataHaveName();
 
@@ -116,7 +116,7 @@ public abstract class ConfigValidator {
     }
 
 
-    private void mostAtomicWorksheetEntityHasUniqueKey() {
+    private void worksheetEntityHasUniqueKey() {
         Map<String, List<Entity>> sheetEntities = new HashMap<>();
 
         for (Entity e : config.entities()) {
@@ -127,22 +127,18 @@ public abstract class ConfigValidator {
         }
 
         for (Map.Entry<String, List<Entity>> entry : sheetEntities.entrySet()) {
-            Entity mostAtomicEntity = null;
+            boolean foundUniqueKey = false;
 
             for (Entity e : entry.getValue()) {
-                if (mostAtomicEntity == null) {
-                    mostAtomicEntity = e;
-                    continue;
-                }
-
-                if (config.isEntityChildDescendent(mostAtomicEntity, e)) {
-                    mostAtomicEntity = e;
+                if (!e.isHashed()) {
+                    foundUniqueKey = true;
+                    break;
                 }
             }
 
-            if (mostAtomicEntity.isHashed()) {
+            if (!foundUniqueKey) {
                 errorMessages.add(
-                        "Entity \"" + mostAtomicEntity.getConceptAlias() + "\" is the most atomic (child) entity in the worksheet: \"" + entry.getKey() + "\". This entity can not be a hashed entity."
+                        "At least 1 entity on the worksheet: \"" + entry.getKey() + "\" must specify a uniqueKey and can not be a hashed entity."
                 );
             }
         }
