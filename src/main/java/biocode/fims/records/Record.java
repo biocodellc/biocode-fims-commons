@@ -29,6 +29,8 @@ public interface Record {
     @JsonProperty
     String rootIdentifier();
 
+    void setRootIdentifier(String rootIdentifier);
+
     String get(String property);
 
     Object getAsObject(String property);

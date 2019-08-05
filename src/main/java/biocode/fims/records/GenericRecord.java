@@ -60,6 +60,12 @@ public class GenericRecord implements Record {
     }
 
     @Override
+    public void setRootIdentifier(String rootIdentifier) {
+        if (this.rootIdentifier == null) this.rootIdentifier = rootIdentifier;
+        else throw new IllegalStateException("rootIdentifier has already been set");
+    }
+
+    @Override
     public String get(String property) {
         return String.valueOf(properties.getOrDefault(property, "")).trim();
     }
