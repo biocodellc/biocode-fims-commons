@@ -43,6 +43,11 @@ public class TestRecordRepository implements RecordRepository {
     }
 
     @Override
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends Record> recordType) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
         RecordStore ex = new RecordStore(project.getProjectId(), expeditionCode, conceptAlias);
 

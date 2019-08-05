@@ -73,6 +73,13 @@ selectExpeditionRecords: >
     INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
   WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
 
+selectIndividualExpeditionRecords: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+    INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
+  WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId and r.local_identifier in (:localIdentifiers)
+
 deleteRecord: >
   DELETE
   FROM ${table}
