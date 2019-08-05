@@ -2,7 +2,6 @@ package biocode.fims.run;
 
 import biocode.fims.fimsExceptions.errorCodes.FileCode;
 import biocode.fims.fimsExceptions.errorCodes.ValidationCode;
-import biocode.fims.models.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.Project;
@@ -38,6 +37,7 @@ public class DatasetProcessor {
     private final DatasetAuthorizer datasetAuthorizer;
     private final RecordRepository recordRepository;
     private final ProcessorStatus processorStatus;
+    private final List<DatasetAction> actions;
 
     private final String expeditionCode;
     private final Project project;
@@ -64,6 +64,7 @@ public class DatasetProcessor {
         datasetAuthorizer = builder.datasetAuthorizer;
         recordRepository = builder.recordRepository;
         processorStatus = builder.processorStatus;
+        actions = builder.datasetActions;
         workbookFile = builder.workbookFile;
         datasetSources = builder.datasets;
         recordSets = builder.recordSets;
@@ -151,6 +152,10 @@ public class DatasetProcessor {
             throw new FimsRuntimeException(UploadCode.UNAUTHORIZED, 400);
         }
 
+        for (DatasetAction a : actions) {
+            a.onSave(project, dataset);
+        }
+
         recordRepository.saveDataset(dataset, project.getNetwork().getId());
 
         writeDataSources();
@@ -211,6 +216,7 @@ public class DatasetProcessor {
         private DatasetAuthorizer datasetAuthorizer;
         private RecordRepository recordRepository;
         private ProcessorStatus processorStatus;
+        private List<DatasetAction> datasetActions;
         private String serverDataDir;
 
         private String workbookFile;
@@ -254,6 +260,11 @@ public class DatasetProcessor {
 
         public Builder datasetAuthorizer(DatasetAuthorizer authorizer) {
             this.datasetAuthorizer = authorizer;
+            return this;
+        }
+
+        public Builder datasetActions(List<DatasetAction> actions) {
+            this.datasetActions = actions;
             return this;
         }
 
@@ -324,6 +335,7 @@ public class DatasetProcessor {
 //            return expeditionCode != null &&
             return processorStatus != null &&
                     validatorFactory != null &&
+                    datasetActions != null &&
                     datasetAuthorizer != null &&
                     dataConverterFactory != null &&
                     recordRepository != null &&
@@ -337,7 +349,7 @@ public class DatasetProcessor {
             if (isValid()) {
                 return new DatasetProcessor(this);
             } else {
-                throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, " +
+                throw new FimsRuntimeException("Server Error", "validatorFactory, readerFactory, recordRepository, datasetActions, " +
                         "datasetAuthorizer, dataConverterFactory, project must not be null and either a workbook, dataset, or recordSet are required.", 500);
             }
         }
