@@ -3,7 +3,6 @@ package biocode.fims.query;
 import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
-import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordMapper;
 
@@ -18,14 +17,16 @@ public class QueryResult {
     private final LinkedList<Record> records;
     private final Entity entity;
     private Entity parentEntity;
+    private final String bcidResolverPrefix;
 
-    public QueryResult(LinkedList<Record> records, Entity entity) {
+    public QueryResult(LinkedList<Record> records, Entity entity, String bcidResolverPrefix) {
         this.records = records;
         this.entity = entity;
+        this.bcidResolverPrefix = bcidResolverPrefix;
     }
 
-    public QueryResult(LinkedList<Record> records, Entity entity, Entity parentEntity) {
-        this(records, entity);
+    public QueryResult(LinkedList<Record> records, Entity entity, Entity parentEntity, String bcidResolverPrefix) {
+        this(records, entity, bcidResolverPrefix);
         this.parentEntity = parentEntity;
     }
 
@@ -73,7 +74,7 @@ public class QueryResult {
     }
 
     private RecordMapper getRecordMapper(boolean includeEmpty, List<String> source) {
-        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity);
+        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity, bcidResolverPrefix);
         return new RecordMapper(bcidBuilder, entity.getAttributes(), includeEmpty, source);
     }
 }

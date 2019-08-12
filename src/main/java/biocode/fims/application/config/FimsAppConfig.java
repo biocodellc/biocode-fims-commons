@@ -70,14 +70,14 @@ public class FimsAppConfig {
     }
 
     @Bean
-    public RecordRepository recordRepository() {
+    public RecordRepository recordRepository(FimsProperties fimsProperties) {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("record-repository-sql.yml"));
 
         Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers = new HashMap<>();
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
 
-        return new PostgresRecordRepository(jdbcTemplate, yaml.getObject(), rowMappers);
+        return new PostgresRecordRepository(jdbcTemplate, yaml.getObject(), rowMappers, fimsProperties);
     }
 
     @Bean

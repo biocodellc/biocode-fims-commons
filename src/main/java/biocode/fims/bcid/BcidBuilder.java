@@ -12,21 +12,19 @@ public class BcidBuilder {
 
     private Entity entity;
     private Entity parentEntity;
+    private String resolverPrefix;
 
-    public BcidBuilder(Entity entity) {
-        this(entity, null);
-    }
-
-    public BcidBuilder(Entity entity, Entity parentEntity) {
-        if (entity.isChildEntity() && parentEntity == null) {
-            throw new IllegalArgumentException("parentEntity is required if entity is a childEntity");
+    public BcidBuilder(Entity entity, Entity parentEntity, String resolverPrefix) {
+        this.resolverPrefix = resolverPrefix;
+        if (entity.isChildEntity() && entity.getUniqueKey() == null && parentEntity == null) {
+            throw new IllegalArgumentException("parentEntity is required if entity is a childEntity and uniqueKey is null");
         }
         this.entity = entity;
         this.parentEntity = parentEntity;
     }
 
     public String build(Record record) {
-        String bcid = record.rootIdentifier();
+        String bcid = resolverPrefix + record.rootIdentifier();
         if (entity.isChildEntity() && entity.getUniqueKey() != null) {
             bcid += record.get(entity.getUniqueKeyURI());
         } else if (entity.isChildEntity()) {

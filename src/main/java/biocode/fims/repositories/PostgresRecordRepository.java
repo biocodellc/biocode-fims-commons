@@ -1,5 +1,6 @@
 package biocode.fims.repositories;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.models.Project;
 import biocode.fims.records.*;
 import biocode.fims.rest.responses.PaginatedResponse;
@@ -42,11 +43,13 @@ public class PostgresRecordRepository implements RecordRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
     private final Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers;
+    private final FimsProperties fimsProperties;
 
-    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers) {
+    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers, FimsProperties fimsProperties) {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
         this.rowMappers = rowMappers;
+        this.fimsProperties = fimsProperties;
     }
 
     @Override
@@ -446,7 +449,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 Entity parentEntity = e.isChildEntity()
                         ? getEntity(e.getParentEntity())
                         : null;
-                results.add(new QueryResult(new LinkedList<>(records.get(conceptAlias)), e, parentEntity));
+                results.add(new QueryResult(new LinkedList<>(records.get(conceptAlias)), e, parentEntity, fimsProperties.bcidResolverPrefix()));
             }
 
             return new QueryResults(results);
