@@ -25,7 +25,7 @@ public class QueryResultTest {
 
         records.add(r1);
 
-        QueryResult result = new QueryResult(records, event());
+        QueryResult result = new QueryResult(records, event(), "");
 
         List<Map<String, String>> expected = new ArrayList<>();
         Map<String, String> expectedR1 = new HashMap<>();
@@ -50,7 +50,7 @@ public class QueryResultTest {
 
         records.add(r1);
 
-        QueryResult result = new QueryResult(records, sample(), event());
+        QueryResult result = new QueryResult(records, sample(), event(), "");
 
         List<Map<String, String>> expected = new ArrayList<>();
         Map<String, String> expectedR1 = new HashMap<>();
@@ -77,7 +77,7 @@ public class QueryResultTest {
 
         records.add(r1);
 
-        QueryResult result = new QueryResult(records, sample(), event());
+        QueryResult result = new QueryResult(records, sample(), event(), "");
 
         List<Map<String, String>> expected = new ArrayList<>();
         Map<String, String> expectedR1 = new HashMap<>();

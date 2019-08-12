@@ -83,6 +83,14 @@ public class FimsProperties {
         return env.getRequiredProperty("bcid.clientSecret");
     }
 
+    public String bcidResolverPrefix() {
+        String prefix = env.getProperty("bcid.resolverPrefix", "https://n2t.net/");
+        if (!prefix.endsWith("/")) {
+            prefix += "/";
+        }
+        return prefix;
+    }
+
     public URI entityResolverTarget() {
         return env.getRequiredProperty("bcid.resolverTargets.entity", URI.class);
     }
@@ -93,21 +101,21 @@ public class FimsProperties {
 
     /**
      * Return the raw string property value.
-     *
+     * <p>
      * By default Spring will attempt to resolve placeholders within a property value
-     *
+     * <p>
      * ex. prop1=some/${value}
-     *
+     * <p>
      * An attempt will be made to replace ${value} with a property "value". If the
      * resolving fails, then an exception will throw.
-     *
+     * <p>
      * This function avoids that funny business
      *
      * @param key property name to resolve
      * @return
      */
     private String getRequiredRawProperty(String key) {
-        for (PropertySource source: env.getPropertySources()) {
+        for (PropertySource source : env.getPropertySources()) {
             String val = (String) source.getProperty(key);
             if (val != null) return val;
         }

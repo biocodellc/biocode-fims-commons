@@ -742,8 +742,8 @@ public class DatasetBuilderTest {
     private DataConverterFactory dataConverterFactory(DataConverter converter) {
         return new DataConverterFactory(null) {
             @Override
-            public DataConverter getConverter(String entityType, ProjectConfig projectConfig) {
-                return converter != null ? converter : new DataConverter() {
+            public List<DataConverter> getConverters(String entityType, ProjectConfig projectConfig) {
+                return Collections.singletonList(converter != null ? converter : new DataConverter() {
                     @Override
                     public void convertRecordSet(RecordSet recordSet, int projectId) {
                     }
@@ -752,7 +752,7 @@ public class DatasetBuilderTest {
                     public DataConverter newInstance(ProjectConfig projectConfig) {
                         return this;
                     }
-                };
+                });
             }
         };
     }

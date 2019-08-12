@@ -396,8 +396,9 @@ public class DatasetBuilder {
         for (Entity e : config.entities(EntitySort.PARENTS_FIRST)) {
             for (RecordSet r : recordSets.getOrDefault(e.getConceptAlias(), Collections.emptyList())) {
                 if (r.expeditionCode() != null) {
-                    DataConverter converter = dataConverterFactory.getConverter(e.type(), config);
-                    converter.convertRecordSet(r, project.getNetwork().getId());
+                    for (DataConverter converter : dataConverterFactory.getConverters(e.type(), config)) {
+                        converter.convertRecordSet(r, project.getNetwork().getId());
+                    }
                 }
             }
         }
