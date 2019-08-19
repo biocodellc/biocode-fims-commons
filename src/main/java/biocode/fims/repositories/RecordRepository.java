@@ -28,6 +28,8 @@ public interface RecordRepository {
 
     List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType);
 
+    List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends Record> recordType);
+
     void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity);
 
     void saveRecord(Record record, int networkId, Entity entity);

@@ -23,4 +23,6 @@ import java.util.List;
 public interface EntityIdentifierRepository extends Repository<EntityIdentifier, Integer>, JpaSpecificationExecutor {
 
     EntityIdentifier findByIdentifier(URI identifier);
+
+    EntityIdentifier findByConceptAliasAndExpeditionExpeditionCode(String conceptAlias, String expeditionCode);
 }

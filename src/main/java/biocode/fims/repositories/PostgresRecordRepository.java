@@ -141,6 +141,23 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
+
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("expeditionCode", expeditionCode);
+        sqlParams.put("projectId", project.getProjectId());
+        sqlParams.put("conceptAlias", conceptAlias);
+        sqlParams.put("localIdentifiers", localIdentifiers);
+
+        return jdbcTemplate.query(
+                StringSubstitutor.replace(sql.getProperty("selectIndividualExpeditionRecords"), tableMap),
+                sqlParams,
+                rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
+        );
+    }
+
+    @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
     public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity) {
