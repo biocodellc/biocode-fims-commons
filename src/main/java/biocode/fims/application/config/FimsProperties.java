@@ -99,6 +99,12 @@ public class FimsProperties {
         return env.getRequiredProperty("bcid.resolverTargets.expedition", URI.class);
     }
 
+    public String userURIPrefix() {
+        String prefix = env.getRequiredProperty("userURIPrefix");
+        if (!prefix.endsWith("/")) prefix += "/";
+        return prefix;
+    }
+
     /**
      * Return the raw string property value.
      * <p>
