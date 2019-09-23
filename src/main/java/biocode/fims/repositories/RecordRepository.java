@@ -50,5 +50,5 @@ public interface RecordRepository {
 
     QueryResults query(Query query);
 
-    PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties);
+    PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties, boolean includeBcidPrefix);
 }

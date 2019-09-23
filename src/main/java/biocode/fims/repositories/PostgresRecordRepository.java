@@ -379,7 +379,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties, boolean includeBcidPrefix) {
         ParametrizedQuery q = query.parameterizedQuery();
 
         logger.info(q.toString());
@@ -393,7 +393,7 @@ public class PostgresRecordRepository implements RecordRepository {
             return new PaginatedResponse<>(Collections.emptyMap(), 0, 0);
         }
 
-        return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources), query.page(), query.limit());
+        return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources, includeBcidPrefix), query.page(), query.limit());
     }
 
 

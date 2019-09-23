@@ -44,8 +44,8 @@ public class QueryResult {
      * @param includeEmpty if true, the result will include entries for all {@link Attribute}s in the {@link Entity}
      * @return
      */
-    public LinkedList<Map<String, Object>> get(boolean includeEmpty) {
-        return get(includeEmpty, Collections.emptyList());
+    public LinkedList<Map<String, Object>> get(boolean includeEmpty, boolean includeBcidPrefix) {
+        return get(includeEmpty, Collections.emptyList(), includeBcidPrefix);
     }
 
     /**
@@ -55,26 +55,26 @@ public class QueryResult {
      * @param source       specifies the record columns to return. If empty list, no filtering will occur
      * @return
      */
-    public LinkedList<Map<String, Object>> get(boolean includeEmpty, List<String> source) {
-        RecordMapper recordMapper = getRecordMapper(includeEmpty, source);
+    public LinkedList<Map<String, Object>> get(boolean includeEmpty, List<String> source, boolean includeBcidPrefix) {
+        RecordMapper recordMapper = getRecordMapper(includeEmpty, source, includeBcidPrefix);
         return records.stream()
                 .map(recordMapper::map)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    public LinkedList<Record> getAsRecord(boolean includeEmpty) {
-        return getAsRecord(includeEmpty, Collections.emptyList());
+    public LinkedList<Record> getAsRecord(boolean includeEmpty, boolean includeBcidPrefix) {
+        return getAsRecord(includeEmpty, Collections.emptyList(), includeBcidPrefix);
     }
 
-    public LinkedList<Record> getAsRecord(boolean includeEmpty, List<String> source) {
-        RecordMapper recordMapper = getRecordMapper(includeEmpty, source);
+    public LinkedList<Record> getAsRecord(boolean includeEmpty, List<String> source, boolean includeBcidPrefix) {
+        RecordMapper recordMapper = getRecordMapper(includeEmpty, source, includeBcidPrefix);
         return records.stream()
                 .map(recordMapper::mapAsRecord)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private RecordMapper getRecordMapper(boolean includeEmpty, List<String> source) {
-        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity, bcidResolverPrefix);
+    private RecordMapper getRecordMapper(boolean includeEmpty, List<String> source, boolean includeBcidPrefix) {
+        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity, includeBcidPrefix ? bcidResolverPrefix : "");
         return new RecordMapper(bcidBuilder, entity.getAttributes(), includeEmpty, source);
     }
 }

@@ -99,7 +99,7 @@ class WriterSheetGenerator {
      */
     private void mergeSheetRecords() {
         String conceptAlias = currentResult.entity().getConceptAlias();
-        LinkedList<Map<String, Object>> records = currentResult.get(false);
+        LinkedList<Map<String, Object>> records = currentResult.get(false, true);
         try {
             recordsBySheet.get(currentSheet).addRecords(conceptAlias, records);
         } catch (FimsRuntimeException exp) {
@@ -178,7 +178,7 @@ class WriterSheetGenerator {
 
         SheetRecords(List<Entity> sheetEntities, QueryResult queryResult) {
             this(sheetEntities);
-            addRecords(queryResult.entity().getConceptAlias(), queryResult.get(false));
+            addRecords(queryResult.entity().getConceptAlias(), queryResult.get(false, true));
         }
 
         SheetRecords(List<Entity> sheetEntities, String conceptAlias, List<Map<String, Object>> records) {

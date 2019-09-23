@@ -39,7 +39,7 @@ public class CspaceQueryWriter implements QueryWriter {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
 
-            List<Map<String, Object>> records = queryResult.get(true);
+            List<Map<String, Object>> records = queryResult.get(true, true);
 
             if (records.size() == 0) {
                 throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
