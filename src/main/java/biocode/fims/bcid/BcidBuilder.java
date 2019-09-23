@@ -25,9 +25,7 @@ public class BcidBuilder {
 
     public String build(Record record) {
         String bcid = resolverPrefix + record.rootIdentifier();
-        if (entity.isChildEntity() && entity.getUniqueKey() != null) {
-            bcid += record.get(entity.getUniqueKeyURI());
-        } else if (entity.isChildEntity()) {
+        if (entity.isChildEntity() && entity.getUniqueKey() == null) {
             bcid += record.get(parentEntity.getUniqueKeyURI());
         } else {
             bcid += record.get(entity.getUniqueKeyURI());
