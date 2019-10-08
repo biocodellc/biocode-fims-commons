@@ -33,7 +33,7 @@ public class QueryResultTest {
         expectedR1.put("bcid", "ark:/99999/l21");
         expected.add(expectedR1);
 
-        assertEquals(expected, result.get(true));
+        assertEquals(expected, result.get(true, false));
 
     }
 
@@ -61,7 +61,7 @@ public class QueryResultTest {
         expectedR1.put("bcid", "root1");
         expected.add(expectedR1);
 
-        assertEquals(expected, result.get(true));
+        assertEquals(expected, result.get(true, false));
 
     }
 
@@ -88,7 +88,7 @@ public class QueryResultTest {
         expectedR1.put("bcid", "root1");
         expected.add(expectedR1);
 
-        assertEquals(expected, result.get(true));
+        assertEquals(expected, result.get(true, false));
 
     }
 

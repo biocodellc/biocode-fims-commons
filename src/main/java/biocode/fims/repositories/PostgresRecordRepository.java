@@ -141,6 +141,23 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
+    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends Record> recordType) {
+        Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
+
+        Map<String, Object> sqlParams = new HashMap<>();
+        sqlParams.put("expeditionCode", expeditionCode);
+        sqlParams.put("projectId", project.getProjectId());
+        sqlParams.put("conceptAlias", conceptAlias);
+        sqlParams.put("localIdentifiers", localIdentifiers);
+
+        return jdbcTemplate.query(
+                StringSubstitutor.replace(sql.getProperty("selectIndividualExpeditionRecords"), tableMap),
+                sqlParams,
+                rowMappers.getOrDefault(recordType, new GenericRecordRowMapper())
+        );
+    }
+
+    @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
     public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity) {
@@ -362,7 +379,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     @Override
     @SuppressWarnings({"unchecked"})
-    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties) {
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> query(Query query, RecordSources sources, boolean includeEmptyProperties, boolean includeBcidPrefix) {
         ParametrizedQuery q = query.parameterizedQuery();
 
         logger.info(q.toString());
@@ -376,7 +393,7 @@ public class PostgresRecordRepository implements RecordRepository {
             return new PaginatedResponse<>(Collections.emptyMap(), 0, 0);
         }
 
-        return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources), query.page(), query.limit());
+        return new PaginatedResponse<>(queryResults.toMap(includeEmptyProperties, sources, includeBcidPrefix), query.page(), query.limit());
     }
 
 

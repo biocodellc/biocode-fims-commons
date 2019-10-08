@@ -120,13 +120,13 @@ public class RecordService {
             if (result.entity().getConceptAlias().equals(entity.getConceptAlias())) {
                 if (result.records().isEmpty()) throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);
 
-                record = result.get(false).get(0);
+                record = result.get(false, false).get(0);
                 record.put("entity", result.entity().getConceptAlias());
             } else if (result.entity().getConceptAlias().equals(entity.getParentEntity())) {
-                parent = result.get(false).get(0);
+                parent = result.get(false, false).get(0);
                 parent.put("entity", result.entity().getConceptAlias());
             } else {
-                List<Map<String, Object>> childs = result.get(false);
+                List<Map<String, Object>> childs = result.get(false, false);
                 childs.forEach(c -> c.put("entity", result.entity().getConceptAlias()));
                 children.addAll(childs);
             }

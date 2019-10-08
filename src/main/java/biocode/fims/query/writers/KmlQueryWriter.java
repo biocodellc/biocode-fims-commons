@@ -35,7 +35,7 @@ public class KmlQueryWriter implements QueryWriter {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(file)))) {
 
-            List<Map<String, Object>> records = queryResult.get(false);
+            List<Map<String, Object>> records = queryResult.get(false, true);
 
             if (records.size() == 0) {
                 throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 400);

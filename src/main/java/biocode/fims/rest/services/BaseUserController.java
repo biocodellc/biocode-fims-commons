@@ -77,6 +77,26 @@ public abstract class BaseUserController extends FimsController {
     }
 
     /**
+     * get user
+     *
+     * @responseType biocode.fims.models.User
+     */
+    @UserEntityGraph("User.withProjects")
+    @JsonView(Views.Detailed.class)
+    @Path("/{userId: [0-9]+}")
+    @GET
+    public DynamicViewResponse<User> getUserById(@PathParam("userId") int userId, @Context ObjectMapper objectMapper) {
+        User user = userService.getUser(userId);
+
+        User authenticatedUser = userContext.getUser();
+        if (authenticatedUser != null && (
+                authenticatedUser.getUserId() == userId || userService.isAProjectAdmin(authenticatedUser))) {
+            return new DynamicViewResponse<>(user, Views.Detailed.class);
+        }
+        return new DynamicViewResponse<>(user, Views.Public.class);
+    }
+
+    /**
      * create a new user
      *
      * @param user

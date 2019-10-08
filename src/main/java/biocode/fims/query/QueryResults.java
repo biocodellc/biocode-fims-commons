@@ -40,15 +40,15 @@ public class QueryResults implements Iterable<QueryResult> {
 
     public boolean isEmpty() {
         return results.stream()
-                .noneMatch(r -> r.get(false).size() > 0);
+                .noneMatch(r -> r.get(false, false).size() > 0);
     }
 
-    public Map<String, List<Map<String, Object>>> toMap(boolean includeEmpty, RecordSources sources) {
+    public Map<String, List<Map<String, Object>>> toMap(boolean includeEmpty, RecordSources sources, boolean includeBcidPrefix) {
         Map<String, List<Map<String, Object>>> map = new HashMap<>();
 
         for (QueryResult result : results) {
             String conceptAlias = result.entity().getConceptAlias();
-            map.put(conceptAlias, result.get(includeEmpty, sources.get(conceptAlias)));
+            map.put(conceptAlias, result.get(includeEmpty, sources.get(conceptAlias), includeBcidPrefix));
         }
 
         return map;
