@@ -39,6 +39,7 @@ public class Project {
     private String projectTitle;
     private Date created;
     private Date modified;
+    private Date latestDataModification;
     private String description;
     private ProjectConfiguration projectConfiguration;
     private boolean isPublic;
@@ -152,6 +153,17 @@ public class Project {
 
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "latest_data_modification")
+    public Date getLatestDataModification() {
+        return latestDataModification;
+    }
+
+    public void setLatestDataModification(Date latestDataModification) {
+        this.latestDataModification = latestDataModification;
     }
 
     @JsonView(Views.DetailedConfig.class)
