@@ -14,7 +14,7 @@ BEGIN
   END IF;
 
   EXECUTE
-  'UPDATE projects set last_data_modification = CURRENT_TIMESTAMP where id = (select project_id from expeditions where id = '
+  'UPDATE projects set latest_data_modification = CURRENT_TIMESTAMP where id = (select project_id from expeditions where id = '
   || quote_literal(NEW.expedition_id) || ')';
 
   RETURN NULL;
@@ -24,11 +24,11 @@ LANGUAGE plpgsql
 SECURITY DEFINER;
 
 COMMENT ON FUNCTION set_project_last_modified() IS $body$
-Update the project's last_data_modification timestamp when a record is inserted, updated, or deleted.
+Update the project's latest_data_modification timestamp when a record is inserted, updated, or deleted.
 $body$;
 
 ALTER TABLE projects
-  ADD COLUMN last_data_modification TIMESTAMP;
+  ADD COLUMN latest_data_modification TIMESTAMP;
 
 DO $$
 DECLARE
@@ -76,7 +76,7 @@ BEGIN
     IF ts > to_timestamp(0)
     THEN
 --       RAISE NOTICE 'Latest Modification: % - %', p, ts;
-      EXECUTE 'update projects set last_data_modification = ' || quote_literal(ts) || ' where id = ' ||
+      EXECUTE 'update projects set latest_data_modification = ' || quote_literal(ts) || ' where id = ' ||
               quote_literal(p);
     ELSE
       RAISE NOTICE 'NO data for project: %', p;
