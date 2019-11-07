@@ -543,6 +543,8 @@ $function$;
 
 CREATE OR REPLACE FUNCTION set_project_last_modified()
   RETURNS TRIGGER AS $body$
+DECLARE
+    expedition_id int;
 BEGIN
   IF TG_WHEN <> 'AFTER'
   THEN
@@ -554,9 +556,16 @@ BEGIN
     RAISE EXCEPTION 'set_project_last_modified() does not support being a STATEMENT trigger';
   END IF;
 
+  IF TG_OP = 'DELETE'
+  THEN
+      expedition_id = OLD.expedition_id;
+  ELSE
+      expedition_id = NEW.expedition_id;
+  end if;
+
   EXECUTE
-  'UPDATE projects set last_data_modification = CURRENT_TIMESTAMP where id = (select project_id from expeditions where id = '
-  || quote_literal(NEW.expedition_id) || ')';
+  'UPDATE projects set latest_data_modification = CURRENT_TIMESTAMP where id = (select project_id from expeditions where id = '
+  || quote_literal(expedition_id) || ')';
 
   RETURN NULL;
 END;
@@ -565,7 +574,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER;
 
 COMMENT ON FUNCTION set_project_last_modified() IS $body$
-Update the project's last_data_modification timestamp when a record is inserted, updated, or deleted.
+Update the project's latest_data_modification timestamp when a record is inserted, updated, or deleted.
 $body$;
 
 CREATE OR REPLACE FUNCTION entity_history()

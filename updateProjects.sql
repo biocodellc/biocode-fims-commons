@@ -46,7 +46,7 @@ BEGIN
 END;
 $$;
 
--- set last_data_modification on all projects
+-- set latest_data_modification on all projects
 
 DO $$
 DECLARE
