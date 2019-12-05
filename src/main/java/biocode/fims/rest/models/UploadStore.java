@@ -1,38 +1,36 @@
-package biocode.fims.tools;
-
-import biocode.fims.run.DatasetProcessor;
+package biocode.fims.rest.models;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A simple store used for holding UploadMetadata object between REST requests.
+ * A simple store that is used to hold objects between REST requests.
  * <p>
- * This is used between the validation and upload steps. Entries will expire after 5 mins.
+ * Entries will expire 5 mins after creation
  *
  * @author rjewing
  */
-public class UploadStore {
+public class UploadStore<T> {
     private final static int CACHE_EXPRIATION = 5 * 60 * 1000; // 5 mins
-
-    private final Map<UUID, UploadMetadata> store;
+    protected final Map<UUID, UploadMetadata> store;
 
     public UploadStore() {
         store = new ConcurrentHashMap<>();
     }
 
-    public UUID put(UUID id, DatasetProcessor processor, int userId) {
-        store.put(id, new UploadMetadata(processor, userId));
+    public UUID put(UUID id, T obj, int userId) {
+//        TODO is CACHE_EXPIRATION overridden? If so, migrate ValidationStore to use this
+        store.put(id, new UploadMetadata(obj, userId));
         removeExpired();
 
         return id;
     }
 
-    public DatasetProcessor get(UUID id, int userId) {
+    public T get(UUID id, int userId) {
         UploadMetadata metadata = store.get(id);
 
         if (metadata != null && metadata.authorizedUser(userId)) {
-            return metadata.datasetProcessor;
+            return metadata.obj;
         }
 
         return null;
@@ -46,7 +44,7 @@ public class UploadStore {
         List<UUID> expired = new ArrayList<>();
 
         for (Map.Entry<UUID, UploadMetadata> entry : store.entrySet()) {
-            if (entry.getValue().isExpired()) {
+            if (entry.getValue().isExpired(getCacheExpiration())) {
                 expired.add(entry.getKey());
             }
         }
@@ -56,26 +54,27 @@ public class UploadStore {
         }
     }
 
+    protected int getCacheExpiration() {
+        return CACHE_EXPRIATION;
+    }
 
-    private static class UploadMetadata {
-        private final DatasetProcessor datasetProcessor;
+    private class UploadMetadata {
+        private final T obj;
         private final Date ts;
         private int userId;
 
-        private UploadMetadata(DatasetProcessor datasetProcessor, int userId) {
-            this.datasetProcessor = datasetProcessor;
+        private UploadMetadata(T obj, int userId) {
+            this.obj = obj;
             this.userId = userId;
             this.ts = new Date();
         }
 
-        private boolean isExpired() {
-            return ts.getTime() < (new Date().getTime() - CACHE_EXPRIATION);
+        private boolean isExpired(int expiration) {
+            return ts.getTime() < (new Date().getTime() - expiration);
         }
 
         public boolean authorizedUser(int userId) {
             return !(this.userId > 0 && this.userId != userId);
         }
     }
-
 }
-
