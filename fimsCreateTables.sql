@@ -273,7 +273,14 @@ CREATE TABLE projects
     network_id                INTEGER            NOT NULL REFERENCES networks (id),
     public                    BOOLEAN            NOT NULL DEFAULT '1',
     enforce_expedition_access BOOLEAN            NOT NULL DEFAULT '1',
-    latest_data_modification  TIMESTAMP
+    latest_data_modification  TIMESTAMP,
+    principal_investigator TEXT,
+    principal_investigator_affiliation TEXT,
+    project_contact TEXT,
+    project_contact_email TEXT,
+    publication_guid TEXT,
+    project_data_guid TEXT,
+    recommended_citation TEXT
 );
 
 CREATE INDEX projects_user_id_idx
