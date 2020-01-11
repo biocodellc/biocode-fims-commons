@@ -22,6 +22,7 @@ createEntityTable: >
   CREATE TRIGGER update_modtime BEFORE UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
   CREATE TRIGGER set_createdtime BEFORE INSERT ON ${table} FOR EACH ROW EXECUTE PROCEDURE set_created_column();
   CREATE TRIGGER entity_audit AFTER INSERT OR DELETE OR UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE entity_history();
+  CREATE TRIGGER set_project_last_modified AFTER INSERT OR DELETE OR UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE set_project_last_modified();
 
   CREATE INDEX idx_network_${networkId}_${conceptAlias}_data ON ${table} USING GIN (data);
   CREATE INDEX idx_network_${networkId}_${conceptAlias}_tsv ON ${table} USING GIN (tsv);

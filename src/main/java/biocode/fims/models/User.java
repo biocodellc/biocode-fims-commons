@@ -44,6 +44,10 @@ public class User {
     private String lastName;
     private String passwordResetToken;
     private Date passwordResetExpiration;
+    private String sraUsername;
+    private String sraEmail;
+    private String sraFirstName;
+    private String sraLastName;
     private Set<Expedition> expeditions;
     private Set<Project> projects;
     private Set<Network> networks;
@@ -251,6 +255,46 @@ public class User {
 
     public void setPasswordResetExpiration(Date passwordResetExpiration) {
         this.passwordResetExpiration = passwordResetExpiration;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "sra_username")
+    public String getSraUsername() {
+        return sraUsername != null ? sraUsername : username;
+    }
+
+    public void setSraUsername(String sraUsername) {
+        this.sraUsername = sraUsername;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "sra_email")
+    public String getSraEmail() {
+        return sraEmail != null ? sraEmail : email;
+    }
+
+    public void setSraEmail(String sraEmail) {
+        this.sraEmail = sraEmail;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "sra_first_name")
+    public String getSraFirstName() {
+        return sraFirstName != null ? sraFirstName : firstName;
+    }
+
+    public void setSraFirstName(String sraFirstName) {
+        this.sraFirstName = sraFirstName;
+    }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "sra_last_name")
+    public String getSraLastName() {
+        return sraLastName != null ? sraLastName : lastName;
+    }
+
+    public void setSraLastName(String sraLastName) {
+        this.sraLastName = sraLastName;
     }
 
     @JsonIgnore
