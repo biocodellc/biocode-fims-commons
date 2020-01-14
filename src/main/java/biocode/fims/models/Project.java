@@ -142,7 +142,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     @Column(name = "principal_investigator")
     public String getPrincipalInvestigator() {
         return principalInvestigator;
@@ -304,6 +304,13 @@ public class Project {
                 ", modified=" + modified +
                 ", isPublic=" + isPublic +
                 ", isEnforceExpeditionAccess=" + enforceExpeditionAccess +
+                ", principalInvestigator=" + principalInvestigator +
+                ", principalInvestigatorAffiliation=" + principalInvestigatorAffiliation +
+                ", projectContact=" + projectContact +
+                ", projectContactEmail=" + projectContactEmail +
+                ", publicationGuid=" + publicationGuid +
+                ", projectDataGuid=" + projectDataGuid +
+                ", recommendedCitation=" + recommendedCitation +
                 ", user=" + user +
                 ", public=" + isPublic() +
                 '}';
