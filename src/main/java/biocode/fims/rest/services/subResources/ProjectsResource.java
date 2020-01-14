@@ -196,6 +196,16 @@ public class ProjectsResource extends FimsController {
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setPublic(updatedProject.isPublic());
         existingProject.setEnforceExpeditionAccess(updatedProject.isEnforceExpeditionAccess());
+
+        // optional project metadata properties
+        existingProject.setPrincipalInvestigator(updatedProject.getPrincipalInvestigator());
+        existingProject.setPrincipalInvestigatorAffiliation(updatedProject.getPrincipalInvestigatorAffiliation());
+        existingProject.setProjectContact(updatedProject.getProjectContact());
+        existingProject.setProjectContactEmail(updatedProject.getProjectContactEmail());
+        existingProject.setPublicationGuid(updatedProject.getPublicationGuid());
+        existingProject.setProjectDataGuid(updatedProject.getProjectDataGuid());
+        existingProject.setRecommendedCitation(updatedProject.getRecommendedCitation());
+
     }
 
     /**
