@@ -280,7 +280,9 @@ CREATE TABLE projects
     project_contact_email TEXT,
     publication_guid TEXT,
     project_data_guid TEXT,
-    recommended_citation TEXT
+    recommended_citation TEXT,
+    license TEXT,
+    discoverable BOOLEAN NOT NULL DEFAULT '0'
 );
 
 CREATE INDEX projects_user_id_idx

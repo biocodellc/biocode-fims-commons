@@ -43,6 +43,7 @@ public class Project {
     private String description;
     private ProjectConfiguration projectConfiguration;
     private boolean isPublic;
+    private boolean isDiscoverable;
     private boolean enforceExpeditionAccess;
     private List<Expedition> expeditions;
     private User user;
@@ -56,6 +57,7 @@ public class Project {
     private String publicationGuid;
     private String projectDataGuid;
     private String recommendedCitation;
+    private String license;
 
 
     public static class ProjectBuilder {
@@ -212,6 +214,17 @@ public class Project {
         this.recommendedCitation = recommendedCitation;
     }
 
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "license")
+    public String getLicense() {
+        return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
+    }
+
     @Column(updatable = false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
@@ -261,6 +274,16 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
+    @Column(name = "discoverable", nullable = false)
+    public boolean isDiscoverable() {
+        return isDiscoverable;
+    }
+
+    public void setDiscoverable(boolean aDiscoverable) {
+        isDiscoverable = aDiscoverable;
+    }
+
+    @JsonView(Views.Detailed.class)
     @Column(name = "enforce_expedition_access", nullable = false)
     public boolean isEnforceExpeditionAccess() {
         return enforceExpeditionAccess;
@@ -303,7 +326,19 @@ public class Project {
                 ", created=" + created +
                 ", modified=" + modified +
                 ", isPublic=" + isPublic +
+                ", isDiscoverable=" + isDiscoverable +
                 ", isEnforceExpeditionAccess=" + enforceExpeditionAccess +
+<<<<<<< Updated upstream
+=======
+                ", principalInvestigator=" + principalInvestigator +
+                ", principalInvestigatorAffiliation=" + principalInvestigatorAffiliation +
+                ", projectContact=" + projectContact +
+                ", projectContactEmail=" + projectContactEmail +
+                ", publicationGuid=" + publicationGuid +
+                ", projectDataGuid=" + projectDataGuid +
+                ", recommendedCitation=" + recommendedCitation +
+                ", license=" + license +
+>>>>>>> Stashed changes
                 ", user=" + user +
                 ", public=" + isPublic() +
                 '}';
