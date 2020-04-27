@@ -144,7 +144,7 @@ public class Project {
         this.projectTitle = projectTitle;
     }
 
-    @JsonView(Views.Detailed.class)
+    @JsonView(Views.Summary.class)
     @Column(name = "principal_investigator")
     public String getPrincipalInvestigator() {
         return principalInvestigator;
@@ -328,8 +328,6 @@ public class Project {
                 ", isPublic=" + isPublic +
                 ", isDiscoverable=" + isDiscoverable +
                 ", isEnforceExpeditionAccess=" + enforceExpeditionAccess +
-<<<<<<< Updated upstream
-=======
                 ", principalInvestigator=" + principalInvestigator +
                 ", principalInvestigatorAffiliation=" + principalInvestigatorAffiliation +
                 ", projectContact=" + projectContact +
@@ -338,8 +336,6 @@ public class Project {
                 ", projectDataGuid=" + projectDataGuid +
                 ", recommendedCitation=" + recommendedCitation +
                 ", license=" + license +
->>>>>>> Stashed changes
-                ", user=" + user +
                 ", public=" + isPublic() +
                 '}';
     }

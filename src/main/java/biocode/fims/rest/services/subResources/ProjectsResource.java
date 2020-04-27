@@ -196,8 +196,7 @@ public class ProjectsResource extends FimsController {
         existingProject.setDescription(updatedProject.getDescription());
         existingProject.setPublic(updatedProject.isPublic());
         existingProject.setEnforceExpeditionAccess(updatedProject.isEnforceExpeditionAccess());
-<<<<<<< Updated upstream
-=======
+
 
         // optional project metadata properties
         existingProject.setPrincipalInvestigator(updatedProject.getPrincipalInvestigator());
@@ -211,7 +210,6 @@ public class ProjectsResource extends FimsController {
         existingProject.setDiscoverable(updatedProject.isDiscoverable());
 
 
->>>>>>> Stashed changes
     }
 
     /**

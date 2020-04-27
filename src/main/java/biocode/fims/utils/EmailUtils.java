@@ -21,6 +21,8 @@ public class EmailUtils {
     private static final String username = settingManager.retrieveValue("mailUser");
     private static final String password = settingManager.retrieveValue("mailPassword");
     private static final String from = settingManager.retrieveValue("mailFrom");
+    private static final String host = settingManager.retrieveValue("mailHost", "smtp.gmail.com");
+    private static final String port = settingManager.retrieveValue("mailPort", "465");
 
     static {
         // A properties to store mail server smtp information such
@@ -29,12 +31,12 @@ public class EmailUtils {
         // Message object.
         //
         props = new Properties();
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.socketFactory.port", "465");
+        props.put("mail.smtp.host", host);
+        props.put("mail.smtp.socketFactory.port", port);
         props.put("mail.smtp.socketFactory.class",
                 "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.port", "465");
+        props.put("mail.smtp.port", port);
     }
 
 
